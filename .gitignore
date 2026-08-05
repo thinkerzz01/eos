@@ -1,0 +1,28 @@
+# Environment & Secret files
+.env
+.env*.local
+.env.local
+
+# Node modules & build outputs
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# System & OS files
+.DS_Store
+Thumbs.db
+
+# Large media & PDF textbook assets (>50MB)
+Books/
+Books - Pages/
+"Books/"
+"Books - Pages/"
+About Us/
+Blogs/
+Contact Us/
+Header Footer/
+Home Page/
+Lahore O - A Level Pages/
+*.pdf

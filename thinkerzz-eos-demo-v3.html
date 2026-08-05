@@ -1,0 +1,1449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Thinkerzz EOS — Demo v3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy-900:#020617;--navy-800:#0F172A;--navy-700:#1E293B;--navy-600:#334155;--navy-500:#475569;
+  --purple-900:#3B1CCF;--purple-800:#5A31F4;--purple-700:#7C55F7;--purple-600:#A78BFA;--purple-500:#C4B5FD;
+  --gold-900:#D99E17;--gold-800:#F9C051;--gold-700:#FFD166;--gold-600:#FFE29B;--gold-500:#FFF3CC;
+  --white:#fff;--offwhite:#F8FAFC;--g100:#F1F5F9;--g300:#CBD5E1;--g500:#64748B;--g700:#334155;
+  --ink:#0F172A;--muted:#64748B;--border:#E7E9EF;--border-soft:#EEF1F5;
+  --green:#16A34A;--green-bg:#DCFCE7;--amber:#D97706;--amber-bg:#FEF3C7;--red:#DC2626;--red-bg:#FEE2E2;
+  --blue:#2563EB;--blue-bg:#DBEAFE;
+  --shadow-sm:0 1px 2px rgba(15,23,42,.04),0 1px 3px rgba(15,23,42,.06);
+  --shadow-md:0 4px 12px rgba(15,23,42,.06),0 2px 4px rgba(15,23,42,.04);
+  --shadow-lg:0 12px 32px rgba(15,23,42,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--offwhite);color:var(--ink);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.kpi-num,.logo-word,.mono{font-family:'Space Grotesk','Inter',sans-serif}
+button{font-family:inherit;cursor:pointer;border:none;background:none}
+a{color:inherit;text-decoration:none}
+input,select,textarea{font-family:inherit}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:8px;border:3px solid var(--offwhite)}
+::-webkit-scrollbar-track{background:transparent}
+
+/* LOGIN */
+#login{position:fixed;inset:0;z-index:100;display:flex;background:var(--navy-800);color:#fff;overflow:auto}
+.login-left{flex:1;display:flex;flex-direction:column;justify-content:center;padding:64px;max-width:580px}
+.login-right{flex:1;display:none;background:radial-gradient(1200px 600px at 70% 20%,rgba(90,49,244,.35),transparent),radial-gradient(900px 500px at 30% 90%,rgba(249,192,81,.18),transparent);position:relative}
+@media(min-width:960px){.login-right{display:block}}
+.login-badge{display:inline-flex;align-items:center;gap:8px;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-700);font-weight:600;margin-bottom:26px}
+.login-h1{font-family:'Space Grotesk';font-size:44px;line-height:1.08;font-weight:700;letter-spacing:-.02em;margin-bottom:16px}
+.login-h1 .accent{color:var(--purple-600)}
+.login-sub{color:#94A3B8;font-size:16px;margin-bottom:38px;max-width:440px}
+.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:460px}
+.role-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:left;transition:.16s;display:flex;flex-direction:column;gap:5px}
+.role-card:hover{background:rgba(90,49,244,.16);border-color:var(--purple-700);transform:translateY(-2px)}
+.role-card .rc-ic{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:rgba(90,49,244,.2);color:var(--purple-500);margin-bottom:6px}
+.role-card .rc-t{font-weight:600;font-size:15px;color:#fff}
+.role-card .rc-d{font-size:12.5px;color:#94A3B8}
+.login-foot{margin-top:34px;font-size:12.5px;color:#64748B}
+.login-word{position:absolute;bottom:48px;left:48px;right:48px;font-family:'Space Grotesk';font-weight:600;font-size:22px;color:rgba(255,255,255,.9)}
+.login-word span{color:var(--gold-700)}
+
+/* SHELL */
+#app{display:none;height:100vh;overflow:hidden}
+.shell{display:flex;height:100vh}
+.sidebar{width:246px;background:var(--navy-800);color:#CBD5E1;display:flex;flex-direction:column;flex-shrink:0}
+.sb-brand{padding:18px 20px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-logo{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--purple-800),var(--purple-900));display:grid;place-items:center;color:#fff;font-family:'Space Grotesk';font-weight:700;font-size:17px;box-shadow:0 4px 12px rgba(90,49,244,.4)}
+.sb-brand .bt{font-family:'Space Grotesk';font-weight:700;color:#fff;font-size:16px}
+.sb-brand .bs{font-size:10px;color:#64748B;letter-spacing:.12em;text-transform:uppercase}
+.sb-nav{flex:1;overflow-y:auto;padding:10px 12px}
+.sb-label{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#475569;font-weight:600;padding:12px 10px 5px}
+.sb-item{display:flex;align-items:center;gap:11px;padding:8px 10px;border-radius:9px;font-size:13px;font-weight:500;color:#94A3B8;transition:.13s;margin-bottom:1px;width:100%;text-align:left}
+.sb-item:hover{background:rgba(255,255,255,.05);color:#E2E8F0}
+.sb-item.active{background:var(--purple-800);color:#fff;box-shadow:0 4px 12px rgba(90,49,244,.35)}
+.sb-item .ic{width:17px;height:17px;flex-shrink:0}
+.sb-item .badge{margin-left:auto;background:var(--gold-800);color:var(--navy-800);font-size:10.5px;font-weight:700;min-width:19px;height:18px;padding:0 6px;border-radius:20px;display:grid;place-items:center;font-family:'Space Grotesk'}
+.sb-foot{padding:12px;border-top:1px solid rgba(255,255,255,.07)}
+.sb-user{display:flex;align-items:center;gap:10px;padding:6px}
+.sb-avatar{width:34px;height:34px;border-radius:9px;display:grid;place-items:center;color:#fff;font-weight:600;font-size:14px}
+.sb-user .nm{font-size:13px;font-weight:600;color:#fff}
+.sb-user .rl{font-size:11px;color:#64748B;text-transform:capitalize}
+
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+.topbar{height:58px;background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:14px;padding:0 20px;flex-shrink:0}
+.tb-search{flex:1;max-width:400px;position:relative}
+.tb-search input{width:100%;height:37px;border:1px solid var(--border);border-radius:10px;padding:0 12px 0 37px;font-size:13px;background:var(--offwhite);transition:.14s}
+.tb-search input:focus{outline:none;border-color:var(--purple-600);background:#fff;box-shadow:0 0 0 3px rgba(90,49,244,.1)}
+.tb-search .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--g500)}
+.tb-spacer{flex:1}
+.role-switch{display:flex;align-items:center;gap:5px;background:var(--g100);border-radius:10px;padding:3px}
+.role-switch button{padding:6px 10px;border-radius:7px;font-size:12px;font-weight:600;color:var(--g500);transition:.12s}
+.role-switch button.on{background:#fff;color:var(--purple-800);box-shadow:var(--shadow-sm)}
+.tb-btn{width:37px;height:37px;border-radius:10px;display:grid;place-items:center;color:var(--g700);position:relative;transition:.12s}
+.tb-btn:hover{background:var(--g100)}
+.tb-btn .dot{position:absolute;top:8px;right:9px;width:7px;height:7px;background:var(--red);border-radius:50%;border:2px solid #fff}
+.btn-primary{height:37px;padding:0 15px;background:var(--purple-800);color:#fff;border-radius:10px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;transition:.14s;box-shadow:0 4px 12px rgba(90,49,244,.28)}
+.btn-primary:hover{background:var(--purple-900);transform:translateY(-1px)}
+.btn-ghost{height:37px;padding:0 13px;border:1px solid var(--border);border-radius:10px;font-weight:600;font-size:12.5px;color:var(--g700);background:#fff;display:inline-flex;align-items:center;gap:6px;transition:.12s}
+.btn-ghost:hover{background:var(--g100);border-color:var(--g300)}
+.btn-sm{height:31px;padding:0 11px;font-size:12px;border-radius:8px}
+
+.content{flex:1;overflow-y:auto;padding:24px 26px 60px}
+.page-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap}
+.page-title{font-family:'Space Grotesk';font-size:23px;font-weight:700;letter-spacing:-.02em;color:var(--navy-800)}
+.page-sub{color:var(--muted);font-size:13px;margin-top:3px}
+.seg{display:inline-flex;background:#fff;border:1px solid var(--border);border-radius:10px;padding:3px}
+.seg button{padding:6px 12px;border-radius:7px;font-size:12px;font-weight:600;color:var(--g500);transition:.12s}
+.seg button.on{background:var(--navy-800);color:#fff}
+
+.zone{margin-bottom:26px}
+.zone-head{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.zone-head h3{font-size:12.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--navy-700)}
+.zone-head .z-ic{width:22px;height:22px;border-radius:6px;display:grid;place-items:center;background:var(--purple-500);color:var(--purple-900)}
+.zone-head .z-count{font-size:12px;color:var(--muted);font-weight:500}
+.zone-head.attention .z-ic{background:var(--gold-600);color:var(--gold-900)}
+
+.card{background:#fff;border:1px solid var(--border);border-radius:14px;box-shadow:var(--shadow-sm)}
+.card-pad{padding:17px}
+.grid{display:grid;gap:13px}
+.g-2{grid-template-columns:repeat(2,1fr)}.g-3{grid-template-columns:repeat(3,1fr)}
+.g-4{grid-template-columns:repeat(4,1fr)}.g-5{grid-template-columns:repeat(5,1fr)}.g-6{grid-template-columns:repeat(6,1fr)}
+@media(max-width:1180px){.g-6,.g-5{grid-template-columns:repeat(3,1fr)}.g-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:820px){.g-6,.g-5,.g-4,.g-3{grid-template-columns:repeat(2,1fr)}.g-2{grid-template-columns:1fr}}
+
+.action-card{background:#fff;border:1px solid var(--border);border-radius:13px;padding:14px;cursor:pointer;transition:.15s;position:relative;overflow:hidden;text-align:left;width:100%}
+.action-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold-800);opacity:0;transition:.15s}
+.action-card:hover{border-color:var(--g300);box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.action-card:hover::before{opacity:1}
+.ac-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:9px}
+.ac-ic{width:33px;height:33px;border-radius:9px;display:grid;place-items:center}
+.ac-num{font-family:'Space Grotesk';font-size:25px;font-weight:700;color:var(--navy-800);line-height:1}
+.ac-label{font-size:12px;color:var(--g700);font-weight:500;margin-top:4px}
+.ac-arrow{color:var(--g300);transition:.15s}
+.action-card:hover .ac-arrow{color:var(--purple-700);transform:translateX(2px)}
+.ac-mini{font-size:11.5px;color:var(--muted);margin-top:8px}
+
+.kpi{padding:15px;cursor:pointer;transition:.14s;text-align:left;width:100%}
+.kpi:hover{box-shadow:var(--shadow-md);transform:translateY(-2px);border-color:var(--g300)}
+.kpi.static{cursor:default}.kpi.static:hover{transform:none;box-shadow:var(--shadow-sm);border-color:var(--border)}
+.kpi-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.kpi-ic{width:31px;height:31px;border-radius:8px;display:grid;place-items:center}
+.kpi-num{font-size:22px;font-weight:700;color:var(--navy-800);line-height:1}
+.kpi-label{font-size:12px;color:var(--muted);margin-top:4px}
+.kpi-delta{font-size:11px;font-weight:600;padding:2px 7px;border-radius:20px}
+.up{color:var(--green);background:var(--green-bg)}.down{color:var(--red);background:var(--red-bg)}.flat{color:var(--g500);background:var(--g100)}
+
+.pill{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.p-green{color:var(--green);background:var(--green-bg)}.p-amber{color:var(--amber);background:var(--amber-bg)}
+.p-red{color:var(--red);background:var(--red-bg)}.p-blue{color:var(--blue);background:var(--blue-bg)}
+.p-purple{color:var(--purple-900);background:var(--purple-500)}.p-gray{color:var(--g700);background:var(--g100)}
+.p-gold{color:var(--gold-900);background:var(--gold-600)}
+.dotpill::before{content:'';width:6px;height:6px;border-radius:50%;background:currentColor;display:inline-block}
+
+.tbl-wrap{background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;box-shadow:var(--shadow-sm)}
+.tbl-tools{display:flex;align-items:center;gap:8px;padding:12px 15px;border-bottom:1px solid var(--border-soft);flex-wrap:wrap}
+.chip{font-size:12px;font-weight:500;padding:6px 11px;border:1px solid var(--border);border-radius:9px;color:var(--g700);background:#fff;transition:.12s;display:inline-flex;align-items:center;gap:5px}
+.chip:hover{border-color:var(--g300);background:var(--g100)}
+.chip.on{background:var(--navy-800);color:#fff;border-color:var(--navy-800)}
+.tbl-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+thead th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);font-weight:600;padding:10px 15px;border-bottom:1px solid var(--border-soft);white-space:nowrap;background:var(--offwhite)}
+tbody td{padding:12px 15px;border-bottom:1px solid var(--border-soft);font-size:13px;vertical-align:middle}
+tbody tr{transition:.1s;cursor:pointer}
+tbody tr:hover{background:var(--offwhite)}
+tbody tr:last-child td{border-bottom:none}
+.cell-name{font-weight:600;color:var(--navy-800)}
+.cell-sub{font-size:11.5px;color:var(--muted)}
+.avatar{width:31px;height:31px;border-radius:8px;display:grid;place-items:center;color:#fff;font-weight:600;font-size:12px;flex-shrink:0}
+.name-cell{display:flex;align-items:center;gap:9px}
+
+.ring{position:relative;flex-shrink:0}
+.ring svg{transform:rotate(-90deg)}
+.ring .rt{position:absolute;inset:0;display:grid;place-items:center;font-family:'Space Grotesk';font-weight:700}
+
+.rowbtns{display:flex;gap:5px}
+.iconbtn{width:29px;height:29px;border-radius:8px;display:grid;place-items:center;color:var(--g500);border:1px solid var(--border);background:#fff;transition:.12s}
+.iconbtn:hover{background:var(--g100);color:var(--navy-800)}
+.iconbtn.wa:hover{background:var(--green-bg);color:var(--green);border-color:#86EFAC}
+
+.funnel{display:flex;gap:9px;align-items:stretch}
+.fn-stage{flex:1;text-align:center;position:relative}
+.fn-bar{border-radius:11px;padding:15px 6px;color:#fff;transition:.15s;cursor:pointer}
+.fn-bar:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.fn-num{font-family:'Space Grotesk';font-size:23px;font-weight:700;line-height:1}
+.fn-lbl{font-size:11px;opacity:.92;margin-top:3px}
+.fn-conv{font-size:10.5px;color:var(--muted);margin-top:6px;font-weight:600}
+
+.barchart{display:flex;align-items:flex-end;gap:9px;height:150px;padding-top:10px}
+.bc-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.bc-bar{width:100%;max-width:36px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,var(--purple-700),var(--purple-800));transition:.5s;position:relative}
+.bc-x{font-size:10.5px;color:var(--muted);font-weight:500}
+.bc-v{font-size:10.5px;font-weight:700;font-family:'Space Grotesk';color:var(--navy-700)}
+
+.src-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--border-soft)}
+.src-row:last-child{border-bottom:none}
+.src-dot{width:9px;height:9px;border-radius:3px;flex-shrink:0}
+.src-track{flex:1;height:7px;background:var(--g100);border-radius:20px;overflow:hidden}
+.src-fill{height:100%;border-radius:20px;transition:.6s}
+
+.feed-item{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--border-soft)}
+.feed-item:last-child{border-bottom:none}
+.feed-ic{width:29px;height:29px;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+.feed-txt{font-size:12.5px;color:var(--g700)}
+.feed-txt b{color:var(--navy-800);font-weight:600}
+.feed-time{font-size:11px;color:var(--g500);margin-top:1px}
+
+.class-row{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:11px;transition:.12s}
+.class-row:hover{background:var(--offwhite)}
+.class-time{font-family:'Space Grotesk';font-weight:600;font-size:12.5px;color:var(--navy-700);width:66px;flex-shrink:0}
+.class-live{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px var(--green-bg);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+
+.wl-row{display:flex;align-items:center;gap:11px;padding:8px 0}
+.wl-track{flex:1;height:9px;background:var(--g100);border-radius:20px;overflow:hidden}
+.wl-fill{height:100%;background:linear-gradient(90deg,var(--purple-700),var(--purple-800));border-radius:20px;transition:.5s}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(15,23,42,.5);backdrop-filter:blur(3px);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:540px;max-height:92vh;overflow:auto;box-shadow:var(--shadow-lg);animation:pop .2s}
+@keyframes pop{from{transform:scale(.96) translateY(10px);opacity:0}to{transform:scale(1);opacity:1}}
+.modal-head{padding:19px 22px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;justify-content:space-between}
+.modal-head h3{font-family:'Space Grotesk';font-size:18px;font-weight:700;color:var(--navy-800)}
+.modal-body{padding:20px 22px}
+.modal-foot{padding:15px 22px;border-top:1px solid var(--border-soft);display:flex;gap:10px;justify-content:flex-end}
+.field{margin-bottom:14px}
+.field label{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--g700);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;height:39px;border:1px solid var(--border);border-radius:10px;padding:0 12px;font-size:13px;transition:.12s;background:#fff}
+.field textarea{height:auto;padding:10px 12px;resize:vertical;min-height:66px}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--purple-600);box-shadow:0 0 0 3px rgba(90,49,244,.1)}
+.field .opt{font-weight:400;color:var(--g500);font-size:11px}
+.info-i{width:15px;height:15px;border-radius:50%;background:var(--g300);color:#fff;display:inline-grid;place-items:center;font-size:10px;font-weight:700;cursor:help;font-family:'Space Grotesk'}
+.qa-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.qa-btn{padding:15px;border:1px solid var(--border);border-radius:12px;display:flex;align-items:center;gap:11px;transition:.13s;text-align:left}
+.qa-btn:hover{border-color:var(--purple-600);background:rgba(90,49,244,.05);transform:translateY(-1px)}
+.qa-ic{width:35px;height:35px;border-radius:9px;display:grid;place-items:center;background:var(--purple-500);color:var(--purple-900);flex-shrink:0}
+.qa-t{font-weight:600;font-size:13px;color:var(--navy-800)}
+
+/* drawer */
+.drawer-bg{position:fixed;inset:0;background:rgba(15,23,42,.45);backdrop-filter:blur(2px);z-index:190;display:none}
+.drawer-bg.show{display:block}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:520px;max-width:94vw;background:#fff;z-index:191;box-shadow:var(--shadow-lg);transform:translateX(100%);transition:.25s;overflow-y:auto;display:flex;flex-direction:column}
+.drawer.show{transform:translateX(0)}
+.drawer-head{padding:20px 22px 0;flex-shrink:0}
+.dr-tabs{display:flex;gap:2px;padding:0 22px;border-bottom:1px solid var(--border-soft);position:sticky;top:0;background:#fff;z-index:3;flex-wrap:wrap}
+.dr-tab{padding:11px 11px;font-size:12.5px;font-weight:600;color:var(--g500);border-bottom:2px solid transparent;transition:.12s}
+.dr-tab.on{color:var(--purple-800);border-color:var(--purple-800)}
+.dr-body{padding:20px 22px;flex:1}
+
+/* syllabus checklist */
+.syl-topic{display:flex;align-items:center;gap:11px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;margin-bottom:7px;transition:.12s;cursor:pointer}
+.syl-topic:hover{border-color:var(--g300);background:var(--offwhite)}
+.syl-num{width:26px;height:26px;border-radius:7px;background:var(--g100);color:var(--g700);font-family:'Space Grotesk';font-weight:700;font-size:12px;display:grid;place-items:center;flex-shrink:0}
+.syl-name{flex:1;font-size:13px;font-weight:500;color:var(--navy-800)}
+.syl-state{display:flex;gap:4px}
+.syl-btn{padding:4px 9px;border-radius:7px;font-size:11px;font-weight:600;border:1px solid var(--border);color:var(--g500);background:#fff;transition:.12s}
+.syl-btn.on-done{background:var(--green);color:#fff;border-color:var(--green)}
+.syl-btn.on-need{background:var(--purple-800);color:#fff;border-color:var(--purple-800)}
+.syl-btn.on-na{background:var(--g500);color:#fff;border-color:var(--g500)}
+.syl-topic.done{background:rgba(22,163,74,.05);border-color:#86EFAC}
+.syl-topic.na{opacity:.55}
+.progress-big{height:12px;background:var(--g100);border-radius:20px;overflow:hidden;margin:8px 0}
+.progress-big div{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--gold-800),var(--gold-900));transition:.4s}
+
+/* voucher */
+.voucher{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:#fff}
+.voucher-head{background:var(--navy-800);color:#fff;padding:18px 20px;display:flex;justify-content:space-between;align-items:flex-start}
+.voucher-body{padding:20px}
+.v-row{display:flex;justify-content:space-between;padding:7px 0;font-size:13px;border-bottom:1px dashed var(--border)}
+.v-line{display:flex;justify-content:space-between;padding:6px 0;font-size:13px}
+.pay-box{background:var(--offwhite);border:1px solid var(--border);border-radius:10px;padding:13px;margin-top:14px}
+.pay-acct{display:flex;justify-content:space-between;padding:5px 0;font-size:12.5px;border-bottom:1px dashed var(--border)}
+
+/* booking */
+.booking-card{display:grid;grid-template-columns:300px 1fr;min-height:540px}
+@media(max-width:780px){.booking-card{grid-template-columns:1fr}}
+.bk-side{background:var(--navy-800);color:#fff;padding:30px}
+.bk-side .bs-badge{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-700);font-weight:700;margin-bottom:16px;display:block}
+.bk-side h2{font-family:'Space Grotesk';font-size:25px;font-weight:700;margin-bottom:10px;line-height:1.15}
+.bk-side p{color:#94A3B8;font-size:13px;margin-bottom:20px}
+.bk-meta{display:flex;flex-direction:column;gap:13px;margin-top:22px}
+.bk-meta-row{display:flex;gap:11px;align-items:center;font-size:12.5px;color:#CBD5E1}
+.bk-meta-row .bm-ic{width:31px;height:31px;border-radius:9px;background:rgba(90,49,244,.2);color:var(--purple-500);display:grid;place-items:center;flex-shrink:0}
+.bk-body{padding:30px;position:relative}
+.bk-step-h{font-family:'Space Grotesk';font-size:18px;font-weight:700;color:var(--navy-800);margin-bottom:3px}
+.bk-step-s{font-size:12.5px;color:var(--muted);margin-bottom:18px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-dow{text-align:center;font-size:10.5px;font-weight:600;color:var(--g500);padding:4px}
+.cal-day{aspect-ratio:1;border-radius:9px;display:grid;place-items:center;font-size:13px;font-weight:600;color:var(--navy-700);transition:.12s;border:1px solid transparent}
+.cal-day.avail{background:var(--offwhite);cursor:pointer;border-color:var(--border)}
+.cal-day.avail:hover{background:var(--purple-500);color:var(--purple-900);border-color:var(--purple-600)}
+.cal-day.sel{background:var(--purple-800);color:#fff;border-color:var(--purple-800)}
+.cal-day.dis{color:var(--g300)}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px;max-height:230px;overflow-y:auto}
+.slot{padding:10px 4px;border:1px solid var(--border);border-radius:9px;font-size:12px;font-weight:600;color:var(--navy-700);transition:.12s}
+.slot:hover{border-color:var(--purple-600);color:var(--purple-800)}
+.slot.sel{background:var(--purple-800);color:#fff;border-color:var(--purple-800)}
+.bk-confirm{text-align:center;padding:26px 10px}
+.bk-check{width:64px;height:64px;border-radius:50%;background:var(--green-bg);color:var(--green);display:grid;place-items:center;margin:0 auto 16px}
+.stepdots{display:flex;gap:5px}
+.stepdot{height:4px;flex:1;background:rgba(255,255,255,.15);border-radius:20px}
+.stepdot.on{background:var(--purple-700)}
+
+/* heatmap */
+.heat-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border-soft)}
+.heat-row:last-child{border-bottom:none}
+.heat-bar{flex:1;height:26px;background:var(--g100);border-radius:8px;overflow:hidden;position:relative}
+.heat-fill{height:100%;background:linear-gradient(90deg,var(--purple-700),var(--purple-800));border-radius:8px;display:flex;align-items:center;padding-left:10px;color:#fff;font-size:11.5px;font-weight:600;transition:.6s}
+
+.checkbox-list{display:flex;flex-wrap:wrap;gap:7px}
+.cbx{padding:7px 12px;border:1px solid var(--border);border-radius:9px;font-size:12.5px;font-weight:500;color:var(--g700);cursor:pointer;transition:.12s;user-select:none}
+.cbx:hover{border-color:var(--g300)}
+.cbx.on{background:var(--purple-800);color:#fff;border-color:var(--purple-800)}
+
+.section-t{font-size:14px;font-weight:700;color:var(--navy-800);margin-bottom:2px}
+.section-s{font-size:12px;color:var(--muted);margin-bottom:13px}
+.flex{display:flex}.between{justify-content:space-between}.center{align-items:center}
+.gap8{gap:8px}.gap12{gap:12px}.mb0{margin-bottom:0}.wrap{flex-wrap:wrap}
+.text-c{text-align:center}.hide{display:none!important}
+.empty{text-align:center;padding:46px 20px;color:var(--muted)}
+.empty-ic{width:54px;height:54px;border-radius:14px;background:var(--g100);display:grid;place-items:center;margin:0 auto 13px;color:var(--g300)}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--navy-800);color:#fff;padding:12px 20px;border-radius:12px;font-size:13px;font-weight:500;box-shadow:var(--shadow-lg);z-index:300;transition:.3s;display:flex;align-items:center;gap:10px;opacity:0}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast .tc{color:var(--gold-700)}
+.tip{position:relative}
+.report-doc{background:#fff;border:1px solid var(--border);border-radius:12px;padding:22px;max-width:100%}
+.report-doc h4{font-family:'Space Grotesk';font-size:16px;color:var(--navy-800);margin:16px 0 8px}
+.report-stat{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+.rs-box{background:var(--offwhite);border-radius:10px;padding:12px;text-align:center}
+.rs-num{font-family:'Space Grotesk';font-size:20px;font-weight:700;color:var(--navy-800)}
+.rs-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+.ai-note{background:rgba(90,49,244,.06);border:1px solid var(--purple-500);border-radius:10px;padding:13px;font-size:13px;color:var(--navy-700);line-height:1.6}
+</style>
+</head>
+<body>
+<div id="login">
+  <div class="login-left">
+    <span class="login-badge">◆ Question · Think · Achieve</span>
+    <h1 class="login-h1">The operating system for <span class="accent">Thinkerzz</span> Academy.</h1>
+    <p class="login-sub">Leads, demos, scheduling, CAIE syllabus &amp; grades, fees, documents, and portals — one connected system. Version 3. Pick a role to explore.</p>
+    <div class="role-grid" id="roleGrid"></div>
+    <p class="login-foot">Demo v2 · sample data only · nothing is saved · refresh to reset</p>
+  </div>
+  <div class="login-right"><div class="login-word">Question. Think. <span>Achieve.</span></div></div>
+</div>
+
+<div id="app">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="sb-brand"><div class="sb-logo">T</div><div><div class="bt">Thinkerzz</div><div class="bs">EOS · v3</div></div></div>
+      <nav class="sb-nav" id="sbNav"></nav>
+      <div class="sb-foot"><div class="sb-user">
+        <div class="sb-avatar" id="sbAvatar">O</div>
+        <div style="flex:1;min-width:0"><div class="nm" id="sbUserName">Owais</div><div class="rl" id="sbUserRole">Admin</div></div>
+        <button class="tb-btn" style="width:29px;height:29px;color:#64748B" onclick="logout()" title="Sign out">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg></button>
+      </div></div>
+    </aside>
+    <div class="main">
+      <div class="topbar">
+        <div class="tb-search"><span class="si"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg></span>
+          <input placeholder="Search students, teachers, leads, vouchers…" onkeydown="if(event.key==='Enter')toast('Search is illustrative in this demo')"/></div>
+        <div class="tb-spacer"></div>
+        <div class="role-switch" id="roleSwitch"></div>
+        <button class="tb-btn" onclick="toast('4 new notifications')" title="Notifications"><span class="dot"></span><svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg></button>
+        <button class="btn-primary" onclick="openQuickActions()"><svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Quick add</button>
+      </div>
+      <div class="content" id="content"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()"><div class="modal" id="modal"></div></div>
+<div class="drawer-bg" id="drawerBg" onclick="closeDrawer()"></div>
+<div class="drawer" id="drawer"></div>
+<div class="toast" id="toast"></div>
+<script>
+/* ================= ICONS ================= */
+const I={
+ grid:'<path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/>',
+ leads:'<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>',
+ demo:'<path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2"/>',
+ student:'<path d="M22 10L12 5 2 10l10 5 10-5zM6 12v5c0 1 2.7 3 6 3s6-2 6-3v-5"/>',
+ teacher:'<path d="M20 7h-9M14 17H5M17 21a4 4 0 100-8 4 4 0 000 8M7 11a4 4 0 100-8 4 4 0 000 8"/>',
+ cal:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+ money:'<path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>',
+ report:'<path d="M3 3v18h18M18 17V9M13 17V5M8 17v-3"/>',
+ ticket:'<path d="M3 9a3 3 0 010-6h18a3 3 0 010 6 3 3 0 000 6 3 3 0 010 6H3a3 3 0 010-6 3 3 0 000-6z"/>',
+ book:'<path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 4.5A2.5 2.5 0 016.5 2H20v20H6.5A2.5 2.5 0 014 19.5z"/>',
+ set:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-2.82 1.17V21a2 2 0 01-4 0v-.09A1.65 1.65 0 007 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06A1.65 1.65 0 004.6 15H4a2 2 0 010-4h.09A1.65 1.65 0 006 9.4l.06-.06a2 2 0 112.83-2.83l.06.06A1.65 1.65 0 0011 4.6V4a2 2 0 014 0v.09a1.65 1.65 0 002.82 1.17l.06-.06a2 2 0 112.83 2.83l-.06.06A1.65 1.65 0 0019.4 9H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/>',
+ arrow:'<path d="M5 12h14M12 5l7 7-7 7"/>',
+ clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+ alert:'<path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><path d="M12 9v4M12 17h.01"/>',
+ fee:'<rect x="1" y="4" width="22" height="16" rx="2"/><path d="M1 10h22"/>',
+ hw:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/>',
+ test:'<path d="M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>',
+ conflict:'<circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/>',
+ makeup:'<path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8M3 3v5h5"/>',
+ chat:'<path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>',
+ check:'<path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/>',
+ wa:'<path d="M17.5 14.4c-.3-.15-1.7-.85-2-.94-.26-.1-.45-.15-.64.14-.19.28-.73.94-.9 1.13-.16.19-.33.21-.62.07a8 8 0 01-2.36-1.45 9 9 0 01-1.62-2.02c-.17-.29 0-.44.13-.59.13-.13.28-.33.42-.5.14-.16.19-.28.28-.47.1-.19.05-.35-.02-.5-.07-.14-.64-1.54-.88-2.11-.23-.55-.46-.48-.64-.48h-.55c-.19 0-.5.07-.76.36-.26.28-1 .98-1 2.38s1.02 2.76 1.16 2.95c.14.19 2 3.05 4.85 4.28.68.29 1.2.47 1.62.6.68.22 1.3.19 1.79.11.55-.08 1.7-.69 1.94-1.36.24-.67.24-1.24.17-1.36-.07-.12-.26-.19-.55-.33z"/><path d="M20.5 3.5A11 11 0 003 18l-1.5 5 5.2-1.4A11 11 0 1020.5 3.5z"/>',
+ x:'<path d="M18 6L6 18M6 6l12 12"/>',
+ loc:'<path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>',
+ megaphone:'<path d="M3 11l18-5v12L3 14v-3zM11.6 16.8a3 3 0 11-5.8-1.6"/>',
+ book2:'<path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2zM22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>',
+ growth:'<path d="M23 6l-9.5 9.5-5-5L1 18"/><path d="M17 6h6v6"/>',
+ file:'<path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/>',
+ refresh:'<path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0114.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0020.5 15"/>',
+ pause:'<circle cx="12" cy="12" r="10"/><path d="M10 15V9M14 15V9"/>',
+};
+const svg=(p,s=18,sw=2)=>`<svg width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">${p}</svg>`;
+
+/* ================= REFERENCE DATA ================= */
+const SUBJECTS=['Mathematics','Physics','Chemistry','Biology','Accounting','Economics','Business Studies','Computer Science','English (First Language)','English (Second Language)','Additional Mathematics','Islamiyat','Pakistan Studies','Urdu','Statistics','Psychology','Sociology'];
+const PROGRAMS=['O Level','A Level','IGCSE','Matric (9th)','Matric (10th)','Inter (11th)','Inter (12th)'];
+const CAIE_PROGRAMS=['O Level','A Level','IGCSE'];
+const EXAM_SESSIONS=['May/June 2026','Oct/Nov 2026','May/June 2027','Oct/Nov 2027'];
+const SOURCES=['Instagram','Facebook','Google','Referral','Booking Page','Walk-in'];
+const CITIES=['Karachi','Lahore','Islamabad','Rawalpindi','Faisalabad','Multan'];
+const AV=['#5A31F4','#0F172A','#D99E17','#2563EB','#16A34A','#7C55F7','#DC2626','#334155'];
+const avColor=s=>AV[(s.charCodeAt(0)+s.charCodeAt(s.length-1))%AV.length];
+const initials=n=>n.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+
+/* CAIE topic lists (topic-level, official structure) */
+const SYLLABI={
+ 'Physics':['Physical quantities & units','Kinematics','Dynamics','Forces, density & pressure','Work, energy & power','Deformation of solids','Waves','Superposition','Electricity','D.C. circuits','Particle physics','Motion in a circle','Gravitational fields','Temperature','Ideal gases','Thermodynamics','Oscillations','Electric fields','Capacitance','Magnetic fields','Alternating currents','Quantum physics','Nuclear physics','Medical physics','Astronomy & cosmology'],
+ 'Chemistry':['Atomic structure','Atoms, molecules & stoichiometry','Chemical bonding','States of matter','Chemical energetics','Electrochemistry','Equilibria','Reaction kinetics','The Periodic Table','Group 2 & 17','Nitrogen & sulfur','Organic chemistry basics','Hydrocarbons','Halogen compounds','Alcohols & esters','Carbonyl compounds','Carboxylic acids','Polymerisation','Analytical techniques','Transition elements'],
+ 'Mathematics':['Quadratics','Functions','Coordinate geometry','Circular measure','Trigonometry','Series','Differentiation','Integration','Kinematics','Algebra (P3)','Logarithmic functions','Vectors','Complex numbers','Differential equations','Numerical methods','Permutations & combinations','Probability','Discrete random variables','Normal distribution','Hypothesis testing'],
+ 'Biology':['Cell structure','Biological molecules','Enzymes','Cell membranes','Mitosis','Nucleic acids','Transport in plants','Transport in mammals','Gas exchange','Infectious disease','Immunity','Energy & respiration','Photosynthesis','Homeostasis','Control & coordination','Inherited change','Selection & evolution','Biodiversity','Genetic technology'],
+};
+const defaultSyllabus=subj=>SYLLABI[subj]||['Introduction','Core concepts','Applications','Advanced topics','Revision'];
+
+/* ================= STATE ================= */
+let uid=100;
+const nid=()=>'x'+(++uid);
+
+let teachers=[
+ {id:'t1',name:'Sir Kamran Ali',email:'kamran@thinkerzz.com',phone:'+92 300 1112221',subjects:['Mathematics','Physics'],programs:['A Level','O Level'],status:'In Class',load:24,capacity:30,rating:96,demos:14,conv:79,rate:800,join:'Jan 2026',city:'Karachi'},
+ {id:'t2',name:'Miss Ayesha Siddiqui',email:'ayesha@thinkerzz.com',phone:'+92 321 2223332',subjects:['Chemistry','Biology'],programs:['O Level','IGCSE'],status:'Available',load:18,capacity:28,rating:92,demos:11,conv:73,rate:750,join:'Feb 2026',city:'Lahore'},
+ {id:'t3',name:'Sir Bilal Ahmed',email:'bilal@thinkerzz.com',phone:'+92 333 3334443',subjects:['Economics','Accounting'],programs:['A Level'],status:'Available',load:25,capacity:25,rating:88,demos:9,conv:67,rate:700,join:'Mar 2026',city:'Islamabad'},
+ {id:'t4',name:'Miss Hina Raza',email:'hina@thinkerzz.com',phone:'+92 345 4445554',subjects:['English (First Language)','Computer Science'],programs:['IGCSE','O Level'],status:'Leave',load:9,capacity:20,rating:90,demos:6,conv:83,rate:750,join:'Apr 2026',city:'Karachi'},
+ {id:'t5',name:'Sir Usman Farooq',email:'usman@thinkerzz.com',phone:'+92 302 5556667',subjects:['Physics'],programs:['A Level','O Level'],status:'Available',load:0,capacity:20,rating:0,demos:0,conv:0,reliability:0,rate:750,join:'Aug 2026',city:'Karachi'},
+];
+
+function mkSyllabus(subjects){
+ const out={};
+ subjects.forEach(s=>{
+   const topics=defaultSyllabus(s);
+   out[s]=topics.map((t,i)=>({n:i+1,name:t,state: i<Math.floor(topics.length*0.35)?'done':(Math.random()<0.15?'na':'need')}));
+ });
+ return out;
+}
+function sylProgress(syl){
+ let done=0,total=0;
+ Object.values(syl).forEach(list=>list.forEach(t=>{if(t.state!=='na'){total++;if(t.state==='done')done++;}}));
+ return total?Math.round(done/total*100):0;
+}
+
+let students=[
+ {id:'s1',name:'Ahmed Raza',parent:'Mr. Raza Khan',phone:'+92 300 1234567',wa:'+92 300 1234567',email:'ahmed.raza@gmail.com',address:'Block 5, Gulshan',city:'Karachi',program:'A Level',subjects:['Physics','Mathematics'],teachers:{'Physics':'Sir Kamran Ali','Mathematics':'Sir Kamran Ali'},att:94,hw:88,fee:'Paid',status:'Active',months:6,exam:'May/June 2027',enrolled:'15 Mar 2026',feeAmt:20000,renew:'15 Aug',source:'Instagram'},
+ {id:'s2',name:'Fatima Noor',parent:'Mrs. Noor Fatima',phone:'+92 321 2345678',wa:'+92 321 2345678',email:'fatima.n@gmail.com',address:'DHA Phase 4',city:'Lahore',program:'O Level',subjects:['Chemistry','Biology'],teachers:{'Chemistry':'Miss Ayesha Siddiqui','Biology':'Miss Ayesha Siddiqui'},att:82,hw:71,fee:'Due',status:'Active',months:12,exam:'Oct/Nov 2026',enrolled:'5 Apr 2026',feeAmt:18000,renew:'5 Aug',source:'Referral'},
+ {id:'s3',name:'Hassan Tariq',parent:'Mr. Tariq Mehmood',phone:'+92 333 3456789',wa:'+92 333 3456789',email:'',address:'F-8 Markaz',city:'Islamabad',program:'A Level',subjects:['Economics'],teachers:{'Economics':'Sir Bilal Ahmed'},att:67,hw:54,fee:'In Grace',status:'Active',months:6,exam:'May/June 2027',enrolled:'1 Feb 2026',feeAmt:9000,renew:'1 Aug',source:'Google'},
+ {id:'s4',name:'Zainab Malik',parent:'Dr. Malik Sohail',phone:'+92 345 4567890',wa:'+92 345 4567890',email:'zainab.m@gmail.com',address:'Bahria Town',city:'Rawalpindi',program:'IGCSE',subjects:['Mathematics','Computer Science'],teachers:{'Mathematics':'Sir Kamran Ali','Computer Science':'Miss Hina Raza'},att:97,hw:95,fee:'Paid',status:'Active',months:9,exam:'May/June 2027',enrolled:'20 Jan 2026',feeAmt:22000,renew:'20 Aug',source:'Instagram'},
+ {id:'s5',name:'Usman Sheikh',parent:'Mr. Sheikh Adnan',phone:'+92 301 5678901',wa:'+92 301 5678901',email:'usman.s@gmail.com',address:'Model Town',city:'Lahore',program:'A Level',subjects:['Chemistry'],teachers:{'Chemistry':'Miss Ayesha Siddiqui'},att:88,hw:79,fee:'Paid',status:'Active',months:6,exam:'Oct/Nov 2026',enrolled:'12 Mar 2026',feeAmt:10000,renew:'12 Aug',source:'Facebook'},
+ {id:'s6',name:'Ayesha Khan',parent:'Mrs. Khan Sadia',phone:'+92 311 6789012',wa:'+92 311 6789012',email:'ayesha.k@gmail.com',address:'Johar Town',city:'Faisalabad',program:'O Level',subjects:['Physics','Mathematics'],teachers:{'Physics':'Sir Kamran Ali','Mathematics':'Sir Kamran Ali'},att:73,hw:62,fee:'Due',status:'Paused',months:6,exam:'May/June 2027',enrolled:'2 May 2026',feeAmt:18000,renew:'2 Aug',source:'Referral'},
+];
+students.forEach(s=>{
+ s.syllabus=mkSyllabus(s.subjects);
+ s.health=health(s);
+ // CAIE grades: target defaults to A* (set at enrollment); assessed is set by the teacher AFTER a test (blank until then)
+ s.grades={};
+ s.subjects.forEach(subj=>{
+   const internal = s.att>=90?'A':s.att>=75?'B':'C';
+   // paused/newer students may not have been tested yet -> assessed blank to show the "not yet assessed" state
+   const assessed = s.status==='Paused' ? '' : (s.att>=90?'A':s.att>=80?'B':s.att>=65?'C':'D');
+   s.grades[subj]={target:'A*',internal:internal,assessed:assessed};
+ });
+});
+
+function health(s){
+ const feeScore=(s.fee==='Paid'||s.fee==='In Grace')?100:s.fee==='Due'?70:0;
+ return Math.round(s.att*0.5+s.hw*0.3+feeScore*0.2);
+}
+
+let leads=[
+ {id:'l1',name:'Bilal Hussain',parent:'Mr. Hussain',phone:'+92 300 1112223',email:'',city:'Karachi',program:'A Level',subj:'Physics',source:'Booking Page',status:'Demo Scheduled',temp:'Hot',manager:'Sana',next:'Today 4:00 PM',log:'Booked demo via page'},
+ {id:'l2',name:'Maryam Javed',parent:'Mrs. Javed',phone:'+92 321 2223334',email:'maryam@gmail.com',city:'Lahore',program:'O Level',subj:'Chemistry',source:'Instagram',status:'New',temp:'Warm',manager:'—',next:'—',log:''},
+ {id:'l3',name:'Ali Hamza',parent:'Mr. Hamza',phone:'+92 333 3334445',email:'',city:'Islamabad',program:'IGCSE',subj:'Mathematics',source:'Referral',status:'Contacted',temp:'Hot',manager:'Sana',next:'Follow-up today',log:'Called, interested, asked fee'},
+ {id:'l4',name:'Sara Iqbal',parent:'Dr. Iqbal',phone:'+92 345 4445556',email:'sara.iqbal@gmail.com',city:'Karachi',program:'A Level',subj:'Economics',source:'Google',status:'New',temp:'Cold',manager:'—',next:'—',log:''},
+ {id:'l5',name:'Hamza Sheikh',parent:'Mr. Sheikh',phone:'+92 301 5556667',email:'',city:'Multan',program:'O Level',subj:'Biology',source:'Facebook',status:'Demo Completed',temp:'Warm',manager:'Sana',next:'Awaiting outcome',log:'Demo done, deciding'},
+];
+
+let demos=[
+ {id:'d1',student:'Bilal Hussain',program:'A Level',subj:'Physics',teacher:'—',when:'Today · 4:00 PM',status:'Needs Teacher',link:''},
+ {id:'d2',student:'Nida Aslam',program:'O Level',subj:'Chemistry',teacher:'Miss Ayesha Siddiqui',when:'Today · 6:00 PM',status:'Scheduled',link:'meet.link/nida-demo'},
+ {id:'d3',student:'Hamza Sheikh',program:'O Level',subj:'Biology',teacher:'Miss Ayesha Siddiqui',when:'Yesterday',status:'Awaiting Outcome',link:''},
+ {id:'d4',student:'Rida Fatima',program:'A Level',subj:'Mathematics',teacher:'Sir Kamran Ali',when:'Tomorrow · 5:00 PM',status:'Scheduled',link:'meet.link/rida-demo'},
+];
+
+let vouchers=[
+ {id:'TZ-0231',student:'Ahmed Raza',parent:'Mr. Raza Khan',lines:[['Physics + Mathematics (A Level)',20000]],month:'August 2026',due:'15 Aug',status:'Paid'},
+ {id:'TZ-0232',student:'Fatima Noor',parent:'Mrs. Noor Fatima',lines:[['Chemistry + Biology (O Level)',18000]],month:'August 2026',due:'5 Aug',status:'Due'},
+ {id:'TZ-0233',student:'Hassan Tariq',parent:'Mr. Tariq Mehmood',lines:[['Economics (A Level)',9000]],month:'August 2026',due:'1 Aug',status:'In Grace'},
+ {id:'TZ-0234',student:'Zainab Malik',parent:'Dr. Malik Sohail',lines:[['Maths + Computer Science (IGCSE)',22000]],month:'August 2026',due:'20 Aug',status:'Paid'},
+];
+
+const todayClasses=[
+ {time:'3:00 PM',student:'Ahmed Raza',teacher:'Sir Kamran Ali',subj:'Physics',live:true},
+ {time:'4:00 PM',student:'Zainab Malik',teacher:'Miss Hina Raza',subj:'Computer Science',live:false},
+ {time:'5:00 PM',student:'Usman Sheikh',teacher:'Miss Ayesha Siddiqui',subj:'Chemistry',live:false},
+ {time:'6:30 PM',student:'Fatima Noor',teacher:'Miss Ayesha Siddiqui',subj:'Biology',live:false},
+];
+const feed=[
+ {ic:'money',t:'<b>Ahmed Raza</b> paid August voucher — Rs 20,000',time:'6 min ago',c:'green'},
+ {ic:'hw',t:'<b>Zainab Malik</b> submitted Computer Science homework',time:'22 min ago',c:'purple'},
+ {ic:'book2',t:'Sir Kamran marked <b>Kinematics</b> covered for Ahmed',time:'34 min ago',c:'gold'},
+ {ic:'cal',t:'<b>Bilal Hussain</b> booked a demo from the booking page',time:'41 min ago',c:'blue'},
+ {ic:'check',t:'Physics class with <b>Ahmed Raza</b> marked complete',time:'1 hr ago',c:'blue'},
+];
+const tickets=[
+ {id:1,issue:'Payment not reflecting',from:'Fatima Noor',cat:'Payment',assignee:'Admin',status:'p-red',age:'12 min · SLA breach'},
+ {id:2,issue:'Class link not working',from:'Ahmed Raza',cat:'Technical',assignee:'Sir Kamran',status:'p-amber',age:'34 min'},
+ {id:3,issue:'Reschedule request',from:'Zainab Malik',cat:'Class',assignee:'Manager',status:'p-blue',age:'1 hr'},
+ {id:4,issue:'Homework not visible',from:'Usman Sheikh',cat:'Homework',assignee:'Miss Ayesha',status:'p-gray',age:'Resolved'},
+];
+const homeworks=[
+ {title:"Newton's Laws — Q1–10",student:'Ahmed Raza',subj:'Physics',deadline:'Tomorrow',status:'p-amber',lbl:'Pending review'},
+ {title:'Vectors worksheet',student:'Zainab Malik',subj:'Mathematics',deadline:'Fri',status:'p-blue',lbl:'Submitted'},
+ {title:'Kinematics prep',student:'Usman Sheikh',subj:'Chemistry',deadline:'Mon',status:'p-gray',lbl:'Not started'},
+ {title:'Organic Chem set',student:'Fatima Noor',subj:'Chemistry',deadline:'Today',status:'p-green',lbl:'Graded 8/10'},
+];
+const assessments=[
+ {title:'August Monthly Test',student:'Ahmed Raza',subj:'Physics',date:'12 Aug',score:'42/50',pct:84},
+ {title:'Mid-chapter Quiz',student:'Zainab Malik',subj:'Mathematics',date:'10 Aug',score:'19/20',pct:95},
+ {title:'Organic Chemistry Test',student:'Fatima Noor',subj:'Chemistry',date:'8 Aug',score:'31/50',pct:62},
+ {title:'Mechanics Test',student:'Usman Sheikh',subj:'Chemistry',date:'6 Aug',score:'—',pct:0},
+];
+const announcements=[
+ {title:'Independence Day Holiday',body:'Academy closed on 14 August. Classes resume 15 August.',to:'All students & teachers',when:'Posted 2 days ago'},
+ {title:'August fee vouchers issued',body:'Please pay within the due date and share your screenshot.',to:'All parents',when:'Posted 4 days ago'},
+];
+
+/* ================= ROLES / NAV ================= */
+let state={role:'admin',view:'dashboard',range:'Today',leadFilter:'All',studentFilter:'All'};
+const ROLES={admin:{name:'Owais',label:'Admin'},manager:{name:'Sana Yousuf',label:'Manager'},teacher:{name:'Sir Kamran Ali',label:'Teacher'},student:{name:'Ahmed Raza',label:'Student'}};
+
+const NAV=[
+ {k:'dashboard',t:'Dashboard',ic:I.grid,roles:['admin','manager','teacher','student']},
+ {sec:'Admissions',roles:['admin','manager']},
+ {k:'leads',t:'Leads CRM',ic:I.leads,roles:['admin','manager'],badge:()=>leads.filter(l=>l.status==='New').length},
+ {k:'demos',t:'Demos',ic:I.demo,roles:['admin','manager'],badge:()=>demos.filter(d=>d.status==='Needs Teacher').length},
+ {k:'booking',t:'Booking Page',ic:I.book,roles:['admin','manager']},
+ {sec:'Academics',roles:['admin','manager','teacher','student']},
+ {k:'students',t:'Students',ic:I.student,roles:['admin','manager','teacher']},
+ {k:'teachers',t:'Teachers',ic:I.teacher,roles:['admin','manager']},
+ {k:'schedule',t:'Schedule',ic:I.cal,roles:['admin','manager','teacher','student']},
+ {k:'syllabus',t:'My Syllabus',ic:I.book2,roles:['student']},
+ {k:'homework',t:'Homework',ic:I.hw,roles:['admin','manager','teacher','student']},
+ {k:'assessments',t:'Tests & Results',ic:I.test,roles:['admin','manager','teacher','student']},
+ {sec:'Business',roles:['admin']},
+ {k:'finance',t:'Fees & Vouchers',ic:I.money,roles:['admin']},
+ {k:'reports',t:'Reports',ic:I.report,roles:['admin','manager']},
+ {k:'marketing',t:'Marketing',ic:I.growth,roles:['admin','manager']},
+ {sec:'Support',roles:['admin','manager','teacher','student']},
+ {k:'tickets',t:'Tickets',ic:I.ticket,roles:['admin','manager','teacher','student'],badge:()=>tickets.filter(t=>t.status==='p-red').length},
+ {k:'announce',t:'Announcements',ic:I.megaphone,roles:['admin','manager']},
+ {k:'documents',t:'Documents',ic:I.file,roles:['admin','manager','student']},
+ {k:'settings',t:'Settings',ic:I.set,roles:['admin']},
+];
+
+/* ================= LOGIN ================= */
+const loginRoles=[
+ {k:'admin',t:'Admin',d:'Full oversight — ops, finance, everything',ic:I.set},
+ {k:'manager',t:'Manager',d:'Daily ops — no finance or settings',ic:I.leads},
+ {k:'teacher',t:'Teacher',d:'Own students, schedule, syllabus, homework',ic:I.teacher},
+ {k:'student',t:'Student / Parent',d:'Classes, syllabus, homework, fees',ic:I.student},
+];
+document.getElementById('roleGrid').innerHTML=loginRoles.map(r=>`
+ <button class="role-card" onclick="enter('${r.k}')"><div class="rc-ic">${svg(r.ic,18)}</div>
+ <div class="rc-t">${r.t}</div><div class="rc-d">${r.d}</div></button>`).join('');
+
+function enter(role){state.role=role;state.view='dashboard';
+ document.getElementById('login').style.display='none';
+ document.getElementById('app').style.display='block';
+ buildNav();buildRoleSwitch();render();}
+function logout(){document.getElementById('app').style.display='none';document.getElementById('login').style.display='flex';}
+
+function buildNav(){
+ const r=state.role;
+ document.getElementById('sbNav').innerHTML=NAV.filter(n=>n.roles.includes(r)).map(n=>{
+   if(n.sec)return `<div class="sb-label">${n.sec}</div>`;
+   const b=n.badge?n.badge():0;
+   return `<button class="sb-item ${state.view===n.k?'active':''}" onclick="go('${n.k}')">
+     <span class="ic">${svg(n.ic,17)}</span><span>${n.t}</span>${b?`<span class="badge">${b}</span>`:''}</button>`;
+ }).join('');
+ const u=ROLES[r];
+ document.getElementById('sbUserName').textContent=u.name;
+ document.getElementById('sbUserRole').textContent=u.label;
+ const a=document.getElementById('sbAvatar');a.textContent=initials(u.name);a.style.background=avColor(u.name);
+}
+function buildRoleSwitch(){
+ document.getElementById('roleSwitch').innerHTML=['admin','manager','teacher','student'].map(r=>
+   `<button class="${state.role===r?'on':''}" onclick="switchRole('${r}')">${ROLES[r].label}</button>`).join('');
+}
+function switchRole(r){state.role=r;state.view='dashboard';buildNav();buildRoleSwitch();render();
+ toast(`Viewing as ${ROLES[r].label}`+(r==='manager'?' — Finance hidden':''));}
+function go(v){state.view=v;buildNav();render();document.getElementById('content').scrollTop=0;}
+
+/* ================= SHARED UI ================= */
+function ring(v,size=44){
+ const R=(size-8)/2,C=2*Math.PI*R,off=C*(1-v/100);
+ const col=v>=80?'var(--gold-800)':v>=60?'#F59E0B':'var(--red)';
+ return `<div class="ring" style="width:${size}px;height:${size}px">
+   <svg width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${R}" stroke="var(--g100)" stroke-width="5" fill="none"/>
+   <circle cx="${size/2}" cy="${size/2}" r="${R}" stroke="${col}" stroke-width="5" fill="none" stroke-dasharray="${C}" stroke-dashoffset="${off}" stroke-linecap="round"/></svg>
+   <div class="rt" style="color:${col};font-size:${size<40?11:14}px">${v}</div></div>`;
+}
+const feePill=s=>({'Paid':'p-green','Due':'p-amber','In Grace':'p-red'}[s]||'p-gray');
+const tempPill=t=>({'Hot':'p-red','Warm':'p-amber','Cold':'p-blue'}[t]||'p-gray');
+function kpi(ic,bg,col,num,label,delta,dir,dest){
+ return `<button class="card kpi ${dest?'':'static'}" ${dest?`onclick="go('${dest}')"`:''}>
+   <div class="kpi-top"><div class="kpi-ic" style="background:${bg};color:${col}">${svg(ic,17)}</div>
+   ${delta?`<span class="kpi-delta ${dir}">${dir==='up'?'↑':dir==='down'?'↓':''}${delta}</span>`:''}</div>
+   <div class="kpi-num">${num}</div><div class="kpi-label">${label}</div></button>`;
+}
+function toast(msg){const t=document.getElementById('toast');t.innerHTML=`<span class="tc">${svg(I.check,16)}</span>${msg}`;
+ t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2600);}
+function animate(){document.querySelectorAll('[data-h]').forEach(b=>setTimeout(()=>b.style.height=b.dataset.h+'%',30));
+ document.querySelectorAll('[data-w]').forEach(b=>setTimeout(()=>b.style.width=b.dataset.w+'%',30));}
+function waSend(name,phone){const num=(phone||'').replace(/[^0-9]/g,'');
+ const msg=encodeURIComponent(`Assalam-o-alaikum! This is Thinkerzz Academy regarding ${name}. `);
+ toast(`Opening WhatsApp for ${name}…`);if(num)window.open(`https://wa.me/${num}?text=${msg}`,'_blank');}
+
+/* ================= RENDER ROUTER ================= */
+function render(){
+ const c=document.getElementById('content');const R=state.role;
+ const map={
+   dashboard:()=> (R==='admin'||R==='manager')?dashOps():R==='teacher'?dashTeacher():dashStudent(),
+   leads:viewLeads,demos:viewDemos,booking:viewBooking,students:viewStudents,teachers:viewTeachers,
+   schedule:viewSchedule,syllabus:viewMySyllabus,homework:viewHomework,assessments:viewAssessments,
+   finance:viewFinance,reports:viewReports,marketing:viewMarketing,tickets:viewTickets,
+   announce:viewAnnounce,settings:viewSettings,documents:viewDocuments
+ };
+ c.innerHTML=(map[state.view]||dashOps)();
+ setTimeout(animate,50);
+}
+
+/* load remaining views */
+
+/* ================= DASHBOARD: OPS ================= */
+function dashOps(){
+ const isMgr=state.role==='manager';
+ const atRisk=students.filter(s=>s.health<60).length;
+ return `
+ <div class="page-head">
+   <div><div class="page-title">Good afternoon, ${ROLES[state.role].name.split(' ')[0]}</div>
+   <div class="page-sub">Here's what needs you ${isMgr?'· <b style="color:var(--purple-800)">Manager view — finance hidden</b>':'today'}.</div></div>
+   <div class="seg">${['Today','Week','Month'].map(r=>`<button class="${state.range===r?'on':''}" onclick="state.range='${r}';render()">${r}</button>`).join('')}</div>
+ </div>
+ <div class="zone">
+   <div class="zone-head attention"><span class="z-ic">${svg(I.alert,14)}</span><h3>Needs your attention</h3><span class="z-count">action items across the academy</span></div>
+   <div class="grid g-4">
+     ${actionCard(I.demo,'#DBEAFE','#2563EB',demos.filter(d=>d.status==='Needs Teacher').length,'Demo bookings need a teacher','demos')}
+     ${actionCard(I.leads,'#EDE9FE','#5A31F4',leads.filter(l=>l.status==='New').length,'New leads to work','leads')}
+     ${actionCard(I.clock,'#FEF3C7','#D97706',demos.filter(d=>d.status==='Awaiting Outcome').length,'Demos awaiting outcome','demos')}
+     ${isMgr?actionLocked():actionCard(I.fee,'#FEE2E2','#DC2626',vouchers.filter(v=>v.status!=='Paid').length,'Fees need a decision','finance')}
+     ${actionCard(I.makeup,'#F1F5F9','#334155',2,'Pending makeup classes','schedule')}
+     ${actionCard(I.ticket,'#FEE2E2','#DC2626',tickets.filter(t=>t.status==='p-red').length,'Ticket past 1-hr SLA','tickets')}
+     ${actionCard(I.pause,'#FEF3C7','#D97706',students.filter(s=>s.status==='Paused').length,'Paused students','students')}
+     ${actionCard(I.alert,'#FFF3CC','#D99E17',atRisk,'At-risk students (health < 60)','students')}
+   </div>
+ </div>
+ <div class="zone">
+   <div class="zone-head"><span class="z-ic">${svg(I.cal,14)}</span><h3>Today at a glance</h3></div>
+   <div class="grid" style="grid-template-columns:1.4fr 1fr">
+     <div class="card card-pad">
+       <div class="flex between center" style="margin-bottom:5px"><div class="section-t mb0">Today's classes</div>
+       <div class="flex gap8"><span class="pill p-green dotpill">1 live</span><span class="pill p-blue">3 upcoming</span></div></div>
+       <div class="section-s">4 scheduled · reminders auto-send 15 min before each class</div>
+       ${todayClasses.map(cl=>`<div class="class-row"><div class="class-time">${cl.time}</div>
+         ${cl.live?'<div class="class-live"></div>':'<div style="width:8px"></div>'}
+         <div style="flex:1"><div class="cell-name" style="font-size:13px">${cl.student}</div><div class="cell-sub">${cl.subj} · ${cl.teacher}</div></div>
+         ${cl.live?'<button class="btn-primary btn-sm" onclick="toast(\'Opening class link…\')">Join</button>':'<button class="btn-ghost btn-sm" onclick="markComplete(\''+cl.student+'\')">Complete</button>'}
+       </div>`).join('')}
+     </div>
+     <div class="card card-pad"><div class="section-t">Teachers today</div><div class="section-s">Live availability</div>
+       ${teachers.map(t=>{const cls=t.status==='Available'?'p-green':t.status==='In Class'?'p-blue':'p-gray';
+       return `<div class="flex center gap12" style="padding:7px 0;border-bottom:1px solid var(--border-soft)">
+         <div class="avatar" style="background:${avColor(t.name)}">${initials(t.name)}</div>
+         <div style="flex:1"><div class="cell-name" style="font-size:12.5px">${t.name}</div><div class="cell-sub">${t.subjects.join(' · ')}</div></div>
+         <span class="pill ${cls} dotpill">${t.status}</span></div>`;}).join('')}
+     </div>
+   </div>
+ </div>
+ <div class="zone">
+   <div class="zone-head"><span class="z-ic">${svg(I.leads,14)}</span><h3>Admissions funnel</h3><span class="z-count">this month</span></div>
+   <div class="card card-pad"><div class="funnel">
+     ${fn('New',48,'#5A31F4',null)}${fn('Contacted',39,'#7C55F7','81%')}${fn('Demo Set',31,'#A78BFA','79%')}${fn('Demo Done',26,'#F9C051','84%')}${fn('Converted',19,'#16A34A','73%')}
+   </div>
+   <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border-soft)">
+     <div class="flex between center"><div><div class="section-t">Lead sources</div><div class="section-s mb0">click to filter · drives your marketing spend</div></div>
+     <button class="btn-ghost btn-sm" onclick="go('marketing')">Full marketing view →</button></div>
+     <div style="margin-top:12px">
+     ${src('Instagram',14,'#5A31F4',87)}${src('Referral',12,'#16A34A',75)}${src('Google',9,'#2563EB',56)}${src('Booking Page',8,'#F9C051',50)}${src('Facebook',5,'#334155',31)}</div>
+   </div></div>
+ </div>
+ <div class="zone"><div class="zone-head"><span class="z-ic">${svg(I.student,14)}</span><h3>Students overview</h3></div>
+   <div class="grid g-6">
+     ${kpi(I.student,'#EDE9FE','#5A31F4',students.filter(s=>s.status==='Active').length,'Active students','+6','up','students')}
+     ${kpi(I.demo,'#DBEAFE','#2563EB','5','On demo / trial','+2','up','demos')}
+     ${kpi(I.fee,'#FEF3C7','#D97706',vouchers.filter(v=>v.status==='Due').length,'Due this window','','flat',isMgr?null:'finance')}
+     ${kpi(I.pause,'#F1F5F9','#334155',students.filter(s=>s.status==='Paused').length,'Paused','','flat','students')}
+     ${kpi(I.report,'#FFF3CC','#D99E17',students.filter(s=>s.health<60).length,'Low health score','','flat','students')}
+     ${kpi(I.refresh,'#DCFCE7','#16A34A','7','Renewals this month','','flat','students')}
+   </div>
+ </div>
+ <div class="zone"><div class="zone-head"><span class="z-ic">${svg(I.teacher,14)}</span><h3>Teacher workload</h3><span class="z-count">spot who's overloaded</span></div>
+   <div class="card card-pad">${teachers.map(t=>`<div class="wl-row">
+     <div class="avatar" style="background:${avColor(t.name)};width:29px;height:29px">${initials(t.name)}</div>
+     <div style="width:150px" class="cell-name">${t.name}</div>
+     <div class="wl-track"><div class="wl-fill" data-w="${Math.round(t.load/t.capacity*100)}" style="width:0"></div></div>
+     <div style="width:100px;text-align:right"><b class="mono">${t.load}</b>/${t.capacity} <span class="cell-sub">classes</span></div></div>`).join('')}</div>
+ </div>
+ ${isMgr?'':`
+ <div class="zone"><div class="zone-head"><span class="z-ic" style="background:var(--gold-600);color:var(--gold-900)">${svg(I.money,14)}</span><h3>Finance snapshot</h3><span class="z-count">Admin only — hidden from Manager</span></div>
+   <div class="grid" style="grid-template-columns:1fr 1fr 1fr">
+     <div class="card card-pad"><div class="section-t">Collected vs expected</div><div class="section-s">August</div>
+       <div class="flex between mono" style="margin:8px 0"><span style="font-size:22px;font-weight:700;color:var(--green)">Rs 412k</span><span style="font-size:13px;color:var(--muted)">/ Rs 486k</span></div>
+       <div class="wl-track" style="height:11px"><div class="wl-fill" data-w="85" style="width:0;background:linear-gradient(90deg,#16A34A,#15803D)"></div></div>
+       <div class="section-s" style="margin-top:9px;margin-bottom:0">85% collected · Rs 74k outstanding</div></div>
+     ${kpi(I.money,'#DCFCE7','#16A34A','Rs 486k','Revenue this month','+11%','up')}
+     ${kpi(I.growth,'#EDE9FE','#5A31F4','Rs 512k','Projected next month','+5%','up')}
+   </div>
+ </div>`}
+ <div class="zone"><div class="zone-head"><span class="z-ic">${svg(I.chat,14)}</span><h3>Activity feed</h3></div>
+   <div class="card card-pad">${feed.map(f=>{const cm={green:['#DCFCE7','#16A34A'],purple:['#EDE9FE','#5A31F4'],gold:['#FEF3C7','#D99E17'],blue:['#DBEAFE','#2563EB']}[f.c];
+     return `<div class="feed-item"><div class="feed-ic" style="background:${cm[0]};color:${cm[1]}">${svg(I[f.ic]||I.check,15)}</div>
+     <div><div class="feed-txt">${f.t}</div><div class="feed-time">${f.time}</div></div></div>`;}).join('')}</div>
+ </div>`;
+}
+function actionCard(ic,bg,col,num,label,dest){
+ return `<button class="action-card" onclick="go('${dest}')"><div class="ac-top"><div class="ac-ic" style="background:${bg};color:${col}">${svg(ic,17)}</div>
+   <span class="ac-arrow">${svg(I.arrow,16)}</span></div><div class="ac-num">${num}</div><div class="ac-label">${label}</div></button>`;
+}
+function actionLocked(){return `<div class="action-card" style="opacity:.5;cursor:not-allowed"><div class="ac-top"><div class="ac-ic" style="background:#F1F5F9;color:#94A3B8">${svg(I.money,17)}</div></div>
+   <div class="ac-num" style="color:#CBD5E1">—</div><div class="ac-label">Fees (Admin only)</div></div>`;}
+function fn(l,n,c,cv){const h=40+n/48*58;return `<div class="fn-stage"><div class="fn-bar" style="background:${c};min-height:${h}px" onclick="go('leads')"><div class="fn-num">${n}</div><div class="fn-lbl">${l}</div></div><div class="fn-conv">${cv?cv+' ↓':'&nbsp;'}</div></div>`;}
+function src(name,n,c,pct){return `<div class="src-row"><div class="src-dot" style="background:${c}"></div><div style="width:100px" class="cell-name">${name}</div>
+   <div class="src-track"><div class="src-fill" data-w="${pct}" style="width:0;background:${c}"></div></div><div style="width:64px;text-align:right"><b class="mono">${n}</b> <span class="cell-sub">leads</span></div></div>`;}
+function markComplete(name){openModal('complete',{name});}
+
+/* ================= DASHBOARD: TEACHER ================= */
+function dashTeacher(){
+ const my=students.filter(s=>Object.values(s.teachers).includes('Sir Kamran Ali'));
+ return `<div class="page-head"><div><div class="page-title">Assalam-o-alaikum, Sir Kamran</div>
+ <div class="page-sub">Your classes and students today · no financial data here.</div></div></div>
+ <div class="grid g-4" style="margin-bottom:24px">
+   ${kpi(I.cal,'#DBEAFE','#2563EB','5','Classes today')}${kpi(I.student,'#EDE9FE','#5A31F4','24','My students')}
+   ${kpi(I.hw,'#FEF3C7','#D97706','7','Homework to grade','','','homework')}${kpi(I.report,'#FFF3CC','#D99E17','96','My rating')}</div>
+ <div class="grid" style="grid-template-columns:1.3fr 1fr">
+   <div class="card card-pad"><div class="section-t">Today's classes</div><div class="section-s">Mark attendance + syllabus when you complete a class</div>
+     ${todayClasses.filter(c=>c.teacher==='Sir Kamran Ali').concat([{time:'7:30 PM',student:'Ayesha Khan',subj:'Mathematics',live:false},{time:'8:30 PM',student:'Bilal (demo)',subj:'Physics',live:false}]).map(cl=>`
+     <div class="class-row"><div class="class-time">${cl.time}</div>${cl.live?'<div class="class-live"></div>':'<div style="width:8px"></div>'}
+     <div style="flex:1"><div class="cell-name" style="font-size:13px">${cl.student}</div><div class="cell-sub">${cl.subj}</div></div>
+     ${cl.live?'<button class="btn-primary btn-sm">Join</button>':'<button class="btn-ghost btn-sm" onclick="markComplete(\''+cl.student+'\')">Complete</button>'}</div>`).join('')}</div>
+   <div class="card card-pad"><div class="section-t">My students</div><div class="section-s">Health & syllabus progress</div>
+     ${my.map(s=>`<div class="flex center gap12" style="padding:8px 0;border-bottom:1px solid var(--border-soft);cursor:pointer" onclick="openStudent('${s.id}')">
+       ${ring(s.health,38)}<div style="flex:1"><div class="cell-name" style="font-size:12.5px">${s.name}</div><div class="cell-sub">${s.subjects.join(', ')}</div></div>
+       <span class="pill p-gray">${sylProgress(s.syllabus)}% syllabus</span></div>`).join('')}</div>
+ </div>`;
+}
+
+/* ================= DASHBOARD: STUDENT ================= */
+function dashStudent(){
+ const me=students[0];const prog=sylProgress(me.syllabus);
+ return `<div class="page-head"><div><div class="page-title">Hi Ahmed 👋</div>
+ <div class="page-sub">Your classes, syllabus, homework and fees — all in one place.</div></div></div>
+ <div class="grid" style="grid-template-columns:2fr 1fr;margin-bottom:20px">
+   <div class="card card-pad" style="background:linear-gradient(120deg,var(--navy-800),var(--navy-700));color:#fff">
+     <div class="flex between center"><div><div style="font-size:11px;color:var(--gold-700);text-transform:uppercase;letter-spacing:.1em;font-weight:700">Next class</div>
+     <div class="mono" style="font-size:21px;font-weight:700;margin-top:6px">Physics with Sir Kamran</div>
+     <div style="color:#94A3B8;margin-top:4px">Today · 3:00 PM · 60 min · reminder 15 min before</div></div>
+     <button class="btn-primary" style="background:var(--gold-800);color:var(--navy-800)" onclick="toast('Opening class link…')">Join class</button></div></div>
+   <div class="card card-pad text-c"><div class="section-t">Health score</div>
+     <div style="margin:10px auto">${ring(me.health,80)}</div><div class="section-s mb0">Attendance ${me.att}% · Homework ${me.hw}%</div></div>
+ </div>
+ <div class="grid g-4" style="margin-bottom:20px">
+   ${kpi(I.cal,'#DBEAFE','#2563EB','5','Classes this week')}${kpi(I.book2,'#FFF3CC','#D99E17',prog+'%','Syllabus covered','','','syllabus')}
+   ${kpi(I.hw,'#FEF3C7','#D97706','2','Homework due','','','homework')}${kpi(I.money,'#DCFCE7','#16A34A','Paid','August fee')}</div>
+ <div class="grid g-2">
+   <div class="card card-pad"><div class="flex between center"><div class="section-t mb0">Syllabus progress</div><button class="btn-ghost btn-sm" onclick="go('syllabus')">View all →</button></div>
+     <div class="section-s" style="margin-top:4px">Physics · A Level</div>
+     <div class="progress-big"><div data-w="${prog}" style="width:0"></div></div>
+     <div class="cell-sub">${Object.values(me.syllabus)[0].filter(t=>t.state==='done').length} of ${Object.values(me.syllabus)[0].filter(t=>t.state!=='na').length} topics covered</div></div>
+   <div class="card card-pad"><div class="section-t">Homework</div><div class="section-s">From Sir Kamran</div>
+     ${[["Newton's Laws — Q1–10",'Due tomorrow','p-amber'],['Vectors worksheet','Due Fri','p-gray'],['Kinematics prep','Submitted','p-green']].map(x=>
+     `<div class="class-row"><div style="flex:1"><div class="cell-name" style="font-size:12.5px">${x[0]}</div></div><span class="pill ${x[2]}">${x[1]}</span></div>`).join('')}</div>
+ </div>`;
+}
+
+/* ================= LEADS ================= */
+function viewLeads(){
+ const f=state.leadFilter;
+ const filtered=f==='All'?leads:f==='Hot'||f==='Warm'||f==='Cold'?leads.filter(l=>l.temp===f):leads.filter(l=>l.status===f);
+ const stPill=s=>({'New':'p-blue','Contacted':'p-purple','Demo Scheduled':'p-amber','Demo Completed':'p-green','Converted':'p-green','Lost':'p-gray'}[s]||'p-gray');
+ const chips=['All','New','Contacted','Demo Scheduled','Hot','Warm','Cold'];
+ return `<div class="page-head"><div><div class="page-title">Leads CRM</div><div class="page-sub">${leads.length} leads · auto-fed by the booking page · never lose an inquiry</div></div>
+   <div class="flex gap8"><button class="btn-ghost" onclick="toast('Exported leads.csv (demo)')">${svg(I.file,15)} Export</button>
+   <button class="btn-primary" onclick="openModal('lead')">${svg(I.leads,15)} Add lead</button></div></div>
+ <div class="tbl-wrap"><div class="tbl-tools">
+   ${chips.map(c=>`<button class="chip ${f===c?'on':''}" onclick="state.leadFilter='${c}';render()">${c}</button>`).join('')}
+   <div style="flex:1"></div><span class="cell-sub">Temperature = likelihood · Status = pipeline stage</span></div>
+ <div class="tbl-scroll"><table><thead><tr><th>Student / Parent</th><th>Interest</th><th>City</th><th>Source</th><th>Temp</th><th>Status</th><th>Next</th><th>Actions</th></tr></thead>
+ <tbody>${filtered.map(l=>`<tr onclick="openLead('${l.id}')">
+   <td><div class="name-cell"><div class="avatar" style="background:${avColor(l.name)}">${initials(l.name)}</div>
+     <div><div class="cell-name">${l.name}</div><div class="cell-sub">${l.parent} · ${l.phone}</div></div></div></td>
+   <td><div style="font-size:12.5px">${l.program}</div><div class="cell-sub">${l.subj}</div></td>
+   <td class="cell-sub">${l.city}</td><td><span class="pill p-gray">${l.source}</span></td>
+   <td><span class="pill ${tempPill(l.temp)} dotpill">${l.temp}</span></td>
+   <td><span class="pill ${stPill(l.status)}">${l.status}</span></td><td class="cell-sub">${l.next}</td>
+   <td onclick="event.stopPropagation()"><div class="rowbtns">
+     <button class="iconbtn wa" title="WhatsApp" onclick="waSend('${l.name}','${l.phone}')">${svg(I.wa,14)}</button>
+     <button class="iconbtn" title="Schedule demo" onclick="toast('Scheduling demo for ${l.name}')">${svg(I.demo,14)}</button>
+     <button class="iconbtn" title="Convert to student" onclick="convertLead('${l.id}')" style="color:var(--green)">${svg(I.check,14)}</button>
+   </div></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function openLead(id){
+ const l=leads.find(x=>x.id===id);const dr=document.getElementById('drawer');
+ dr.innerHTML=`<div class="drawer-head"><div class="flex between center">
+   <div class="name-cell"><div class="avatar" style="width:44px;height:44px;font-size:16px;background:${avColor(l.name)}">${initials(l.name)}</div>
+   <div><div class="mono" style="font-size:18px;font-weight:700;color:var(--navy-800)">${l.name}</div><div class="cell-sub">${l.program} · ${l.subj}</div></div></div>
+   <button class="iconbtn" onclick="closeDrawer()">${svg(I.x,16)}</button></div>
+   <div class="flex gap8 wrap" style="margin:14px 0 16px"><span class="pill ${tempPill(l.temp)} dotpill">${l.temp} lead</span><span class="pill p-gray">${l.status}</span><span class="pill p-gray">${l.source}</span></div>
+   <div class="flex gap8"><button class="btn-primary btn-sm" onclick="waSend('${l.name}','${l.phone}')">${svg(I.wa,14)} WhatsApp</button>
+   <button class="btn-ghost btn-sm" onclick="convertLead('${l.id}')">Convert to student</button></div></div>
+   <div class="dr-body">
+   <div class="card card-pad" style="margin-bottom:14px"><div class="section-t">Details</div>
+     ${[['Parent',l.parent],['Phone',l.phone],['Email',l.email||'—'],['City',l.city],['Program',l.program],['Subject interest',l.subj],['Assigned manager',l.manager],['Next follow-up',l.next]].map(x=>
+     `<div class="flex between" style="padding:7px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-sub">${x[0]}</span><span class="cell-name" style="font-size:12.5px">${x[1]}</span></div>`).join('')}</div>
+   <div class="card card-pad"><div class="section-t">Communication log</div><div class="section-s">Every touch, timestamped</div>
+     <div class="cell-sub" style="line-height:1.7">${l.log||'No contact yet.'}<br>• Lead created from ${l.source}</div>
+     <button class="btn-ghost btn-sm" style="margin-top:10px" onclick="toast('Log entry added (demo)')">+ Add note</button></div></div>`;
+ openDrawer();
+}
+function convertLead(id){
+ const l=leads.find(x=>x.id===id);if(!l)return;
+ openModal('convert',{lead:l});
+}
+function doConvert(id){
+ const i=leads.findIndex(x=>x.id===id);if(i<0)return;const l=leads[i];
+ const subs=l.subj.split(',').map(s=>s.trim());const tmap={};subs.forEach(s=>tmap[s]='Unassigned');
+ const ns={id:nid(),name:l.name,parent:l.parent,phone:l.phone,wa:l.phone,email:l.email,address:'—',city:l.city,program:l.program,
+   subjects:subs,teachers:tmap,att:100,hw:0,fee:'Paid',status:'Active',months:6,exam:EXAM_SESSIONS[0],
+   enrolled:'Today',feeAmt:0,renew:'next month',source:l.source};
+ ns.syllabus=mkSyllabus(subs);ns.health=health(ns);
+ students.unshift(ns);l.status='Converted';l.temp='Hot';
+ closeModal();closeDrawer();go('students');toast(`${l.name} converted to student — lead kept for reporting`);
+}
+
+/* ================= DEMOS ================= */
+function viewDemos(){
+ const stPill=s=>({'Needs Teacher':'p-red','Scheduled':'p-blue','Awaiting Outcome':'p-amber','Converted':'p-green'}[s]||'p-gray');
+ return `<div class="page-head"><div><div class="page-title">Demos</div><div class="page-sub">The key sales step — a smooth demo drives conversion</div></div>
+   <button class="btn-primary" onclick="openModal('demo')">${svg(I.demo,15)} Schedule demo</button></div>
+ <div class="grid g-4" style="margin-bottom:18px">
+   ${kpi(I.demo,'#FEE2E2','#DC2626',demos.filter(d=>d.status==='Needs Teacher').length,'Need teacher')}
+   ${kpi(I.cal,'#DBEAFE','#2563EB','2','Scheduled today')}${kpi(I.clock,'#FEF3C7','#D97706',demos.filter(d=>d.status==='Awaiting Outcome').length,'Awaiting outcome')}
+   ${kpi(I.check,'#DCFCE7','#16A34A','73%','Conversion rate')}</div>
+ <div class="tbl-wrap"><div class="tbl-scroll"><table><thead><tr><th>Prospect</th><th>Interest</th><th>Teacher</th><th>When</th><th>Meeting link</th><th>Status</th><th>Actions</th></tr></thead>
+ <tbody>${demos.map(d=>`<tr>
+   <td><div class="name-cell"><div class="avatar" style="background:${avColor(d.student)}">${initials(d.student)}</div><div class="cell-name">${d.student}</div></div></td>
+   <td><div style="font-size:12.5px">${d.program}</div><div class="cell-sub">${d.subj}</div></td>
+   <td>${d.teacher==='—'?'<span class="pill p-red">Unassigned</span>':d.teacher}</td><td class="cell-sub">${d.when}</td>
+   <td>${d.link?`<span class="pill p-blue">${d.link}</span>`:'<span class="cell-sub">—</span>'}</td>
+   <td><span class="pill ${stPill(d.status)}">${d.status}</span></td>
+   <td onclick="event.stopPropagation()"><div class="rowbtns">
+     ${d.link?`<button class="iconbtn" title="Join" onclick="toast('Opening meeting link')" style="color:var(--blue)">${svg(I.demo,14)}</button>`:''}
+     <button class="iconbtn wa" title="WhatsApp prospect" onclick="waSend('${d.student}','')">${svg(I.wa,14)}</button>
+     ${d.status==='Needs Teacher'?`<button class="btn-ghost btn-sm" onclick="toast('Assigning teacher…')">Assign</button>`:''}
+     ${d.status==='Awaiting Outcome'?`<button class="btn-primary btn-sm" onclick="openModal('outcome',{name:d.student})">Outcome</button>`:''}
+   </div></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+/* ================= BOOKING PAGE (admin config) ================= */
+function viewBooking(){
+ return `<div class="page-head"><div><div class="page-title">Booking Page</div><div class="page-sub">Your public 24/7 demo booking link — replaces Calendly, feeds Leads CRM</div></div>
+   <button class="btn-primary" onclick="previewBooking()">${svg(I.book,15)} Preview public page</button></div>
+ <div class="grid" style="grid-template-columns:1fr 1fr">
+   <div class="card card-pad"><div class="section-t">How it works</div><div class="section-s">Stranger books → lead auto-created in CRM</div>
+     ${[['1','Parent opens your public link','Share on WhatsApp, Instagram bio, website'],
+        ['2','Picks a date & time','Open window 7 AM–11 PM (set in Settings)'],
+        ['3','Fills the form','Name, parent, WhatsApp, email, address, program, subject, source'],
+        ['4','Lead + demo created','Lands in Leads CRM instantly, ready to assign']].map(x=>`
+       <div class="flex gap12" style="padding:11px 0;border-bottom:1px solid var(--border-soft)"><div class="avatar" style="background:var(--purple-800)">${x[0]}</div>
+       <div><div class="cell-name" style="font-size:13px">${x[1]}</div><div class="cell-sub">${x[2]}</div></div></div>`).join('')}
+     <div style="margin-top:12px;padding:11px;background:var(--offwhite);border-radius:10px" class="flex between center">
+       <div><div class="cell-sub">Your public link</div><div class="cell-name mono" style="font-size:13px">thinkerzz.com/book</div></div>
+       <button class="btn-ghost btn-sm" onclick="toast('Link copied')">Copy</button></div>
+     <div style="margin-top:10px;padding:11px;background:rgba(90,49,244,.06);border-radius:10px;border:1px solid var(--purple-500)">
+       <div class="cell-name" style="font-size:12.5px;color:var(--purple-900)">${svg(I.wa,13)} WhatsApp trick</div>
+       <div class="cell-sub" style="margin-top:3px">Set this link as your WhatsApp greeting message — inquiries self-serve into the CRM for free.</div></div>
+   </div>
+   <div class="card card-pad"><div class="section-t">Recent bookings</div><div class="section-s">Came in from the public page</div>
+     ${leads.filter(l=>l.source==='Booking Page').concat([{name:'Nida Aslam',program:'O Level',subj:'Chemistry',next:'Today 6:00 PM'},{name:'Rida Fatima',program:'A Level',subj:'Maths',next:'Tomorrow 5:00 PM'}]).map(l=>`
+       <div class="flex center gap12" style="padding:9px 0;border-bottom:1px solid var(--border-soft)">
+       <div class="avatar" style="background:${avColor(l.name)}">${initials(l.name)}</div>
+       <div style="flex:1"><div class="cell-name" style="font-size:12.5px">${l.name}</div><div class="cell-sub">${l.program} · ${l.subj} · ${l.next}</div></div>
+       <span class="pill p-gold">New</span></div>`).join('')}
+     <button class="btn-ghost btn-sm" style="width:100%;margin-top:12px;justify-content:center" onclick="previewBooking()">See what parents see →</button></div>
+ </div>
+ <div class="card card-pad" style="margin-top:16px"><div class="section-t">Security</div>
+   <div class="section-s mb0">The public page talks only to two locked database functions — "show open slots" and "create one lead." It can never read student data or anyone else's booking. Rate-limited against spam, and a duplicate-phone check stops double leads.</div></div>`;
+}
+
+/* ================= PUBLIC BOOKING FLOW ================= */
+let bk={step:0,date:null,slot:null,slotLabel:''};
+function previewBooking(){bk={step:0,date:null,slot:null,slotLabel:''};
+ const mb=document.getElementById('modalBg');mb.classList.add('show');
+ const m=document.getElementById('modal');m.style.maxWidth='940px';m.style.padding='0';renderBooking();}
+function renderBooking(){
+ const days=[];const today=new Date();for(let i=0;i<28;i++){const d=new Date(today);d.setDate(today.getDate()+i);days.push(d);}
+ const dow=['Su','Mo','Tu','We','Th','Fr','Sa'];const firstDow=days[0].getDay();
+ // 7 AM to 11 PM window
+ const slots=['7:00 AM','8:00 AM','9:00 AM','10:00 AM','11:00 AM','12:00 PM','2:00 PM','3:00 PM','4:00 PM','5:00 PM','6:00 PM','7:00 PM','8:00 PM','9:00 PM','10:00 PM','11:00 PM'];
+ const m=document.getElementById('modal');let inner='';
+ if(bk.step===0){
+   inner=`<div class="bk-step-h">Pick a day</div><div class="bk-step-s">Free demo · ~30 minutes · one teacher, one student</div>
+   <div class="cal">${dow.map(d=>`<div class="cal-dow">${d}</div>`).join('')}${Array(firstDow).fill('<div></div>').join('')}
+   ${days.map((d,i)=>{const avail=d.getDay()!==0;return `<div class="cal-day ${avail?'avail':'dis'} ${bk.date===i?'sel':''}" ${avail?`onclick="bk.date=${i};bk.step=1;renderBooking()"`:''}>${d.getDate()}</div>`;}).join('')}</div>`;
+ } else if(bk.step===1){
+   const d=days[bk.date];
+   inner=`<button class="btn-ghost btn-sm" style="margin-bottom:14px" onclick="bk.step=0;renderBooking()">← Back</button>
+   <div class="bk-step-h">${d.toLocaleDateString('en',{weekday:'long',month:'long',day:'numeric'})}</div>
+   <div class="bk-step-s">Choose a time (7 AM–11 PM)</div>
+   <div class="slots">${slots.map((s,i)=>`<button class="slot ${bk.slot===i?'sel':''}" onclick="bk.slot=${i};bk.slotLabel='${s}';bk.step=2;renderBooking()">${s}</button>`).join('')}</div>`;
+ } else if(bk.step===2){
+   inner=`<button class="btn-ghost btn-sm" style="margin-bottom:14px" onclick="bk.step=1;renderBooking()">← Back</button>
+   <div class="bk-step-h">Your details</div><div class="bk-step-s">${days[bk.date].toLocaleDateString('en',{weekday:'short',month:'short',day:'numeric'})} · ${bk.slotLabel}</div>
+   <div class="qa-grid"><div class="field"><label>Student name</label><input id="bkName" placeholder="e.g. Ali Ahmed"/></div>
+   <div class="field"><label>Parent name</label><input id="bkParent" placeholder="Parent / guardian"/></div></div>
+   <div class="qa-grid"><div class="field"><label>WhatsApp number</label><input id="bkPhone" placeholder="+92 3XX XXXXXXX"/></div>
+   <div class="field"><label>Email <span class="opt">(optional)</span></label><input placeholder="you@email.com"/></div></div>
+   <div class="field"><label>Address</label><input placeholder="Area / city"/></div>
+   <div class="qa-grid"><div class="field"><label>Program</label><select>${PROGRAMS.map(p=>`<option>${p}</option>`).join('')}</select></div>
+   <div class="field"><label>Subject</label><select>${SUBJECTS.map(s=>`<option>${s}</option>`).join('')}</select></div></div>
+   <div class="field"><label>How did you find us?</label><select>${SOURCES.filter(s=>s!=='Walk-in').map(s=>`<option>${s}</option>`).join('')}</select></div>
+   <button class="btn-primary" style="width:100%;justify-content:center;height:44px" onclick="submitBooking()">Confirm demo booking</button>`;
+ } else {
+   inner=`<div class="bk-confirm"><div class="bk-check">${svg(I.check,32)}</div>
+   <div class="bk-step-h" style="font-size:22px">Demo booked! 🎉</div>
+   <div class="bk-step-s" style="margin:8px 0 18px">Saved for ${days[bk.date].toLocaleDateString('en',{weekday:'long',month:'short',day:'numeric'})} at ${bk.slotLabel}. You'll get a WhatsApp confirmation shortly.</div>
+   <div class="card card-pad" style="text-align:left;max-width:340px;margin:0 auto 18px">
+     <div class="flex between" style="padding:5px 0"><span class="cell-sub">Added to CRM as</span><span class="pill p-blue">New lead</span></div>
+     <div class="flex between" style="padding:5px 0"><span class="cell-sub">Demo status</span><span class="pill p-amber">Needs teacher</span></div></div>
+   <button class="btn-primary" onclick="finishBooking()">Done — see it in Leads CRM</button></div>`;
+ }
+ m.innerHTML=`<div class="booking-card"><div class="bk-side"><span class="bs-badge">◆ Thinkerzz</span>
+   <h2>Book a free demo class</h2><p>One teacher, one student. Meet your tutor before you commit.</p>
+   <div class="bk-meta"><div class="bk-meta-row"><div class="bm-ic">${svg(I.clock,15)}</div>30 minutes · one-on-one</div>
+   <div class="bk-meta-row"><div class="bm-ic">${svg(I.book2,15)}</div>O / A Level · IGCSE · Matric · Inter</div>
+   <div class="bk-meta-row"><div class="bm-ic">${svg(I.check,15)}</div>No commitment</div></div>
+   <div class="stepdots" style="margin-top:30px">${[0,1,2,3].map(i=>`<div class="stepdot ${bk.step>=i?'on':''}"></div>`).join('')}</div></div>
+   <div class="bk-body"><button class="iconbtn" style="position:absolute;top:18px;right:18px;z-index:3" onclick="closeModal()">${svg(I.x,16)}</button>${inner}</div></div>`;
+}
+function submitBooking(){
+ const name=(document.getElementById('bkName')||{}).value||'New Prospect';
+ const parent=(document.getElementById('bkParent')||{}).value||'Parent';
+ const phone=(document.getElementById('bkPhone')||{}).value||'+92 ___';
+ leads.unshift({id:nid(),name,parent,phone,email:'',city:'Karachi',program:'A Level',subj:'Physics',source:'Booking Page',status:'New',temp:'Warm',manager:'—',next:bk.slotLabel,log:'Booked via public page'});
+ bk.step=3;renderBooking();buildNav();
+}
+function finishBooking(){closeModal();go('leads');toast('New booking added to Leads CRM');}
+
+
+/* ================= STUDENTS ================= */
+function viewStudents(){
+ const canFee=state.role==='admin';const f=state.studentFilter;
+ let list=students;
+ if(f==='At risk')list=students.filter(s=>s.health<60);
+ else if(f==='Paused')list=students.filter(s=>s.status==='Paused');
+ else if(['A Level','O Level','IGCSE'].includes(f))list=students.filter(s=>s.program===f);
+ const chips=['All','A Level','O Level','IGCSE','Paused','At risk'];
+ return `<div class="page-head"><div><div class="page-title">Students</div><div class="page-sub">${students.filter(s=>s.status==='Active').length} active · full profile, syllabus & documents each</div></div>
+   <div class="flex gap8">${state.role!=='teacher'?`<button class="btn-ghost" onclick="toast('Exported students.csv (demo)')">${svg(I.file,15)} Export</button>
+   <button class="btn-primary" onclick="openModal('student')">${svg(I.student,15)} Onboard student</button>`:''}</div></div>
+ <div class="tbl-wrap"><div class="tbl-tools">
+   ${chips.map(c=>`<button class="chip ${f===c?'on':''} ${c==='At risk'?'':''}" onclick="state.studentFilter='${c}';render()" ${c==='At risk'?'style="color:var(--red)"':''}>${c}</button>`).join('')}
+   <div style="flex:1"></div><span class="cell-sub">Import: drag a CSV with the standard columns</span></div>
+ <div class="tbl-scroll"><table><thead><tr><th>Student</th><th>Program</th><th>Teacher(s)</th><th>Attend.</th><th>Syllabus</th>${canFee?'<th>Fee</th>':''}<th>Health</th><th></th></tr></thead>
+ <tbody>${list.map(s=>`<tr onclick="openStudent('${s.id}')">
+   <td><div class="name-cell"><div class="avatar" style="background:${avColor(s.name)}">${initials(s.name)}</div>
+     <div><div class="cell-name">${s.name} ${s.status==='Paused'?'<span class="pill p-amber" style="margin-left:4px">Paused</span>':''}</div><div class="cell-sub">${s.subjects.join(', ')}</div></div></div></td>
+   <td><span class="pill p-gray">${s.program}</span></td>
+   <td class="cell-sub">${[...new Set(Object.values(s.teachers))].join(', ')}</td>
+   <td><b class="mono">${s.att}%</b></td><td><span class="pill p-gold">${sylProgress(s.syllabus)}%</span></td>
+   ${canFee?`<td><span class="pill ${feePill(s.fee)}">${s.fee}</span></td>`:''}
+   <td>${ring(s.health,40)}</td>
+   <td onclick="event.stopPropagation()"><button class="iconbtn wa" onclick="waSend('${s.name}','${s.wa}')" title="WhatsApp parent">${svg(I.wa,14)}</button></td>
+ </tr>`).join('')}</tbody></table></div></div>`;
+}
+let drTab='overview';
+function openStudent(id){drTab='overview';renderStudentDrawer(id);openDrawer();}
+function renderStudentDrawer(id){
+ const s=students.find(x=>x.id===id);const dr=document.getElementById('drawer');
+ const tabs=['overview','syllabus','classes','homework','fees','documents'];
+ let body='';
+ if(drTab==='overview'){
+   body=`<div class="card card-pad text-c" style="margin-bottom:14px"><div class="section-t">Health score</div>
+     <div style="margin:10px auto">${ring(s.health,88)}</div><div class="section-s mb0">50% attendance + 30% homework + 20% fee timeliness</div></div>
+   <div class="grid g-2" style="margin-bottom:14px">${kpi(I.cal,'#DBEAFE','#2563EB',s.att+'%','Attendance')}${kpi(I.hw,'#FEF3C7','#D97706',s.hw+'%','Homework done')}</div>
+   <div class="card card-pad" style="margin-bottom:14px"><div class="section-t mb0">Result Slip · CAIE grades</div><div class="section-s">Cambridge A*–U scale · separate from the internal test average</div>
+     <table style="width:100%;font-size:12.5px;margin-top:4px;border-collapse:collapse">
+       <thead><tr style="text-align:left;color:var(--g500);font-size:11px"><th style="padding:5px 0;font-weight:600">Subject</th><th style="font-weight:600">Internal avg</th><th style="font-weight:600">Assessed</th><th style="font-weight:600;text-align:right">Target</th></tr></thead>
+       <tbody>${s.subjects.map(subj=>{const g=s.grades[subj];return `<tr style="border-top:1px solid var(--border-soft)"><td style="padding:8px 0" class="cell-name">${subj}</td>
+         <td><span class="pill p-gray">${g.internal}</span></td>
+         <td>${g.assessed?`<span class="pill p-purple">${g.assessed}</span>`:'<span class="cell-sub">Not yet assessed</span>'}</td>
+         <td style="text-align:right"><span class="pill p-gold">${g.target}</span></td></tr>`;}).join('')}</tbody></table>
+     <div class="cell-sub" style="margin-top:9px">Target set by Admin at enrollment (default A*). Assessed grade is set by the teacher after each test — blank until the first test.</div></div>
+   <div class="grid g-2" style="margin-bottom:14px;display:none"></div>
+   <div class="card card-pad"><div class="section-t">Details</div>
+     ${[['Parent',s.parent],['Phone',s.phone],['WhatsApp',s.wa],['Email',s.email||'—'],['Address',s.address+', '+s.city],['Program',s.program],['Subjects',s.subjects.join(', ')],['Exam session',s.exam],['Enrolled',s.enrolled],['Months committed',s.months],['Status',s.status]].map(x=>
+     `<div class="flex between" style="padding:7px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-sub">${x[0]}</span><span class="cell-name" style="font-size:12.5px;text-align:right">${x[1]}</span></div>`).join('')}
+     <div class="flex between" style="padding:7px 0"><span class="cell-sub">Teachers</span><span class="cell-name" style="font-size:12.5px;text-align:right">${Object.entries(s.teachers).map(([k,v])=>`${k}: ${v}`).join('<br>')}</span></div></div>`;
+ } else if(drTab==='syllabus'){
+   const prog=sylProgress(s.syllabus);
+   body=`<div class="card card-pad" style="margin-bottom:12px"><div class="flex between center"><div class="section-t mb0">Overall progress</div><span class="pill p-gold">${prog}%</span></div>
+     <div class="progress-big"><div style="width:${prog}%"></div></div>
+     <div class="cell-sub">Tick topics as you cover them — this powers the monthly parent report automatically.</div></div>
+   ${s.subjects.map(subj=>{const list=s.syllabus[subj]||[];return `
+     <div style="margin-bottom:8px" class="flex between center"><div class="section-t mb0">${subj} <span class="cell-sub">· ${list.filter(t=>t.state==='done').length}/${list.filter(t=>t.state!=='na').length}</span></div></div>
+     ${list.map((t,ti)=>`<div class="syl-topic ${t.state==='done'?'done':t.state==='na'?'na':''}">
+       <div class="syl-num">${t.n}</div><div class="syl-name">${t.name}</div>
+       <div class="syl-state">
+         <button class="syl-btn ${t.state==='done'?'on-done':''}" onclick="setSyl('${s.id}','${subj}',${ti},'done')" title="Covered">✓</button>
+         <button class="syl-btn ${t.state==='need'?'on-need':''}" onclick="setSyl('${s.id}','${subj}',${ti},'need')" title="Needs covering">Plan</button>
+         <button class="syl-btn ${t.state==='na'?'on-na':''}" onclick="setSyl('${s.id}','${subj}',${ti},'na')" title="Not applicable">N/A</button>
+       </div></div>`).join('')}`;}).join('')}`;
+ } else if(drTab==='classes'){
+   body=`<div class="card card-pad"><div class="section-t">Recent classes</div><div class="section-s">Attendance marked at completion</div>
+     ${[['Today 3:00 PM','Physics','Present','p-green','Covered: Kinematics'],['Yesterday','Physics','Present','p-green','Covered: Vectors'],['3 days ago','Mathematics','Late','p-amber','Covered: Trigonometry'],['5 days ago','Physics','Absent','p-red','—']].map(x=>
+     `<div class="flex between center" style="padding:9px 0;border-bottom:1px solid var(--border-soft)"><div><div class="cell-name" style="font-size:12.5px">${x[1]} · ${x[0]}</div><div class="cell-sub">${x[4]}</div></div><span class="pill ${x[3]}">${x[2]}</span></div>`).join('')}</div>`;
+ } else if(drTab==='homework'){
+   body=`<div class="card card-pad"><div class="section-t">Homework</div>
+     ${homeworks.filter(h=>h.student===s.name).concat(homeworks.slice(0,2)).map(h=>`<div class="flex between center" style="padding:9px 0;border-bottom:1px solid var(--border-soft)"><div><div class="cell-name" style="font-size:12.5px">${h.title}</div><div class="cell-sub">${h.subj} · ${h.deadline}</div></div><span class="pill ${h.status}">${h.lbl}</span></div>`).join('')}</div>`;
+ } else if(drTab==='fees'){
+   const v=vouchers.find(x=>x.student===s.name);
+   body=`<div class="card card-pad" style="margin-bottom:12px"><div class="flex between center"><div class="section-t mb0">Fee status</div><span class="pill ${feePill(s.fee)}">${s.fee}</span></div>
+     <div style="margin-top:10px">${[['Monthly fee','Rs '+s.feeAmt.toLocaleString()],['Next due',s.renew],['Cycle','Anchored to enrollment day'],['Grace','3 days, then session stops']].map(x=>
+     `<div class="flex between" style="padding:6px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-sub">${x[0]}</span><span class="cell-name" style="font-size:12.5px">${x[1]}</span></div>`).join('')}</div></div>
+     ${v?`<button class="btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="showVoucher('${v.id}')">View latest voucher</button>`:'<div class="cell-sub">No voucher yet.</div>'}`;
+ } else {
+   body=`<div class="card card-pad"><div class="section-t">Document vault</div><div class="section-s">Private, secure — not on WhatsApp</div>
+     ${[['Syllabus.pdf',I.book2],['August payment screenshot.jpg',I.money],['Past paper 2024.pdf',I.file],['Term 1 result.pdf',I.report]].map(x=>
+     `<div class="flex between center" style="padding:10px 0;border-bottom:1px solid var(--border-soft)"><div class="flex center gap12"><div class="feed-ic" style="background:var(--g100);color:var(--g700)">${svg(x[1],15)}</div><span class="cell-name" style="font-size:12.5px">${x[0]}</span></div><button class="iconbtn" onclick="toast('Download (demo)')">${svg(I.arrow,14)}</button></div>`).join('')}
+     <button class="btn-ghost btn-sm" style="width:100%;margin-top:12px;justify-content:center" onclick="toast('Upload (demo)')">+ Upload file</button></div>`;
+ }
+ dr.innerHTML=`<div class="drawer-head"><div class="flex between center">
+   <div class="name-cell"><div class="avatar" style="width:44px;height:44px;font-size:16px;background:${avColor(s.name)}">${initials(s.name)}</div>
+   <div><div class="mono" style="font-size:18px;font-weight:700;color:var(--navy-800)">${s.name}</div><div class="cell-sub">${s.program} · ${s.subjects.join(', ')}</div></div></div>
+   <button class="iconbtn" onclick="closeDrawer()">${svg(I.x,16)}</button></div>
+   <div class="flex gap8 wrap" style="margin:12px 0 14px"><button class="btn-primary btn-sm" onclick="waSend('${s.name}','${s.wa}')">${svg(I.wa,14)} WhatsApp parent</button>
+   <button class="btn-ghost btn-sm" onclick="openModal('report',{name:s.name})">${svg(I.report,14)} Monthly report</button>
+   ${s.status==='Active'?`<button class="btn-ghost btn-sm" onclick="togglePause('${s.id}')">Pause</button>`:`<button class="btn-ghost btn-sm" onclick="togglePause('${s.id}')">Resume</button>`}</div></div>
+   <div class="dr-tabs">${tabs.map(t=>`<button class="dr-tab ${drTab===t?'on':''}" onclick="drTab='${t}';renderStudentDrawer('${id}')">${t[0].toUpperCase()+t.slice(1)}</button>`).join('')}</div>
+   <div class="dr-body">${body}</div>`;
+}
+function setSyl(id,subj,ti,st){const s=students.find(x=>x.id===id);s.syllabus[subj][ti].state=st;s.health=health(s);renderStudentDrawer(id);}
+function togglePause(id){const s=students.find(x=>x.id===id);s.status=s.status==='Paused'?'Active':'Paused';renderStudentDrawer(id);toast(`${s.name} is now ${s.status}`);}
+
+/* ================= TEACHERS ================= */
+function viewTeachers(){
+ return `<div class="page-head"><div><div class="page-title">Teachers</div><div class="page-sub">${teachers.length} teachers · availability, workload, performance</div></div>
+   <div class="flex gap8"><button class="btn-ghost" onclick="toast('Exported teachers.csv (demo)')">${svg(I.file,15)} Export</button>
+   <button class="btn-primary" onclick="openModal('teacher')">${svg(I.teacher,15)} Add teacher</button></div></div>
+ <div class="tbl-wrap"><div class="tbl-tools"><button class="chip on">All</button><button class="chip">Available now</button><button class="chip">On leave</button>
+   <button class="chip">By subject</button><div style="flex:1"></div><span class="cell-sub">Sort: workload · rating · conversion</span></div></div>
+ <div class="grid g-2" style="margin-top:14px">
+   ${teachers.map(t=>`<div class="card card-pad" style="cursor:pointer" onclick="openTeacher('${t.id}')">
+     <div class="flex between center" style="margin-bottom:12px"><div class="name-cell"><div class="avatar" style="width:42px;height:42px;font-size:15px;background:${avColor(t.name)}">${initials(t.name)}</div>
+     <div><div class="cell-name" style="font-size:14px">${t.name}</div><div class="cell-sub">${t.subjects.join(' · ')}</div></div></div>
+     <span class="pill ${t.status==='Available'?'p-green':t.status==='In Class'?'p-blue':'p-gray'} dotpill">${t.status}</span></div>
+     <div class="grid g-3" style="gap:9px">
+       <div class="text-c"><div class="kpi-num" style="font-size:19px">${t.load}<span class="cell-sub" style="font-size:12px">/${t.capacity}</span></div><div class="cell-sub">Load</div></div>
+       <div class="text-c"><div class="kpi-num" style="font-size:19px;color:var(--gold-900)">${t.demos===0?'—':t.rating}</div><div class="cell-sub">Rating</div></div>
+       <div class="text-c"><div class="kpi-num" style="font-size:19px;color:var(--green)">${t.demos===0?'—':t.conv+'%'}</div><div class="cell-sub">Demo conv.</div></div></div>
+     ${t.demos===0?`<div style="margin-top:10px"><span class="pill p-purple">New — no track record yet</span></div>`:t.load>=t.capacity?`<div style="margin-top:10px"><span class="pill p-amber">At capacity (${t.load}/${t.capacity})</span></div>`:''}
+     ${(state.role==='admin'||state.role==='manager')?`<button class="btn-ghost btn-sm" style="width:100%;margin-top:11px;justify-content:center" onclick="event.stopPropagation();assignStudent('${t.id}')">Assign a student</button>`:''}
+     ${state.role==='admin'?`<div style="margin-top:10px;padding-top:11px;border-top:1px solid var(--border-soft)" class="flex between"><span class="cell-sub">Pay rate (Admin only)</span><span class="cell-name" style="font-size:12.5px">Rs ${t.rate} / class</span></div>`:''}
+   </div>`).join('')}</div>`;
+}
+function assignStudent(id){
+ const t=teachers.find(x=>x.id===id);
+ if(t.status==='Leave'){toast(`${t.name} is on leave — pick another teacher`);return;}
+ if(t.load>=t.capacity){
+   // Soft warning, NOT a hard block — a human decides, and the override is audited
+   const go=confirm(`${t.name} is at capacity (${t.load}/${t.capacity}).\n\nThis is a soft warning, not a block. You can still assign for one urgent case.\n\nOK = Assign anyway (override is logged)\nCancel = don't assign`);
+   if(go){toast(`Assigned to ${t.name} over capacity — override audited`);}
+   return;
+ }
+ toast(`Student assigned to ${t.name} (${t.load+1}/${t.capacity}) — conflict check passed`);
+}
+function openTeacher(id){
+ const t=teachers.find(x=>x.id===id);const dr=document.getElementById('drawer');
+ dr.innerHTML=`<div class="drawer-head"><div class="flex between center">
+   <div class="name-cell"><div class="avatar" style="width:44px;height:44px;font-size:16px;background:${avColor(t.name)}">${initials(t.name)}</div>
+   <div><div class="mono" style="font-size:18px;font-weight:700;color:var(--navy-800)">${t.name}</div><div class="cell-sub">${t.subjects.join(', ')}</div></div></div>
+   <button class="iconbtn" onclick="closeDrawer()">${svg(I.x,16)}</button></div>
+   <div class="flex gap8" style="margin:12px 0 14px"><button class="btn-primary btn-sm" onclick="waSend('${t.name}','${t.phone}')">${svg(I.wa,14)} WhatsApp</button>
+   <button class="btn-ghost btn-sm" onclick="toast('Opening leave calendar')">Leave calendar</button></div></div>
+   <div class="dr-body">
+   <div class="card card-pad" style="margin-bottom:12px"><div class="section-t">Profile</div>
+     ${[['Email',t.email],['Phone',t.phone],['Subjects',t.subjects.join(', ')],['Programs',t.programs.join(', ')],['City',t.city],['Joined',t.join],['Capacity',t.capacity+' classes/week'],['Current load',t.load+' classes']].map(x=>
+     `<div class="flex between" style="padding:7px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-sub">${x[0]}</span><span class="cell-name" style="font-size:12.5px;text-align:right">${x[1]}</span></div>`).join('')}</div>
+   ${state.role==='admin'?`<div class="card card-pad"><div class="section-t">Compensation <span class="pill p-gold" style="margin-left:4px">Admin only</span></div>
+     <div class="flex between" style="padding:7px 0"><span class="cell-sub">Rate (one-on-one)</span><span class="cell-name" style="font-size:12.5px">Rs ${t.rate} / class</span></div></div>`:''}
+   </div>`;
+ openDrawer();
+}
+
+/* ================= SCHEDULE ================= */
+function viewSchedule(){
+ const hours=['7 AM','9 AM','11 AM','3 PM','5 PM','7 PM','9 PM'];const days=['Mon','Tue','Wed','Thu','Fri','Sat'];
+ const blocks={'Mon-3 PM':['Ahmed · Physics','#5A31F4'],'Mon-5 PM':['Usman · Chem','#2563EB'],'Tue-9 AM':['Zainab · CS','#16A34A'],'Tue-5 PM':['Demo · Rida','#D99E17'],'Wed-3 PM':['Fatima · Bio','#D97706'],'Thu-3 PM':['Ahmed · Physics','#5A31F4'],'Thu-7 PM':['Ayesha · Maths','#7C55F7'],'Fri-5 PM':['Hassan · Eco','#DC2626']};
+ return `<div class="page-head"><div><div class="page-title">Schedule</div><div class="page-sub">Conflict-free · availability checked before every booking</div></div>
+   <div class="seg"><button onclick="toast('Day view')">Day</button><button onclick="toast('Week view')">Week</button><button class="on">Month</button><button onclick="toast('Agenda view')">Agenda</button></div></div>
+ <div class="tbl-wrap" style="margin-bottom:10px"><div class="tbl-tools" style="flex-wrap:wrap;gap:7px">
+   <span class="cell-sub" style="align-self:center;margin-right:2px">Date:</span><button class="chip">Today</button><button class="chip">Week</button><button class="chip on">This month</button><button class="chip" onclick="toast('Custom range picker (demo)')">Custom</button>
+   <div style="width:1px;height:22px;background:var(--border);margin:0 4px"></div>
+   <span class="cell-sub" style="align-self:center;margin-right:2px">Type:</span><button class="chip on">All</button><button class="chip">Class</button><button class="chip" onclick="toast('Filter: Makeup only')">Makeup</button><button class="chip">Test</button>
+ </div></div>
+ <div class="tbl-wrap" style="margin-bottom:14px"><div class="tbl-tools" style="flex-wrap:wrap;gap:7px">
+   <span class="cell-sub" style="align-self:center;margin-right:2px">Teacher:</span><button class="chip on">All</button>
+   ${teachers.map(t=>`<button class="chip" onclick="toast('Filter: ${t.name}')">${t.name.split(' ').slice(0,2).join(' ')}</button>`).join('')}
+   <div style="width:1px;height:22px;background:var(--border);margin:0 4px"></div>
+   <span class="cell-sub" style="align-self:center;margin-right:2px">Status:</span><button class="chip on">All</button><button class="chip">Scheduled</button><button class="chip">Completed</button><button class="chip">Cancelled</button><button class="chip">No-show</button>
+   <div style="flex:1"></div><button class="chip" onclick="toast('Showing free slots you can sell')">${svg(I.clock,13)} Free slots</button></div></div>
+ <div class="card" style="padding:14px;overflow-x:auto"><div style="display:grid;grid-template-columns:58px repeat(6,1fr);gap:7px;min-width:720px">
+   <div></div>${days.map(d=>`<div class="text-c cell-name" style="font-size:12px;padding-bottom:5px">${d}</div>`).join('')}
+   ${hours.map(h=>`<div class="cell-sub" style="font-size:10.5px;padding-top:12px">${h}</div>
+     ${days.map(d=>{const b=blocks[d+'-'+h];return `<div style="min-height:48px;border:1px dashed var(--border);border-radius:9px;padding:5px;${b?`background:${b[1]}12;border-style:solid;border-color:${b[1]}55`:'cursor:pointer'}" ${b?'':'onclick="toast(\'Free slot — click to schedule\')"'}>${b?`<div style="font-size:10.5px;font-weight:600;color:${b[1]};line-height:1.3">${b[0]}</div>`:''}</div>`;}).join('')}`).join('')}
+ </div></div>
+ <div class="flex gap12 wrap" style="margin-top:12px"><span class="pill p-green dotpill">No conflicts this week</span><span class="pill p-amber" style="cursor:pointer" onclick="toast('2 makeup classes owed — replacements for missed classes, not charged again')">2 makeup classes owed</span><span class="pill p-gray">Miss Hina on leave — Fri</span></div>`;
+}
+
+/* ================= MY SYLLABUS (student) ================= */
+function viewMySyllabus(){
+ const me=students[0];
+ return `<div class="page-head"><div><div class="page-title">My Syllabus</div><div class="page-sub">What's covered and what's remaining — always up to date</div></div></div>
+ ${me.subjects.map(subj=>{const list=me.syllabus[subj]||[];const done=list.filter(t=>t.state==='done').length;const tot=list.filter(t=>t.state!=='na').length;const pct=Math.round(done/tot*100);
+   return `<div class="card card-pad" style="margin-bottom:16px"><div class="flex between center"><div class="section-t mb0">${subj} <span class="cell-sub">· ${me.program}</span></div><span class="pill p-gold">${pct}% covered</span></div>
+   <div class="progress-big"><div data-w="${pct}" style="width:0"></div></div>
+   <div class="grid g-2" style="gap:7px;margin-top:6px">${list.map(t=>`<div class="flex center gap8" style="padding:7px 10px;border:1px solid var(--border);border-radius:9px;${t.state==='done'?'background:rgba(22,163,74,.05);border-color:#86EFAC':t.state==='na'?'opacity:.5':''}">
+     <div class="syl-num" style="width:22px;height:22px">${t.n}</div><span style="font-size:12.5px;flex:1">${t.name}</span>
+     ${t.state==='done'?'<span class="pill p-green">✓ Done</span>':t.state==='na'?'<span class="pill p-gray">N/A</span>':'<span class="pill p-blue">Planned</span>'}</div>`).join('')}</div></div>`;}).join('')}`;
+}
+
+/* ================= HOMEWORK ================= */
+function viewHomework(){
+ const isT=state.role==='teacher';const isS=state.role==='student';
+ let list=homeworks;if(isS)list=homeworks.filter(h=>h.student==='Ahmed Raza').concat(homeworks.slice(0,2));
+ return `<div class="page-head"><div><div class="page-title">Homework</div><div class="page-sub">${isT?'Create, review and grade':isS?'Your assignments':'All homework'} · feeds the monthly parent report</div></div>
+   ${isT?`<button class="btn-primary" onclick="openModal('hw')">${svg(I.hw,15)} Assign homework</button>`:''}</div>
+ <div class="tbl-wrap"><div class="tbl-tools"><button class="chip on">All</button><button class="chip">Pending</button><button class="chip">Submitted</button><button class="chip">Graded</button>
+   <div style="flex:1"></div><button class="chip">By subject</button><button class="chip">By student</button></div>
+ <div class="tbl-scroll"><table><thead><tr><th>Assignment</th><th>${isS?'Subject':'Student'}</th><th>Deadline</th><th>Status</th><th></th></tr></thead>
+ <tbody>${list.map(h=>`<tr onclick="toast('Opening homework')"><td class="cell-name">${h.title}</td><td>${isS?h.subj:h.student}</td>
+   <td class="cell-sub">${h.deadline}</td><td><span class="pill ${h.status}">${h.lbl}</span></td>
+   <td onclick="event.stopPropagation()"><button class="btn-ghost btn-sm">${isT?'Grade':'Open'}</button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+/* ================= ASSESSMENTS / TESTS ================= */
+function viewAssessments(){
+ const isT=state.role==='teacher';const isS=state.role==='student';
+ let list=assessments;if(isS)list=assessments.filter(a=>a.student==='Ahmed Raza').concat(assessments.slice(0,2));
+ return `<div class="page-head"><div><div class="page-title">Tests & Results</div><div class="page-sub">Separate from homework · scores flow into the monthly parent report</div></div>
+   ${isT?`<button class="btn-primary" onclick="openModal('test')">${svg(I.test,15)} Record test</button>`:''}</div>
+ <div class="grid g-4" style="margin-bottom:18px">${kpi(I.test,'#EDE9FE','#5A31F4',assessments.length,'Tests this month')}${kpi(I.check,'#DCFCE7','#16A34A','80%','Average score')}${kpi(I.report,'#FEF3C7','#D97706','1','Below 60%')}${kpi(I.clock,'#F1F5F9','#334155','1','Not taken')}</div>
+ <div class="tbl-wrap"><div class="tbl-tools"><button class="chip on">All</button><button class="chip">This month</button><button class="chip">By subject</button><div style="flex:1"></div></div>
+ <div class="tbl-scroll"><table><thead><tr><th>Test</th><th>${isS?'Subject':'Student'}</th><th>Date</th><th>Score</th><th>Result</th></tr></thead>
+ <tbody>${list.map(a=>`<tr onclick="toast('Opening test')"><td class="cell-name">${a.title}</td><td>${isS?a.subj:a.student}</td><td class="cell-sub">${a.date}</td>
+   <td class="cell-name mono">${a.score}</td><td>${a.pct?`<span class="pill ${a.pct>=80?'p-green':a.pct>=60?'p-amber':'p-red'}">${a.pct}%</span>`:'<span class="pill p-gray">Pending</span>'}</td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+/* ================= FINANCE ================= */
+function viewFinance(){
+ const stPill=s=>({'Paid':'p-green','Due':'p-amber','In Grace':'p-red'}[s]||'p-gray');
+ return `<div class="page-head"><div><div class="page-title">Fees & Vouchers</div><div class="page-sub">Manual reconciliation · JazzCash · Easypaisa · Bank</div></div>
+   <button class="btn-primary" onclick="openModal('voucher')">${svg(I.money,15)} Create voucher</button></div>
+ <div class="grid g-4" style="margin-bottom:20px">
+   ${kpi(I.money,'#DCFCE7','#16A34A','Rs 486k','Revenue this month','+11%','up')}${kpi(I.check,'#DCFCE7','#16A34A','Rs 412k','Collected','85%','up')}
+   ${kpi(I.fee,'#FEF3C7','#D97706','Rs 74k','Outstanding','','flat')}${kpi(I.refresh,'#EDE9FE','#5A31F4','44','Recurring students','+6','up')}</div>
+ <div class="grid" style="grid-template-columns:1fr 1fr;margin-bottom:20px">
+   <div class="card card-pad"><div class="section-t">Recurring revenue this month</div><div class="section-s">Who's paying, and since when</div>
+     <div class="flex between" style="padding:7px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-sub">Active recurring</span><span class="cell-name mono">44 students</span></div>
+     <div class="flex between" style="padding:7px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-sub">New this month</span><span class="cell-name mono" style="color:var(--green)">+6</span></div>
+     <div class="flex between" style="padding:7px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-sub">Churned this month</span><span class="cell-name mono" style="color:var(--red)">-2</span></div>
+     <div class="flex between" style="padding:7px 0"><span class="cell-sub">Longest-running</span><span class="cell-name" style="font-size:12.5px">Zainab · since Jan 2026</span></div></div>
+   <div class="card card-pad"><div class="section-t">Fee cycle rule</div><div class="section-s">How dues work</div>
+     <div class="ai-note" style="background:var(--offwhite);border-color:var(--border)">Due date is anchored to each student's enrollment day. Paying within the <b>3-day grace counts as on time</b> (no penalty). When grace ends unpaid, nothing auto-stops — it raises a <b>"fees need a decision"</b> card and the Admin chooses <b>Stop / Extend / Mark paid</b>. <b>Partial</b> payments keep the balance Due; a <b>Refund</b> is an audited negative payment.</div>
+     <button class="btn-ghost btn-sm" style="margin-top:12px" onclick="toast('Defaulters list ready for WhatsApp round')">${svg(I.wa,13)} Defaulters list</button></div>
+ </div>
+ <div class="tbl-wrap"><div class="tbl-tools"><button class="chip on">All</button><button class="chip">Paid</button><button class="chip">Due</button>
+   <button class="chip" style="color:var(--red)">In grace</button><div style="flex:1"></div><span class="cell-sub">Within 3-day grace = on time · then Admin decides</span></div>
+ <div class="tbl-scroll"><table><thead><tr><th>Voucher</th><th>Student</th><th>For</th><th>Amount</th><th>Due</th><th>Status</th><th>Actions</th></tr></thead>
+ <tbody>${vouchers.map(v=>`<tr onclick="showVoucher('${v.id}')">
+   <td class="cell-name mono">${v.id}</td><td>${v.student}</td><td class="cell-sub">${v.lines[0][0]}</td>
+   <td class="cell-name mono">Rs ${v.lines.reduce((a,l)=>a+l[1],0).toLocaleString()}</td><td class="cell-sub">${v.due}</td>
+   <td><span class="pill ${stPill(v.status)}">${v.status}</span></td>
+   <td onclick="event.stopPropagation()"><div class="rowbtns">
+     ${v.status==='In Grace'?`<button class="btn-ghost btn-sm" style="color:var(--red)" onclick="graceDecision('${v.id}')">Decide</button>`:''}
+     ${v.status!=='Paid'?`<button class="btn-ghost btn-sm" onclick="markPaid('${v.id}')">Mark paid</button><button class="btn-ghost btn-sm" onclick="markPartial('${v.id}')">Partial</button>`:`<button class="btn-ghost btn-sm" onclick="doRefund('${v.id}')">Refund</button><button class="iconbtn" onclick="showVoucher('${v.id}')">${svg(I.file,14)}</button>`}
+     <button class="iconbtn wa" onclick="waSend('${v.student}','')" title="Fee reminder">${svg(I.wa,14)}</button></div></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+function markPartial(id){const v=vouchers.find(x=>x.id===id);const total=v.lines.reduce((a,l)=>a+l[1],0);toast(`Partial payment recorded for ${id} — balance of Rs ${Math.round(total/2).toLocaleString()} still Due`);}
+function doRefund(id){const v=vouchers.find(x=>x.id===id);toast(`Refund issued for ${id} — logged as an audited negative payment against the voucher`);}
+function graceDecision(id){
+ const choice = confirm(`Grace has ended for ${id} and it is unpaid.\n\nThe system will NOT stop this student on its own.\n\nOK = Extend the grace (keep the seat)\nCancel = open the full Stop / Extend / Mark paid decision`);
+ if(choice){const v=vouchers.find(x=>x.id===id);toast(`${id}: grace extended — decision audited. Nothing was auto-stopped.`);}
+ else{toast('Opening Stop / Extend / Mark paid decision (demo) — every choice is audited');}
+}
+function markPaid(id){const v=vouchers.find(x=>x.id===id);v.status='Paid';const s=students.find(x=>x.name===v.student);if(s){s.fee='Paid';s.health=health(s);}render();toast(`${id} marked paid — screenshot requested`);}
+function showVoucher(id){
+ const v=vouchers.find(x=>x.id===id);const total=v.lines.reduce((a,l)=>a+l[1],0);
+ openModalRaw('Voucher '+v.id,`<div class="voucher">
+   <div class="voucher-head"><div><div style="font-family:'Space Grotesk';font-weight:700;font-size:18px">Thinkerzz Academy</div><div style="font-size:11px;color:#94A3B8;margin-top:2px">Question · Think · Achieve</div></div>
+   <div style="text-align:right"><div class="mono" style="font-weight:700">${v.id}</div><div style="font-size:11px;color:#94A3B8">${v.month}</div></div></div>
+   <div class="voucher-body">
+     <div class="v-row"><span class="cell-sub">Student</span><span class="cell-name">${v.student}</span></div>
+     <div class="v-row"><span class="cell-sub">Parent</span><span class="cell-name">${v.parent}</span></div>
+     <div class="v-row"><span class="cell-sub">Fee period</span><span class="cell-name">${v.month}</span></div>
+     <div class="v-row"><span class="cell-sub">Due date</span><span class="cell-name">${v.due} · grace 3 days</span></div>
+     <div style="margin:14px 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);font-weight:600">Fee details</div>
+     ${v.lines.map(l=>`<div class="v-line"><span>${l[0]}</span><span class="mono">Rs ${l[1].toLocaleString()}</span></div>`).join('')}
+     <div class="v-line" style="border-top:2px solid var(--navy-800);margin-top:6px;padding-top:10px;font-weight:700"><span>Total payable</span><span class="mono" style="font-size:16px">Rs ${total.toLocaleString()}</span></div>
+     <div class="pay-box"><div style="font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--g500);font-weight:600;margin-bottom:6px">Pay to any account</div>
+       <div class="pay-acct"><span>JazzCash</span><span class="mono">0300-1234567</span></div>
+       <div class="pay-acct"><span>Easypaisa</span><span class="mono">0321-7654321</span></div>
+       <div class="pay-acct" style="border:none"><span>Bank (Meezan)</span><span class="mono">PK00 MEZN 0001 2345 6789</span></div></div>
+     <div class="ai-note" style="margin-top:12px;font-size:12.5px">Please use voucher number <b>${v.id}</b> as your payment reference, then share the screenshot on WhatsApp or upload it in your portal.</div>
+   </div></div>`,`<button class="btn-ghost" onclick="closeModal()">Close</button><button class="btn-primary" onclick="closeModal();toast('Voucher sent via WhatsApp + portal')">Send to parent</button>`);
+}
+
+
+/* ================= REPORTS ================= */
+function viewReports(){
+ return `<div class="page-head"><div><div class="page-title">Reports</div><div class="page-sub">Understand what's working — admissions, academics, geography</div></div>
+   <div class="seg"><button class="on">Month</button><button onclick="toast('Week view')">Week</button><button onclick="toast('Day view')">Day</button></div></div>
+ <div class="zone"><div class="zone-head"><span class="z-ic">${svg(I.demo,14)}</span><h3>Demo funnel — with drop-off reasons</h3></div>
+   <div class="card card-pad"><div class="funnel">${fn('Booked',48,'#5A31F4',null)}${fn('Attended',39,'#7C55F7','81%')}${fn('Interested',31,'#A78BFA','79%')}${fn('Converted',19,'#16A34A','61%')}${fn('Not joined',20,'#94A3B8','')}</div>
+   <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border-soft)"><div class="section-t">Why leads didn't join</div>
+     ${[['Too expensive',8,'#DC2626'],['Chose competitor',5,'#D97706'],['Timing / schedule',4,'#2563EB'],['Went quiet',3,'#94A3B8']].map(x=>src(x[0],x[1],x[2],x[1]/8*100)).join('')}</div></div></div>
+ <div class="grid" style="grid-template-columns:1fr 1fr">
+   <div class="card card-pad"><div class="section-t">New students per month</div><div class="section-s">Growth trend</div>
+     <div class="barchart">${[['Apr',6],['May',9],['Jun',11],['Jul',14],['Aug',19]].map(x=>`<div class="bc-col"><div class="bc-v">${x[1]}</div><div class="bc-bar" data-h="${x[1]/19*100}" style="height:0"></div><div class="bc-x">${x[0]}</div></div>`).join('')}</div></div>
+   <div class="card card-pad"><div class="section-t">Source → conversion</div><div class="section-s">Which channel actually converts</div>
+     ${[['Instagram','40%',40,'#5A31F4'],['Referral','62%',62,'#16A34A'],['Google','28%',28,'#2563EB'],['Booking Page','35%',35,'#F9C051'],['Facebook','18%',18,'#334155']].map(x=>
+     `<div class="src-row"><div class="src-dot" style="background:${x[3]}"></div><div style="width:100px" class="cell-name">${x[0]}</div><div class="src-track"><div class="src-fill" data-w="${x[2]}" style="width:0;background:${x[3]}"></div></div><div style="width:44px;text-align:right" class="cell-name mono">${x[1]}</div></div>`).join('')}</div>
+ </div>
+ <div class="card card-pad" style="margin-top:16px"><div class="flex between center"><div><div class="section-t mb0">Export</div><div class="section-s mb0">Student-level data included</div></div>
+   <div class="flex gap8"><button class="btn-ghost" onclick="toast('Exported report.xlsx')">${svg(I.file,15)} Excel</button><button class="btn-ghost" onclick="toast('Exported report.pdf')">${svg(I.file,15)} PDF</button></div></div></div>`;
+}
+
+/* ================= MARKETING ================= */
+function viewMarketing(){
+ return `<div class="page-head"><div><div class="page-title">Marketing</div><div class="page-sub">Your SEO edge — see which channels and cities produce paying students</div></div>
+   <button class="btn-ghost" onclick="toast('UTM builder (demo)')">${svg(I.growth,15)} Build campaign link</button></div>
+ <div class="grid g-4" style="margin-bottom:20px">${kpi(I.leads,'#EDE9FE','#5A31F4','48','Leads this month','+18%','up')}${kpi(I.check,'#DCFCE7','#16A34A','19','New students','+6','up')}${kpi(I.money,'#FEF3C7','#D97706','Rs 2.1k','Cost per enrollment','-12%','up')}${kpi(I.teacher,'#DBEAFE','#2563EB','7','From referrals','+3','up')}</div>
+ <div class="zone"><div class="zone-head"><span class="z-ic">${svg(I.growth,14)}</span><h3>Source performance</h3><span class="z-count">volume vs conversion vs cost</span></div>
+   <div class="tbl-wrap"><div class="tbl-scroll"><table><thead><tr><th>Source</th><th>Leads</th><th>Converted</th><th>Conv. rate</th><th>Spend</th><th>Cost / student</th></tr></thead>
+   <tbody>${[['Instagram',14,6,'43%','Rs 8,000','Rs 1,333'],['Referral',12,7,'58%','Rs 0','Rs 0'],['Google',9,3,'33%','Rs 6,000','Rs 2,000'],['Booking Page',8,2,'25%','Rs 0','Rs 0'],['Facebook',5,1,'20%','Rs 4,000','Rs 4,000']].map(r=>
+   `<tr><td class="cell-name">${r[0]}</td><td class="mono">${r[1]}</td><td class="mono">${r[2]}</td><td><span class="pill ${parseInt(r[3])>=40?'p-green':parseInt(r[3])>=30?'p-amber':'p-red'}">${r[3]}</span></td><td class="cell-sub">${r[4]}</td><td class="cell-name mono">${r[5]}</td></tr>`).join('')}</tbody></table></div></div></div>
+ <div class="grid" style="grid-template-columns:1fr 1fr">
+   <div class="card card-pad"><div class="section-t">Geographic heatmap</div><div class="section-s">Which cities send — and convert — best</div>
+     ${[['Karachi',18,72],['Lahore',12,58],['Islamabad',8,50],['Rawalpindi',5,40],['Faisalabad',3,33],['Multan',2,50]].map(c=>
+     `<div class="heat-row"><div style="width:80px" class="cell-name">${c[0]}</div><div class="heat-bar"><div class="heat-fill" data-w="${c[1]/18*100}" style="width:0">${c[1]} leads</div></div><span class="pill ${c[2]>=60?'p-green':c[2]>=45?'p-amber':'p-red'}">${c[2]}%</span></div>`).join('')}
+     <div class="section-s" style="margin-top:10px;margin-bottom:0">💡 As an SEO person: Karachi + Lahore convert best — aim local landing pages there.</div></div>
+   <div class="card card-pad"><div class="section-t">Referral engine</div><div class="section-s">Your top advocates — reward them</div>
+     ${[['Dr. Malik Sohail',4,'Zainab + 3 friends'],['Mrs. Noor Fatima',2,'Fatima + 1'],['Mr. Raza Khan',1,'Ahmed']].map(r=>
+     `<div class="flex between center" style="padding:10px 0;border-bottom:1px solid var(--border-soft)"><div class="name-cell"><div class="avatar" style="background:${avColor(r[0])}">${initials(r[0])}</div><div><div class="cell-name" style="font-size:12.5px">${r[0]}</div><div class="cell-sub">${r[2]}</div></div></div><span class="pill p-gold">${r[1]} referrals</span></div>`).join('')}
+     <button class="btn-ghost btn-sm" style="width:100%;margin-top:12px;justify-content:center" onclick="toast('Referral reward sent (demo)')">Reward top referrer</button></div>
+ </div>`;
+}
+
+/* ================= TICKETS ================= */
+function viewTickets(){
+ return `<div class="page-head"><div><div class="page-title">Support Tickets</div><div class="page-sub">1-hour SLA · routable to the right teacher or admin</div></div>
+   <button class="btn-primary" onclick="openModal('ticket')">${svg(I.ticket,15)} New ticket</button></div>
+ <div class="grid g-4" style="margin-bottom:18px">${kpi(I.alert,'#FEE2E2','#DC2626','1','SLA breached')}${kpi(I.ticket,'#FEF3C7','#D97706','2','Open')}${kpi(I.clock,'#DBEAFE','#2563EB','38 min','Avg response')}${kpi(I.check,'#DCFCE7','#16A34A','1','Resolved today')}</div>
+ <div class="tbl-wrap"><div class="tbl-tools"><button class="chip on">All</button><button class="chip" style="color:var(--red)">SLA breach</button><button class="chip">Open</button><button class="chip">Payment</button><button class="chip">Technical</button><div style="flex:1"></div></div>
+ <div class="tbl-scroll"><table><thead><tr><th>Issue</th><th>From</th><th>Category</th><th>Assigned to</th><th>Age / SLA</th><th></th></tr></thead>
+ <tbody>${tickets.map(t=>`<tr onclick="toast('Opening ticket #${t.id}')"><td class="cell-name">${t.issue}</td><td>${t.from}</td>
+   <td><span class="pill p-gray">${t.cat}</span></td><td class="cell-sub">${t.assignee}</td><td><span class="pill ${t.status}">${t.age}</span></td>
+   <td onclick="event.stopPropagation()"><button class="btn-ghost btn-sm" onclick="toast('Reassigning…')">Assign</button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+/* ================= ANNOUNCEMENTS ================= */
+function viewAnnounce(){
+ return `<div class="page-head"><div><div class="page-title">Announcements</div><div class="page-sub">Broadcast to all students, parents or a group — shown in their portal</div></div>
+   <button class="btn-primary" onclick="openModal('announce')">${svg(I.megaphone,15)} New announcement</button></div>
+ <div class="grid" style="grid-template-columns:1fr 1fr">
+   ${announcements.map(a=>`<div class="card card-pad"><div class="flex between center" style="margin-bottom:8px"><div class="feed-ic" style="background:var(--purple-500);color:var(--purple-900)">${svg(I.megaphone,15)}</div><span class="pill p-gray">${a.to}</span></div>
+     <div class="section-t">${a.title}</div><div class="section-s" style="margin-bottom:8px">${a.body}</div><div class="cell-sub">${a.when}</div></div>`).join('')}
+ </div>`;
+}
+
+/* ================= DOCUMENTS VAULT ================= */
+function viewDocuments(){
+ const isS=state.role==='student';
+ const files=[
+   {name:'Term 1 result — Ahmed Raza.pdf',who:'Ahmed Raza',type:'Result',ic:I.report,size:'240 KB',by:'Sir Kamran',date:'2 Aug'},
+   {name:'August payment screenshot.jpg',who:'Fatima Noor',type:'Payment',ic:I.money,size:'180 KB',by:'Parent',date:'1 Aug'},
+   {name:'Physics past paper 2024.pdf',who:'All A Level Physics',type:'Past paper',ic:I.file,size:'1.2 MB',by:'Admin',date:'28 Jul'},
+   {name:'Chemistry notes — bonding.pdf',who:'O Level Chemistry',type:'Notes',ic:I.book2,size:'640 KB',by:'Miss Ayesha',date:'26 Jul'},
+   {name:'July payment screenshot.jpg',who:'Zainab Malik',type:'Payment',ic:I.money,size:'150 KB',by:'Parent',date:'20 Jul'},
+ ];
+ const shown = isS ? files.filter(f=>f.who==='Ahmed Raza'||f.who.includes('A Level')) : files;
+ return `<div class="page-head"><div><div class="page-title">Documents</div><div class="page-sub">${isS?'Your private files — results, past papers, payment screenshots':'Private vault · signed links · never shared on WhatsApp'}</div></div>
+   <button class="btn-primary" onclick="toast('Upload (demo) — stored in a private bucket, served via a signed URL')">${svg(I.arrow,15)} Upload file</button></div>
+ <div class="ai-note" style="margin-bottom:16px;background:var(--offwhite);border-color:var(--border)">${isS?'You can see and upload files for <b>your own child only</b>.':'Admin and Manager see all documents. A parent sees files for their own child only. Teachers have no access.'} Every file lives in a <b>private bucket</b> and opens through a short-lived <b>signed URL</b> that expires and cannot be shared or guessed.</div>
+ <div class="tbl-wrap"><div class="tbl-tools"><button class="chip on">All</button><button class="chip">Results</button><button class="chip">Past papers</button><button class="chip">Payments</button><button class="chip">Notes</button><div style="flex:1"></div><span class="cell-sub">${shown.length} files</span></div>
+ <div class="tbl-scroll"><table><thead><tr><th>File</th>${isS?'':'<th>Belongs to</th>'}<th>Type</th><th>Size</th><th>Added</th><th></th></tr></thead>
+ <tbody>${shown.map(f=>`<tr>
+   <td><div class="flex center gap12"><div class="feed-ic" style="background:var(--g100);color:var(--g700)">${svg(f.ic,15)}</div><span class="cell-name" style="font-size:12.5px">${f.name}</span></div></td>
+   ${isS?'':`<td class="cell-sub">${f.who}</td>`}
+   <td><span class="pill p-gray">${f.type}</span></td>
+   <td class="cell-sub">${f.size}</td>
+   <td class="cell-sub">${f.date} · ${f.by}</td>
+   <td onclick="event.stopPropagation()"><button class="iconbtn" onclick="toast('Opening via signed URL (demo)')" title="Download">${svg(I.arrow,14)}</button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+/* ================= SETTINGS ================= */
+function viewSettings(){
+ return `<div class="page-head"><div><div class="page-title">Settings</div><div class="page-sub">Admin only · the knobs that run the academy</div></div></div>
+ <div class="grid" style="grid-template-columns:1fr 1fr">
+   <div class="card card-pad"><div class="section-t">Health score weights</div><div class="section-s">How the student health % is calculated</div>
+     ${[['Attendance',50],['Homework',30],['Fee timeliness',20]].map(x=>`<div class="wl-row"><div style="width:130px" class="cell-name" style="font-size:12.5px">${x[0]}</div><div class="wl-track"><div class="wl-fill" data-w="${x[1]}" style="width:0"></div></div><div style="width:44px;text-align:right" class="cell-name mono">${x[1]}%</div></div>`).join('')}
+     <div class="section-s" style="margin-top:8px;margin-bottom:0">Green ≥ 80 · Amber 60–79 · Red < 60</div></div>
+   <div class="card card-pad"><div class="section-t">Notification channels</div><div class="section-s">Priority order — swap without touching the app</div>
+     ${[['Google Calendar invite','Primary (free)','p-green'],['Email (Resend)','Backup','p-blue'],['WhatsApp button (wa.me)','Manual','p-amber'],['WhatsApp Cloud API','Later — when funded','p-gray']].map(x=>
+     `<div class="flex between center" style="padding:9px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-name" style="font-size:12.5px">${x[0]}</span><span class="pill ${x[2]}">${x[1]}</span></div>`).join('')}</div>
+   <div class="card card-pad"><div class="section-t">Payment accounts</div><div class="section-s">Auto-pulled into every voucher</div>
+     ${[['JazzCash','0300-1234567'],['Easypaisa','0321-7654321'],['Meezan Bank','PK00 MEZN 0001 2345 6789']].map(x=>
+     `<div class="flex between center" style="padding:9px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-name" style="font-size:12.5px">${x[0]}</span><span class="cell-sub mono">${x[1]}</span></div>`).join('')}
+     <button class="btn-ghost btn-sm" style="margin-top:10px" onclick="toast('Edit accounts (demo)')">Edit accounts</button></div>
+   <div class="card card-pad"><div class="section-t">Academy rules</div><div class="section-s">Timings and cycles</div>
+     ${[['Booking window','7:00 AM – 11:00 PM'],['Class reminder','15 min before'],['Fee grace period','3 days, then stop'],['Timezone','PKT (UTC+5)'],['Academic year','2026'],['Curricula with syllabus','O / A Level · IGCSE']].map(x=>
+     `<div class="flex between" style="padding:8px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-sub">${x[0]}</span><span class="cell-name" style="font-size:12.5px">${x[1]}</span></div>`).join('')}</div>
+   <div class="card card-pad"><div class="section-t">Subjects</div><div class="section-s">Offered across programs</div>
+     <div class="checkbox-list">${SUBJECTS.slice(0,10).map(s=>`<span class="cbx on">${s}</span>`).join('')}<span class="cbx">+ add</span></div></div>
+   <div class="card card-pad"><div class="section-t">Staff & roles</div><div class="section-s">Who can see what</div>
+     ${[['Admin','Everything incl. finance','p-purple'],['Manager','All ops except finance/settings','p-blue'],['Teacher','Own students only','p-green'],['Student/Parent','Own portal only','p-gray']].map(x=>
+     `<div class="flex between center" style="padding:9px 0;border-bottom:1px solid var(--border-soft)"><div><div class="cell-name" style="font-size:12.5px">${x[0]}</div><div class="cell-sub">${x[1]}</div></div><span class="pill ${x[2]}">Role</span></div>`).join('')}
+     <div class="section-s" style="margin-top:8px;margin-bottom:0">🔒 Enforced at the database (RLS), not just hidden in the UI.</div></div>
+ </div>`;
+}
+
+/* ================= MODALS ================= */
+function field(label,input,opt){return `<div class="field"><label>${label}${opt?' <span class="opt">(optional)</span>':''}</label>${input}</div>`;}
+function inp(ph){return `<input placeholder="${ph||''}"/>`;}
+function sel(opts){return `<select>${opts.map(o=>`<option>${o}</option>`).join('')}</select>`;}
+
+const MODALS={
+ lead:()=>({t:'Add lead',b:`<div class="qa-grid">${field('Student name',inp('Full name'))}${field('Parent name',inp('Parent'))}</div>
+   <div class="qa-grid">${field('Phone',inp('+92 3XX XXXXXXX'))}${field('Email',inp('you@email.com'),true)}</div>
+   <div class="qa-grid">${field('City',sel(CITIES))}${field('Source',sel(SOURCES))}</div>
+   <div class="qa-grid">${field('Program',sel(PROGRAMS))}${field('Subject interest',sel(SUBJECTS))}</div>
+   <div class="qa-grid">${field('Temperature',sel(['Hot','Warm','Cold']))}${field('Status',sel(['New','Contacted','Demo Scheduled']))}</div>`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="addLeadFromForm()">Add lead</button>`}),
+ demo:()=>({t:'Schedule demo',b:`${field('Prospect',inp('Name'))}<div class="qa-grid">${field('Program',sel(PROGRAMS))}${field('Subject',sel(SUBJECTS))}</div>
+   <div class="qa-grid">${field('Date',inp('Pick date'))}${field('Time (7 AM–11 PM)',sel(['4:00 PM','5:00 PM','6:00 PM','7:00 PM']))}</div>
+   ${field('Assign teacher',sel(['Auto-suggest by subject',...teachers.map(t=>t.name)]))}${field('Meeting link',inp('Auto-generated'),true)}
+   <div class="ai-note" style="background:var(--offwhite);border-color:var(--border);margin-top:4px">When a teacher is assigned, a <b>conflict check runs</b> — if that teacher already has a class or demo overlapping this time, the assignment is blocked and the clash is shown.</div>`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Demo scheduled + reminder set')">Schedule</button>`}),
+ student:()=>({t:'Onboard student',b:`<div class="qa-grid">${field('Student name',inp('Full name'))}${field('Parent name',inp('Parent'))}</div>
+   <div class="qa-grid">${field('Phone',inp('+92'))}${field('WhatsApp',inp('+92'))}</div>
+   <div class="qa-grid">${field('Email',inp(''),true)}${field('City',sel(CITIES))}</div>${field('Address',inp('Area, city'))}
+   <div class="qa-grid">${field('Program',sel(PROGRAMS))}${field('Exam session',sel(EXAM_SESSIONS))}</div>
+   ${field('Subjects',`<div class="checkbox-list">${SUBJECTS.slice(0,8).map(s=>`<span class="cbx" onclick="this.classList.toggle('on')">${s}</span>`).join('')}</div>`)}
+   <div class="qa-grid">${field('Monthly fee (Rs)',inp('e.g. 20000'))}${field('Months committed <span class="info-i tip" onclick="toast(\'How many months the family has committed to — drives renewal reminders\')">i</span>',sel(['3','6','9','12']))}</div>`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Student onboarded — syllabus preloaded')">Onboard</button>`}),
+ teacher:()=>({t:'Add teacher',b:`<div class="qa-grid">${field('Name',inp('Full name'))}${field('Phone',inp('+92'))}</div>${field('Email',inp('name@thinkerzz.com'))}
+   ${field('Subjects',`<div class="checkbox-list">${SUBJECTS.slice(0,8).map(s=>`<span class="cbx" onclick="this.classList.toggle('on')">${s}</span>`).join('')}</div>`)}
+   <div class="qa-grid">${field('Capacity (Admin sets — no default)',inp('e.g. 20'))}${field('Rate / class (Rs)',inp('e.g. 800'))}</div>
+   <div class="ai-note" style="background:var(--offwhite);border-color:var(--border);margin-top:4px">A new teacher starts with <b>rating, demos, load and reliability all at 0</b>, shown as <b>"New"</b> until they build a track record. Only the Admin can add teachers and set capacity.</div>`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Teacher added — starts as New, earns scores over time')">Add</button>`}),
+ voucher:()=>({t:'Create voucher',b:`${field('Student',sel(students.map(s=>s.name)))}
+   ${field('Fee period',sel(['August 2026','September 2026']))}
+   ${field('Amount (Rs) — flexible',inp('e.g. 20000'))}
+   ${field('What it covers <span class="opt">(note for your records)</span>',inp('e.g. Physics + Maths (A Level)'))}
+   ${field('Due date',inp('Anchored to enrollment day'))}
+   <div class="ai-note">Payment accounts and the "use voucher# as reference" note are added automatically.</div>`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Voucher created & ready to send')">Create</button>`}),
+ hw:()=>({t:'Assign homework',b:`${field('Title',inp('e.g. Kinematics Q1–10'))}<div class="qa-grid">${field('Student',sel(students.map(s=>s.name)))}${field('Subject',sel(SUBJECTS))}</div>
+   ${field('Deadline',inp('Pick date'))}${field('Instructions',`<textarea placeholder="Details…"></textarea>`,true)}`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Homework assigned')">Assign</button>`}),
+ test:()=>({t:'Record test result',b:`${field('Test title',inp('e.g. August Monthly Test'))}<div class="qa-grid">${field('Student',sel(students.map(s=>s.name)))}${field('Subject',sel(SUBJECTS))}</div>
+   <div class="qa-grid">${field('Date',inp('Pick date'))}${field('Score',inp('e.g. 42/50'))}</div>
+   ${field('CAIE assessed grade (after this test)',sel(['A*','A','B','C','D','E','U']))}
+   <div class="ai-note" style="background:var(--offwhite);border-color:var(--border);margin-top:4px">The <b>assessed grade</b> is your genuine judgment of where the student is now, on the Cambridge A*–U scale — not a prediction. It updates the Result Slip. Raw scores never appear in the parent report.</div>`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Test recorded + assessed grade updated on the Result Slip')">Save</button>`}),
+ ticket:()=>({t:'New ticket',b:`${field('Issue',inp('Short summary'))}<div class="qa-grid">${field('From',sel(students.map(s=>s.name)))}${field('Category',sel(['Payment','Technical','Class','Homework','Other']))}</div>
+   ${field('Assign to',sel(['Admin','Manager',...teachers.map(t=>t.name)]))}${field('Details',`<textarea></textarea>`,true)}`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Ticket created · 1-hr SLA started')">Create</button>`}),
+ announce:()=>({t:'New announcement',b:`${field('Title',inp('e.g. Holiday notice'))}${field('Send to',sel(['All students & parents','All teachers','A Level students','O Level students','One student']))}
+   ${field('Message',`<textarea placeholder="Write your announcement…"></textarea>`)}`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Announcement posted to portals')">Post</button>`}),
+ outcome:(d)=>({t:'Demo outcome — '+d.name,b:`${field('Result',sel(['Converted to student','Interested — following up','Not joined']))}
+   ${field('Reason (if not joined)',sel(['—','Too expensive','Chose competitor','Timing / schedule','Went quiet']))}
+   ${field('Notes',`<textarea></textarea>`,true)}`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Outcome saved — feeds your funnel report')">Save</button>`}),
+ complete:(d)=>({t:'Complete class — '+d.name,b:`<div class="section-s">This one screen does everything after a class.</div>
+   ${field('Attendance',sel(['Present','Late','Absent']))}
+   ${field('Syllabus topics covered today',`<div class="checkbox-list">${['Kinematics','Dynamics','Vectors','Forces','Momentum'].map(t=>`<span class="cbx" onclick="this.classList.toggle('on')">${t}</span>`).join('')}</div>`)}
+   ${field('What we did (one line)',inp('e.g. Finished projectile motion, started forces'))}
+   ${field('Homework to assign',inp('e.g. Q1–10 Kinematics'),true)}`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="closeModal();toast('Class completed — syllabus & report updated')">Save & complete</button>`}),
+ convert:(d)=>({t:'Convert to student',b:`<div class="section-s">This copies the lead's info into a new student profile and keeps the lead linked for reporting.</div>
+   <div class="card card-pad" style="margin-bottom:12px">${[['Name',d.lead.name],['Parent',d.lead.parent],['Phone',d.lead.phone],['Program',d.lead.program],['Subject',d.lead.subj],['City',d.lead.city]].map(x=>
+   `<div class="flex between" style="padding:6px 0;border-bottom:1px solid var(--border-soft)"><span class="cell-sub">${x[0]}</span><span class="cell-name" style="font-size:12.5px">${x[1]}</span></div>`).join('')}</div>
+   <div class="ai-note">CAIE syllabus for the chosen subject will be preloaded automatically. You can set fee & teacher after.</div>`,
+   f:`<button class="btn-ghost" onclick="closeModal()">Cancel</button><button class="btn-primary" onclick="doConvert('${d.lead.id}')">Convert now</button>`}),
+ report:(d)=>({t:'Monthly report — '+d.name,b:reportBody(d.name),
+   f:`<button class="btn-ghost" onclick="closeModal()">Close</button><button class="btn-primary" onclick="closeModal();toast('Report sent to parent via WhatsApp + portal')">Send to parent</button>`}),
+};
+function reportBody(name){
+ const s=students.find(x=>x.name===name)||students[0];const prog=sylProgress(s.syllabus);
+ const covered=Object.values(s.syllabus)[0].filter(t=>t.state==='done').slice(0,3).map(t=>t.name);
+ return `<div class="report-doc"><div class="flex between center"><div><b style="font-family:'Space Grotesk';font-size:16px">Thinkerzz Academy</b><div class="cell-sub">Monthly progress · August 2026</div></div><span class="pill p-gold">${s.program}</span></div>
+   <div class="report-stat"><div class="rs-box"><div class="rs-num">${s.att}%</div><div class="rs-lbl">Attendance</div></div><div class="rs-box"><div class="rs-num">${s.hw}%</div><div class="rs-num" style="display:none"></div><div class="rs-lbl">Homework</div></div><div class="rs-box"><div class="rs-num">${prog}%</div><div class="rs-lbl">Syllabus</div></div><div class="rs-box"><div class="rs-num">84%</div><div class="rs-lbl">Test avg</div></div></div>
+   <h4>AI-written summary <span class="pill p-purple" style="font-size:10px">optional LLM</span></h4>
+   <div class="ai-note">${s.name.split(' ')[0]} had a strong month at Thinkerzz. This month we completed <b>${covered.join(', ')||'core topics'}</b> in ${s.subjects[0]}, and ${s.name.split(' ')[0]} maintained ${s.att}% attendance with consistent homework. Focus for next month is the remaining syllabus topics ahead of the ${s.exam} exam. The facts come from the system — the AI only phrases them warmly.</div>
+   <h4>Topics covered this month</h4><div class="checkbox-list">${covered.map(c=>`<span class="cbx on">✓ ${c}</span>`).join('')||'<span class="cell-sub">—</span>'}</div>
+ </div>`;
+}
+function openModal(type,data){const def=MODALS[type];if(!def){toast('Coming soon');return;}const m=def(data||{});openModalRaw(m.t,m.b,m.f);}
+function openModalRaw(title,body,foot){const mb=document.getElementById('modalBg');const m=document.getElementById('modal');
+ m.style.maxWidth='540px';m.style.padding='0';
+ m.innerHTML=`<div class="modal-head"><h3>${title}</h3><button class="iconbtn" onclick="closeModal()">${svg(I.x,16)}</button></div>
+   <div class="modal-body">${body}</div>${foot?`<div class="modal-foot">${foot}</div>`:''}`;
+ mb.classList.add('show');}
+function closeModal(){document.getElementById('modalBg').classList.remove('show');}
+function addLeadFromForm(){const inps=document.querySelectorAll('#modal input');
+ leads.unshift({id:nid(),name:inps[0].value||'New Lead',parent:inps[1].value||'Parent',phone:inps[2].value||'+92',email:inps[3].value||'',city:'Karachi',program:'A Level',subj:'Physics',source:'Instagram',status:'New',temp:'Warm',manager:'—',next:'—',log:'Added manually'});
+ closeModal();buildNav();render();toast('Lead added to CRM');}
+
+function openQuickActions(){
+ const acts=[['lead','Add lead',I.leads],['student','Onboard student',I.student],['demo','Schedule demo',I.demo],['voucher','Create voucher',I.money],['hw','Assign homework',I.hw],['announce','Announcement',I.megaphone]];
+ openModalRaw('Quick add',`<div class="qa-grid">${acts.map(a=>`<button class="qa-btn" onclick="openModal('${a[0]}')"><div class="qa-ic">${svg(a[2],17)}</div><div class="qa-t">${a[1]}</div></button>`).join('')}</div>`,'');
+}
+
+/* ================= DRAWER ================= */
+function openDrawer(){document.getElementById('drawerBg').classList.add('show');document.getElementById('drawer').classList.add('show');setTimeout(animate,60);}
+function closeDrawer(){document.getElementById('drawerBg').classList.remove('show');document.getElementById('drawer').classList.remove('show');}
+
+
+</script>
+</body>
+</html>

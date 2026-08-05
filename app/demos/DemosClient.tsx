@@ -1,0 +1,405 @@
+'use client';
+
+import React, { useState, useMemo, useEffect } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { PortalLayout } from '@/components/layout/PortalLayout';
+import { useRole } from '@/components/ui/RoleContext';
+import { DemoSession } from '@/lib/mockAdmissionsData';
+import { assignTeacher, recordOutcome } from './actions';
+import {
+  Calendar,
+  Clock,
+  UserCheck,
+  Video,
+  Plus,
+  Search,
+  Filter,
+  X,
+  AlertTriangle,
+  CheckCircle2,
+  Phone,
+  MessageSquare,
+  ExternalLink,
+  ChevronDown,
+  UserPlus,
+  RefreshCw,
+  Sparkles,
+} from 'lucide-react';
+
+export function DemosClient({
+  initialDemos,
+  teachers,
+}: {
+  initialDemos: DemoSession[];
+  teachers: { id: string; name: string }[];
+}) {
+  const { role } = useRole();
+  const router = useRouter();
+
+  // LOCAL DEMOS STATE STORE (seeded from server, RLS-authorized)
+  const [demosList, setDemosList] = useState<DemoSession[]>(initialDemos);
+  const [selectedStatusTab, setSelectedStatusTab] = useState<string>('All Demos');
+  const [searchQuery, setSearchQuery] = useState<string>('');
+
+  // Keep the table in sync when the server refetches after a write (router.refresh()).
+  useEffect(() => { setDemosList(initialDemos); }, [initialDemos]);
+
+  // ASSIGN TEACHER MODAL WITH doAssign TIME OVERLAP RE-CHECK
+  const [assignModalDemo, setAssignModalDemo] = useState<DemoSession | null>(null);
+  const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
+  const [conflictErrorMessage, setConflictErrorMessage] = useState<string | null>(null);
+  const [assigning, setAssigning] = useState(false);
+  const [savingOutcome, setSavingOutcome] = useState(false);
+
+  // LOG OUTCOME MODAL
+  const [outcomeModalDemo, setOutcomeModalDemo] = useState<DemoSession | null>(null);
+  const [selectedOutcome, setSelectedOutcome] = useState<'Won' | 'Lost' | 'No-show' | 'Pending'>('Won');
+  const [outcomeFeedback, setOutcomeFeedback] = useState<string>('');
+
+  const filteredDemos = useMemo(() => {
+    return demosList.filter((d) => {
+      if (selectedStatusTab === 'Needs Teacher' && d.teacherId !== null) return false;
+      if (selectedStatusTab === 'Scheduled' && d.status !== 'Scheduled') return false;
+      if (selectedStatusTab === 'Completed' && d.status !== 'Completed') return false;
+
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase();
+        const matchesStudent = d.studentName.toLowerCase().includes(q);
+        const matchesSubject = d.subject.toLowerCase().includes(q);
+        const matchesId = d.demoId.toLowerCase().includes(q);
+        if (!matchesStudent && !matchesSubject && !matchesId) return false;
+      }
+
+      return true;
+    });
+  }, [demosList, selectedStatusTab, searchQuery]);
+
+  // APPLICATION-LEVEL TIME OVERLAP RE-CHECK AT ASSIGNMENT TIME (doAssign)
+  // The real overlap check runs server-side against the teacher's other demos
+  // and class sessions (see app/demos/actions.ts).
+  const handleDoAssignTeacher = async () => {
+    if (!assignModalDemo) return;
+    if (!selectedTeacherId) { setConflictErrorMessage('Please select a teacher.'); return; }
+    setConflictErrorMessage(null);
+    setAssigning(true);
+
+    const res = await assignTeacher({ demoId: assignModalDemo.id, teacherId: selectedTeacherId });
+    setAssigning(false);
+
+    if (res.ok) {
+      const studentName = assignModalDemo.studentName;
+      setAssignModalDemo(null);
+      setSelectedTeacherId('');
+      router.refresh();
+      alert(`Teacher assigned to ${studentName}'s demo.`);
+    } else if (res.conflict) {
+      setConflictErrorMessage(res.error ?? 'Scheduling conflict — assignment blocked.');
+    } else {
+      setConflictErrorMessage(res.error ?? 'Failed to assign teacher.');
+    }
+  };
+
+  const handleSaveOutcome = async () => {
+    if (!outcomeModalDemo) return;
+    setSavingOutcome(true);
+
+    const res = await recordOutcome({
+      demoId: outcomeModalDemo.id,
+      outcome: selectedOutcome,
+      reason: outcomeFeedback,
+    });
+    setSavingOutcome(false);
+
+    if (res.ok) {
+      setOutcomeModalDemo(null);
+      setOutcomeFeedback('');
+      router.refresh();
+      alert(`Demo outcome saved: ${selectedOutcome}.`);
+    } else {
+      alert(res.error ?? 'Failed to save outcome.');
+    }
+  };
+
+  return (
+    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher', 'student']}>
+      <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
+
+        {/* TOP HEADER */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
+          <div>
+            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+              <span>Demos Management & Teacher Assignment</span>
+            </h1>
+            <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
+              Schedule demos, assign teachers with overlap re-checks, and track conversion outcomes.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <Link
+              href="/book"
+              target="_blank"
+              className="h-[38px] px-3.5 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 text-xs font-extrabold text-[#5B47D6] rounded-xl flex items-center gap-1.5 hover:bg-purple-100 transition-all shadow-sm cursor-pointer"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Preview Public 24/7 Booking Page ↗</span>
+            </Link>
+          </div>
+        </div>
+
+        {/* DEMOS KPI STRIP & TABS */}
+        <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] p-4 shadow-sm space-y-3.5">
+          <div className="flex items-center justify-between gap-3 flex-wrap border-b border-[#EBEDF3] dark:border-slate-800 pb-3">
+            <div className="flex items-center gap-1 bg-[#F6F7FB] dark:bg-slate-800 p-1 rounded-xl flex-wrap">
+              {[
+                { name: 'All Demos', count: demosList.length },
+                { name: 'Needs Teacher', count: demosList.filter((d) => d.teacherId === null).length },
+                { name: 'Scheduled', count: demosList.filter((d) => d.status === 'Scheduled').length },
+                { name: 'Completed', count: demosList.filter((d) => d.status === 'Completed').length },
+              ].map((tab) => (
+                <button
+                  key={tab.name}
+                  onClick={() => setSelectedStatusTab(tab.name)}
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                    selectedStatusTab === tab.name
+                      ? tab.name === 'Needs Teacher'
+                        ? 'bg-orange-600 text-white shadow-sm'
+                        : 'bg-[#5B47D6] text-white shadow-sm'
+                      : 'text-[#6B7185] dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  <span>{tab.name}</span>
+                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] ${selectedStatusTab === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'}`}>
+                    {tab.count}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            <div className="relative w-full sm:w-[240px]">
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search demo student or subject..."
+                className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#5B47D6]"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* DEMOS DATA TABLE */}
+        <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+              <thead>
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                  <th className="py-3.5 px-3">DEMO ID & STUDENT</th>
+                  <th className="py-3.5 px-3">PARENT CONTACT</th>
+                  <th className="py-3.5 px-3">PROGRAM & SUBJECT</th>
+                  <th className="py-3.5 px-3">ASSIGNED TEACHER</th>
+                  <th className="py-3.5 px-3">SCHEDULED TIME</th>
+                  <th className="py-3.5 px-3">MEETING LINK</th>
+                  <th className="py-3.5 px-3">OUTCOME</th>
+                  <th className="py-3.5 px-3 text-center">ACTIONS</th>
+                </tr>
+              </thead>
+
+              <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-xs font-medium">
+                {filteredDemos.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-8 text-center text-[#6B7185]">
+                      No demo sessions match the filter criteria.
+                    </td>
+                  </tr>
+                ) : (
+                  filteredDemos.map((d) => (
+                    <tr key={d.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3.5 px-3">
+                        <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{d.studentName}</div>
+                        <div className="text-[11px] text-[#6B7185] font-mono">{d.demoId}</div>
+                      </td>
+
+                      <td className="py-3.5 px-3">
+                        <div className="font-extrabold text-slate-900 dark:text-slate-100">{d.parentName}</div>
+                        <div className="text-[11px] text-[#6B7185] font-mono">{d.parentPhone}</div>
+                      </td>
+
+                      <td className="py-3.5 px-3">
+                        <div className="font-extrabold text-slate-900 dark:text-slate-100">{d.subject}</div>
+                        <div className="text-[11px] text-[#6B7185]">{d.program}</div>
+                      </td>
+
+                      {/* ASSIGNED TEACHER COLUMN */}
+                      <td className="py-3.5 px-3">
+                        {d.teacherName ? (
+                          <span className="font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-1">
+                            <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+                            <span>{d.teacherName}</span>
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => setAssignModalDemo(d)}
+                            className="px-2.5 py-1 bg-orange-100 text-orange-700 font-extrabold text-xs rounded-lg flex items-center gap-1 hover:bg-orange-200 transition-all cursor-pointer"
+                          >
+                            <UserPlus className="w-3 h-3" />
+                            <span>Assign Teacher</span>
+                          </button>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-3 font-mono font-bold text-slate-900 dark:text-slate-100">
+                        {d.scheduledTime}
+                      </td>
+
+                      <td className="py-3.5 px-3">
+                        <a
+                          href={d.meetingLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="px-2.5 py-1 bg-blue-50 text-blue-700 font-bold text-[11px] rounded-lg border border-blue-200 inline-flex items-center gap-1 hover:bg-blue-100"
+                        >
+                          <Video className="w-3 h-3 text-blue-600" />
+                          <span>Join Link ↗</span>
+                        </a>
+                      </td>
+
+                      <td className="py-3.5 px-3">
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${
+                            d.outcome === 'Won'
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : d.outcome === 'Lost'
+                              ? 'bg-rose-100 text-rose-700'
+                              : d.outcome === 'No-show'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          {d.outcome || 'Pending'}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-3 text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => setOutcomeModalDemo(d)}
+                            className="px-2.5 py-1 bg-purple-50 text-[#5B47D6] font-extrabold text-xs rounded-lg border border-purple-200 hover:bg-purple-100 cursor-pointer"
+                          >
+                            Log Outcome
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ASSIGN TEACHER MODAL WITH doAssign TIME OVERLAP RE-CHECK */}
+        {assignModalDemo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+              <div className="flex justify-between items-center border-b pb-3">
+                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
+                  Assign Teacher (doAssign Conflict Re-Check)
+                </h3>
+                <button onClick={() => setAssignModalDemo(null)}><X className="w-4 h-4 text-slate-400" /></button>
+              </div>
+
+              <div className="space-y-3 text-xs">
+                <div className="p-3 bg-slate-50 rounded-xl space-y-1 font-medium">
+                  <div><span className="text-[#6B7185]">Student:</span> <strong className="text-slate-900">{assignModalDemo.studentName}</strong></div>
+                  <div><span className="text-[#6B7185]">Subject & Time:</span> <strong className="text-slate-900">{assignModalDemo.subject} ({assignModalDemo.scheduledTime})</strong></div>
+                </div>
+
+                <div>
+                  <label className="font-extrabold text-slate-700 block mb-1">Select Available Teacher</label>
+                  <select
+                    value={selectedTeacherId}
+                    onChange={(e) => setSelectedTeacherId(e.target.value)}
+                    className="w-full bg-slate-50 border rounded-xl p-2.5 font-bold text-slate-900"
+                  >
+                    <option value="">Select a teacher...</option>
+                    {teachers.map((t) => (
+                      <option key={t.id} value={t.id}>{t.name}</option>
+                    ))}
+                  </select>
+                  {teachers.length === 0 && (
+                    <p className="text-[10.5px] text-amber-600 font-medium mt-1">No teachers yet. Add a teacher first.</p>
+                  )}
+                </div>
+
+                {conflictErrorMessage && (
+                  <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-700 text-xs font-bold leading-relaxed">
+                    {conflictErrorMessage}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button onClick={() => setAssignModalDemo(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
+                <button onClick={handleDoAssignTeacher} disabled={assigning} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
+                  {assigning ? 'Checking...' : 'Verify & Assign Teacher'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* LOG OUTCOME MODAL */}
+        {outcomeModalDemo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+              <div className="flex justify-between items-center border-b pb-3">
+                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
+                  Log Demo Outcome — {outcomeModalDemo.studentName}
+                </h3>
+                <button onClick={() => setOutcomeModalDemo(null)}><X className="w-4 h-4 text-slate-400" /></button>
+              </div>
+
+              <div className="space-y-3 text-xs font-bold">
+                <div>
+                  <label className="text-slate-700 block mb-1">Demo Outcome Status</label>
+                  <select
+                    value={selectedOutcome}
+                    onChange={(e) => setSelectedOutcome(e.target.value as any)}
+                    className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900"
+                  >
+                    <option value="Won">🟢 Won (Student Ready to Enroll)</option>
+                    <option value="Lost">🔴 Lost (Not Interested)</option>
+                    <option value="No-show">🟡 No-show (Student/Parent Absent)</option>
+                    <option value="Pending">🕒 Pending Decision</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-700 block mb-1">Teacher / Admin Feedback Notes</label>
+                  <textarea
+                    rows={3}
+                    value={outcomeFeedback}
+                    onChange={(e) => setOutcomeFeedback(e.target.value)}
+                    placeholder="Enter teacher feedback regarding demo performance..."
+                    className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button onClick={() => setOutcomeModalDemo(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
+                <button onClick={handleSaveOutcome} disabled={savingOutcome} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
+                  {savingOutcome ? 'Saving...' : 'Save Demo Outcome'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+      </div>
+    </PortalLayout>
+  );
+}
