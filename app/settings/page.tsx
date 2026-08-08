@@ -28,16 +28,18 @@ export default function SettingsPage() {
 
   // FORM STATES
   const [academyName, setAcademyName] = useState('Thinkerzz Academy');
-  const [tagline, setTagline] = useState('Question. Think. Achieve.');
   const [academicYear, setAcademicYear] = useState('Academic Year 2026');
-  const [timezone, setTimezone] = useState('PKT (Asia/Karachi, +05:00)');
-  const [currency, setCurrency] = useState('PKR - Pakistani Rupee');
-
   const [gracePeriodDays, setGracePeriodDays] = useState(3);
-  const [defaultTargetGrade, setDefaultTargetGrade] = useState('A*');
-  const [cronSecret, setCronSecret] = useState('thinkerzz-cron-secret-token-998877');
-  const [resendCap, setResendCap] = useState(100);
   const [saving, setSaving] = useState(false);
+
+  // Reference-only values. These are shown for context but NOT persisted (no
+  // schema columns for them). The cron secret lives in the CRON_SECRET_TOKEN env
+  // var and is deliberately never shown or stored in the database.
+  const tagline = 'Question. Think. Achieve.';
+  const timezone = 'PKT (Asia/Karachi, +05:00)';
+  const currency = 'PKR - Pakistani Rupee';
+  const defaultTargetGrade = 'A*';
+  const resendCap = 100;
   const router = useRouter();
 
   // Load current values from the DB (admin session; RLS-scoped).
@@ -102,7 +104,7 @@ export default function SettingsPage() {
             className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
-            <span>{saving ? 'Saving...' : 'Save All Settings'}</span>
+            <span>{saving ? 'Saving...' : 'Save Settings'}</span>
           </button>
         </div>
 
@@ -139,8 +141,8 @@ export default function SettingsPage() {
                   <input type="text" value={academyName} onChange={(e) => setAcademyName(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />
                 </div>
                 <div>
-                  <label className="text-slate-700 block mb-1">Tagline</label>
-                  <input type="text" value={tagline} onChange={(e) => setTagline(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />
+                  <label className="text-slate-700 block mb-1">Tagline <span className="text-slate-400 normal-case font-medium">(reference only)</span></label>
+                  <input type="text" disabled value={tagline} className="w-full bg-slate-100 border rounded-xl p-2.5 text-slate-700 cursor-not-allowed" />
                 </div>
               </div>
 
@@ -165,8 +167,8 @@ export default function SettingsPage() {
           {activeTab === 'Financial' && (
             <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
               <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl space-y-1 text-purple-900">
-                <div className="font-extrabold uppercase text-[11px]">Locked Financial Invariants</div>
-                <div className="text-[11.5px] font-medium leading-relaxed">
+                <div className="font-extrabold uppercase text-xs">Locked Financial Invariants</div>
+                <div className="text-xs font-medium leading-relaxed">
                   • 3-Day Grace Period score: <strong>100 Fee Timeliness</strong><br />
                   • Expired Grace action: Raises Admin Decision card (Stop / Extend / Mark Paid)<br />
                   • Default Target Grade at enrollment: <strong>A*</strong>
@@ -179,8 +181,8 @@ export default function SettingsPage() {
                   <input type="number" value={gracePeriodDays} onChange={(e) => setGracePeriodDays(parseInt(e.target.value))} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />
                 </div>
                 <div>
-                  <label className="text-slate-700 block mb-1">Default Target Grade</label>
-                  <input type="text" value={defaultTargetGrade} onChange={(e) => setDefaultTargetGrade(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />
+                  <label className="text-slate-700 block mb-1">Default Target Grade <span className="text-slate-400 normal-case font-medium">(reference only)</span></label>
+                  <input type="text" disabled value={defaultTargetGrade} className="w-full bg-slate-100 border rounded-xl p-2.5 text-slate-700 cursor-not-allowed" />
                 </div>
               </div>
             </div>
@@ -194,7 +196,7 @@ export default function SettingsPage() {
                   <span>Postgres RLS Security Status</span>
                   <span>🟢 ENABLED (Deny-by-Default)</span>
                 </div>
-                <div className="text-[11.5px] text-slate-300 font-medium">
+                <div className="text-xs text-slate-300 font-medium">
                   Every table carries `org_id` multi-tenancy and deny-by-default policies. Managers are denied on all finance, pay rates, settings, and audit logs.
                 </div>
               </div>
@@ -206,11 +208,11 @@ export default function SettingsPage() {
             <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
               <div>
                 <label className="text-slate-700 block mb-1">cPanel Cron Bearer Secret Token (Authorization: Bearer)</label>
-                <input type="text" value={cronSecret} onChange={(e) => setCronSecret(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-2.5 font-mono text-slate-900" />
+                <input type="text" disabled value="•••••••••• — set via the CRON_SECRET_TOKEN env var (never stored here)" className="w-full bg-slate-100 border rounded-xl p-2.5 font-mono text-slate-500 cursor-not-allowed" />
               </div>
               <div>
-                <label className="text-slate-700 block mb-1">Resend Daily Free Tier Cap Threshold</label>
-                <input type="number" value={resendCap} onChange={(e) => setResendCap(parseInt(e.target.value))} className="w-full bg-slate-50 border rounded-xl p-2.5 font-mono text-slate-900" />
+                <label className="text-slate-700 block mb-1">Resend Daily Free Tier Cap Threshold <span className="text-slate-400 normal-case font-medium">(enforced in code)</span></label>
+                <input type="number" disabled value={resendCap} className="w-full bg-slate-100 border rounded-xl p-2.5 font-mono text-slate-500 cursor-not-allowed" />
               </div>
             </div>
           )}
@@ -220,7 +222,7 @@ export default function SettingsPage() {
             <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
               <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-1 text-emerald-900">
                 <div className="font-extrabold">Queue Drainage Rules</div>
-                <div className="text-[11.5px] font-medium">
+                <div className="text-xs font-medium">
                   Adapter drains Priority 1 fully, then Priority 2, then Priority 3. Templates enforce <code className="bg-white px-1 py-0.5 rounded font-mono font-bold text-slate-800">{"{{student_name}}"}</code> and <code className="bg-white px-1 py-0.5 rounded font-mono font-bold text-slate-800">{"{{pronoun}}"}</code> merge fields.
                 </div>
               </div>

@@ -47,7 +47,7 @@ export function ResultSlip({
       {/* Grade Table Breakdown */}
       <div className="overflow-x-auto">
         <table className="w-full text-left text-xs font-medium text-slate-700 dark:text-slate-300">
-          <thead className="bg-slate-50 dark:bg-slate-950/60 text-[10px] uppercase font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
+          <thead className="bg-slate-50 dark:bg-slate-950/60 text-xs uppercase font-bold text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-800">
             <tr>
               <th className="px-4 py-3">Subject</th>
               <th className="px-4 py-3 text-center">
@@ -87,7 +87,7 @@ export function ResultSlip({
                       {g.assessedGrade}
                     </span>
                   ) : (
-                    <span className="text-[11px] font-semibold text-slate-400 italic bg-slate-100 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg">
+                    <span className="text-xs font-semibold text-slate-400 italic bg-slate-100 dark:bg-slate-800/60 px-2.5 py-1 rounded-lg">
                       Blank (Not yet tested)
                     </span>
                   )}

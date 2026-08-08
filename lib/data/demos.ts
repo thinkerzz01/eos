@@ -12,7 +12,7 @@ const STATUS_UI: Record<string, DemoSession['status']> = {
 const OUTCOME_UI: Record<string, NonNullable<DemoSession['outcome']>> = {
   won: 'Won',
   lost: 'Lost',
-  follow_up: 'Pending',
+  follow_up: 'No-show',
 };
 
 // Supabase can return an embedded relation as an object or a 1-element array.

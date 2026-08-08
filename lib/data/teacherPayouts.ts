@@ -37,5 +37,15 @@ export async function getTeacherPayouts(): Promise<TeacherPayout[]> {
     .order('effective_from', { ascending: false });
 
   if (error || !data) return [];
-  return (data as any[]).map(mapRow);
+
+  // teacher_pay_rates is versioned history (one row per rate change). Ordered by
+  // effective_from DESC above, so the FIRST row per teacher is their latest rate.
+  // Keep only that one to avoid duplicating a teacher / inflating headcount.
+  const seen = new Set<string>();
+  const latestPerTeacher = (data as any[]).filter((r) => {
+    if (seen.has(r.teacher_id)) return false;
+    seen.add(r.teacher_id);
+    return true;
+  });
+  return latestPerTeacher.map(mapRow);
 }

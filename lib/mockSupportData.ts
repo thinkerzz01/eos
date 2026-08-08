@@ -13,6 +13,7 @@ export interface SupportTicket {
   elapsedMinutes: number; // For 1-hour response target SLA check!
   isPastTarget: boolean; // True if > 60 minutes during 7 AM - 11 PM window
   messagesCount: number;
+  messages?: { id: string; body: string; at: string }[];
 }
 
 export interface AcademyAnnouncement {

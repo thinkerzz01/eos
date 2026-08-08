@@ -1,81 +1,71 @@
-# Thinkerzz EOS — Progress Log
+# Thinkerzz EOS — Progress & Status
 
-## [2026-08-04] Phase 7 — Support & Polish Module (100% Complete — ALL 7 PHASES SHIPPED)
+_Last updated: 2026-08-07_
 
-**Built:**
-1. **Central Support Mock Store (`lib/mockSupportData.ts`):**
-   - Support tickets with SLA response timer calculations (7 AM - 11 PM PKT window).
-   - Academy announcements broadcaster dataset.
-   - Immutable append-only `audit_log` records.
+This file reflects the **actual, verified** state of the product. (An earlier
+version claimed "100% COMPLETE — ALL 7 PHASES SHIPPED"; that referred to the UI
+prototype on mock data and was inaccurate. See `AUDIT-REPORT.md` for the audit
+that corrected it.)
 
-2. **Support Desk & Parent/Student Tickets Screen (`app/tickets/page.tsx`):**
-   - **1-Hour SLA Invariant:** Highlights tickets exceeding 60 minutes without response in red (`🚨 SLA Overdue`).
-   - Ticket response composer with SLA status updater.
-
-3. **Announcements System Screen (`app/announcements/page.tsx`):**
-   - System-wide and audience-specific notices (*All*, *Students*, *Teachers*, *Parents*).
-   - Pinned announcement support.
-
-4. **Settings & System Config Screen (`app/settings/page.tsx`):**
-   - **RLS Access Security:** Denied to Manager role at database level.
-   - **Cron Secret Config:** Enforces `Authorization: Bearer <token>` header security.
-
-5. **Append-Only Audit Log Viewer (`app/audit-log/page.tsx`):**
-   - RLS security check (Manager role denied).
-   - Immutable transaction viewer for system write operations.
-
-**Files touched:**
-- `app/tickets/page.tsx`
-- `app/announcements/page.tsx`
-- `app/settings/page.tsx`
-- `app/audit-log/page.tsx`
-- `lib/mockSupportData.ts`
-- `PROGRESS.md`
-
-**Acceptance criteria checked:**
-- [x] Ticket reply 1-hour SLA target (7 AM - 11 PM PKT) flags overdue tickets in red.
-- [x] Manager tokens strictly denied on Settings and Audit Log.
-- [x] Cron bearer token header security configured.
-- [x] All 7 Build Order phases fully completed and shippable.
+Build health: `next build` passes (24/24 routes), `tsc --noEmit` clean.
 
 ---
-## ⚠️ SYSTEM BUILD STATUS: UI COMPLETE — see 2026-08-04 correction below
 
-> The "100% COMPLETE / ALL 7 PHASES SHIPPED" claim above referred to the **UI
-> prototype**, not a working product. See the correction entry.
+## Where the product actually is
 
----
-## [2026-08-04] Correction & remediation (post-audit)
+It is a **real, database-backed, RLS-secured app** — no longer a mock shell.
 
-An independent audit (`AUDIT-REPORT.md`) found the prior "100% complete" status
-inaccurate: the app was a high-fidelity **UI on hardcoded mock data**, with auth
-bypassable and no database wiring. Actual remediation since:
+### ✅ Done and working
 
-**Done**
-- **Auth is real** — middleware enforces login (redirect to `/login`); removed the
-  1-click demo bypass and the silent auto-admin signup; added Sign Out; added
-  `supabase/seed_admin.sql` bootstrap.
-- **Read path — 16 screens now server-fetch real data through RLS** (students,
-  teachers, leads, demos, schedule, homework, assessments, tickets, announcements,
-  audit-log, email-queue, fees, vouchers, payments, teacher-payouts, dashboard)
-  via `lib/data/*` + `<Screen>Client.tsx` splits. `lib/health.ts` holds the locked
-  health formula.
-- **Phase 6 backend built** — notification queue (`lib/notifications/*`), 3
+- **Authentication is real & deny-by-default.** `middleware.ts` redirects any
+  unauthenticated request to `/login`. No demo-bypass cookie, no silent
+  auto-signup — accounts are provisioned by an admin (`supabase/seed_admin.sql`).
+- **Roles are server-authoritative.** The signed-in user's role is read from the
+  `profiles` table server-side (`app/layout.tsx`) and passed down read-only;
+  there is no client role switcher. RLS in the database is the real lock.
+- **Read path — 16 screens fetch live data through RLS** via `lib/data/*` server
+  queries + `<Screen>Client.tsx` splits (students, teachers, leads, demos,
+  schedule, homework, assessments, tickets, announcements, audit-log,
+  email-queue, fees, vouchers, payments, teacher-payouts, dashboard).
+- **Write path — most forms persist** via `'use server'` actions: onboard/bulk
+  student, create voucher / record payment / refund / grace decision, create &
+  convert & edit lead, add teacher + set pay rate, assign demo (with real
+  overlap re-check) + record outcome, create class + mark attendance, assign &
+  grade homework, record test, post announcement, reply/resolve ticket, save
+  settings. Health recomputes from real attendance/homework.
+- **Public booking is wired.** `/book` books through the `create_public_booking`
+  SECURITY DEFINER routine (anon-safe), creating a real lead + unassigned demo.
+- **Phase 6 backend built.** Notification queue (`lib/notifications/*`), three
   Bearer-guarded cron routes (`app/api/cron/{reminders,send,monthly-reports}`),
-  priority drain + 100/day cap + retries, pronoun-safe templates, monthly report
-  (no raw scores; LLM phrasing first-name + facts only).
-- **Write path started** — onboarding a student now inserts into the DB via a
-  server action (`app/students/actions.ts`), RLS-enforced.
-- Fixed 4 build-blocking type errors; `next build` is clean.
+  priority drain + 100/day cap + retries, pronoun-safe templates, and a monthly
+  report that sends **first-name + facts only** to the LLM (no raw scores).
+- **Real signed URLs** for the private document bucket (`lib/storage.ts`).
 
-**Still outstanding**
-- Write path for the remaining forms (payments, mark-paid, assign teacher, syllabus
-  ticks, ticket replies) — most still mutate local state only.
-- Reports screen, Settings read/write, Documents vault signed URLs (fake today).
-- Retire the client role switcher (derive role from `profiles` server-side);
-  wire the `doAssign` overlap re-check; test RLS denial cases per role.
-- Polish: dashboard placeholder tiles, seed data, repo cleanup.
+### ⚠️ Known limitations (documented, not yet built)
 
-Honest completion of an integrated, secured product: partial but real — no longer a
-mock. Do not restore the "100% shipped" headline until the write path and the items
-above are done.
+These are **additions** (new schema/tables/joins), not bugs:
+
+- **Teacher-payouts "Approve" cannot persist** — the schema has `teacher_pay_rates`
+  (rates) but no `payouts` table with a status. Needs a schema addition.
+- Monthly-report `topicsCovered`, `gradeTrend`, and `assessedGrade` are
+  placeholders until syllabus-progress and grade history are wired.
+- Announcement audience, teacher subjects, and `assessed_grade`-at-test-time are
+  not persisted (need their join tables).
+- Documents vault has no UI yet (the signing helper `lib/storage.ts` is ready).
+- Syllabus screen is CAIE reference/seed data (defensible).
+
+---
+
+## Go-live checklist (operator steps — not code)
+
+1. Run `supabase/migrations/*` (schema) on the project if not already applied.
+2. Create the first admin auth user, then run `supabase/seed_admin.sql`.
+3. Run `supabase/seed_subjects.sql` (**required before any class can be scheduled**).
+4. Turn OFF public sign-ups in Supabase Auth (admin-provisioned accounts only).
+5. Set production env vars (Supabase keys, `CRON_SECRET_TOKEN`, `BOOKING_ORG_ID`,
+   `RESEND_API_KEY`, `OPENROUTER_API_KEY`).
+6. Point a scheduler (e.g. cPanel cron) at `/api/cron/reminders` and
+   `/api/cron/send` every 10–15 min, and `/api/cron/monthly-reports` at
+   month-end, each with `Authorization: Bearer $CRON_SECRET_TOKEN`.
+7. Verify RLS denial per role with real test users (admin / manager / teacher /
+   student) — per AGENTS.md §7.

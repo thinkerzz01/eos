@@ -213,7 +213,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
   };
 
   return (
-    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher', 'student']}>
+    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
 
         {/* TOP PAGE HEADER */}
@@ -237,7 +237,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                 placeholder="Search teachers, subjects, programs..."
                 className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-9 pr-8 py-2 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#5B47D6]"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded">⌘K</span>
+              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded">⌘K</span>
             </div>
 
             {role === 'admin' && (
@@ -263,9 +263,9 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
             </div>
             <div className="my-2">
               <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{teachersList.length}</div>
-              <div className="text-[11px] font-bold text-emerald-600 mt-1">Active staff</div>
+              <div className="text-xs font-bold text-emerald-600 mt-1">Active staff</div>
             </div>
-            <span className="text-[11.5px] font-bold text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">View all →</span>
+            <span className="text-xs font-bold text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">View all →</span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
@@ -276,10 +276,10 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">Active Teaching</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">0</div>
-              <div className="text-[11px] font-bold text-emerald-600 mt-1">of total</div>
+              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{teachersList.filter((t) => t.status === 'Teaching').length}</div>
+              <div className="text-xs font-bold text-emerald-600 mt-1">of total</div>
             </div>
-            <span className="text-[11.5px] font-bold text-emerald-600 hover:underline inline-flex items-center gap-0.5">View active →</span>
+            <span className="text-xs font-bold text-emerald-600 hover:underline inline-flex items-center gap-0.5">View active →</span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
@@ -290,10 +290,10 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">At Capacity</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-amber-600 leading-none">0</div>
-              <div className="text-[11px] font-bold text-amber-600 mt-1">at capacity</div>
+              <div className="font-heading font-extrabold text-2xl text-amber-600 leading-none">{teachersList.filter((t) => t.capacity > 0 && t.currentLoad >= t.capacity).length}</div>
+              <div className="text-xs font-bold text-amber-600 mt-1">at capacity</div>
             </div>
-            <span className="text-[11.5px] font-bold text-amber-600 hover:underline inline-flex items-center gap-0.5">View details →</span>
+            <span className="text-xs font-bold text-amber-600 hover:underline inline-flex items-center gap-0.5">View details →</span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
@@ -304,10 +304,10 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">Avg. Load Capacity</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">—</div>
-              <div className="text-[11px] font-bold text-blue-600 mt-1">Avg load</div>
+              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{teachersList.length ? `${Math.round(teachersList.reduce((s, t) => s + (t.capacity ? (t.currentLoad / t.capacity) * 100 : 0), 0) / teachersList.length)}%` : '—'}</div>
+              <div className="text-xs font-bold text-blue-600 mt-1">Avg load</div>
             </div>
-            <span className="text-[11.5px] font-bold text-blue-600 hover:underline inline-flex items-center gap-0.5">View report →</span>
+            <span className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-0.5">View report →</span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
@@ -318,10 +318,10 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">Avg Per Class Pay</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">PKR 0</div>
-              <div className="text-[11px] font-bold text-emerald-600 mt-1">Per class rate</div>
+              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{teachersList.length ? `PKR ${Math.round(teachersList.reduce((s, t) => s + t.perClassPay, 0) / teachersList.length).toLocaleString()}` : 'PKR 0'}</div>
+              <div className="text-xs font-bold text-emerald-600 mt-1">Per class rate</div>
             </div>
-            <span className="text-[11.5px] font-bold text-purple-600 hover:underline inline-flex items-center gap-0.5">View rates →</span>
+            <span className="text-xs font-bold text-purple-600 hover:underline inline-flex items-center gap-0.5">View rates →</span>
           </div>
 
           <div className="bg-gradient-to-br from-[#1B1E38] to-[#2E285C] text-white rounded-[16px] p-3.5 shadow-md flex flex-col justify-between">
@@ -329,17 +329,22 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <div className="flex items-center justify-between gap-1 mb-1">
                 <div className="flex items-center gap-1 font-heading font-extrabold text-xs text-purple-200">
                   <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                  <span>AI Insights</span>
+                  <span>Staff Summary</span>
                 </div>
-                <span className="text-[10px] text-purple-300 font-bold">5 insights</span>
               </div>
-              <div className="space-y-0.5 text-[10.5px] text-purple-100 font-medium leading-tight">
-                <div>• Sir Bilal is at 100% capacity</div>
-                <div>• 8 teachers actively teaching</div>
-                <div>• 1 new onboarding teacher</div>
+              <div className="space-y-0.5 text-xs text-purple-100 font-medium leading-tight">
+                {teachersList.length === 0 ? (
+                  <div>• No teachers on staff yet</div>
+                ) : (
+                  <>
+                    <div>• {teachersList.filter((t) => t.status === 'Teaching').length} actively teaching</div>
+                    <div>• {teachersList.filter((t) => t.capacity > 0 && t.currentLoad >= t.capacity).length} at full capacity</div>
+                    <div>• {teachersList.filter((t) => t.status === 'Onboarding').length} onboarding</div>
+                  </>
+                )}
               </div>
             </div>
-            <span className="text-[11px] font-bold text-purple-300 hover:text-white mt-1 inline-flex items-center gap-0.5">View insights →</span>
+            <span className="text-xs font-bold text-purple-300 hover:text-white mt-1 inline-flex items-center gap-0.5">View insights →</span>
           </div>
         </div>
 
@@ -351,7 +356,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                 { name: 'All Teachers', count: teachersList.length },
                 { name: 'Active', count: teachersList.filter(t => t.status === 'Teaching' || t.status === 'At Capacity').length },
                 { name: 'Inactive', count: teachersList.filter(t => t.status === 'Onboarding').length },
-                { name: 'On Leave', count: 0 },
+                { name: 'On Leave', count: teachersList.filter(t => t.status === 'On Leave').length },
               ].map((tab) => (
                 <button
                   key={tab.name}
@@ -363,7 +368,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                   }`}
                 >
                   <span>{tab.name}</span>
-                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] ${activeTabStatus === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'}`}>
+                  <span className={`px-1.5 py-0.2 rounded-md text-xs ${activeTabStatus === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'}`}>
                     {tab.count}
                   </span>
                 </button>
@@ -384,27 +389,21 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
           {/* FILTER ROW DROPDOWNS */}
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs">
-              <span className="text-[9.5px] text-[#6B7185] block font-medium">Subject Filter</span>
+              <span className="text-xs text-[#6B7185] block font-medium">Subject Filter</span>
               <select
                 value={selectedSubject}
                 onChange={(e) => setSelectedSubject(e.target.value)}
                 className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
               >
                 <option value="All Subjects">All Subjects</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Physics">Physics</option>
-                <option value="Chemistry">Chemistry</option>
-                <option value="Biology">Biology</option>
-                <option value="Economics">Economics</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="English">English</option>
-                <option value="Urdu">Urdu</option>
-                <option value="Pakistan Studies">Pakistan Studies</option>
+                {Array.from(new Set(teachersList.flatMap((t) => t.subjects).filter(Boolean))).map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
               </select>
             </div>
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs">
-              <span className="text-[9.5px] text-[#6B7185] block font-medium">Load Capacity Filter</span>
+              <span className="text-xs text-[#6B7185] block font-medium">Load Capacity Filter</span>
               <select
                 value={selectedLoadLevel}
                 onChange={(e) => setSelectedLoadLevel(e.target.value)}
@@ -418,7 +417,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
             </div>
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs">
-              <span className="text-[9.5px] text-[#6B7185] block font-medium">Per Class Pay Filter</span>
+              <span className="text-xs text-[#6B7185] block font-medium">Per Class Pay Filter</span>
               <select
                 value={selectedPayRange}
                 onChange={(e) => setSelectedPayRange(e.target.value)}
@@ -441,7 +440,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
                     <th className="py-3.5 px-3 w-[36px] text-center">
                       <input type="checkbox" checked={selectedTeacherIds.length === filteredTeachers.length && filteredTeachers.length > 0} onChange={toggleSelectAll} className="rounded accent-[#5B47D6]" />
                     </th>
@@ -497,17 +496,17 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
 
                           <td className="py-3.5 px-3">
                             <div className="font-extrabold text-slate-900 dark:text-slate-100">{t.subjects.join(' · ')}</div>
-                            <div className="text-[11px] text-[#6B7185] font-medium mt-0.5">{t.programs.join(' · ')}</div>
+                            <div className="text-xs text-[#6B7185] font-medium mt-0.5">{t.programs.join(' · ')}</div>
                           </td>
 
                           <td className="py-3.5 px-3">
                             <div className="font-extrabold text-slate-900 dark:text-slate-100">{t.joinDate}</div>
-                            <div className="text-[11px] text-[#6B7185] font-medium mt-0.5">Emp ID: {t.empId}</div>
+                            <div className="text-xs text-[#6B7185] font-medium mt-0.5">Emp ID: {t.empId}</div>
                           </td>
 
                           <td className="py-3.5 px-3">
                             <div className="space-y-1 w-24">
-                              <div className="flex justify-between items-center text-[11px] font-mono">
+                              <div className="flex justify-between items-center text-xs font-mono">
                                 <span className="font-extrabold text-slate-900 dark:text-slate-100">{t.currentLoad} / {t.capacity}</span>
                                 <span className="text-[#6B7185] font-bold">{loadPct}%</span>
                               </div>
@@ -515,7 +514,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                                 <div style={{ width: `${loadPct}%` }} className={`h-full rounded-full ${loadPct >= 100 ? 'bg-rose-500' : loadPct >= 80 ? 'bg-emerald-500' : 'bg-emerald-400'}`} />
                               </div>
                               {loadPct >= 100 && (
-                                <span className="text-[10px] font-extrabold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200 inline-block">
+                                <span className="text-xs font-extrabold text-rose-600 bg-rose-50 px-1.5 py-0.2 rounded border border-rose-200 inline-block">
                                   At Capacity
                                 </span>
                               )}
@@ -528,7 +527,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                               <div className="font-extrabold text-slate-900 dark:text-slate-100 font-mono text-sm">PKR {t.perClassPay.toLocaleString()}</div>
                               <button
                                 onClick={() => setPayRateTeacher(t)}
-                                className="text-[10.5px] text-[#5B47D6] font-bold hover:underline cursor-pointer"
+                                className="text-xs text-[#5B47D6] font-bold hover:underline cursor-pointer"
                               >
                                 Set rate →
                               </button>
@@ -572,11 +571,6 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
 
             <div className="p-3 bg-slate-50 border-t flex justify-between items-center text-xs font-bold text-slate-600">
               <div>Showing {filteredTeachers.length} of {teachersList.length} teachers</div>
-              <div className="flex items-center gap-2">
-                <button disabled className="px-3 py-1 bg-white border rounded-lg opacity-50">Previous</button>
-                <span>Page 1 of 1</span>
-                <button disabled className="px-3 py-1 bg-white border rounded-lg opacity-50">Next</button>
-              </div>
             </div>
           </div>
 
@@ -592,12 +586,22 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                   <div>
                     <h2 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white flex items-center gap-2">
                       <span>{selectedDrawerTeacher.name}</span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-[#12A150]">🟢 Active</span>
+                      <span
+                        className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+                          selectedDrawerTeacher.status === 'Teaching'
+                            ? 'bg-[#E7F6EC] text-[#12A150]'
+                            : selectedDrawerTeacher.status === 'At Capacity'
+                            ? 'bg-rose-50 text-rose-600'
+                            : 'bg-purple-100 text-purple-700'
+                        }`}
+                      >
+                        {selectedDrawerTeacher.status}
+                      </span>
                     </h2>
                     <div className="text-xs text-[#6B7185] font-medium mt-0.5">
                       {selectedDrawerTeacher.subjects.join(' · ')}
                     </div>
-                    <div className="text-[11px] text-[#5B47D6] font-bold">
+                    <div className="text-xs text-[#5B47D6] font-bold">
                       {selectedDrawerTeacher.programs.join(' · ')}
                     </div>
                   </div>
@@ -625,7 +629,6 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <div className="bg-gradient-to-br from-purple-50 to-[#EEEBFB] border border-purple-200 rounded-2xl p-4 space-y-3">
                 <div className="flex justify-between items-center">
                   <div className="font-extrabold text-xs text-[#5B47D6] uppercase tracking-wider">Teacher Performance Score & Rating</div>
-                  <span className="text-[10px] font-bold text-emerald-600 bg-emerald-100 px-2 py-0.5 rounded-full">⭐ Verified Rating</span>
                 </div>
 
                 <div className="flex items-center justify-between">
@@ -636,7 +639,10 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                       <div>
                         <div className="font-heading font-extrabold text-3xl text-slate-900">{selectedDrawerTeacher.score} <span className="text-xs font-normal text-slate-500">/ 100</span></div>
                         <div className="text-xs font-bold text-amber-500 flex items-center gap-1 mt-1">
-                          <span>⭐⭐⭐⭐⭐</span>
+                          <span>
+                            {'★'.repeat(Math.max(0, Math.min(5, Math.round(selectedDrawerTeacher.rating))))}
+                            {'☆'.repeat(5 - Math.max(0, Math.min(5, Math.round(selectedDrawerTeacher.rating))))}
+                          </span>
                           <span className="text-slate-800">{selectedDrawerTeacher.rating} ({selectedDrawerTeacher.ratingCount} reviews)</span>
                         </div>
                       </div>
@@ -669,10 +675,10 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                   selectedDrawerTeacher.schedule.map((item, i) => (
                     <div key={i} className="p-2.5 bg-slate-50 border rounded-xl flex items-center justify-between font-bold">
                       <div>
-                        <div className="font-mono text-[10.5px] text-slate-400">{item.time}</div>
+                        <div className="font-mono text-xs text-slate-400">{item.time}</div>
                         <div className="text-slate-900 font-extrabold">{item.title}</div>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] ${item.tag === 'Live' ? 'bg-emerald-100 text-emerald-700 animate-pulse' : 'bg-blue-100 text-blue-700'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${item.tag === 'Live' ? 'bg-emerald-100 text-emerald-700 animate-pulse' : 'bg-blue-100 text-blue-700'}`}>
                         {item.tag}
                       </span>
                     </div>

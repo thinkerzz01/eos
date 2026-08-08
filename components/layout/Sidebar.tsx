@@ -96,8 +96,6 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
           label: 'Leads & Demos',
           href: '/leads',
           icon: Users,
-          badge: 5,
-          badgeColor: 'bg-[#E5484D] text-white',
           allowedRoles: ['admin', 'manager'],
         },
         {
@@ -152,6 +150,12 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
           icon: CreditCard,
           allowedRoles: ['admin'],
         },
+        {
+          label: 'My Fee Vouchers',
+          href: '/fees',
+          icon: Receipt,
+          allowedRoles: ['student'],
+        },
       ],
     },
     {
@@ -161,22 +165,18 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
           label: 'Tickets',
           href: '/tickets',
           icon: Ticket,
-          badge: 4,
-          badgeColor: 'bg-[#E5484D] text-white',
           allowedRoles: ['admin', 'manager', 'teacher', 'student'],
         },
         {
           label: 'Announcements',
           href: '/announcements',
           icon: Megaphone,
-          allowedRoles: ['admin', 'manager', 'student'],
+          allowedRoles: ['admin', 'manager', 'teacher', 'student'],
         },
         {
           label: 'Email Queue',
           href: '/email-queue',
           icon: Mail,
-          badge: 8,
-          badgeColor: 'bg-[#5B47D6] text-white',
           allowedRoles: ['admin', 'manager'],
         },
       ],
@@ -218,7 +218,7 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
 
           return (
             <div key={idx}>
-              <div className="text-[10px] tracking-[0.13em] uppercase text-[#666C89] px-2.5 pt-3.5 pb-1.5 font-semibold">
+              <div className="text-xs tracking-[0.13em] uppercase text-[#666C89] px-2.5 pt-3.5 pb-1.5 font-semibold">
                 {group.groupLabel}
               </div>
               {visibleItems.map((item) => {
@@ -238,7 +238,7 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
                     <Icon className="w-[18px] h-[18px] shrink-0" />
                     <span className="truncate">{item.label}</span>
                     {item.badge !== undefined && item.badge > 0 && (
-                      <span className={`ml-auto text-[11px] font-bold px-[7px] py-[1px] rounded-full ${item.badgeColor || 'bg-[#5B47D6] text-white'}`}>
+                      <span className={`ml-auto text-xs font-bold px-[7px] py-[1px] rounded-full ${item.badgeColor || 'bg-[#5B47D6] text-white'}`}>
                         {item.badge}
                       </span>
                     )}
@@ -254,7 +254,7 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
       <div className="mt-auto pt-3">
         <div className="p-3 bg-white/[0.05] rounded-[12px] border border-white/[0.06]">
           <Logo variant="dark" size="sm" showTagline={false} />
-          <div className="text-[11px] text-[#8B8FA8] mt-1 font-medium pl-1">Academic Year 2026</div>
+          <div className="text-xs text-[#8B8FA8] mt-1 font-medium pl-1">Academic Year 2026</div>
         </div>
       </div>
     </aside>

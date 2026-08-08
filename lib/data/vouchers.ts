@@ -20,9 +20,13 @@ function mapRow(r: any): FeeVoucher {
   const payments: any[] = Array.isArray(r.payments) ? r.payments : [];
   const paidAmount = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const totalAmount = Number(r.amount || 0);
-  const graceDeadline = r.grace_deadline;
+  const graceDeadline = r.grace_deadline; // 'YYYY-MM-DD'
+  // Master Plan §2: in grace up to AND INCLUDING the grace-deadline date; overdue
+  // begins the day AFTER. Compare PKT calendar dates so the deadline day is still
+  // grace (was `new Date(graceDeadline) < new Date()`, which fired a day early).
+  const todayPKT = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
   const needsAdminDecision =
-    r.status !== 'paid' && !!graceDeadline && new Date(graceDeadline) < new Date();
+    r.status !== 'paid' && !!graceDeadline && todayPKT > graceDeadline;
   return {
     id: r.id,
     voucherNo: r.voucher_no,

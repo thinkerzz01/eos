@@ -83,13 +83,15 @@ export function HomeworkClient({
             </p>
           </div>
 
-          <button
-            onClick={() => setShowAddHomeworkModal(true)}
-            className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm cursor-pointer"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>+ Assign Homework</span>
-          </button>
+          {role !== 'student' && (
+            <button
+              onClick={() => setShowAddHomeworkModal(true)}
+              className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ Assign Homework</span>
+            </button>
+          )}
         </div>
 
         {/* HOMEWORK DATA TABLE */}
@@ -97,7 +99,7 @@ export function HomeworkClient({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
                   <th className="py-3.5 px-3">HOMEWORK CODE & TITLE</th>
                   <th className="py-3.5 px-3">SUBJECT & PROGRAM</th>
                   <th className="py-3.5 px-3">TEACHER</th>
@@ -112,12 +114,12 @@ export function HomeworkClient({
                   <tr key={hw.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3.5 px-3">
                       <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{hw.title}</div>
-                      <div className="text-[11px] text-[#6B7185] font-mono">{hw.homeworkCode}</div>
+                      <div className="text-xs text-[#6B7185] font-mono">{hw.homeworkCode}</div>
                     </td>
 
                     <td className="py-3.5 px-3">
                       <div className="font-extrabold text-slate-900 dark:text-slate-100">{hw.subject}</div>
-                      <div className="text-[11px] text-[#6B7185]">{hw.program}</div>
+                      <div className="text-xs text-[#6B7185]">{hw.program}</div>
                     </td>
 
                     <td className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-slate-100">
@@ -131,14 +133,14 @@ export function HomeworkClient({
 
                     <td className="py-3.5 px-3">
                       <div className="font-extrabold text-slate-900">{hw.gradedCount} / {hw.totalSubmissions} Graded</div>
-                      <div className="text-[10.5px] text-emerald-600 font-bold">
+                      <div className="text-xs text-emerald-600 font-bold">
                         {Math.round((hw.gradedCount / (hw.totalSubmissions || 1)) * 100)}% On-time Completion
                       </div>
                     </td>
 
                     <td className="py-3.5 px-3">
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
                           hw.status === 'Graded' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-[#5B47D6]'
                         }`}
                       >
@@ -151,7 +153,7 @@ export function HomeworkClient({
                             if (res.ok) router.refresh();
                             else alert(res.error ?? 'Failed to grade.');
                           }}
-                          className="mt-1 block text-[10.5px] text-[#5B47D6] font-bold hover:underline cursor-pointer"
+                          className="mt-1 block text-xs text-[#5B47D6] font-bold hover:underline cursor-pointer"
                         >
                           Mark graded →
                         </button>
@@ -206,7 +208,7 @@ export function HomeworkClient({
                   <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
                 </div>
                 {(students.length === 0 || subjects.length === 0 || teachers.length === 0) && (
-                  <p className="text-[10.5px] text-amber-600 font-medium">Add students, subjects, and teachers first (run supabase/seed_subjects.sql for subjects).</p>
+                  <p className="text-xs text-amber-600 font-medium">Add students, subjects, and teachers first (run supabase/seed_subjects.sql for subjects).</p>
                 )}
               </div>
 

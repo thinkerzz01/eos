@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
-import { bulkCreateStudents } from './actions';
+import { bulkCreateStudents, updateStudent, softDeleteStudent } from './actions';
 import {
   Users,
   UserCheck,
@@ -243,30 +243,36 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
     setShowSaveViewModal(false);
   };
 
-  const handleSaveProfileChanges = () => {
+  const handleSaveProfileChanges = async () => {
     if (!profileModalStudent || !editFormData) return;
-    const updated = studentsData.map((s) => {
-      if (s.id === profileModalStudent.id) {
-        return {
-          ...s,
-          ...editFormData,
-        } as Student;
-      }
-      return s;
+    const res = await updateStudent({
+      id: profileModalStudent.id,
+      name: editFormData.name,
+      parentName: editFormData.parentName,
+      parentPhone: editFormData.parentPhone,
+      program: editFormData.program,
+      feeStatus: editFormData.feeStatus as string | undefined,
     });
-    setStudentsData(updated);
+    if (!res.ok) {
+      alert(res.error ?? 'Failed to save changes.');
+      return;
+    }
+    // Reflect the edit locally, then refetch the authoritative row from the DB.
     setProfileModalStudent({ ...profileModalStudent, ...editFormData } as Student);
     setIsEditMode(false);
+    router.refresh();
   };
 
-  const handleDeleteStudent = (id: string) => {
-    if (confirm('Are you sure you want to delete this student record? This action will be logged.')) {
-      setStudentsData(studentsData.filter((s) => s.id !== id));
-      setActiveRowMenuId(null);
-      if (profileModalStudent?.id === id) {
-        setProfileModalStudent(null);
-      }
+  const handleDeleteStudent = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this student record? This action will be logged.')) return;
+    const res = await softDeleteStudent(id);
+    if (!res.ok) {
+      alert(res.error ?? 'Failed to delete student.');
+      return;
     }
+    setActiveRowMenuId(null);
+    if (profileModalStudent?.id === id) setProfileModalStudent(null);
+    router.refresh();
   };
 
   // DOWNLOAD SAMPLE CSV TEMPLATE
@@ -305,43 +311,47 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
       for (let i = 1; i < lines.length; i++) {
         const cols = lines[i].split(',').map((c) => c.replace(/"/g, '').trim());
         if (cols.length >= 5) {
+          // Only real CSV values are used; missing cells stay blank/zero rather
+          // than being filled with fabricated sample data. On confirm, only
+          // name/parent/phone/email/program/feeStatus are actually imported
+          // (see bulkCreateStudents); the rest here is neutral preview scaffolding.
           parsed.push({
             id: `imp-${Date.now()}-${i}`,
             stuId: cols[0] || `STU-IMP-${100 + i}`,
             name: cols[1] || '',
-            program: cols[2] || 'O Level',
-            grade: cols[3] || 'Grade 10',
+            program: cols[2] || '',
+            grade: cols[3] || '',
             parentName: cols[4] || '',
-            parentPhone: cols[5] || '0300-0000000',
-            parentEmail: cols[6] || 'parent@example.com',
-            feeStatus: cols[7] || 'Paid',
-            attendancePct: Number(cols[8]) || 85,
-            performanceScore: Number(cols[9]) || 80,
+            parentPhone: cols[5] || '',
+            parentEmail: cols[6] || '',
+            feeStatus: cols[7] || 'Due',
+            attendancePct: Number(cols[8]) || 0,
+            performanceScore: Number(cols[9]) || 0,
             status: 'active',
-            gender: 'Male',
+            gender: '',
             rollNo: `IMP-${i}`,
-            dob: '15 Jan 2008',
-            admissionDate: '01 Jan 2025',
-            motherName: 'Mother Name',
-            motherPhone: '0321-0000000',
-            prefLanguage: 'English',
-            lastContact: 'Today',
-            healthBand: 'Green',
-            homeworkPct: 85,
-            testsPct: 80,
-            assignmentsPct: 90,
-            masteryPct: 78,
-            totalPaid: 'PKR 45,000',
+            dob: '',
+            admissionDate: '',
+            motherName: '',
+            motherPhone: '',
+            prefLanguage: '',
+            lastContact: '',
+            healthBand: '',
+            homeworkPct: 0,
+            testsPct: 0,
+            assignmentsPct: 0,
+            masteryPct: 0,
+            totalPaid: 'PKR 0',
             totalOutstanding: 'PKR 0',
-            feeDateText: 'Paid',
-            nextClassTime: 'Tomorrow, 03:00 PM',
-            nextClassSubject: 'Mathematics',
-            nextClassTeacher: 'Sara Khan',
-            nextClassRoom: 'Room 1',
+            feeDateText: '',
+            nextClassTime: '',
+            nextClassSubject: '',
+            nextClassTeacher: '',
+            nextClassRoom: '',
             aiMessage: 'Newly imported student record.',
-            enrolledSubjects: [{ subject: 'Mathematics', teacherName: 'Sara Khan', assessedGrade: 'A', avgScore: 85, assignments: '5/5', quizScore: 88, status: 'Good' }],
+            enrolledSubjects: [],
             timeline: [{ date: 'Today', title: 'Student Imported', desc: 'Added via CSV import', tag: 'Import', tagBg: 'bg-[#EEEBFB] text-[#5B47D6]', detail: 'Batch import' }],
-            documents: [{ name: 'Admission Form.pdf', date: 'Today', type: 'PDF', size: '1.2 MB', status: 'Verified', statusBg: 'bg-emerald-100 text-emerald-700' }],
+            documents: [],
           });
         }
       }
@@ -493,7 +503,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
   };
 
   return (
-    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher', 'student']}>
+    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher']}>
       <div className="space-y-5 text-[#171A2B] max-w-full overflow-x-hidden relative pb-10">
 
         {/* TOP PAGE HEADER */}
@@ -524,10 +534,6 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <span>Export CSV</span>
             </button>
 
-            <button className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#5B47D6]/20 transition-all cursor-pointer">
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>Quick Add</span>
-            </button>
           </div>
         </div>
 
@@ -542,9 +548,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
             <div className="my-2">
               <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{studentsData.length}</div>
-              <div className="text-[11px] font-bold text-[#12A150] mt-1">▲ System database</div>
+              <div className="text-xs font-bold text-[#12A150] mt-1">▲ System database</div>
             </div>
-            <span className="text-[11.5px] font-bold text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-bold text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">
               View all →
             </span>
           </div>
@@ -558,9 +564,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
             <div className="my-2">
               <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{counts.active}</div>
-              <div className="text-[11px] font-bold text-emerald-600 mt-1">60% of current</div>
+              <div className="text-xs font-bold text-emerald-600 mt-1">Enrolled</div>
             </div>
-            <span className="text-[11.5px] font-bold text-emerald-600 hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-bold text-emerald-600 hover:underline inline-flex items-center gap-0.5">
               View active →
             </span>
           </div>
@@ -574,9 +580,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
             <div className="my-2">
               <div className="font-heading font-extrabold text-2xl text-[#E5484D] leading-none">{counts.atRisk}</div>
-              <div className="text-[11px] font-bold text-[#E5484D] mt-1">Critical review</div>
+              <div className="text-xs font-bold text-[#E5484D] mt-1">Critical review</div>
             </div>
-            <span className="text-[11.5px] font-bold text-[#E5484D] hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-bold text-[#E5484D] hover:underline inline-flex items-center gap-0.5">
               View at risk →
             </span>
           </div>
@@ -590,9 +596,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
             <div className="my-2">
               <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{counts.feesDue}</div>
-              <div className="text-[11px] font-bold text-amber-600 mt-1">PKR 390,000</div>
+              <div className="text-xs font-bold text-amber-600 mt-1">Due this cycle</div>
             </div>
-            <span className="text-[11.5px] font-bold text-amber-600 hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-bold text-amber-600 hover:underline inline-flex items-center gap-0.5">
               Collect now →
             </span>
           </div>
@@ -606,9 +612,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
             <div className="my-2">
               <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">0</div>
-              <div className="text-[11px] font-bold text-blue-600 mt-1">Scheduled</div>
+              <div className="text-xs font-bold text-blue-600 mt-1">Scheduled</div>
             </div>
-            <span className="text-[11.5px] font-bold text-blue-600 hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-0.5">
               View schedule →
             </span>
           </div>
@@ -622,9 +628,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
             <div className="my-2">
               <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{counts.demo}</div>
-              <div className="text-[11px] font-bold text-purple-600 mt-1">Trial period</div>
+              <div className="text-xs font-bold text-purple-600 mt-1">Trial period</div>
             </div>
-            <span className="text-[11.5px] font-bold text-purple-600 hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-bold text-purple-600 hover:underline inline-flex items-center gap-0.5">
               View demo →
             </span>
           </div>
@@ -634,17 +640,19 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="flex items-center justify-between gap-1 mb-1.5">
                 <div className="flex items-center gap-1.5 font-heading font-extrabold text-[12.5px] text-purple-200">
                   <Sparkles className="w-4 h-4 text-purple-400" />
-                  <span>AI Insights</span>
+                  <span>Student Summary</span>
                 </div>
                 <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               </div>
-              <p className="text-[10.5px] text-purple-100 font-medium leading-tight">
-                5 students need review due to low attendance in Chem. 12 O-Level students made +14% score gains.
+              <p className="text-xs text-purple-100 font-medium leading-tight">
+                {counts.atRisk > 0
+                  ? `${counts.atRisk} student${counts.atRisk === 1 ? '' : 's'} flagged at risk and due for review.`
+                  : `${counts.active} active student${counts.active === 1 ? '' : 's'} · no at-risk flags right now.`}
               </p>
             </div>
             <button
               onClick={() => setShowAiInsightsModal(true)}
-              className="text-[11px] font-bold text-purple-300 hover:text-white mt-2 inline-flex items-center gap-0.5 text-left cursor-pointer"
+              className="text-xs font-bold text-purple-300 hover:text-white mt-2 inline-flex items-center gap-0.5 text-left cursor-pointer"
             >
               View all 5 AI insights →
             </button>
@@ -678,7 +686,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                 >
                   <span>{tab.name}</span>
                   <span
-                    className={`px-1.5 py-0.2 rounded-md text-[10px] ${
+                    className={`px-1.5 py-0.2 rounded-md text-xs ${
                       activeTabStatus === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'
                     }`}
                   >
@@ -700,7 +708,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
               {showSavedViewsMenu && (
                 <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-xl shadow-2xl p-2 z-50 text-xs font-medium space-y-1">
-                  <div className="text-[10px] font-extrabold uppercase text-slate-400 px-2 py-1">Preset Saved Views</div>
+                  <div className="text-xs font-extrabold uppercase text-slate-400 px-2 py-1">Preset Saved Views</div>
                   {savedViews.map((sv) => (
                     <button
                       key={sv.id}
@@ -741,7 +749,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
-              <span className="text-[9.5px] text-[#6B7185] block font-medium">Program</span>
+              <span className="text-xs text-[#6B7185] block font-medium">Program</span>
               <select
                 value={selectedProgram}
                 onChange={(e) => {
@@ -751,19 +759,14 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                 className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
               >
                 <option value="All Programs">All Programs</option>
-                <option value="O Level">O Level</option>
-                <option value="A Level">A Level</option>
-                <option value="IGCSE">IGCSE</option>
-                <option value="Oxford">Oxford</option>
-                <option value="Matric (9th)">Matric (9th)</option>
-                <option value="Matric (10th)">Matric (10th)</option>
-                <option value="Inter (11th)">Inter (11th)</option>
-                <option value="Inter (12th)">Inter (12th)</option>
+                {Array.from(new Set(studentsData.map((s) => s.program).filter(Boolean))).map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
               </select>
             </div>
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
-              <span className="text-[9.5px] text-[#6B7185] block font-medium">Subject</span>
+              <span className="text-xs text-[#6B7185] block font-medium">Subject</span>
               <select
                 value={selectedSubject}
                 onChange={(e) => {
@@ -772,14 +775,15 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                 }}
                 className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
               >
-                {ALL_SUBJECTS_LIST.map((sub) => (
+                <option value="All Subjects">All Subjects</option>
+                {Array.from(new Set(studentsData.flatMap((s) => s.enrolledSubjects.map((es) => es.subject)).filter(Boolean))).map((sub) => (
                   <option key={sub} value={sub}>{sub}</option>
                 ))}
               </select>
             </div>
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
-              <span className="text-[9.5px] text-[#6B7185] block font-medium">Teacher</span>
+              <span className="text-xs text-[#6B7185] block font-medium">Teacher</span>
               <select
                 value={selectedTeacher}
                 onChange={(e) => {
@@ -789,6 +793,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                 className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
               >
                 <option value="All Teachers">All Teachers</option>
+                {Array.from(new Set(studentsData.flatMap((s) => s.enrolledSubjects.map((es) => es.teacherName)).filter(Boolean))).map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
               </select>
             </div>
 
@@ -933,19 +940,19 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                             </div>
                             <div>
                               <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{s.name}</div>
-                              <div className="text-[11px] text-[#6B7185] font-mono mt-0.5">{s.stuId}</div>
+                              <div className="text-xs text-[#6B7185] font-mono mt-0.5">{s.stuId}</div>
                             </div>
                           </div>
                         </td>
 
                         <td className="py-3.5 px-3">
                           <div className="font-extrabold text-xs text-slate-900 dark:text-slate-100">{s.parentName}</div>
-                          <div className="text-[11px] text-[#6B7185] mt-0.5">{s.parentRelation}</div>
+                          <div className="text-xs text-[#6B7185] mt-0.5">{s.parentRelation}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
                           <div className="font-extrabold text-xs text-slate-900 dark:text-slate-100">{s.program}</div>
-                          <div className="text-[11px] text-[#6B7185] mt-0.5">{s.grade}</div>
+                          <div className="text-xs text-[#6B7185] mt-0.5">{s.grade}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
@@ -992,7 +999,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                             </div>
                             <div>
                               <div className="font-extrabold text-xs text-slate-900 dark:text-slate-100">{s.nextClassTime}</div>
-                              <div className="text-[11px] text-[#6B7185] font-medium mt-0.5">{s.nextClassSubject}</div>
+                              <div className="text-xs text-[#6B7185] font-medium mt-0.5">{s.nextClassSubject}</div>
                             </div>
                           </div>
                         </td>
@@ -1060,7 +1067,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                                 className="w-full px-2.5 py-1.5 rounded-lg hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
                               >
                                 <UserCog className="w-3.5 h-3.5" />
-                                <span>Reassign Teacher</span>
+                                <span>View Profile</span>
                               </button>
 
                               <button
@@ -1112,7 +1119,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="p-4 bg-[#F6F7FB] dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
                 <div>
                   <div className="font-extrabold text-xs text-slate-900 dark:text-white">Download Sample CSV Template</div>
-                  <div className="text-[11px] text-[#6B7185] mt-0.5">Use our pre-formatted template with all required columns.</div>
+                  <div className="text-xs text-[#6B7185] mt-0.5">Use our pre-formatted template with all required columns.</div>
                 </div>
                 <button
                   onClick={handleDownloadSampleCsv}
@@ -1323,7 +1330,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         <Edit3 className="w-4 h-4" />
                         <span>Edit Student Profile Details</span>
                       </h3>
-                      <span className="text-[10.5px] font-bold text-[#5B47D6] bg-white px-2.5 py-0.5 rounded-full border border-[#5B47D6]/30">
+                      <span className="text-xs font-bold text-[#5B47D6] bg-white px-2.5 py-0.5 rounded-full border border-[#5B47D6]/30">
                         Live Profile Editor
                       </span>
                     </div>
@@ -1349,11 +1356,6 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           <option value="O Level">O Level</option>
                           <option value="A Level">A Level</option>
                           <option value="IGCSE">IGCSE</option>
-                          <option value="Oxford">Oxford</option>
-                          <option value="Matric (9th)">Matric (9th)</option>
-                          <option value="Matric (10th)">Matric (10th)</option>
-                          <option value="Inter (11th)">Inter (11th)</option>
-                          <option value="Inter (12th)">Inter (12th)</option>
                         </select>
                       </div>
 
@@ -1392,12 +1394,12 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Performance Score (/100)</label>
+                        <label className="font-bold text-slate-700 block mb-1">Performance Score (/100) <span className="text-slate-400 font-medium">(auto)</span></label>
                         <input
                           type="number"
+                          disabled
                           value={editFormData.performanceScore || 0}
-                          onChange={(e) => setEditFormData({ ...editFormData, performanceScore: Number(e.target.value) })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-slate-100 border border-slate-200 rounded-xl p-2 font-bold text-slate-500 cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -1434,7 +1436,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Award className="w-3.5 h-3.5 text-slate-400" /> Grade</span><span className="font-extrabold text-slate-900">{profileModalStudent.grade}</span></div>
                           <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-slate-400" /> Roll Number</span><span className="font-extrabold text-slate-900">{profileModalStudent.rollNo}</span></div>
                           <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" /> Admission Date</span><span className="font-extrabold text-slate-900">{profileModalStudent.admissionDate}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Status</span><span className="font-extrabold text-emerald-600">Active</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Status</span><span className={`font-extrabold ${profileModalStudent.status === 'active' ? 'text-emerald-600' : 'text-amber-600'}`}>{profileModalStudent.status.charAt(0).toUpperCase() + profileModalStudent.status.slice(1)}</span></div>
                           <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5 text-slate-400" /> Student ID</span><span className="font-mono font-extrabold text-slate-900">{profileModalStudent.stuId}</span></div>
                         </div>
                       </div>
@@ -1443,7 +1445,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Parent / Guardian</h3>
                         <div className="space-y-4 text-xs sm:text-sm">
                           <div>
-                            <div className="text-[11px] text-[#6B7185] font-extrabold uppercase tracking-wider">FATHER</div>
+                            <div className="text-xs text-[#6B7185] font-extrabold uppercase tracking-wider">FATHER</div>
                             <div className="flex items-center justify-between mt-1">
                               <span className="font-extrabold text-slate-900 text-sm">{profileModalStudent.parentName}</span>
                               <div className="flex items-center gap-2 text-slate-400">
@@ -1462,7 +1464,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           </div>
 
                           <div className="pt-3 border-t border-slate-100">
-                            <div className="text-[11px] text-[#6B7185] font-extrabold uppercase tracking-wider">MOTHER</div>
+                            <div className="text-xs text-[#6B7185] font-extrabold uppercase tracking-wider">MOTHER</div>
                             <div className="flex items-center justify-between mt-1">
                               <span className="font-extrabold text-slate-900 text-sm">{profileModalStudent.motherName}</span>
                               <div className="flex items-center gap-2 text-slate-400">
@@ -1497,25 +1499,24 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-4 sm:p-5 space-y-5 shadow-sm">
                         <div className="flex justify-between items-center border-b pb-2.5">
                           <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Academic Snapshot</h3>
-                          <span className="text-xs text-[#6B7185] font-bold">This Month ˅</span>
                         </div>
 
                         {/* RESPONSIVE 2x2 ON MOBILE, 4-COL ON LG WITH TRUNCATED LABELS */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 text-center">
                           <div className="bg-[#E7F6EC] p-2.5 sm:p-3 rounded-2xl border border-[#C6EAD3] flex flex-col justify-center">
-                            <div className="text-[10px] sm:text-[11px] font-bold text-[#6B7185] truncate">Attendance</div>
+                            <div className="text-xs sm:text-xs font-bold text-[#6B7185] truncate">Attendance</div>
                             <div className="font-extrabold text-base sm:text-lg text-[#12A150] mt-0.5">{profileModalStudent.attendancePct}%</div>
                           </div>
                           <div className="bg-[#E9F1FE] p-2.5 sm:p-3 rounded-2xl border border-[#CBE0FE] flex flex-col justify-center">
-                            <div className="text-[10px] sm:text-[11px] font-bold text-[#6B7185] truncate">Homework</div>
+                            <div className="text-xs sm:text-xs font-bold text-[#6B7185] truncate">Homework</div>
                             <div className="font-extrabold text-base sm:text-lg text-blue-600 mt-0.5">{profileModalStudent.homeworkPct}%</div>
                           </div>
                           <div className="bg-[#FEF3E2] p-2.5 sm:p-3 rounded-2xl border border-[#FCDAA8] flex flex-col justify-center">
-                            <div className="text-[10px] sm:text-[11px] font-bold text-[#6B7185] truncate">Tests</div>
+                            <div className="text-xs sm:text-xs font-bold text-[#6B7185] truncate">Tests</div>
                             <div className="font-extrabold text-base sm:text-lg text-amber-600 mt-0.5">{profileModalStudent.testsPct}%</div>
                           </div>
                           <div className="bg-[#EEEBFB] p-2.5 sm:p-3 rounded-2xl border border-[#D5CEF6] flex flex-col justify-center">
-                            <div className="text-[10px] sm:text-[11px] font-bold text-[#6B7185] truncate">Assignments</div>
+                            <div className="text-xs sm:text-xs font-bold text-[#6B7185] truncate">Assignments</div>
                             <div className="font-extrabold text-base sm:text-lg text-[#5B47D6] mt-0.5">{profileModalStudent.assignmentsPct}%</div>
                           </div>
                         </div>
@@ -1527,30 +1528,26 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
                         {/* PERFECT RESPONSIVE PERFORMANCE SCORE GAUGE & LEGEND */}
                         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 pt-3 border-t border-slate-100">
-                          <div className="relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex flex-col items-center justify-center bg-white rounded-full border-[8px] border-[#12A150] shadow-md">
+                          <div className={`relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex flex-col items-center justify-center bg-white rounded-full border-[8px] shadow-md ${profileModalStudent.performanceScore < 60 ? 'border-rose-400' : profileModalStudent.performanceScore < 80 ? 'border-amber-400' : 'border-[#12A150]'}`}>
                             <div className="font-heading font-extrabold text-3xl sm:text-4xl leading-none text-slate-900">{profileModalStudent.performanceScore}</div>
                             <div className="text-xs font-bold text-[#6B7185] mt-0.5">/100</div>
-                            <div className="text-[10px] font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full mt-1 border border-emerald-200">
-                              ⭐ Excellent
+                            <div className="text-xs font-extrabold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full mt-1 border border-slate-200">
+                              {profileModalStudent.aiTag}
                             </div>
                           </div>
 
                           <div className="space-y-2 text-xs font-bold w-full flex-1">
-                            <div className="flex justify-between items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <span className="flex items-center gap-1.5 truncate"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" /> Excellent (80-100)</span>
-                              <span className="font-extrabold shrink-0">93%</span>
                             </div>
-                            <div className="flex justify-between items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <span className="flex items-center gap-1.5 truncate"><span className="w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" /> Good (60-79)</span>
-                              <span className="font-extrabold shrink-0">5%</span>
                             </div>
-                            <div className="flex justify-between items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <span className="flex items-center gap-1.5 truncate"><span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" /> Average (40-59)</span>
-                              <span className="font-extrabold shrink-0">2%</span>
                             </div>
-                            <div className="flex justify-between items-center gap-2">
+                            <div className="flex items-center gap-2">
                               <span className="flex items-center gap-1.5 truncate"><span className="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0" /> Needs Improvement</span>
-                              <span className="font-extrabold shrink-0">0%</span>
                             </div>
                           </div>
                         </div>
@@ -1565,9 +1562,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           {profileModalStudent.aiMessage}
                         </p>
                         <div className="flex flex-wrap gap-1.5 pt-1">
-                          <span className="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-300 rounded-full text-[10.5px] font-bold border border-emerald-500/30">High Performer</span>
-                          <span className="px-2.5 py-0.5 bg-blue-500/20 text-blue-300 rounded-full text-[10.5px] font-bold border border-blue-500/30">Excellent Attendance</span>
-                          <span className="px-2.5 py-0.5 bg-purple-500/20 text-purple-300 rounded-full text-[10.5px] font-bold border border-purple-500/30">Homework On Time</span>
+                          {profileModalStudent.tags.map((tag, i) => (
+                            <span key={i} className="px-2.5 py-0.5 bg-purple-500/20 text-purple-200 rounded-full text-xs font-bold border border-purple-500/30">{tag}</span>
+                          ))}
                         </div>
                       </div>
                     </div>
@@ -1578,13 +1575,12 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Next Class</h3>
                         <div className="font-extrabold text-slate-900 text-sm flex items-center justify-between">
                           <span>{profileModalStudent.nextClassTime}</span>
-                          <span className="text-[11px] font-bold text-slate-400">(in 45 min)</span>
                         </div>
                         <div className="text-xs text-blue-600 font-bold">{profileModalStudent.nextClassSubject}</div>
                         <div className="flex items-center gap-2.5 pt-3 border-t border-slate-100 text-xs">
-                          <div className="w-7 h-7 rounded-full bg-slate-200 font-extrabold text-xs flex items-center justify-center">SK</div>
+                          <div className="w-7 h-7 rounded-full bg-slate-200 font-extrabold text-xs flex items-center justify-center">{getInitials(profileModalStudent.nextClassTeacher || '')}</div>
                           <span className="font-extrabold text-slate-800">{profileModalStudent.nextClassTeacher}</span>
-                          <span className="text-xs text-emerald-600 font-bold ml-auto">{profileModalStudent.nextClassRoom} 🟢</span>
+                          <span className="text-xs text-slate-600 font-bold ml-auto">{profileModalStudent.nextClassRoom}</span>
                         </div>
                       </div>
 
@@ -1592,7 +1588,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Fee Status</h3>
                         <div className="flex justify-between items-center text-xs sm:text-sm">
                           <div>
-                            <span className="bg-[#E7F6EC] text-[#12A150] font-extrabold text-xs px-2.5 py-1 rounded-full">{profileModalStudent.feeStatus}</span>
+                            <span className={`font-extrabold text-xs px-2.5 py-1 rounded-full ${profileModalStudent.feeStatus === 'Paid' ? 'bg-[#E7F6EC] text-[#12A150]' : profileModalStudent.feeStatus === 'Stopped' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>{profileModalStudent.feeStatus}</span>
                             <div className="text-xs text-[#6B7185] mt-1 font-medium">{profileModalStudent.feeDateText}</div>
                           </div>
                           <div className="text-right">
@@ -1605,21 +1601,21 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-3 shadow-sm">
                         <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Quick Actions</h3>
                         <div className="grid grid-cols-2 gap-3 text-xs sm:text-sm">
-                          <button className="p-3 bg-purple-50 text-[#5B47D6] rounded-xl font-bold flex items-center gap-2 hover:bg-purple-100 transition-colors">
+                          <button onClick={() => router.push('/homework')} className="p-3 bg-purple-50 text-[#5B47D6] rounded-xl font-bold flex items-center gap-2 hover:bg-purple-100 transition-colors cursor-pointer">
                             <FilePlus className="w-4 h-4" />
                             <span>Assign Homework</span>
                           </button>
-                          <button className="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-100 transition-colors">
+                          <button onClick={() => router.push('/schedule')} className="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-100 transition-colors cursor-pointer">
                             <CalendarPlus className="w-4 h-4" />
                             <span>Schedule Class</span>
                           </button>
-                          <button className="p-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-100 transition-colors">
+                          <button onClick={() => router.push('/vouchers')} className="p-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-100 transition-colors cursor-pointer">
                             <Receipt className="w-4 h-4" />
                             <span>Generate Invoice</span>
                           </button>
-                          <button className="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold flex items-center gap-2 hover:bg-amber-100 transition-colors">
+                          <button onClick={() => router.push('/tickets')} className="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold flex items-center gap-2 hover:bg-amber-100 transition-colors cursor-pointer">
                             <Plus className="w-4 h-4" />
-                            <span>Add Note</span>
+                            <span>Open Ticket</span>
                           </button>
                         </div>
                       </div>
@@ -1658,7 +1654,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-xs sm:text-sm border-collapse min-w-[560px]">
                             <thead>
-                              <tr className="bg-[#F6F7FB] border-b font-extrabold text-[#6B7185] text-[11px] uppercase">
+                              <tr className="bg-[#F6F7FB] border-b font-extrabold text-[#6B7185] text-xs uppercase">
                                 <th className="py-2.5 px-3">SUBJECT</th>
                                 <th className="py-2.5 px-3">TEACHER</th>
                                 <th className="py-2.5 px-3">ASSESSED</th>
@@ -1761,7 +1757,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                                 <div className="font-extrabold text-slate-900">{t.title}</div>
                                 <div className="text-xs text-slate-500 font-medium mt-0.5">{t.desc}</div>
                               </div>
-                              <span className="text-[11px] text-slate-400 font-mono shrink-0">{t.date}</span>
+                              <span className="text-xs text-slate-400 font-mono shrink-0">{t.date}</span>
                             </div>
                           ))}
                         </div>

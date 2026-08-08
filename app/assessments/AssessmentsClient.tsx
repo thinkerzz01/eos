@@ -20,6 +20,11 @@ import {
   TrendingUp,
 } from 'lucide-react';
 
+// CAIE-style grade band from a percentage (used for the result-slip average).
+function gradeFromPct(p: number): string {
+  return p >= 90 ? 'A*' : p >= 80 ? 'A' : p >= 70 ? 'B' : p >= 60 ? 'C' : p >= 50 ? 'D' : p >= 40 ? 'E' : 'U';
+}
+
 export function AssessmentsClient({
   initialAssessments,
   students,
@@ -103,7 +108,7 @@ export function AssessmentsClient({
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse min-w-[500px]">
                 <thead>
-                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
                     <th className="py-3.5 px-3">TEST TITLE & CODE</th>
                     <th className="py-3.5 px-3">SUBJECT & DATE</th>
                     <th className="py-3.5 px-3">TOTAL MARKS</th>
@@ -116,12 +121,12 @@ export function AssessmentsClient({
                     <tr key={ast.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-3">
                         <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{ast.testTitle}</div>
-                        <div className="text-[11px] text-[#6B7185] font-mono">{ast.testCode}</div>
+                        <div className="text-xs text-[#6B7185] font-mono">{ast.testCode}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
                         <div className="font-extrabold text-slate-900 dark:text-slate-100">{ast.subject}</div>
-                        <div className="text-[11px] text-[#6B7185]">{ast.dateConducted}</div>
+                        <div className="text-xs text-[#6B7185]">{ast.dateConducted}</div>
                       </td>
 
                       <td className="py-3.5 px-3 font-mono font-extrabold text-slate-900 dark:text-slate-100">
@@ -185,23 +190,32 @@ export function AssessmentsClient({
                 <button onClick={() => setShowResultSlipModal(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600" /></button>
               </div>
 
-              {/* 3 SEPARATELY LABELLED ITEMS REQUIRED BY AGENTS.MD §4 */}
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
-                  <div className="text-[10.5px] font-bold text-slate-500 uppercase">Internal Average</div>
-                  <div className="font-heading font-extrabold text-xl text-slate-900 mt-1">80.0%</div>
-                </div>
+              {/* 3 SEPARATELY LABELLED ITEMS REQUIRED BY AGENTS.MD §4 —
+                  computed from the real grades on this assessment. */}
+              {(() => {
+                const total = selectedAssessmentForSlip.totalMarks || 100;
+                const pcts = selectedAssessmentForSlip.grades.map((g) => (g.marksObtained / total) * 100);
+                const avg = pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : 0;
+                const assessed = pcts.length ? gradeFromPct(avg) : '—';
+                return (
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                      <div className="text-xs font-bold text-slate-500 uppercase">Internal Average</div>
+                      <div className="font-heading font-extrabold text-xl text-slate-900 mt-1">{avg.toFixed(1)}%</div>
+                    </div>
 
-                <div className="p-3 bg-purple-50 border border-purple-200 rounded-2xl">
-                  <div className="text-[10.5px] font-bold text-[#5B47D6] uppercase">Assessed Grade</div>
-                  <div className="font-heading font-extrabold text-2xl text-[#5B47D6] mt-1">A*</div>
-                </div>
+                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-2xl">
+                      <div className="text-xs font-bold text-[#5B47D6] uppercase">Assessed Grade</div>
+                      <div className="font-heading font-extrabold text-2xl text-[#5B47D6] mt-1">{assessed}</div>
+                    </div>
 
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
-                  <div className="text-[10.5px] font-bold text-emerald-700 uppercase">Target Grade</div>
-                  <div className="font-heading font-extrabold text-2xl text-emerald-600 mt-1">A*</div>
-                </div>
-              </div>
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
+                      <div className="text-xs font-bold text-emerald-700 uppercase">Target Grade</div>
+                      <div className="font-heading font-extrabold text-2xl text-emerald-600 mt-1">—</div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* STUDENT SCORES TABLE */}
               <div className="border rounded-2xl overflow-hidden text-xs">
@@ -217,7 +231,7 @@ export function AssessmentsClient({
                     {selectedAssessmentForSlip.grades.map((g) => (
                       <tr key={g.studentId}>
                         <td className="p-2.5 text-slate-900">{g.studentName}</td>
-                        <td className="p-2.5 font-mono text-slate-900">{g.marksObtained} / 100</td>
+                        <td className="p-2.5 font-mono text-slate-900">{g.marksObtained} / {selectedAssessmentForSlip.totalMarks}</td>
                         <td className="p-2.5">
                           <span className="px-2 py-0.5 bg-purple-100 text-[#5B47D6] font-extrabold rounded-md">
                             {g.assessedGrade}
@@ -284,7 +298,7 @@ export function AssessmentsClient({
                   </div>
                 </div>
                 {(students.length === 0 || subjects.length === 0) && (
-                  <p className="text-[10.5px] text-amber-600 font-medium">Add students and subjects first (run supabase/seed_subjects.sql).</p>
+                  <p className="text-xs text-amber-600 font-medium">Add students and subjects first (run supabase/seed_subjects.sql).</p>
                 )}
               </div>
 

@@ -149,8 +149,10 @@ export async function bulkCreateStudents(
   };
   const dueDefault = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
+  // students.phone is NOT NULL with a unique index — rows without a phone must be
+  // skipped (counted in `skipped`), not force-inserted as 'N/A' (which collides).
   const valid = rows.filter(
-    (r) => r.name?.trim() && r.parentName?.trim() && CAIE_PROGRAMS.includes(r.program)
+    (r) => r.name?.trim() && r.parentName?.trim() && r.parentPhone?.trim() && CAIE_PROGRAMS.includes(r.program)
   );
   const skipped = rows.length - valid.length;
   if (valid.length === 0) {
@@ -166,7 +168,7 @@ export async function bulkCreateStudents(
     org_id: profile.org_id,
     name: r.name.trim(),
     parent_name: r.parentName.trim(),
-    phone: r.parentPhone?.trim() || 'N/A',
+    phone: r.parentPhone!.trim(),
     email: r.parentEmail?.trim() || null,
     program: r.program,
     exam_session: 'To be set',
@@ -183,4 +185,76 @@ export async function bulkCreateStudents(
   revalidatePath('/students');
   revalidatePath('/');
   return { ok: true, inserted: data?.length ?? toInsert.length, skipped };
+}
+
+const FEE_UI_TO_DB: Record<string, string> = {
+  Paid: 'paid',
+  Due: 'due',
+  'In Grace': 'in_grace',
+  Stopped: 'stopped',
+};
+
+/**
+ * Update a student's identity/fee fields from the profile editor. RLS enforces
+ * that only admin/manager may write. Program is validated against the CAIE
+ * CHECK; the derived performance/health score is NOT written here (it is
+ * computed from attendance/homework).
+ */
+export async function updateStudent(input: {
+  id: string;
+  name?: string;
+  parentName?: string;
+  parentPhone?: string;
+  program?: string;
+  feeStatus?: string;
+}): Promise<ActionResult> {
+  if (!input.id) return { ok: false, error: 'Missing student id.' };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const patch: Record<string, any> = {};
+  if (input.name?.trim()) patch.name = input.name.trim();
+  if (input.parentName?.trim()) patch.parent_name = input.parentName.trim();
+  if (input.parentPhone?.trim()) patch.phone = input.parentPhone.trim();
+  if (input.program) {
+    if (!CAIE_PROGRAMS.includes(input.program)) {
+      return { ok: false, error: 'Program must be a CAIE program (O Level, A Level, or IGCSE).' };
+    }
+    patch.program = input.program;
+  }
+  if (input.feeStatus && FEE_UI_TO_DB[input.feeStatus]) patch.fee_status = FEE_UI_TO_DB[input.feeStatus];
+
+  if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
+
+  const { error } = await supabase.from('students').update(patch).eq('id', input.id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/students');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/** Soft-delete a student (sets deleted_at). RLS enforces admin/manager. */
+export async function softDeleteStudent(id: string): Promise<ActionResult> {
+  if (!id) return { ok: false, error: 'Missing student id.' };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('students')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/students');
+  revalidatePath('/');
+  return { ok: true };
 }

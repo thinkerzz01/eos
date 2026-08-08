@@ -66,7 +66,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
                   <th className="py-3.5 px-3">RECEIPT NO & STUDENT</th>
                   <th className="py-3.5 px-3">DATE & METHOD</th>
                   <th className="py-3.5 px-3">TRANSACTION TYPE</th>
@@ -80,17 +80,17 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
                   <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3.5 px-3">
                       <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{p.studentName}</div>
-                      <div className="text-[11px] text-[#6B7185] font-mono">{p.receiptNo}</div>
+                      <div className="text-xs text-[#6B7185] font-mono">{p.receiptNo}</div>
                     </td>
 
                     <td className="py-3.5 px-3">
                       <div className="font-extrabold text-slate-900 dark:text-slate-100">{p.paymentDate}</div>
-                      <div className="text-[11px] text-[#6B7185]">{p.paymentMethod}</div>
+                      <div className="text-xs text-[#6B7185]">{p.paymentMethod}</div>
                     </td>
 
                     <td className="py-3.5 px-3">
                       <span
-                        className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${
+                        className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
                           p.type === 'Refund'
                             ? 'bg-rose-100 text-rose-700'
                             : p.type === 'Partial Payment'
@@ -111,7 +111,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
 
                     <td className="py-3.5 px-3">
                       <div className="font-extrabold text-slate-900">{p.auditedBy}</div>
-                      <div className="text-[11px] text-[#6B7185]">{p.reason || 'Standard Fee Receipt'}</div>
+                      <div className="text-xs text-[#6B7185]">{p.reason || 'Standard Fee Receipt'}</div>
                     </td>
                   </tr>
                 ))}

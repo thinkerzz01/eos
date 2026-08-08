@@ -50,7 +50,7 @@ export default function SyllabusPage() {
           </div>
 
           <div className="text-xs font-bold text-[#5A31F4] dark:text-purple-300 px-3 py-1.5 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 rounded-xl">
-            Version: 2026 Academic Master
+            Version: {template.academicYear} Academic Master
           </div>
         </div>
 

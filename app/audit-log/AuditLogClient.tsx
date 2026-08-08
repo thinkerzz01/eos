@@ -53,7 +53,7 @@ export function AuditLogClient({ initialLogs }: { initialLogs: AuditLogEntry[] }
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse min-w-[700px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
                   <th className="py-3.5 px-3">ACTION & TABLE</th>
                   <th className="py-3.5 px-3">ACTOR & ROLE</th>
                   <th className="py-3.5 px-3">TIMESTAMP & IP</th>
@@ -66,17 +66,17 @@ export function AuditLogClient({ initialLogs }: { initialLogs: AuditLogEntry[] }
                   <tr key={log.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3.5 px-3">
                       <div className="font-extrabold text-sm text-purple-700 font-mono">{log.action}</div>
-                      <div className="text-[11px] text-[#6B7185] font-mono">{log.targetTable}</div>
+                      <div className="text-xs text-[#6B7185] font-mono">{log.targetTable}</div>
                     </td>
 
                     <td className="py-3.5 px-3">
                       <div className="font-extrabold text-slate-900 dark:text-slate-100">{log.actorName}</div>
-                      <div className="text-[11px] text-[#6B7185]">{log.actorRole}</div>
+                      <div className="text-xs text-[#6B7185]">{log.actorRole}</div>
                     </td>
 
                     <td className="py-3.5 px-3 font-mono">
                       <div>{log.timestamp}</div>
-                      <div className="text-[11px] text-slate-500">{log.ipAddress}</div>
+                      <div className="text-xs text-slate-500">{log.ipAddress}</div>
                     </td>
 
                     <td className="py-3.5 px-3 text-slate-800 font-medium">

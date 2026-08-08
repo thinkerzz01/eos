@@ -26,7 +26,6 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [targetAudience, setTargetAudience] = useState<'All' | 'Students' | 'Teachers' | 'Parents'>('All');
   const [posting, setPosting] = useState(false);
 
   // Keep the list in sync when the server refetches after a write (router.refresh()).
@@ -53,6 +52,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
 
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher', 'student']}>
+      {/* Note: announcements are academy-wide; all signed-in roles may view. */}
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
 
         {/* HEADER */}
@@ -66,13 +66,15 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
             </p>
           </div>
 
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4 stroke-[2.5]" />
-            <span>+ New Announcement</span>
-          </button>
+          {(role === 'admin' || role === 'manager') && (
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            >
+              <Plus className="w-4 h-4 stroke-[2.5]" />
+              <span>+ New Announcement</span>
+            </button>
+          )}
         </div>
 
         {/* ANNOUNCEMENTS FEED */}
@@ -89,8 +91,8 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                   {anc.isPinned && <Pin className="w-4 h-4 text-[#5B47D6] fill-[#5B47D6]" />}
                   <h3 className="font-heading font-extrabold text-base text-slate-900 dark:text-white">{anc.title}</h3>
                 </div>
-                <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-full">
-                  Audience: {anc.targetAudience}
+                <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                  Audience: All Academy
                 </span>
               </div>
 
@@ -98,7 +100,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                 {anc.content}
               </p>
 
-              <div className="flex justify-between items-center text-[11px] text-[#6B7185] font-medium pt-3 mt-3 border-t border-slate-100">
+              <div className="flex justify-between items-center text-xs text-[#6B7185] font-medium pt-3 mt-3 border-t border-slate-100">
                 <span>Published by <strong>{anc.authorName}</strong></span>
                 <span>{anc.publishedDate}</span>
               </div>
@@ -119,15 +121,6 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                 <div>
                   <label className="text-slate-700 block mb-1">Title</label>
                   <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Exam Schedule Release" className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />
-                </div>
-                <div>
-                  <label className="text-slate-700 block mb-1">Target Audience</label>
-                  <select value={targetAudience} onChange={(e) => setTargetAudience(e.target.value as any)} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900">
-                    <option value="All">All Academy Users</option>
-                    <option value="Students">Students Only</option>
-                    <option value="Teachers">Faculty / Teachers Only</option>
-                    <option value="Parents">Parents Only</option>
-                  </select>
                 </div>
                 <div>
                   <label className="text-slate-700 block mb-1">Notice Body</label>

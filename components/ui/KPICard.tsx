@@ -41,7 +41,7 @@ export function KPICard({
       }`}
     >
       <div className="flex items-start justify-between mb-3">
-        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
           {title}
         </span>
         {Icon && (
@@ -57,7 +57,7 @@ export function KPICard({
         </span>
         {badgeText && (
           <span
-            className={`text-[10px] font-bold px-2 py-0.5 border rounded-full ${badgeColors[badgeType]}`}
+            className={`text-xs font-bold px-2 py-0.5 border rounded-full ${badgeColors[badgeType]}`}
           >
             {badgeText}
           </span>

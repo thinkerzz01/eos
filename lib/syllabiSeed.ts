@@ -62,14 +62,15 @@ export const EXAM_SESSIONS = [
   'Annual Board 2027',
 ];
 
+// Labels must normalize to the DB source enum (google/facebook/instagram/
+// whatsapp/referral/walk_in) — see normalizeSource in app/students/actions.ts.
 export const LEAD_SOURCES = [
   'Instagram',
   'Facebook',
   'Google',
   'Referral',
-  'Booking Page',
   'Walk-in',
-  'WhatsApp Inquiry',
+  'WhatsApp',
 ];
 
 export interface SyllabusTopic {

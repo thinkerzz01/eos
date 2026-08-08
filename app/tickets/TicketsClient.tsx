@@ -134,7 +134,7 @@ export function TicketsClient({ initialTickets }: { initialTickets: SupportTicke
                       <div className="text-xs text-[#6B7185] font-medium mt-0.5">{tkt.submittedBy}</div>
                     </div>
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold ${
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
                         tkt.priority === 'Urgent' ? 'bg-rose-100 text-rose-700' : 'bg-blue-100 text-blue-700'
                       }`}
                     >
@@ -165,7 +165,7 @@ export function TicketsClient({ initialTickets }: { initialTickets: SupportTicke
                   <div className="flex items-center gap-2">
                     <h3 className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">{selectedTicket.subject}</h3>
                     {selectedTicket.isPastTarget && (
-                      <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold bg-rose-600 text-white">
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-rose-600 text-white">
                         🔴 SLA Target Missed
                       </span>
                     )}
@@ -180,11 +180,21 @@ export function TicketsClient({ initialTickets }: { initialTickets: SupportTicke
               <div className="space-y-3 text-xs font-medium max-h-64 overflow-y-auto p-3 bg-slate-50 rounded-2xl border">
                 <div className="p-3 bg-white border rounded-xl space-y-1">
                   <div className="flex justify-between font-bold">
-                    <span className="text-slate-900">{selectedTicket.submittedBy}</span>
-                    <span className="text-slate-400 font-mono text-[10.5px]">{selectedTicket.createdAt}</span>
+                    <span className="text-slate-900">{selectedTicket.submittedBy || 'Requester'}</span>
+                    <span className="text-slate-400 font-mono text-xs">{selectedTicket.createdAt}</span>
                   </div>
                   <p className="text-slate-700">{selectedTicket.subject}</p>
                 </div>
+
+                {(selectedTicket.messages ?? []).map((m) => (
+                  <div key={m.id} className="p-3 bg-purple-50 border border-purple-100 rounded-xl space-y-1">
+                    <div className="flex justify-between font-bold">
+                      <span className="text-[#5B47D6]">Academy Staff</span>
+                      <span className="text-slate-400 font-mono text-xs">{m.at}</span>
+                    </div>
+                    <p className="text-slate-700">{m.body}</p>
+                  </div>
+                ))}
               </div>
 
               {/* REPLY COMPOSER */}

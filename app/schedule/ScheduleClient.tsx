@@ -47,7 +47,6 @@ export function ScheduleClient({
 
   // Keep the list in sync when the server refetches after a write (router.refresh()).
   useEffect(() => { setClassesList(initialClasses); }, [initialClasses]);
-  const [selectedDateRange, setSelectedDateRange] = useState<string>('Today');
   const [selectedClassType, setSelectedClassType] = useState<string>('All Types');
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('All Subjects');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -127,6 +126,10 @@ export function ScheduleClient({
 
   const handleSaveClassCompletion = async () => {
     if (!selectedClassForCompletion) return;
+    if (selectedClassForCompletion.status === 'Completed') {
+      alert('This class is already completed — attendance was already recorded.');
+      return;
+    }
     if (!selectedClassForCompletion.studentId) { alert('This session has no linked student.'); return; }
 
     setSavingCompletion(true);
@@ -179,36 +182,24 @@ export function ScheduleClient({
               <span>Assessments →</span>
             </Link>
 
-            <button
-              onClick={() => setShowAddClassModal(true)}
-              className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#5B47D6]/20 transition-all cursor-pointer"
-            >
-              <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>+ Schedule Class</span>
-            </button>
+            {role !== 'student' && (
+              <button
+                onClick={() => setShowAddClassModal(true)}
+                className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#5B47D6]/20 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>+ Schedule Class</span>
+              </button>
+            )}
           </div>
         </div>
 
         {/* FILTERS BAR */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] p-4 shadow-sm space-y-3.5">
-          <div className="flex items-center justify-between gap-3 flex-wrap border-b border-[#EBEDF3] dark:border-slate-800 pb-3">
-            <div className="flex items-center gap-1 bg-[#F6F7FB] dark:bg-slate-800 p-1 rounded-xl flex-wrap">
-              {['Today', 'This Week', 'This Month'].map((range) => (
-                <button
-                  key={range}
-                  onClick={() => setSelectedDateRange(range)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all ${
-                    selectedDateRange === range ? 'bg-[#5B47D6] text-white shadow-sm' : 'text-[#6B7185] hover:bg-slate-100'
-                  }`}
-                >
-                  {range}
-                </button>
-              ))}
-            </div>
-
+          <div className="flex items-center justify-end gap-3 flex-wrap border-b border-[#EBEDF3] dark:border-slate-800 pb-3">
             <div className="flex items-center gap-2">
               <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
-                <span className="text-[9.5px] text-[#6B7185] block font-medium">Class Type Filter</span>
+                <span className="text-xs text-[#6B7185] block font-medium">Class Type Filter</span>
                 <select
                   value={selectedClassType}
                   onChange={(e) => setSelectedClassType(e.target.value)}
@@ -222,17 +213,16 @@ export function ScheduleClient({
               </div>
 
               <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
-                <span className="text-[9.5px] text-[#6B7185] block font-medium">Subject</span>
+                <span className="text-xs text-[#6B7185] block font-medium">Subject</span>
                 <select
                   value={selectedSubjectFilter}
                   onChange={(e) => setSelectedSubjectFilter(e.target.value)}
                   className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
                 >
                   <option value="All Subjects">All Subjects</option>
-                  <option value="Mathematics">Mathematics</option>
-                  <option value="Physics">Physics</option>
-                  <option value="Chemistry">Chemistry</option>
-                  <option value="Economics">Economics</option>
+                  {Array.from(new Set(classesList.map((c) => c.subject).filter(Boolean))).map((subj) => (
+                    <option key={subj} value={subj}>{subj}</option>
+                  ))}
                 </select>
               </div>
             </div>
@@ -247,7 +237,7 @@ export function ScheduleClient({
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
                     <th className="py-3.5 px-3">TIME & ROOM</th>
                     <th className="py-3.5 px-3">CLASS CODE & SUBJECT</th>
                     <th className="py-3.5 px-3">PROGRAM & GRADE</th>
@@ -270,17 +260,17 @@ export function ScheduleClient({
                       <tr key={cls.id} className="hover:bg-slate-50 transition-colors">
                         <td className="py-3.5 px-3">
                           <div className="font-extrabold font-mono text-slate-900 dark:text-slate-100">{cls.startAt} - {cls.endAt}</div>
-                          <div className="text-[11px] text-[#6B7185]">{cls.room}</div>
+                          <div className="text-xs text-[#6B7185]">{cls.room}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
                           <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{cls.subject}</div>
-                          <div className="text-[11px] text-[#6B7185] font-mono">{cls.classCode}</div>
+                          <div className="text-xs text-[#6B7185] font-mono">{cls.classCode}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
                           <div className="font-extrabold text-slate-900 dark:text-slate-100">{cls.studentName || '—'}</div>
-                          <div className="text-[11px] text-[#6B7185]">{cls.program}</div>
+                          <div className="text-xs text-[#6B7185]">{cls.program}</div>
                         </td>
 
                         <td className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-slate-100">
@@ -290,7 +280,7 @@ export function ScheduleClient({
                         {/* CLASS TYPE COLUMN (WITH FREE MAKEUP BADGE) */}
                         <td className="py-3.5 px-3">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold inline-flex items-center gap-1 ${
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold inline-flex items-center gap-1 ${
                               cls.classType === 'Makeup'
                                 ? 'bg-purple-100 text-purple-700 border border-purple-200'
                                 : cls.classType === 'Test'
@@ -299,13 +289,13 @@ export function ScheduleClient({
                             }`}
                           >
                             <span>{cls.classType}</span>
-                            {!cls.isCharged && <span className="text-[9.5px] text-purple-900 bg-white px-1 rounded font-bold">(Free)</span>}
+                            {!cls.isCharged && <span className="text-xs text-purple-900 bg-white px-1 rounded font-bold">(Free)</span>}
                           </span>
                         </td>
 
                         <td className="py-3.5 px-3">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
                               cls.status === 'Live'
                                 ? 'bg-emerald-100 text-emerald-700 animate-pulse'
                                 : cls.status === 'Completed'
@@ -318,12 +308,16 @@ export function ScheduleClient({
                         </td>
 
                         <td className="py-3.5 px-3 text-center">
-                          <button
-                            onClick={() => setSelectedClassForCompletion(cls)}
-                            className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
-                          >
-                            {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class →'}
-                          </button>
+                          {role !== 'student' ? (
+                            <button
+                              onClick={() => setSelectedClassForCompletion(cls)}
+                              className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                            >
+                              {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class →'}
+                            </button>
+                          ) : (
+                            <span className="text-slate-400 text-xs font-semibold">—</span>
+                          )}
                         </td>
                       </tr>
                     ))
@@ -394,14 +388,18 @@ export function ScheduleClient({
                     ))}
                   </div>
                 </div>
-                <p className="text-[10.5px] text-slate-500 font-medium">Saving marks the class Completed and records this attendance (feeds the health score).</p>
+                <p className="text-xs text-slate-500 font-medium">Saving marks the class Completed and records this attendance (feeds the health score).</p>
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setSelectedClassForCompletion(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleSaveClassCompletion} disabled={savingCompletion} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
-                  {savingCompletion ? 'Saving...' : 'Complete & Save Attendance'}
-                </button>
+                <button onClick={() => setSelectedClassForCompletion(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Close</button>
+                {selectedClassForCompletion.status === 'Completed' ? (
+                  <span className="px-4 py-2 text-emerald-600 font-extrabold text-xs">Already completed — attendance recorded</span>
+                ) : (
+                  <button onClick={handleSaveClassCompletion} disabled={savingCompletion} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
+                    {savingCompletion ? 'Saving...' : 'Complete & Save Attendance'}
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -467,7 +465,7 @@ export function ScheduleClient({
                 </div>
 
                 {(students.length === 0 || subjects.length === 0 || teachers.length === 0) && (
-                  <p className="text-[10.5px] text-amber-600 font-medium">Add students, subjects, and teachers first. (Run supabase/seed_subjects.sql for subjects.)</p>
+                  <p className="text-xs text-amber-600 font-medium">Add students, subjects, and teachers first. (Run supabase/seed_subjects.sql for subjects.)</p>
                 )}
 
                 {overlapWarning && (

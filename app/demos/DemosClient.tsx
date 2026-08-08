@@ -122,7 +122,7 @@ export function DemosClient({
   };
 
   return (
-    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher', 'student']}>
+    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
 
         {/* TOP HEADER */}
@@ -170,7 +170,7 @@ export function DemosClient({
                   }`}
                 >
                   <span>{tab.name}</span>
-                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] ${selectedStatusTab === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'}`}>
+                  <span className={`px-1.5 py-0.2 rounded-md text-xs ${selectedStatusTab === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'}`}>
                     {tab.count}
                   </span>
                 </button>
@@ -195,7 +195,7 @@ export function DemosClient({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
                   <th className="py-3.5 px-3">DEMO ID & STUDENT</th>
                   <th className="py-3.5 px-3">PARENT CONTACT</th>
                   <th className="py-3.5 px-3">PROGRAM & SUBJECT</th>
@@ -219,17 +219,17 @@ export function DemosClient({
                     <tr key={d.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-3">
                         <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{d.studentName}</div>
-                        <div className="text-[11px] text-[#6B7185] font-mono">{d.demoId}</div>
+                        <div className="text-xs text-[#6B7185] font-mono">{d.demoId}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
                         <div className="font-extrabold text-slate-900 dark:text-slate-100">{d.parentName}</div>
-                        <div className="text-[11px] text-[#6B7185] font-mono">{d.parentPhone}</div>
+                        <div className="text-xs text-[#6B7185] font-mono">{d.parentPhone}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
                         <div className="font-extrabold text-slate-900 dark:text-slate-100">{d.subject}</div>
-                        <div className="text-[11px] text-[#6B7185]">{d.program}</div>
+                        <div className="text-xs text-[#6B7185]">{d.program}</div>
                       </td>
 
                       {/* ASSIGNED TEACHER COLUMN */}
@@ -259,7 +259,7 @@ export function DemosClient({
                           href={d.meetingLink}
                           target="_blank"
                           rel="noreferrer"
-                          className="px-2.5 py-1 bg-blue-50 text-blue-700 font-bold text-[11px] rounded-lg border border-blue-200 inline-flex items-center gap-1 hover:bg-blue-100"
+                          className="px-2.5 py-1 bg-blue-50 text-blue-700 font-bold text-xs rounded-lg border border-blue-200 inline-flex items-center gap-1 hover:bg-blue-100"
                         >
                           <Video className="w-3 h-3 text-blue-600" />
                           <span>Join Link ↗</span>
@@ -268,7 +268,7 @@ export function DemosClient({
 
                       <td className="py-3.5 px-3">
                         <span
-                          className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${
+                          className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
                             d.outcome === 'Won'
                               ? 'bg-emerald-100 text-emerald-700'
                               : d.outcome === 'Lost'
@@ -330,7 +330,7 @@ export function DemosClient({
                     ))}
                   </select>
                   {teachers.length === 0 && (
-                    <p className="text-[10.5px] text-amber-600 font-medium mt-1">No teachers yet. Add a teacher first.</p>
+                    <p className="text-xs text-amber-600 font-medium mt-1">No teachers yet. Add a teacher first.</p>
                   )}
                 </div>
 

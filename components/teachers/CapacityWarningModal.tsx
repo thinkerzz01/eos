@@ -64,7 +64,7 @@ export function CapacityWarningModal({
           </p>
         </div>
 
-        <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-[11px] font-mono text-amber-700 dark:text-amber-300">
+        <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 rounded-xl text-xs font-mono text-amber-700 dark:text-amber-300">
           Overriding capacity will be recorded in the append-only <strong>audit_log</strong> table.
         </div>
       </div>

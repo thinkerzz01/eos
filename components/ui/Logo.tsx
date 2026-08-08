@@ -87,7 +87,7 @@ export function Logo({
                 ? 'text-[8.5px]'
                 : size === 'lg'
                 ? 'text-xs'
-                : 'text-[9.5px]'
+                : 'text-xs'
             }`}
           >
             Question · Think · Achieve

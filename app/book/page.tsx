@@ -1,46 +1,92 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MOCK_OPEN_SLOTS } from '@/lib/mockAdmissionsData';
+import { submitPublicBooking } from './actions';
 import {
-  Calendar,
   Clock,
   CheckCircle2,
   Sparkles,
   ArrowRight,
-  ShieldCheck,
-  User,
-  Phone,
-  BookOpen,
-  GraduationCap,
+  AlertCircle,
 } from 'lucide-react';
 
+// Booking window matches the DB routine (get_open_slots: 07:00–22:00 PKT).
+const SLOT_HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7..21
+
+function labelForHour(h: number): string {
+  const period = h < 12 ? 'AM' : 'PM';
+  const twelve = h % 12 === 0 ? 12 : h % 12;
+  return `${twelve}:00 ${period}`;
+}
+
+// Today's date in Pakistan time as YYYY-MM-DD (min selectable date).
+function todayPKT(): string {
+  return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+}
+
 export default function PublicBookingPage() {
-  const [selectedSlotId, setSelectedSlotId] = useState<string>(MOCK_OPEN_SLOTS[0]?.id ?? '');
   const [studentName, setStudentName] = useState('');
   const [parentName, setParentName] = useState('');
   const [parentPhone, setParentPhone] = useState('');
   const [parentEmail, setParentEmail] = useState('');
   const [program, setProgram] = useState('O Level');
+  const [date, setDate] = useState<string>(todayPKT());
+  const [hour, setHour] = useState<number | null>(null);
+
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string>('');
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [bookingRef, setBookingRef] = useState('');
 
-  const selectedSlot = MOCK_OPEN_SLOTS.find((s) => s.id === selectedSlotId);
-
-  const handleSubmitBooking = (e: React.FormEvent) => {
+  const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!studentName || !parentName || !parentPhone) return;
+    setError('');
+    if (!studentName || !parentName || !parentPhone) {
+      setError('Please fill in the student name, parent name, and phone number.');
+      return;
+    }
+    if (hour === null) {
+      setError('Please pick a demo time slot.');
+      return;
+    }
 
-    // Simulates SECURITY DEFINER create_public_booking DB call
-    // Note: Public booking creates lead with NULL teacher per AGENTS.md §3.3
-    const refCode = `THM-BOOK-${Math.floor(100000 + Math.random() * 900000)}`;
-    setBookingRef(refCode);
-    setIsSubmitted(true);
+    setSubmitting(true);
+    try {
+      const res = await submitPublicBooking({
+        studentName,
+        parentName,
+        parentPhone,
+        parentEmail,
+        program,
+        date,
+        hour,
+      });
+      if (!res.ok) {
+        setError(res.error || 'Something went wrong. Please try again.');
+        return;
+      }
+      setBookingRef(res.ref || 'THM-BOOKING');
+      setIsSubmitted(true);
+    } catch {
+      setError('A network error occurred. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  const prettyDate = date
+    ? new Date(`${date}T00:00:00+05:00`).toLocaleDateString('en-GB', {
+        weekday: 'short',
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        timeZone: 'Asia/Karachi',
+      })
+    : '';
 
   return (
     <div className="min-h-screen bg-[#F8F9FD] text-[#171A2B] font-sans flex flex-col justify-between">
-      
+
       {/* PUBLIC HEADER */}
       <header className="bg-white border-b border-[#EBEDF3] py-4 px-6 sticky top-0 z-50 shadow-xs">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
@@ -50,7 +96,7 @@ export default function PublicBookingPage() {
             </div>
             <div>
               <div className="font-heading font-extrabold text-xl tracking-tight text-slate-900">THINKERZZ ACADEMY</div>
-              <div className="text-[10.5px] font-bold text-[#5B47D6] tracking-wider uppercase">Question. Think. Achieve.</div>
+              <div className="text-xs font-bold text-[#5B47D6] tracking-wider uppercase">Question. Think. Achieve.</div>
             </div>
           </div>
 
@@ -66,7 +112,7 @@ export default function PublicBookingPage() {
       <main className="max-w-4xl mx-auto px-4 py-8 flex-1 w-full space-y-8">
         {!isSubmitted ? (
           <div className="space-y-8">
-            
+
             {/* HERO TITLE */}
             <div className="text-center space-y-2 max-w-2xl mx-auto">
               <span className="px-3.5 py-1 bg-purple-100 text-[#5B47D6] text-xs font-extrabold rounded-full inline-flex items-center gap-1.5">
@@ -77,48 +123,55 @@ export default function PublicBookingPage() {
                 Experience Pakistan's Premier Academic OS
               </h1>
               <p className="text-sm text-[#6B7185] font-medium leading-relaxed">
-                Select an open slot below, enter your details, and instantly lock your free 1-on-1 demo trial class with our expert faculty.
+                Choose a date and time below, enter your details, and our academic counselor will confirm your free 1-on-1 demo trial class over WhatsApp.
               </p>
             </div>
 
             {/* FORM CARD */}
             <form onSubmit={handleSubmitBooking} className="bg-white border border-[#EBEDF3] rounded-[24px] p-6 sm:p-8 shadow-xl space-y-6">
-              
-              {/* STEP 1: SELECT OPEN TIME SLOT */}
+
+              {/* STEP 1: PICK A DATE & TIME SLOT */}
               <div className="space-y-3">
                 <div className="flex items-center gap-2 font-heading font-extrabold text-sm text-slate-900 uppercase tracking-wider">
                   <div className="w-6 h-6 rounded-full bg-[#5B47D6] text-white flex items-center justify-center text-xs">1</div>
-                  <span>Select Available Demo Time Slot</span>
+                  <span>Select Demo Date & Time</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {MOCK_OPEN_SLOTS.map((slot) => {
-                    const isSelected = selectedSlotId === slot.id;
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+                  <div className="sm:col-span-1">
+                    <label className="text-slate-700 block mb-1 text-xs font-bold">Preferred Date *</label>
+                    <input
+                      type="date"
+                      required
+                      value={date}
+                      min={todayPKT()}
+                      onChange={(e) => setDate(e.target.value)}
+                      className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs font-bold focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
+                  {SLOT_HOURS.map((h) => {
+                    const isSelected = hour === h;
                     return (
-                      <div
-                        key={slot.id}
-                        onClick={() => setSelectedSlotId(slot.id)}
-                        className={`p-4 rounded-2xl border-2 cursor-pointer transition-all ${
+                      <button
+                        type="button"
+                        key={h}
+                        onClick={() => setHour(h)}
+                        className={`p-2.5 rounded-xl border-2 text-xs font-bold transition-all flex items-center justify-center gap-1 ${
                           isSelected
-                            ? 'border-[#5B47D6] bg-purple-50/70 shadow-sm'
-                            : 'border-[#EBEDF3] hover:border-slate-300 bg-white'
+                            ? 'border-[#5B47D6] bg-purple-50/70 text-[#5B47D6] shadow-sm'
+                            : 'border-[#EBEDF3] hover:border-slate-300 bg-white text-slate-700'
                         }`}
                       >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="font-extrabold text-slate-900 text-sm">{slot.subject} Demo</div>
-                            <div className="text-xs text-[#5B47D6] font-bold mt-0.5">{slot.date}</div>
-                            <div className="text-xs font-mono text-slate-600 mt-0.5 flex items-center gap-1">
-                              <Clock className="w-3 h-3 text-slate-400" />
-                              <span>{slot.time}</span>
-                            </div>
-                          </div>
-                          {isSelected && <CheckCircle2 className="w-5 h-5 text-[#5B47D6] shrink-0" />}
-                        </div>
-                      </div>
+                        <Clock className="w-3 h-3 opacity-70" />
+                        <span>{labelForHour(h)}</span>
+                      </button>
                     );
                   })}
                 </div>
+                <p className="text-xs text-slate-400 font-medium">All times are Pakistan Standard Time (PKT). Slots run for 45 minutes.</p>
               </div>
 
               {/* STEP 2: PARENT & STUDENT DETAILS */}
@@ -178,17 +231,37 @@ export default function PublicBookingPage() {
                       className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
                     />
                   </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="text-slate-700 block mb-1">Email (optional)</label>
+                    <input
+                      type="email"
+                      value={parentEmail}
+                      onChange={(e) => setParentEmail(e.target.value)}
+                      placeholder="parent@example.com"
+                      className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  </div>
                 </div>
               </div>
+
+              {/* ERROR */}
+              {error && (
+                <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold text-rose-700">
+                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{error}</span>
+                </div>
+              )}
 
               {/* SUBMIT BUTTON */}
               <div className="pt-4 border-t border-slate-100">
                 <button
                   type="submit"
-                  className="w-full py-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-extrabold text-sm shadow-lg shadow-[#5B47D6]/25 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  disabled={submitting}
+                  className="w-full py-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-extrabold text-sm shadow-lg shadow-[#5B47D6]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                 >
-                  <span>Confirm Free Demo Booking</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span>{submitting ? 'Confirming...' : 'Confirm Free Demo Booking'}</span>
+                  {!submitting && <ArrowRight className="w-4 h-4" />}
                 </button>
               </div>
 
@@ -209,10 +282,10 @@ export default function PublicBookingPage() {
             </div>
 
             <div className="p-4 bg-purple-50 border border-purple-200 rounded-2xl space-y-2 text-xs font-bold">
-              <div className="text-purple-700 text-[11px] uppercase tracking-wider">Booking Reference Code</div>
+              <div className="text-purple-700 text-xs uppercase tracking-wider">Booking Reference Code</div>
               <div className="font-mono text-2xl text-[#5B47D6] font-extrabold">{bookingRef}</div>
-              <div className="text-slate-600 text-[11.5px] font-medium pt-1">
-                Selected Slot: <strong>{selectedSlot?.subject} Demo</strong> on <strong>{selectedSlot?.date} ({selectedSlot?.time})</strong>
+              <div className="text-slate-600 text-xs font-medium pt-1">
+                Requested Slot: <strong>{prettyDate}</strong>{hour !== null && <> at <strong>{labelForHour(hour)} PKT</strong></>}
               </div>
             </div>
 
@@ -226,6 +299,9 @@ export default function PublicBookingPage() {
                 setStudentName('');
                 setParentName('');
                 setParentPhone('');
+                setParentEmail('');
+                setHour(null);
+                setBookingRef('');
               }}
               className="px-6 py-2.5 bg-slate-900 text-white font-extrabold text-xs rounded-xl hover:bg-slate-800 transition-all cursor-pointer"
             >

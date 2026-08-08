@@ -6,6 +6,16 @@
 import { createClient } from '@/lib/supabase/server';
 import type { MonthlyReportData } from '@/lib/mockIntelligenceData';
 
+function gradeFromPct(pct: number): MonthlyReportData['assessedGrade'] {
+  if (pct >= 90) return 'A*';
+  if (pct >= 80) return 'A';
+  if (pct >= 70) return 'B';
+  if (pct >= 60) return 'C';
+  if (pct >= 50) return 'D';
+  if (pct >= 40) return 'E';
+  return 'U';
+}
+
 export async function getMonthlyReports(): Promise<MonthlyReportData[]> {
   const supabase = createClient();
   const {
@@ -21,9 +31,12 @@ export async function getMonthlyReports(): Promise<MonthlyReportData[]> {
     .order('created_at', { ascending: false });
   if (!students || students.length === 0) return [];
 
+  // Master Plan §11: the monthly report counts THIS month's activity, not lifetime.
+  const md = new Date();
+  const monthStart = new Date(Date.UTC(md.getUTCFullYear(), md.getUTCMonth(), 1)).toISOString().slice(0, 10);
   const [attRes, testsRes] = await Promise.all([
     supabase.from('attendance').select('student_id,status').is('deleted_at', null),
-    supabase.from('tests').select('student_id').is('deleted_at', null),
+    supabase.from('tests').select('student_id,score,max_score').gte('date', monthStart).is('deleted_at', null),
   ]);
 
   const att = new Map<string, { present: number; late: number; total: number }>();
@@ -34,10 +47,14 @@ export async function getMonthlyReports(): Promise<MonthlyReportData[]> {
     else if ((a as any).status === 'late') e.late++;
     att.set((a as any).student_id, e);
   }
-  const testCount = new Map<string, number>();
+  const testStats = new Map<string, { count: number; score: number; max: number }>();
   for (const t of testsRes.data ?? []) {
     const id = (t as any).student_id;
-    testCount.set(id, (testCount.get(id) ?? 0) + 1);
+    const e = testStats.get(id) ?? { count: 0, score: 0, max: 0 };
+    e.count++;
+    e.score += Number((t as any).score || 0);
+    e.max += Number((t as any).max_score || 0);
+    testStats.set(id, e);
   }
 
   const month = new Date().toLocaleDateString('en-GB', {
@@ -53,9 +70,15 @@ export async function getMonthlyReports(): Promise<MonthlyReportData[]> {
       program: s.program ?? '',
       month,
       topicsCovered: [], // from syllabus_progress topic names (later slice)
-      testsConductedCount: testCount.get(s.id) ?? 0,
-      gradeTrend: 'same', // needs grade history to compute
-      assessedGrade: 'B', // placeholder until student_subjects.assessed_grade is wired
+      testsConductedCount: testStats.get(s.id)?.count ?? 0,
+      gradeTrend: 'same', // needs grade history to compute a real trend
+      // Derived from the student's real test scores; '—' when no tests yet.
+      assessedGrade: (() => {
+        const ts = testStats.get(s.id);
+        return ts && ts.count > 0 && ts.max > 0
+          ? gradeFromPct((ts.score / ts.max) * 100)
+          : ('—' as MonthlyReportData['assessedGrade']);
+      })(),
       attendancePct,
     } as MonthlyReportData;
   });

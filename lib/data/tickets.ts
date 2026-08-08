@@ -22,6 +22,11 @@ function mapRow(r: any): SupportTicket {
   const isPastTarget =
     (r.status === 'open' || r.status === 'in_progress') &&
     Date.now() > new Date(r.target_reply_at).getTime();
+  const messages = Array.isArray(r.ticket_messages)
+    ? [...r.ticket_messages]
+        .sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
+        .map((m: any) => ({ id: m.id as string, body: m.message as string, at: m.created_at as string }))
+    : [];
   return {
     id: r.id,
     ticketNo: `TK-${String(r.id).split('-')[0].toUpperCase()}`,
@@ -34,7 +39,8 @@ function mapRow(r: any): SupportTicket {
     createdAt: r.created_at,
     elapsedMinutes,
     isPastTarget,
-    messagesCount: Array.isArray(r.ticket_messages) ? (r.ticket_messages[0]?.count ?? 0) : 0,
+    messagesCount: messages.length,
+    messages,
   };
 }
 
@@ -47,7 +53,7 @@ export async function getTickets(): Promise<SupportTicket[]> {
 
   const { data, error } = await supabase
     .from('tickets')
-    .select('id,subject,opened_by,status,priority,target_reply_at,created_at,ticket_messages(count)')
+    .select('id,subject,opened_by,status,priority,target_reply_at,created_at,ticket_messages(id,message,created_at)')
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 

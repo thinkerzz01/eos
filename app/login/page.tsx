@@ -171,7 +171,7 @@ export default function LoginPage() {
               <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
               <span>Multi-Role Access Control</span>
             </div>
-            <div className="grid grid-cols-2 gap-2 text-[11px] font-mono">
+            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
               <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-xl">
                 <span className="text-indigo-600 dark:text-indigo-400 font-bold">Admin:</span> Full Control
               </div>

@@ -34,7 +34,7 @@ export function FeesClient({ initialVouchers }: { initialVouchers: VoucherRow[] 
       header: 'Status',
       cell: (row: VoucherRow) => (
         <span
-          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+          className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
             row.status === 'paid'
               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
               : row.status === 'in_grace'
@@ -59,12 +59,6 @@ export function FeesClient({ initialVouchers }: { initialVouchers: VoucherRow[] 
         data={initialVouchers}
         keyExtractor={(row) => row.id}
         searchPlaceholder="Search vouchers by number or student..."
-        filterChips={[
-          { id: 'all', label: 'All Vouchers', value: 'all' },
-          { id: 'due', label: 'Due / In Grace', value: 'due' },
-          { id: 'paid', label: 'Paid', value: 'paid' },
-        ]}
-        activeFilter="all"
       />
     </PortalLayout>
   );

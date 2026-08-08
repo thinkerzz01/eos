@@ -79,7 +79,7 @@ export function Drawer({
                 >
                   <span>{tab.label}</span>
                   {tab.badge !== undefined && (
-                    <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    <span className="px-1.5 py-0.5 rounded-full text-xs bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                       {tab.badge}
                     </span>
                   )}

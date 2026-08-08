@@ -714,6 +714,15 @@ END $$;
 -- Manager READ ONLY on teachers (cannot add/edit teachers, cannot see pay)
 CREATE POLICY manager_read_teachers ON public.teachers FOR SELECT USING (current_user_role() = 'manager' AND org_id = current_user_org_id());
 
+-- Teacher/Student READ on subjects + teachers (non-sensitive academic master data
+-- and teacher names for their own classes). Pay stays isolated in
+-- teacher_pay_rates, which intentionally has NO teacher/student policy. Fixes
+-- blank Subject and "Unassigned" teacher on the teacher & student portals.
+CREATE POLICY teacher_read_subjects ON public.subjects FOR SELECT USING (current_user_role() = 'teacher' AND org_id = current_user_org_id());
+CREATE POLICY student_read_subjects ON public.subjects FOR SELECT USING (current_user_role() = 'student' AND org_id = current_user_org_id());
+CREATE POLICY teacher_read_teachers ON public.teachers FOR SELECT USING (current_user_role() = 'teacher' AND org_id = current_user_org_id());
+CREATE POLICY student_read_teachers ON public.teachers FOR SELECT USING (current_user_role() = 'student' AND org_id = current_user_org_id());
+
 -- 5.4 RLS Policies: Teacher (Own Students, Own Schedule, Own Homework/Tests, Read Syllabus)
 CREATE POLICY teacher_read_own_students ON public.students FOR SELECT USING (
     current_user_role() = 'teacher' AND id IN (

@@ -39,8 +39,12 @@ export async function createLead(input: {
 }): Promise<ActionResult> {
   const studentName = input.studentName?.trim();
   const parentName = input.parentName?.trim();
+  const parentPhone = input.parentPhone?.trim();
   if (!studentName || !parentName) {
     return { ok: false, error: 'Student name and parent name are required.' };
+  }
+  if (!parentPhone) {
+    return { ok: false, error: 'Parent phone is required.' };
   }
 
   const { supabase, user, orgId } = await ctx();
@@ -50,7 +54,7 @@ export async function createLead(input: {
     org_id: orgId,
     name: studentName,
     parent_name: parentName,
-    phone: input.parentPhone?.trim() || 'N/A',
+    phone: parentPhone,
     email: input.parentEmail?.trim() || null,
     // leads.program is CAIE-only (nullable) — store only if valid, else leave null.
     program: CAIE_PROGRAMS.includes(input.program) ? input.program : null,

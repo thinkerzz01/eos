@@ -72,8 +72,8 @@ export function PortalLayout({
                   Your current role (<span className="font-bold capitalize text-slate-800 dark:text-slate-200">{role}</span>) does not have database RLS permissions to view this screen.
                 </p>
               </div>
-              <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl text-left border border-rose-200 dark:border-rose-900/40 text-[11px] text-rose-700 dark:text-rose-300 font-mono">
-                RLS DENY ENGINE: Supabase table policy denied SELECT for role '{role}'.
+              <div className="p-3 bg-rose-50 dark:bg-rose-950/40 rounded-xl text-left border border-rose-200 dark:border-rose-900/40 text-xs text-rose-700 dark:text-rose-300 font-mono">
+                This screen is not part of the '{role}' role's portal. Database RLS independently blocks access to its data.
               </div>
             </div>
           ) : (

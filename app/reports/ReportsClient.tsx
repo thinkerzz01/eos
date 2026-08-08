@@ -6,7 +6,6 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { MonthlyReportData } from '@/lib/mockIntelligenceData';
 import {
-  Sparkles,
   FileText,
   TrendingUp,
   Award,
@@ -22,8 +21,6 @@ export function ReportsClient({ initialReports }: { initialReports: MonthlyRepor
   const { role } = useRole();
   const [reports, setReports] = useState<MonthlyReportData[]>(initialReports);
   const [selectedReport, setSelectedReport] = useState<MonthlyReportData | null>(initialReports[0] ?? null);
-  const [isPhrasing, setIsPhrasing] = useState<boolean>(false);
-
   useEffect(() => {
     setReports(initialReports);
     setSelectedReport((prev) =>
@@ -31,27 +28,31 @@ export function ReportsClient({ initialReports }: { initialReports: MonthlyRepor
     );
   }, [initialReports]);
 
-  const handleGenerateAiReportText = (rpt: MonthlyReportData) => {
-    setIsPhrasing(true);
-    setTimeout(() => {
-      // LLM receives ONLY first name and facts (no surname, no phone, no raw test scores)
-      const generatedText = `${rpt.firstName} completed ${rpt.topicsCovered.length} syllabus topics (${rpt.topicsCovered.join(', ')}) during ${rpt.month}. ${rpt.firstName} participated in ${rpt.testsConductedCount} assessments with an overall grade trend moving ${rpt.gradeTrend.toUpperCase()}, maintaining an assessed grade of ${rpt.assessedGrade}.`;
-      
-      const updated = reports.map((r) => {
-        if (r.studentId === rpt.studentId) {
-          return { ...r, phrasedReportText: generatedText };
-        }
-        return r;
-      });
+  // Deterministic report DRAFT, assembled from the student's real numbers — no
+  // invented facts, no raw test scores, first name only. This is the same shape
+  // the month-end job sends; that job additionally runs a warm LLM phrasing pass
+  // server-side (lib/reports/monthlyReport.ts). This button does NOT call the LLM.
+  const buildReportDraft = (rpt: MonthlyReportData): string => {
+    const topics = rpt.topicsCovered.length
+      ? `covered ${rpt.topicsCovered.length} syllabus topic${rpt.topicsCovered.length === 1 ? '' : 's'} (${rpt.topicsCovered.join(', ')})`
+      : 'has no syllabus topics logged yet';
+    return (
+      `Progress summary for ${rpt.firstName} — ${rpt.month}. ` +
+      `Attendance stands at ${rpt.attendancePct}%. ` +
+      `${rpt.firstName} ${topics} and sat ${rpt.testsConductedCount} assessment${rpt.testsConductedCount === 1 ? '' : 's'}, ` +
+      `with the assessed-grade trend moving ${rpt.gradeTrend.toUpperCase()}. ` +
+      `No raw test scores are shared. — Thinkerzz`
+    );
+  };
 
-      setReports(updated);
-      setSelectedReport({ ...rpt, phrasedReportText: generatedText });
-      setIsPhrasing(false);
-    }, 600);
+  const handleGenerateReportDraft = (rpt: MonthlyReportData) => {
+    const draft = buildReportDraft(rpt);
+    setReports((prev) => prev.map((r) => (r.studentId === rpt.studentId ? { ...r, phrasedReportText: draft } : r)));
+    setSelectedReport({ ...rpt, phrasedReportText: draft });
   };
 
   return (
-    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher', 'student']}>
+    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
 
         {/* HEADER */}
@@ -102,7 +103,7 @@ export function ReportsClient({ initialReports }: { initialReports: MonthlyRepor
           {/* STUDENT LIST (5 COLS) */}
           <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-4 space-y-3">
             <div className="font-heading font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider border-b pb-2">
-              Monthly Reports Queue (July 2026)
+              Monthly Reports Queue{reports[0]?.month ? ` (${reports[0].month})` : ''}
             </div>
 
             <div className="space-y-2">
@@ -121,8 +122,8 @@ export function ReportsClient({ initialReports }: { initialReports: MonthlyRepor
                       <div className="font-extrabold text-sm text-slate-900">{rpt.firstName}</div>
                       <div className="text-xs text-[#6B7185] font-medium">{rpt.program} · {rpt.month}</div>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-[10.5px] font-extrabold bg-emerald-100 text-emerald-700">
-                      Assessed: {rpt.assessedGrade}
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-700">
+                      Trend: {rpt.gradeTrend.toUpperCase()}
                     </span>
                   </div>
 
@@ -143,32 +144,31 @@ export function ReportsClient({ initialReports }: { initialReports: MonthlyRepor
                   <h3 className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">
                     Monthly Report Preview — {selectedReport.firstName}
                   </h3>
-                  <p className="text-xs text-[#6B7185] font-medium">July 2026 Academic Summary</p>
+                  <p className="text-xs text-[#6B7185] font-medium">{selectedReport.month} Academic Summary</p>
                 </div>
                 <button
-                  onClick={() => handleGenerateAiReportText(selectedReport)}
-                  disabled={isPhrasing}
-                  className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                  onClick={() => handleGenerateReportDraft(selectedReport)}
+                  className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Sparkles className="w-4 h-4 text-purple-200" />
-                  <span>{isPhrasing ? 'Phrasing Report...' : 'Re-phrase with AI'}</span>
+                  <FileText className="w-4 h-4 text-purple-200" />
+                  <span>Generate Report Draft</span>
                 </button>
               </div>
 
               {/* ASSEMBLED FACTS (PRESERVED MATH) */}
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200">
-                  <div className="text-[10.5px] font-bold text-slate-500 uppercase">Topics Covered</div>
+                  <div className="text-xs font-bold text-slate-500 uppercase">Topics Covered</div>
                   <div className="font-heading font-extrabold text-xl text-slate-900 mt-1">{selectedReport.topicsCovered.length}</div>
                 </div>
 
                 <div className="p-3 bg-purple-50 rounded-2xl border border-purple-200">
-                  <div className="text-[10.5px] font-bold text-[#5B47D6] uppercase">Tests Conducted</div>
+                  <div className="text-xs font-bold text-[#5B47D6] uppercase">Tests Conducted</div>
                   <div className="font-heading font-extrabold text-xl text-[#5B47D6] mt-1">{selectedReport.testsConductedCount}</div>
                 </div>
 
                 <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200">
-                  <div className="text-[10.5px] font-bold text-emerald-700 uppercase">Grade Trend</div>
+                  <div className="text-xs font-bold text-emerald-700 uppercase">Grade Trend</div>
                   <div className="font-heading font-extrabold text-xl text-emerald-600 mt-1">{selectedReport.gradeTrend.toUpperCase()}</div>
                 </div>
               </div>
@@ -188,20 +188,32 @@ export function ReportsClient({ initialReports }: { initialReports: MonthlyRepor
               {/* PHRASED REPORT OUTPUT */}
               <div className="space-y-2 pt-3 border-t">
                 <div className="flex justify-between items-center font-extrabold text-xs text-slate-900 uppercase">
-                  <span>Phrased Report Body</span>
-                  <span className="text-[10.5px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                  <span>Report Draft Body</span>
+                  <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
                     🟢 No Raw Scores Included
                   </span>
                 </div>
-                <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-800 leading-relaxed italic">
-                  "{selectedReport.phrasedReportText}"
-                </div>
+                {selectedReport.phrasedReportText ? (
+                  <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs font-medium text-slate-800 leading-relaxed italic">
+                    "{selectedReport.phrasedReportText}"
+                  </div>
+                ) : (
+                  <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-2xl text-xs font-medium text-slate-400">
+                    Click “Generate Report Draft” to assemble this student’s summary from their live numbers.
+                  </div>
+                )}
+                <p className="text-xs text-slate-400 font-medium">
+                  This draft is assembled by code. The warm, parent-friendly phrasing is generated and emailed automatically by the month-end reporting job.
+                </p>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
-                <button className="px-4 py-2 border rounded-xl font-bold text-xs">Print Report</button>
-                <button className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md">
-                  Enqueue Notification Dispatch →
+              <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 pt-2">
+                <span className="text-xs text-slate-400 font-medium">Dispatch is automatic — the month-end cron enqueues &amp; emails this report to parents.</span>
+                <button
+                  onClick={() => window.print()}
+                  className="px-4 py-2 border rounded-xl font-bold text-xs cursor-pointer hover:bg-slate-50 transition-colors"
+                >
+                  Print Report
                 </button>
               </div>
             </div>

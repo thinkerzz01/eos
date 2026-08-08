@@ -271,7 +271,7 @@ export function VouchersClient({
                   }`}
                 >
                   <span>{tab.name}</span>
-                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] ${selectedStatusTab === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'}`}>
+                  <span className={`px-1.5 py-0.2 rounded-md text-xs ${selectedStatusTab === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'}`}>
                     {tab.count}
                   </span>
                 </button>
@@ -296,7 +296,7 @@ export function VouchersClient({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
                   <th className="py-3.5 px-3">VOUCHER NO & STUDENT</th>
                   <th className="py-3.5 px-3">PARENT & PHONE</th>
                   <th className="py-3.5 px-3">DUE DATE & GRACE DEADLINE</th>
@@ -320,12 +320,12 @@ export function VouchersClient({
                     <tr key={v.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-3">
                         <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{v.studentName}</div>
-                        <div className="text-[11px] text-[#6B7185] font-mono">{v.voucherNo}</div>
+                        <div className="text-xs text-[#6B7185] font-mono">{v.voucherNo}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
                         <div className="font-extrabold text-slate-900 dark:text-slate-100">{v.parentName}</div>
-                        <div className="text-[11px] text-[#6B7185] font-mono">{v.parentPhone}</div>
+                        <div className="text-xs text-[#6B7185] font-mono">{v.parentPhone}</div>
                       </td>
 
                       <td className="py-3.5 px-3 font-mono">
@@ -361,7 +361,7 @@ export function VouchersClient({
                           {v.status}
                         </span>
                         {v.needsAdminDecision && (
-                          <span className="block text-[10px] font-extrabold text-rose-600 mt-1 animate-pulse">
+                          <span className="block text-xs font-extrabold text-rose-600 mt-1 animate-pulse">
                             ⚠️ Needs Admin Decision
                           </span>
                         )}
@@ -434,7 +434,7 @@ export function VouchersClient({
                     ))}
                   </select>
                   {students.length === 0 && (
-                    <p className="text-[10.5px] text-amber-600 font-medium mt-1">No students yet. Add a student first.</p>
+                    <p className="text-xs text-amber-600 font-medium mt-1">No students yet. Add a student first.</p>
                   )}
                 </div>
 
@@ -468,7 +468,7 @@ export function VouchersClient({
                     onChange={(e) => setNewDueDate(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100"
                   />
-                  <p className="text-[10.5px] text-slate-500 font-medium mt-1">A 3-day grace deadline is set automatically.</p>
+                  <p className="text-xs text-slate-500 font-medium mt-1">A 3-day grace deadline is set automatically.</p>
                 </div>
               </div>
 
@@ -511,7 +511,7 @@ export function VouchersClient({
                     onChange={(e) => setPayAmountInput(e.target.value)}
                     className="w-full bg-slate-50 border rounded-xl p-2.5 font-mono font-extrabold text-base text-slate-900"
                   />
-                  <p className="text-[10.5px] text-slate-500 font-medium mt-1">
+                  <p className="text-xs text-slate-500 font-medium mt-1">
                     Partial payment updates running balance; voucher stays <strong>Due</strong> until balance reaches 0.
                   </p>
                 </div>
@@ -555,7 +555,7 @@ export function VouchersClient({
               <div className="space-y-3 text-xs font-bold">
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-1 text-rose-900">
                   <div>Total Paid to Date: <span className="font-mono">PKR {refundVoucher.paidAmount.toLocaleString()}</span></div>
-                  <div className="text-[10.5px] font-medium pt-1">
+                  <div className="text-xs font-medium pt-1">
                     Note: Per AGENTS.md §4, refunds are recorded as a <strong>negative payment entry</strong> linked to the voucher. The original payment is never edited or deleted.
                   </div>
                 </div>
@@ -616,7 +616,7 @@ export function VouchersClient({
                   >
                     <div>
                       <div>1. Stop Student (Change Status to Stopped)</div>
-                      <div className="text-[10.5px] font-normal text-rose-600">Restricts student portal access until resolved</div>
+                      <div className="text-xs font-normal text-rose-600">Restricts student portal access until resolved</div>
                     </div>
                     <span>→</span>
                   </button>
@@ -627,7 +627,7 @@ export function VouchersClient({
                   >
                     <div>
                       <div>2. Extend Grace Period (+3 Days)</div>
-                      <div className="text-[10.5px] font-normal text-purple-700">Grants additional time without stopping student</div>
+                      <div className="text-xs font-normal text-purple-700">Grants additional time without stopping student</div>
                     </div>
                     <span>→</span>
                   </button>
@@ -638,7 +638,7 @@ export function VouchersClient({
                   >
                     <div>
                       <div>3. Mark Paid (Confirm Manual Payment)</div>
-                      <div className="text-[10.5px] font-normal text-emerald-600">Records full payment and clears balance</div>
+                      <div className="text-xs font-normal text-emerald-600">Records full payment and clears balance</div>
                     </div>
                     <span>→</span>
                   </button>

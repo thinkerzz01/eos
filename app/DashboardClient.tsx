@@ -200,7 +200,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="flex items-center gap-1.5 text-[#5B47D6] mr-1">
               <Filter className="w-4 h-4" />
-              <span className="uppercase text-[11px] font-extrabold tracking-wider">Dashboard Filters:</span>
+              <span className="uppercase text-xs font-extrabold tracking-wider">Dashboard Filters:</span>
             </div>
 
             {/* Time Range Filter */}
@@ -225,9 +225,9 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
                 className="bg-transparent focus:outline-none cursor-pointer font-bold text-xs"
               >
                 <option value="All Programs">All Programs</option>
-                <option value="O Level">O Level</option>
-                <option value="A Level">A Level</option>
-                <option value="IGCSE">IGCSE</option>
+                {Array.from(new Set(initialStudents.map((s) => s.program).filter(Boolean))).map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
               </select>
             </div>
 
@@ -239,6 +239,9 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
                 className="bg-transparent focus:outline-none cursor-pointer font-bold text-xs"
               >
                 <option value="All Teachers">All Teachers</option>
+                {Array.from(new Set(initialStudents.flatMap((s) => s.enrolledSubjects.map((es) => es.teacherName)).filter(Boolean))).map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
               </select>
             </div>
 
@@ -250,11 +253,9 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
                 className="bg-transparent focus:outline-none cursor-pointer font-bold text-xs"
               >
                 <option value="All Subjects">All Subjects</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Physics">Physics</option>
-                <option value="Chemistry">Chemistry</option>
-                <option value="Biology">Biology</option>
-                <option value="Computer Science">Computer Science</option>
+                {Array.from(new Set(initialStudents.flatMap((s) => s.enrolledSubjects.map((es) => es.subject)).filter(Boolean))).map((sub) => (
+                  <option key={sub} value={sub}>{sub}</option>
+                ))}
               </select>
             </div>
 
@@ -283,7 +284,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="font-heading font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider">ACTION CENTER</span>
-                <span className="px-2 py-0.5 bg-rose-100 text-rose-700 text-[10.5px] font-extrabold rounded-full">Critical First</span>
+                <span className="px-2 py-0.5 bg-rose-100 text-rose-700 text-xs font-extrabold rounded-full">Critical First</span>
               </div>
               <Link href="/students" className="text-xs font-bold text-[#5B47D6] hover:underline">View all &gt;</Link>
             </div>
@@ -294,8 +295,8 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   <span>{stats.feesDueCount}</span>
                 </div>
-                <div className="font-extrabold text-[11.5px] text-slate-900 leading-tight">Fees overdue</div>
-                <div className="text-[10px] font-bold text-rose-600">Action required</div>
+                <div className="font-extrabold text-xs text-slate-900 leading-tight">Fees overdue</div>
+                <div className="text-xs font-bold text-rose-600">Action required</div>
               </Link>
 
               <Link href="/students" className="p-3 bg-amber-50 border border-amber-200 rounded-2xl space-y-1 block hover:bg-amber-100 transition-colors">
@@ -303,8 +304,8 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   <span>{stats.atRiskCount}</span>
                 </div>
-                <div className="font-extrabold text-[11.5px] text-slate-900 leading-tight">Students at risk</div>
-                <div className="text-[10px] font-bold text-amber-700">{stats.atRiskCount} critical</div>
+                <div className="font-extrabold text-xs text-slate-900 leading-tight">Students at risk</div>
+                <div className="text-xs font-bold text-amber-700">{stats.atRiskCount} critical</div>
               </Link>
 
               <Link href="/demos" className="p-3 bg-orange-50 border border-orange-200 rounded-2xl space-y-1 block hover:bg-orange-100 transition-colors">
@@ -312,8 +313,8 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
                   <UserPlus className="w-4 h-4 shrink-0" />
                   <span>0</span>
                 </div>
-                <div className="font-extrabold text-[11.5px] text-slate-900 leading-tight">Demos need teacher</div>
-                <div className="text-[10px] font-bold text-orange-700">Assign now</div>
+                <div className="font-extrabold text-xs text-slate-900 leading-tight">Demos need teacher</div>
+                <div className="text-xs font-bold text-orange-700">Assign now</div>
               </Link>
 
               <Link href="/tickets" className="p-3 bg-rose-50 border border-rose-200 rounded-2xl space-y-1 block hover:bg-rose-100 transition-colors">
@@ -321,8 +322,8 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
                   <MessageSquare className="w-4 h-4 shrink-0" />
                   <span>0</span>
                 </div>
-                <div className="font-extrabold text-[11.5px] text-slate-900 leading-tight">Tickets urgent</div>
-                <div className="text-[10px] font-bold text-rose-600">Response needed</div>
+                <div className="font-extrabold text-xs text-slate-900 leading-tight">Tickets urgent</div>
+                <div className="text-xs font-bold text-rose-600">Response needed</div>
               </Link>
             </div>
           </div>
@@ -366,12 +367,12 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl p-3.5 shadow-sm space-y-1">
-                <div className="text-[11px] text-[#6B7185]">Classes Today</div>
+                <div className="text-xs text-[#6B7185]">Classes Today</div>
                 <div className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">0</div>
               </div>
 
               <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl p-3.5 shadow-sm space-y-1">
-                <div className="text-[11px] text-[#6B7185]">Revenue (This Month)</div>
+                <div className="text-xs text-[#6B7185]">Revenue (This Month)</div>
                 <div className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">PKR 0</div>
               </div>
             </div>
@@ -391,7 +392,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
             </div>
 
             <div className="space-y-3 text-xs">
-              <div className="text-center text-[#6B7185] py-8 text-[11px] font-medium">No classes scheduled.</div>
+              <div className="text-center text-[#6B7185] py-8 text-xs font-medium">No classes scheduled.</div>
             </div>
 
             <Link href="/schedule" className="text-xs font-bold text-[#5B47D6] hover:underline block text-center border-t pt-3">
@@ -409,7 +410,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
             </div>
 
             <div className="space-y-3.5 text-xs">
-              <div className="text-center text-[#6B7185] py-8 text-[11px] font-medium">No teachers added yet.</div>
+              <div className="text-center text-[#6B7185] py-8 text-xs font-medium">No teachers added yet.</div>
             </div>
 
             <Link href="/teachers" className="text-xs font-bold text-[#5B47D6] hover:underline block text-center border-t pt-3">
@@ -425,15 +426,15 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
 
             <div className="grid grid-cols-3 gap-2.5 text-center">
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-1">
-                <div className="text-[10.5px] font-bold text-emerald-800">Collected</div>
+                <div className="text-xs font-bold text-emerald-800">Collected</div>
                 <div className="font-extrabold text-sm text-emerald-600">PKR 0</div>
               </div>
               <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl space-y-1">
-                <div className="text-[10.5px] font-bold text-rose-800">Outstanding</div>
+                <div className="text-xs font-bold text-rose-800">Outstanding</div>
                 <div className="font-extrabold text-sm text-rose-600">PKR 0</div>
               </div>
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl space-y-1">
-                <div className="text-[10.5px] font-bold text-amber-800">Pending Verify</div>
+                <div className="text-xs font-bold text-amber-800">Pending Verify</div>
                 <div className="font-extrabold text-sm text-amber-600">PKR 0</div>
               </div>
             </div>
@@ -464,7 +465,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
               <span>AI Academy Insights</span>
             </div>
             <div className="space-y-2 text-xs font-medium">
-              <div className="p-3 bg-white/10 rounded-xl text-slate-200 text-[11.5px]">Insights will appear here once there is enough activity to analyze.</div>
+              <div className="p-3 bg-white/10 rounded-xl text-slate-200 text-xs">Insights will appear here once there is enough activity to analyze.</div>
             </div>
           </div>
 
@@ -479,7 +480,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
             </div>
 
             <div className="space-y-2.5 text-xs font-medium">
-              <div className="text-center text-[#6B7185] py-6 text-[11px]">No recent activity.</div>
+              <div className="text-center text-[#6B7185] py-6 text-xs">No recent activity.</div>
             </div>
           </div>
 

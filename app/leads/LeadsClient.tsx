@@ -51,7 +51,6 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   // MODAL & DRAWER STATES
   const [selectedLeadDrawer, setSelectedLeadDrawer] = useState<Lead | null>(null);
   const [convertModalLead, setConvertModalLead] = useState<Lead | null>(null);
-  const [targetGrade, setTargetGrade] = useState<string>('A*'); // Default target grade A*
 
   // ADD NEW LEAD MODAL
   const [showAddLeadModal, setShowAddLeadModal] = useState<boolean>(false);
@@ -88,7 +87,6 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       new: leadsList.filter((l) => l.stage === 'New').length,
       contacted: leadsList.filter((l) => l.stage === 'Contacted').length,
       demoSet: leadsList.filter((l) => l.stage === 'Demo Set').length,
-      demoDone: leadsList.filter((l) => l.stage === 'Demo Done').length,
       won: leadsList.filter((l) => l.stage === 'Won').length,
       lost: leadsList.filter((l) => l.stage === 'Lost').length,
     };
@@ -186,7 +184,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   };
 
   return (
-    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher', 'student']}>
+    <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
 
         {/* TOP HEADER */}
@@ -228,7 +226,6 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 { name: 'New', count: stageCounts.new },
                 { name: 'Contacted', count: stageCounts.contacted },
                 { name: 'Demo Set', count: stageCounts.demoSet },
-                { name: 'Demo Done', count: stageCounts.demoDone },
                 { name: 'Won', count: stageCounts.won },
                 { name: 'Lost', count: stageCounts.lost },
               ].map((tab) => (
@@ -246,7 +243,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   }`}
                 >
                   <span>{tab.name}</span>
-                  <span className={`px-1.5 py-0.2 rounded-md text-[10px] ${activeStageTab === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'}`}>
+                  <span className={`px-1.5 py-0.2 rounded-md text-xs ${activeStageTab === tab.name ? 'bg-white/20 text-white' : 'bg-slate-200 dark:bg-slate-700 text-[#6B7185]'}`}>
                     {tab.count}
                   </span>
                 </button>
@@ -275,18 +272,17 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
             </div>
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
-              <span className="text-[9.5px] text-[#6B7185] block font-medium">Program</span>
+              <span className="text-xs text-[#6B7185] block font-medium">Program</span>
               <select value={selectedProgram} onChange={(e) => setSelectedProgram(e.target.value)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
                 <option value="All Programs">All Programs</option>
-                <option value="O Level">O Level</option>
-                <option value="A Level">A Level</option>
-                <option value="IGCSE">IGCSE</option>
-                <option value="Matric (10th)">Matric (10th)</option>
+                {Array.from(new Set(leadsList.map((l) => l.program).filter(Boolean))).map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
               </select>
             </div>
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
-              <span className="text-[9.5px] text-[#6B7185] block font-medium">Temperature</span>
+              <span className="text-xs text-[#6B7185] block font-medium">Temperature</span>
               <select value={selectedTemperature} onChange={(e) => setSelectedTemperature(e.target.value)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
                 <option value="All Temperatures">All Temperatures</option>
                 <option value="Hot">🔥 Hot</option>
@@ -305,7 +301,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[11.5px]">
+                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
                     <th className="py-3.5 px-3">LEAD ID & STUDENT</th>
                     <th className="py-3.5 px-3">PARENT & CONTACT</th>
                     <th className="py-3.5 px-3">PROGRAM & GRADE</th>
@@ -334,28 +330,28 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       >
                         <td className="py-3.5 px-3">
                           <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{l.studentName}</div>
-                          <div className="text-[11px] text-[#6B7185] font-mono">{l.leadId}</div>
+                          <div className="text-xs text-[#6B7185] font-mono">{l.leadId}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
                           <div className="font-extrabold text-slate-900 dark:text-slate-100">{l.parentName}</div>
-                          <div className="text-[11px] text-[#6B7185] font-mono">{l.parentPhone}</div>
+                          <div className="text-xs text-[#6B7185] font-mono">{l.parentPhone}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
                           <div className="font-extrabold text-slate-900 dark:text-slate-100">{l.program}</div>
-                          <div className="text-[11px] text-[#6B7185]">{l.grade} · {l.subjects.join(', ')}</div>
+                          <div className="text-xs text-[#6B7185]">{l.grade} · {l.subjects.join(', ')}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700">
+                          <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700">
                             {l.source}
                           </span>
                         </td>
 
                         <td className="py-3.5 px-3">
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-extrabold ${
+                            className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
                               l.temperature === 'Hot'
                                 ? 'bg-rose-100 text-rose-700'
                                 : l.temperature === 'Warm'
@@ -407,11 +403,6 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
             <div className="p-3 bg-slate-50 border-t flex justify-between items-center text-xs font-bold text-slate-600">
               <div>Showing {filteredLeads.length} of {leadsList.length} leads</div>
-              <div className="flex items-center gap-2">
-                <button disabled className="px-3 py-1 bg-white border rounded-lg opacity-50">Previous</button>
-                <span>Page 1 of 1</span>
-                <button disabled className="px-3 py-1 bg-white border rounded-lg opacity-50">Next</button>
-              </div>
             </div>
           </div>
 
@@ -422,7 +413,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 <div>
                   <div className="flex items-center gap-2">
                     <h2 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">{selectedLeadDrawer.studentName}</h2>
-                    <span className="text-[10.5px] font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-[#5B47D6]">
+                    <span className="text-xs font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-[#5B47D6]">
                       {selectedLeadDrawer.stage}
                     </span>
                   </div>
@@ -459,7 +450,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       }}
                       className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-bold text-slate-900 dark:text-slate-100"
                     >
-                      {['New', 'Contacted', 'Demo Set', 'Demo Done', 'Won', 'Lost'].map((s) => (
+                      {['New', 'Contacted', 'Demo Set', 'Won', 'Lost'].map((s) => (
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
@@ -488,7 +479,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl space-y-2">
                   <div className="flex justify-between items-center font-extrabold text-xs text-emerald-900">
                     <span>Ready to Enroll Student?</span>
-                    <span className="text-emerald-700 text-[11px]">Default Target Grade: A*</span>
+                    <span className="text-emerald-700 text-xs">Default Target Grade: A*</span>
                   </div>
                   <button
                     onClick={() => setConvertModalLead(selectedLeadDrawer)}
@@ -548,16 +539,10 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
                 <div className="space-y-1 bg-purple-50 p-3 rounded-xl border border-purple-200">
                   <label className="font-extrabold text-purple-900 block">Default Target Grade (Locked Policy)</label>
-                  <select
-                    value={targetGrade}
-                    onChange={(e) => setTargetGrade(e.target.value)}
-                    className="w-full bg-white border border-purple-300 rounded-lg p-2 font-extrabold text-purple-900 focus:outline-none"
-                  >
-                    <option value="A*">A* (Default per Master Plan §4)</option>
-                    <option value="A">A</option>
-                    <option value="B">B</option>
-                  </select>
-                  <p className="text-[10.5px] text-purple-700 font-medium mt-1">
+                  <div className="w-full bg-white border border-purple-300 rounded-lg p-2 font-extrabold text-purple-900">
+                    A* (Default per Master Plan §4)
+                  </div>
+                  <p className="text-xs text-purple-700 font-medium mt-1">
                     Note: Per Master Plan §4, target_grade defaults to A* at enrollment. Assessed grade remains blank until the first test is graded.
                   </p>
                 </div>
@@ -618,7 +603,6 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       <option value="O Level">O Level</option>
                       <option value="A Level">A Level</option>
                       <option value="IGCSE">IGCSE</option>
-                      <option value="Matric (10th)">Matric (10th)</option>
                     </select>
                   </div>
                 </div>
