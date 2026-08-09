@@ -44,6 +44,44 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Auto-provision teacher & student portal logins
+
+`tsc` clean. `/set-password` page verified rendering (shows "invalid link" with no
+token; real invite links carry the session in the URL hash and show the form).
+
+**Problem:** adding a teacher / enrolling a student created only the DATA row, not a
+LOGIN. A person can only sign in if they have (1) a Supabase Auth account and (2) a
+`profiles` row linking it to a role (+ teacher_id/student_id). Nothing in the app
+created those, so only manually-seeded users (admin) could log in - teachers and
+students had no portal access.
+
+**Fix:** on teacher creation, student enrollment (`/enroll`), and admin student
+onboarding, the app now auto-provisions the login:
+- `lib/auth/provision.ts` (`provisionLogin`, server-only, service-role): creates/finds
+  the Auth user via `admin.auth.admin.generateLink` (invite, or recovery if the email
+  already exists), upserts the `profiles` row with the right role + teacher/student id,
+  and emails a single-use set-password link via Resend. Best-effort: a mail/quota
+  failure never undoes the core write (returns a `warning` the modals surface).
+- `app/set-password/page.tsx` - where the invited person lands; the browser client
+  exchanges the URL-hash tokens into a session, they set a password, then enter the
+  portal. Added to public routes in `lib/supabase/middleware.ts`.
+- Wired into `app/teachers/actions.ts` (createTeacher), `app/enroll/[leadId]/actions.ts`
+  (captures the student id returned by `submit_enrollment`), and
+  `app/students/actions.ts` (createStudent). Modals show a warning toast if the invite
+  email could not send.
+
+**Required config for the emails to actually deliver:**
+1. `.env.local`: add `NEXT_PUBLIC_SITE_URL` = the real site URL (e.g.
+   `https://app.thinkerzz.com`; `http://localhost:3000` in dev). The set-password link
+   redirects here.
+2. Supabase -> Authentication -> URL Configuration: add `<SITE_URL>/set-password` to
+   the allowed **Redirect URLs** (and set Site URL). Otherwise the link is rejected.
+3. Resend: verify a sending domain and set `RESEND_FROM` to an address on it. The
+   default `onboarding@resend.dev` only delivers to the Resend account owner, so real
+   students/teachers won't receive mail until a domain is verified.
+
+---
+
 ## 2026-08-08 · Build batch: enrollment form + admin delete (5 & 6)
 
 `tsc` clean. Completes the owner's 6-item list.

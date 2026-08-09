@@ -6,10 +6,13 @@
 // New teachers start every score at 0 (DB defaults) and render as "New".
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { provisionLogin } from '@/lib/auth/provision';
 
 export interface ActionResult {
   ok: boolean;
   error?: string;
+  // Set when the core write succeeded but the portal invite email did not send.
+  warning?: string;
 }
 
 export async function createTeacher(input: {
@@ -62,12 +65,30 @@ export async function createTeacher(input: {
   };
   if (input.joinDate) row.join_date = input.joinDate;
 
-  const { error } = await supabase.from('teachers').insert(row);
+  const { data: inserted, error } = await supabase
+    .from('teachers')
+    .insert(row)
+    .select('id')
+    .single();
   if (error) return { ok: false, error: error.message };
+
+  // Auto-provision the teacher's portal login (best-effort: a mail/quota failure
+  // must not undo the teacher we just created).
+  let warning: string | undefined;
+  const invite = await provisionLogin({
+    email,
+    name,
+    role: 'teacher',
+    orgId: profile.org_id,
+    teacherId: inserted.id,
+  });
+  if (!invite.ok) {
+    warning = `Teacher added, but the portal invite could not be sent: ${invite.error}`;
+  }
 
   revalidatePath('/teachers');
   revalidatePath('/');
-  return { ok: true };
+  return { ok: true, warning };
 }
 
 /**

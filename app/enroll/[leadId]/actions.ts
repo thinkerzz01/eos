@@ -5,6 +5,8 @@
 // creates the student from the won lead and marks the lead converted. Fee is 0 and
 // the schedule is set by the Admin afterwards.
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { provisionLogin } from '@/lib/auth/provision';
 
 const ENROLLABLE_PROGRAMS = ['O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)'];
 
@@ -40,13 +42,14 @@ export async function submitEnrollment(input: {
     return { ok: false, error: 'Exam session is required.' };
   }
 
+  const email = input.email?.trim() || '';
   const supabase = createClient(); // no session -> anon; RPC is granted to anon
-  const { error } = await supabase.rpc('submit_enrollment', {
+  const { data: studentId, error } = await supabase.rpc('submit_enrollment', {
     p_lead_id: input.leadId,
     p_student_name: studentName,
     p_parent_name: parentName,
     p_phone: phone,
-    p_email: input.email?.trim() || '',
+    p_email: email,
     p_program: input.program,
     p_exam_session: input.examSession.trim(),
     p_gender: input.gender || 'female',
@@ -61,6 +64,30 @@ export async function submitEnrollment(input: {
       ? 'This enrollment link is invalid or has expired. Please contact the academy.'
       : 'We could not complete the enrollment. Please try again or contact the academy.';
     return { ok: false, error: msg };
+  }
+
+  // Auto-provision the student's portal login (best-effort). The page is anon, so
+  // we resolve the org from the just-created student via the service-role client.
+  if (email && typeof studentId === 'string') {
+    try {
+      const admin = createAdminClient();
+      const { data: student } = await admin
+        .from('students')
+        .select('org_id')
+        .eq('id', studentId)
+        .single();
+      if (student?.org_id) {
+        await provisionLogin({
+          email,
+          name: studentName,
+          role: 'student',
+          orgId: student.org_id,
+          studentId,
+        });
+      }
+    } catch {
+      // Never fail the enrollment because the invite email could not be sent.
+    }
   }
 
   return { ok: true };

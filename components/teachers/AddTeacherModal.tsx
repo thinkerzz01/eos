@@ -73,7 +73,11 @@ export function AddTeacherModal({
       });
 
       if (res.ok) {
-        showToast(`Teacher ${formData.name} added with capacity ${formData.capacity}. Track record starts as "New".`, 'success');
+        if (res.warning) {
+          showToast(res.warning, 'error');
+        } else {
+          showToast(`Teacher ${formData.name} added. A portal invite was emailed to set their password.`, 'success');
+        }
         onSuccess?.();
         router.refresh();
         onClose();

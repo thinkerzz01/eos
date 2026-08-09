@@ -7,6 +7,7 @@
 // write automatically.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { provisionLogin } from '@/lib/auth/provision';
 
 const ENROLLABLE_PROGRAMS = ['O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)'];
 const SOURCES = ['google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in'];
@@ -33,6 +34,8 @@ export interface CreateStudentInput {
 export interface ActionResult {
   ok: boolean;
   error?: string;
+  // Set when the student was created but the portal invite email did not send.
+  warning?: string;
 }
 
 function normalizeSource(raw?: string): string {
@@ -104,14 +107,34 @@ export async function createStudent(input: CreateStudentInput): Promise<ActionRe
   }
 
   // RLS enforces the actual permission here. A denied role gets an error row.
-  const { error } = await supabase.from('students').insert(row);
+  const { data: inserted, error } = await supabase
+    .from('students')
+    .insert(row)
+    .select('id')
+    .single();
   if (error) {
     return { ok: false, error: error.message };
   }
 
+  // Auto-provision the student's portal login when an email is on file
+  // (best-effort: never undo the student we just created).
+  let warning: string | undefined;
+  if (row.email) {
+    const invite = await provisionLogin({
+      email: row.email,
+      name,
+      role: 'student',
+      orgId: profile.org_id,
+      studentId: inserted.id,
+    });
+    if (!invite.ok && !invite.skipped) {
+      warning = `Student added, but the portal invite could not be sent: ${invite.error}`;
+    }
+  }
+
   revalidatePath('/students');
   revalidatePath('/');
-  return { ok: true };
+  return { ok: true, warning };
 }
 
 /**

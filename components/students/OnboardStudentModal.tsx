@@ -93,7 +93,11 @@ export function OnboardStudentModal({
       });
 
       if (res.ok) {
-        showToast(`Student ${formData.name} onboarded successfully!`, 'success');
+        if (res.warning) {
+          showToast(res.warning, 'error');
+        } else {
+          showToast(`Student ${formData.name} onboarded successfully!`, 'success');
+        }
         onSuccess?.();
         router.refresh(); // re-fetch the server component so the new row appears
         onClose();
