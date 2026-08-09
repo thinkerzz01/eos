@@ -472,10 +472,10 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
 
             <div className="space-y-2 text-xs font-bold pt-2">
               <div className="flex justify-between py-1 border-b"><span>Refunds</span><span className="text-purple-600">{fmtPkr(metrics?.refunds ?? 0)}</span></div>
-              <div className="flex justify-between py-1 border-b"><span>Forecast (30 Days)</span><span className="text-blue-600">PKR 0</span></div>
+              <div className="flex justify-between py-1 border-b"><span>Forecast (30 Days)</span><span className="text-blue-600">{fmtPkr(metrics?.forecast30 ?? 0)}</span></div>
               <div className="flex justify-between py-1 items-center">
                 <span>Collection Rate</span>
-                <span className="text-emerald-600 flex items-center gap-1 font-extrabold">—</span>
+                <span className="text-emerald-600 flex items-center gap-1 font-extrabold">{metrics ? `${metrics.feeCollectionPct}%` : '0%'}</span>
               </div>
             </div>
 

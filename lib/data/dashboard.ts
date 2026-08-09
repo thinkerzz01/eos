@@ -16,6 +16,7 @@ export interface TeacherLoad {
 }
 export interface DashboardMetrics {
   activeTeachers: number;
+  activeStudents: number;
   classesToday: number;
   revenueThisMonth: number;
   demosNeedingTeacher: number;
@@ -24,13 +25,14 @@ export interface DashboardMetrics {
   outstanding: number;
   refunds: number;
   feeCollectionPct: number;
+  forecast30: number; // expected fee revenue over the next 30 days
   todaysClasses: TodayClass[];
   teacherCapacity: TeacherLoad[];
 }
 
 const EMPTY: DashboardMetrics = {
-  activeTeachers: 0, classesToday: 0, revenueThisMonth: 0, demosNeedingTeacher: 0,
-  urgentTickets: 0, collected: 0, outstanding: 0, refunds: 0, feeCollectionPct: 0,
+  activeTeachers: 0, activeStudents: 0, classesToday: 0, revenueThisMonth: 0, demosNeedingTeacher: 0,
+  urgentTickets: 0, collected: 0, outstanding: 0, refunds: 0, feeCollectionPct: 0, forecast30: 0,
   todaysClasses: [], teacherCapacity: [],
 };
 
@@ -51,7 +53,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const dayStart = `${todayPKT}T00:00:00+05:00`;
   const dayEnd = `${todayPKT}T23:59:59+05:00`;
 
-  const [teachersRes, classesRes, paymentsRes, vouchersRes, vPaymentsRes, demosRes, ticketsRes, refundsRes, loadRes] =
+  const [teachersRes, classesRes, paymentsRes, vouchersRes, vPaymentsRes, demosRes, ticketsRes, refundsRes, loadRes, studentsRes] =
     await Promise.all([
       supabase.from('teachers').select('id,name,capacity').is('deleted_at', null),
       supabase.from('class_sessions').select('id,start_at,students(name),subjects(name)').gte('start_at', dayStart).lte('start_at', dayEnd).is('deleted_at', null).order('start_at', { ascending: true }),
@@ -62,9 +64,13 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       supabase.from('tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']).is('deleted_at', null),
       supabase.from('refunds').select('amount').is('deleted_at', null),
       supabase.from('class_sessions').select('teacher_id').is('deleted_at', null),
+      supabase.from('students').select('monthly_fee').eq('status', 'active').is('deleted_at', null),
     ]);
 
   const teachers = teachersRes.data ?? [];
+  const activeStudentRows = studentsRes.data ?? [];
+  // Forecast for the next 30 days = one month's fee from each active student.
+  const forecast30 = (activeStudentRows as any[]).reduce((s, r) => s + Number(r.monthly_fee || 0), 0);
 
   const todaysClasses: TodayClass[] = (classesRes.data ?? []).map((c: any) => ({
     id: c.id,
@@ -104,6 +110,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
 
   return {
     activeTeachers: teachers.length,
+    activeStudents: activeStudentRows.length,
     classesToday: todaysClasses.length,
     revenueThisMonth,
     demosNeedingTeacher: demosRes.count ?? 0,
@@ -112,6 +119,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     outstanding,
     refunds,
     feeCollectionPct: totalBilled > 0 ? Math.round((collected / totalBilled) * 100) : 0,
+    forecast30,
     todaysClasses,
     teacherCapacity,
   };
