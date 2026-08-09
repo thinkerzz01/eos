@@ -8,6 +8,7 @@ import { useRole } from '@/components/ui/RoleContext';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
 import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
 import { bulkCreateStudents, updateStudent, softDeleteStudent } from './actions';
+import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
 import {
   Users,
   UserCheck,
@@ -1070,6 +1071,10 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                                 <UserCog className="w-3.5 h-3.5" />
                                 <span>View Profile</span>
                               </button>
+
+                              {(role === 'admin' || role === 'manager') && (
+                                <ResetPasswordControl id={s.id} kind="student" label="Reset Password" />
+                              )}
 
                               <button
                                 onClick={() => handleDeleteStudent(s.id)}

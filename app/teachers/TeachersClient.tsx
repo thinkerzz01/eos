@@ -7,6 +7,7 @@ import { SetPayRateModal } from '@/components/teachers/SetPayRateModal';
 import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
+import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
 import {
   Users,
   UserCheck,
@@ -559,6 +560,9 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                               <button onClick={() => setSelectedDrawerTeacher(t)} title="View Teacher Profile" className="h-7 px-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-bold text-xs rounded-lg transition-all cursor-pointer">
                                 Profile
                               </button>
+                              {role === 'admin' && (
+                                <ResetPasswordControl id={t.id} kind="teacher" variant="icon" label="Reset Password" />
+                              )}
                             </div>
                           </td>
                         </tr>

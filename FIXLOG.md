@@ -44,6 +44,23 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Password reset (self-service + admin), never retrieval
+
+`tsc` clean; login "Forgot password?" verified rendering with no console errors.
+Passwords are one-way hashed and can never be read - so this adds RESET, not
+retrieval.
+- **Self-service:** "Forgot password?" on `/login` -> `resetPasswordForEmail` ->
+  Supabase emails a recovery link that lands on the existing `/set-password` page.
+- **Admin/manager reset** on teacher & student rows (`components/account/
+  ResetPasswordControl.tsx`): "Send reset email" (Resend recovery link) or
+  "Generate temporary password" (random temp set via service-role, shown ONCE to
+  relay). Backed by `lib/auth/passwordReset.ts` (targets by teacher_id/student_id,
+  resolves the login from `profiles`) and `app/_actions/passwordActions.ts`, which
+  enforces: teacher reset = admin only; student reset = admin or manager.
+- Gated in UI: student control shows for admin/manager; teacher control for admin.
+
+---
+
 ## 2026-08-09 · Fix: every non-admin login landed on the student portal
 
 `tsc` clean. **Bug:** `getServerRole()` (app/layout.tsx) resolved the signed-in

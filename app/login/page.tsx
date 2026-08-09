@@ -56,6 +56,24 @@ export default function LoginPage() {
     }
   };
 
+  const handleForgot = async () => {
+    if (!email) {
+      showToast('Enter your email above first, then click "Forgot password".', 'error');
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/set-password`,
+      });
+      // Do not reveal whether an account exists (privacy) - always show the same note.
+      if (error) showToast(error.message, 'error');
+      else showToast('If that email has an account, a reset link is on its way. Check your inbox.', 'success');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-200">
       {/* Background ambient lighting */}
@@ -146,6 +164,16 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400 transition-all font-medium"
                 />
+              </div>
+              <div className="mt-1.5 text-right">
+                <button
+                  type="button"
+                  onClick={handleForgot}
+                  disabled={loading}
+                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline disabled:opacity-50"
+                >
+                  Forgot password?
+                </button>
               </div>
             </div>
 
