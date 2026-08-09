@@ -986,9 +986,11 @@ GRANT EXECUTE ON FUNCTION public.submit_enrollment(UUID, TEXT, TEXT, TEXT, TEXT,
 -- link /onboarding/<studentId> after a demo is won and the student is created;
 -- the student fills in the fuller details. Read the safe context, then submit.
 -- ----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.get_student_public(p_student_id UUID)
-RETURNS TABLE (name TEXT, program TEXT, exam_session TEXT, onboarding_done BOOLEAN) AS $$
-    SELECT s.name, s.program, s.exam_session, (s.onboarding_completed_at IS NOT NULL)
+DROP FUNCTION IF EXISTS public.get_student_public(UUID);
+CREATE FUNCTION public.get_student_public(p_student_id UUID)
+RETURNS TABLE (name TEXT, program TEXT, exam_session TEXT, parent_name TEXT, phone TEXT, email TEXT, onboarding_done BOOLEAN) AS $$
+    SELECT s.name, s.program, s.exam_session, s.parent_name, s.phone, s.email,
+           (s.onboarding_completed_at IS NOT NULL)
     FROM public.students s
     WHERE s.id = p_student_id AND s.deleted_at IS NULL;
 $$ LANGUAGE sql STABLE SECURITY DEFINER;

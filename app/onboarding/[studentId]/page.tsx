@@ -15,7 +15,7 @@ const HELP_WA = (process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP || '923000000000').rep
 
 const GRADES = [
   'O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE',
-  'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)',
+  'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)',
 ];
 const TIMES_OF_DAY = ['Morning', 'Afternoon', 'Evening', 'Night'];
 
@@ -69,10 +69,14 @@ export default function OnboardingPage({ params }: { params: { studentId: string
       if (!ctx.ok) {
         setInvalid(ctx.error ?? 'This link is invalid.');
       } else {
+        // Pre-fill everything we already know from the demo booking.
         setName(ctx.name ?? '');
         setFullName(ctx.name ?? '');
         setProgram(ctx.program ?? '');
         setExamSession(ctx.examSession ?? '');
+        setParentName(ctx.parentName ?? '');
+        setParentWhatsapp(ctx.phone ?? '');
+        setParentEmail(ctx.email ?? '');
         setAlreadyDone(!!ctx.alreadyDone);
       }
       setLoading(false);
@@ -84,6 +88,16 @@ export default function OnboardingPage({ params }: { params: { studentId: string
 
   const goNext = () => {
     setError('');
+    if (step === 1) {
+      if (!studentEmail.trim() || !/^\S+@\S+\.\S+$/.test(studentEmail.trim())) {
+        setError('Please enter a valid Student Email address.');
+        return;
+      }
+      if (!studentMobile.trim()) {
+        setError('Please enter the Student Mobile number.');
+        return;
+      }
+    }
     if (step === 2 && !parentWhatsapp.trim()) {
       setError('Please enter the Parent WhatsApp number so we can reach you.');
       return;
@@ -259,12 +273,12 @@ export default function OnboardingPage({ params }: { params: { studentId: string
                   </select>
                 </div>
                 <div>
-                  <label className={label}>Student Email (Optional)</label>
+                  <label className={label}>Student Email <span className="text-rose-500">*</span></label>
                   <input type="email" value={studentEmail} onChange={(e) => setStudentEmail(e.target.value)} placeholder="e.g. hamza@example.com" className={plain} />
                 </div>
                 <div>
-                  <label className={label}>Student Mobile Number (Optional)</label>
-                  <input value={studentMobile} onChange={(e) => setStudentMobile(e.target.value)} placeholder="+92 300 0000000" className={plain} />
+                  <label className={label}>Student Mobile Number <span className="text-rose-500">*</span></label>
+                  <input inputMode="tel" value={studentMobile} onChange={(e) => setStudentMobile(e.target.value)} placeholder="+92 300 0000000" className={plain} />
                 </div>
                 <div>
                   <label className={label}>Current Grade / Class</label>
@@ -350,7 +364,9 @@ export default function OnboardingPage({ params }: { params: { studentId: string
               <label className="mt-5 flex items-start gap-3 rounded-2xl bg-[#5B47D6]/5 border border-[#5B47D6]/15 p-3.5 cursor-pointer">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 w-4 h-4 accent-[#5B47D6]" />
                 <span className="text-xs font-semibold text-slate-700 leading-relaxed">
-                  I Agree To Thinkerzz's Privacy Policy And Class Code Of Conduct, And Confirm The Information Above Is Correct.
+                  I Agree To Thinkerzz's{' '}
+                  <a href="https://thinkerzz.com/privacy-policy/" target="_blank" rel="noreferrer" className="text-[#5B47D6] underline">Privacy Policy</a>
+                  {' '}And Class Code Of Conduct, And Confirm The Information Above Is Correct.
                 </span>
               </label>
             </>

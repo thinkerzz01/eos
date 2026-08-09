@@ -10,6 +10,9 @@ export interface OnboardingContext {
   name?: string;
   program?: string;
   examSession?: string;
+  parentName?: string;
+  phone?: string;
+  email?: string;
   alreadyDone?: boolean;
   error?: string;
 }
@@ -25,6 +28,9 @@ export async function getOnboardingContext(studentId: string): Promise<Onboardin
     name: row.name ?? '',
     program: row.program ?? '',
     examSession: row.exam_session ?? '',
+    parentName: row.parent_name ?? '',
+    phone: row.phone ?? '',
+    email: row.email ?? '',
     alreadyDone: !!row.onboarding_done,
   };
 }

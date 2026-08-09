@@ -118,7 +118,7 @@ export default function PublicBookingPage() {
                   {[
                     { icon: Video, t: 'Live 1-On-1 Class', d: 'A real online class on Google Meet with an expert teacher.' },
                     { icon: GraduationCap, t: 'Right Teacher For You', d: 'Matched to your subject and program.' },
-                    { icon: Clock, t: '45 Minutes, Free', d: 'A full trial lesson, completely free.' },
+                    { icon: Clock, t: '30 Minutes, Free', d: 'A full trial lesson, completely free.' },
                     { icon: CheckCircle2, t: 'No Commitment', d: 'Only continue if you love it.' },
                   ].map((b) => {
                     const Icon = b.icon;
@@ -179,8 +179,8 @@ export default function PublicBookingPage() {
                     </div>
                     <p className="mt-2 text-xs font-medium text-slate-500">
                       {time
-                        ? <>You Chose <strong className="text-[#5B47D6]">{prettyTime(time)}</strong>. The free demo is one 45-minute class.</>
-                        : <>Pick an hour to set your demo time. The free demo is one 45-minute class.</>}
+                        ? <>You Chose <strong className="text-[#5B47D6]">{prettyTime(time)}</strong>. The free demo is one 30-minute class.</>
+                        : <>Pick an hour to set your demo time. The free demo is one 30-minute class.</>}
                     </p>
                   </div>
                 </div>
