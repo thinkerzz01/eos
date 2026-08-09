@@ -44,6 +44,24 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Remaining items: F1 graphs, G1 filter, E3 print, E1 icons
+
+`tsc` clean.
+- **F1** finance graphs - `components/dashboard/FinanceOverview.tsx` (SVG collection
+  -rate donut + bar comparison of collected/outstanding/forecast/teacher-payouts +
+  net-this-month), added to the admin dashboard. Metrics gain `paidToTeachers`.
+- **G1** dashboard time-range filter now works: filters the roster by enrollment
+  date (All Time default so it isn't empty; Enrolled Today/Week/Month narrow it).
+- **E3** printed report - `window.print()` printed the whole cluttered page. Added
+  print-isolation CSS (only `#report-print-area` prints, no buttons, clean margins)
+  + a print-only "Thinkerzz Academy / Monthly Progress Report" header; internal
+  notes marked `no-print`. (PDF still couldn't be rendered here; this is a clean
+  rebuild of the print output - send a screenshot if you want a specific layout.)
+- **E1** trimmed decorative emoji on the Reports screen (book/chart/dot icons).
+  Point me at other cluttered screens and I'll trim those too.
+
+---
+
 ## 2026-08-09 · Email readiness (test tool + payment-received email)
 
 `tsc` clean. Making the email side complete before the Resend domain goes live.

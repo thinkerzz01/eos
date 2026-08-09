@@ -157,7 +157,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                   </div>
 
                   <div className="flex items-center justify-between text-xs pt-2 mt-2 border-t border-slate-100 font-bold">
-                    <span className="text-slate-500">Trend: <strong className="text-emerald-600">{rpt.gradeTrend.toUpperCase()} 📈</strong></span>
+                    <span className="text-slate-500">Trend: <strong className="text-emerald-600">{rpt.gradeTrend.toUpperCase()}</strong></span>
                     <span className="text-purple-600">{rpt.testsConductedCount} Tests Conducted</span>
                   </div>
                 </div>
@@ -165,9 +165,28 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
             </div>
           </div>
 
+          {/* Print isolation: only the report card prints, on clean white, no buttons. */}
+          <style>{`
+            @media print {
+              body * { visibility: hidden !important; }
+              #report-print-area, #report-print-area * { visibility: visible !important; }
+              #report-print-area {
+                position: absolute; left: 0; top: 0; width: 100%;
+                border: none !important; box-shadow: none !important; padding: 24px !important;
+              }
+              #report-print-area button, #report-print-area .no-print { display: none !important; }
+              @page { margin: 16mm; }
+            }
+          `}</style>
+
           {/* REPORT PREVIEW & LLM PHRASING CARD (7 COLS) */}
           {selectedReport && (
-            <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-6 space-y-5">
+            <div id="report-print-area" className="lg:col-span-7 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-6 space-y-5">
+              {/* Print-only branded header */}
+              <div className="hidden print:block text-center border-b pb-4 mb-2">
+                <div className="text-xl font-extrabold text-slate-900">Thinkerzz Academy</div>
+                <div className="text-xs font-semibold uppercase tracking-widest text-slate-500">Monthly Progress Report</div>
+              </div>
               <div className="flex justify-between items-center border-b pb-4">
                 <div>
                   <h3 className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">
@@ -208,7 +227,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                 <div className="flex flex-wrap gap-2 pt-1">
                   {selectedReport.topicsCovered.map((t, idx) => (
                     <span key={idx} className="px-3 py-1 bg-slate-100 text-slate-800 font-bold rounded-xl border border-slate-200">
-                      📖 {t}
+                      {t}
                     </span>
                   ))}
                 </div>
@@ -218,8 +237,8 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
               <div className="space-y-2 pt-3 border-t">
                 <div className="flex justify-between items-center font-extrabold text-xs text-slate-900 uppercase">
                   <span>Report Draft Body</span>
-                  <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                    🟢 No Raw Scores Included
+                  <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 no-print">
+                    No Raw Scores Included
                   </span>
                 </div>
                 {selectedReport.phrasedReportText ? (
@@ -231,12 +250,12 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                     Click “Generate Report Draft” to assemble this student’s summary from their live numbers.
                   </div>
                 )}
-                <p className="text-xs text-slate-400 font-medium">
+                <p className="text-xs text-slate-400 font-medium no-print">
                   This draft is assembled by code. The warm, parent-friendly phrasing is generated and emailed automatically by the month-end reporting job.
                 </p>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 pt-2">
+              <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 pt-2 no-print">
                 <span className="text-xs text-slate-400 font-medium">Dispatch is automatic — the month-end cron enqueues &amp; emails this report to parents.</span>
                 <button
                   onClick={() => window.print()}
