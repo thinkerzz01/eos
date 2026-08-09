@@ -19,6 +19,7 @@ import {
 export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTransaction[] }) {
   const { role } = useRole();
   const [payments, setPayments] = useState<PaymentTransaction[]>(initialPayments);
+  const [receipt, setReceipt] = useState<PaymentTransaction | null>(null);
 
   // RLS DENIAL CHECK FOR MANAGERS
   if (role === 'manager') {
@@ -72,6 +73,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
                   <th className="py-3.5 px-3">TRANSACTION TYPE</th>
                   <th className="py-3.5 px-3">AMOUNT</th>
                   <th className="py-3.5 px-3">AUDITED BY / REASON</th>
+                  <th className="py-3.5 px-3 text-center">ACTIONS</th>
                 </tr>
               </thead>
 
@@ -113,6 +115,15 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
                       <div className="font-extrabold text-slate-900">{p.auditedBy}</div>
                       <div className="text-xs text-[#6B7185]">{p.reason || 'Standard Fee Receipt'}</div>
                     </td>
+
+                    <td className="py-3.5 px-3 text-center">
+                      <button
+                        onClick={() => setReceipt(p)}
+                        className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-lg cursor-pointer"
+                      >
+                        Receipt
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -120,7 +131,45 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
           </div>
         </div>
 
+        {/* C5 explainer: what this ledger is vs vouchers */}
+        <p className="text-xs text-slate-400 font-medium mt-3">
+          This is the read-only <strong>payment ledger</strong> - every payment and refund, kept as a permanent audit trail (never edited or deleted). To create a voucher, collect a payment, or send a voucher to a student, use the <Link href="/vouchers" className="text-[#5B47D6] underline">Vouchers</Link> screen.
+        </p>
+
       </div>
+
+      {/* RECEIPT PREVIEW / PRINT */}
+      {receipt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setReceipt(null)}>
+          <div className="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6 space-y-4 text-slate-900">
+              <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
+                <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-black text-lg">T</div>
+                <div>
+                  <div className="font-extrabold text-base leading-tight">Thinkerzz Academy</div>
+                  <div className="text-xs text-slate-500 font-semibold">Payment Receipt</div>
+                </div>
+                <div className="ml-auto font-mono font-bold text-sm">{receipt.receiptNo}</div>
+              </div>
+              <div className="grid grid-cols-2 gap-y-1.5 gap-x-3 text-xs font-semibold">
+                <div className="text-slate-500">Student</div><div className="text-right">{receipt.studentName}</div>
+                <div className="text-slate-500">Date</div><div className="text-right">{receipt.paymentDate}</div>
+                <div className="text-slate-500">Method</div><div className="text-right">{receipt.paymentMethod}</div>
+                <div className="text-slate-500">Type</div><div className="text-right">{receipt.type}</div>
+                <div className="text-slate-500">Amount</div>
+                <div className={`text-right font-mono font-bold ${receipt.amount < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                  {receipt.amount < 0 ? `-PKR ${Math.abs(receipt.amount).toLocaleString()}` : `PKR ${receipt.amount.toLocaleString()}`}
+                </div>
+                <div className="text-slate-500">Audited by</div><div className="text-right">{receipt.auditedBy}</div>
+              </div>
+            </div>
+            <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50">
+              <button onClick={() => window.print()} className="flex-1 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl">Print Receipt</button>
+              <button onClick={() => setReceipt(null)} className="px-3 py-2 border border-slate-300 font-bold text-xs rounded-xl">Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </PortalLayout>
   );
 }

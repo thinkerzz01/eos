@@ -6,6 +6,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRouter } from 'next/navigation';
 import { useRole } from '@/components/ui/RoleContext';
 import { FeeVoucher, PaymentTransaction } from '@/lib/mockFinanceData';
+import type { PaymentInfo } from '@/lib/config/paymentInfo';
 import { recordPayment, issueRefund, adminFeeDecision, createVoucher } from './actions';
 import {
   Receipt,
@@ -43,14 +44,48 @@ function monthLabelPKT(ymd: string): string {
   });
 }
 
+// Normalise a Pakistani phone to wa.me digits (0300... -> 92300...).
+function waDigits(phone: string): string {
+  let d = (phone || '').replace(/\D/g, '');
+  if (d.startsWith('92')) return d;
+  if (d.startsWith('0')) return '92' + d.slice(1);
+  if (d.startsWith('3')) return '92' + d; // bare mobile without leading 0
+  return d;
+}
+
+// Build the WhatsApp fee-voucher message (voucher details + how to pay).
+function voucherWhatsappText(v: FeeVoucher, pay?: PaymentInfo | null): string {
+  const lines = [
+    `*Thinkerzz Academy - Fee Voucher*`,
+    ``,
+    `Voucher: ${v.voucherNo}`,
+    `Student: ${v.studentName}`,
+    `Program: ${v.program}`,
+    `Amount: PKR ${v.totalAmount.toLocaleString()}`,
+    v.runningBalance > 0 ? `Balance due: PKR ${v.runningBalance.toLocaleString()}` : `Status: Paid`,
+    `Due date: ${v.dueDate}`,
+  ];
+  if (pay && (pay.bankTitle || pay.bankAccountNo || pay.bankIban || pay.wallet)) {
+    lines.push(``, `*How to pay*`);
+    if (pay.bankTitle) lines.push(`Bank Title: ${pay.bankTitle}`);
+    if (pay.bankAccountNo) lines.push(`Account No: ${pay.bankAccountNo}`);
+    if (pay.bankIban) lines.push(`IBAN: ${pay.bankIban}`);
+    if (pay.wallet) lines.push(`Mobile Wallet: ${pay.wallet}`);
+    lines.push(``, `Please share the payment receipt after paying. Thank you!`);
+  }
+  return lines.join('\n');
+}
+
 export function VouchersClient({
   initialVouchers,
   initialPayments,
   students,
+  paymentInfo,
 }: {
   initialVouchers: FeeVoucher[];
   initialPayments: PaymentTransaction[];
   students: { id: string; name: string }[];
+  paymentInfo?: PaymentInfo | null;
 }) {
   const { role } = useRole();
   const router = useRouter();
@@ -75,6 +110,7 @@ export function VouchersClient({
 
   // MODAL STATES
   const [partialPayVoucher, setPartialPayVoucher] = useState<FeeVoucher | null>(null);
+  const [previewVoucher, setPreviewVoucher] = useState<FeeVoucher | null>(null);
   const [payAmountInput, setPayAmountInput] = useState<string>('');
   const [payMethod, setPayMethod] = useState<'Bank Transfer' | 'JazzCash'>('Bank Transfer');
 
@@ -385,6 +421,12 @@ export function VouchersClient({
 
                       <td className="py-3.5 px-3 text-center">
                         <div className="flex items-center justify-center gap-1.5">
+                          <button
+                            onClick={() => setPreviewVoucher(v)}
+                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-lg cursor-pointer"
+                          >
+                            View
+                          </button>
                           {v.needsAdminDecision ? (
                             <button
                               onClick={() => setDecisionVoucher(v)}
@@ -506,6 +548,64 @@ export function VouchersClient({
                 >
                   {creating ? 'Creating...' : 'Create Voucher'}
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VOUCHER PREVIEW (view / print / send on WhatsApp) */}
+        {previewVoucher && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in" onClick={() => setPreviewVoucher(null)}>
+            <div className="bg-white rounded-3xl p-0 max-w-md w-full shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div id="voucher-print" className="p-6 space-y-4 text-slate-900">
+                <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
+                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-black text-lg">T</div>
+                  <div>
+                    <div className="font-extrabold text-base leading-tight">Thinkerzz Academy</div>
+                    <div className="text-xs text-slate-500 font-semibold">Fee Voucher</div>
+                  </div>
+                  <div className="ml-auto text-right">
+                    <div className="text-xs text-slate-500">Voucher</div>
+                    <div className="font-mono font-bold text-sm">{previewVoucher.voucherNo}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-y-1.5 gap-x-3 text-xs font-semibold">
+                  <div className="text-slate-500">Student</div><div className="text-right">{previewVoucher.studentName}</div>
+                  <div className="text-slate-500">Parent</div><div className="text-right">{previewVoucher.parentName}</div>
+                  <div className="text-slate-500">Program</div><div className="text-right">{previewVoucher.program}</div>
+                  <div className="text-slate-500">Due Date</div><div className="text-right">{previewVoucher.dueDate}</div>
+                  <div className="text-slate-500">Amount</div><div className="text-right font-mono font-bold">PKR {previewVoucher.totalAmount.toLocaleString()}</div>
+                  <div className="text-slate-500">Paid</div><div className="text-right font-mono">PKR {previewVoucher.paidAmount.toLocaleString()}</div>
+                  <div className="text-slate-500">Balance</div>
+                  <div className={`text-right font-mono font-bold ${previewVoucher.runningBalance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>PKR {previewVoucher.runningBalance.toLocaleString()}</div>
+                  <div className="text-slate-500">Status</div><div className="text-right font-bold">{previewVoucher.status}</div>
+                </div>
+
+                {paymentInfo && (paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban || paymentInfo.wallet) && (
+                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs">
+                    <div className="font-extrabold text-slate-700 mb-1">How to pay</div>
+                    <div className="space-y-0.5 text-slate-700">
+                      {paymentInfo.bankTitle && <div>Bank Title: <span className="font-semibold">{paymentInfo.bankTitle}</span></div>}
+                      {paymentInfo.bankAccountNo && <div>Account No: <span className="font-mono">{paymentInfo.bankAccountNo}</span></div>}
+                      {paymentInfo.bankIban && <div>IBAN: <span className="font-mono">{paymentInfo.bankIban}</span></div>}
+                      {paymentInfo.wallet && <div>Mobile Wallet: <span className="font-semibold">{paymentInfo.wallet}</span></div>}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50">
+                <a
+                  href={`https://wa.me/${waDigits(previewVoucher.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(previewVoucher, paymentInfo))}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 text-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl"
+                >
+                  Send on WhatsApp
+                </a>
+                <button onClick={() => window.print()} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl">Print</button>
+                <button onClick={() => setPreviewVoucher(null)} className="px-3 py-2 border border-slate-300 font-bold text-xs rounded-xl">Close</button>
               </div>
             </div>
           </div>

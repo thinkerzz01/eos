@@ -2,6 +2,7 @@
 import { getVouchers } from '@/lib/data/vouchers';
 import { getPayments } from '@/lib/data/payments';
 import { getStudents } from '@/lib/data/students';
+import { getPaymentInfo } from '@/lib/config/paymentInfo';
 import { VouchersClient } from './VouchersClient';
 
 export const dynamic = 'force-dynamic';
@@ -14,11 +15,13 @@ export default async function VouchersPage() {
   ]);
   // Lightweight list for the "Create Voucher" student picker.
   const studentOptions = students.map((s) => ({ id: s.id, name: s.name }));
+  const paymentInfo = getPaymentInfo();
   return (
     <VouchersClient
       initialVouchers={vouchers}
       initialPayments={payments}
       students={studentOptions}
+      paymentInfo={paymentInfo}
     />
   );
 }
