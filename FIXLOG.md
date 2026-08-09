@@ -44,6 +44,68 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Testing round batch 2 (C, A2/A3, D1, E2, F/G)
+
+`tsc` clean throughout. Worked down the owner's testing list:
+- **C3** voucher preview modal (View) with academy bank/JazzCash payment info +
+  "Send on WhatsApp" (wa.me) + Print.
+- **C4** payment ledger Actions column with a printable Receipt.
+- **C5** ledger explainer (Vouchers = create/collect/send; Ledger = read-only audit).
+- **A2/A3** manual Add-Lead now captures email, subject(s), source, and interest
+  (temperature Hot/Warm/Cold, with an explainer). createLead takes a real source.
+- **D1** teacher payouts: new `teacher_payouts` table + `recordTeacherPayout` action
+  + "Pay Teacher" modal; getTeacherPayouts marks a teacher Paid this month.
+- **E2** report summary sanitized to strip AI dashes (em/en/spaced-hyphen -> comma).
+- **F/G** dashboard Forecast (30 days) = sum of active students' monthly fee, and
+  Collection Rate now shows the real % (both were hardcoded 0 / dash). Added
+  activeStudents to the metrics.
+
+**STILL OPEN (need owner input or a bigger build):**
+- **E1** remove extra icons - subjective; needs the owner to point at specific screens.
+- **E3** printed-report redesign - needs the report screenshot (PDF couldn't render here).
+- **F1** full interactive finance graphs - numbers are live now; charts are a larger build.
+- **G1** dashboard time-range filter (Today/Week/Month) - program/teacher/subject
+  filters work; the time-range one is not yet wired to re-query.
+
+**RUN ONCE on the live DB (all pending migrations from this session, in order):**
+```sql
+-- 1. Role routing: let a user read their own profile
+DROP POLICY IF EXISTS own_profile_read ON public.profiles;
+CREATE POLICY own_profile_read ON public.profiles FOR SELECT USING (user_id = auth.uid());
+
+-- 2. Onboarding columns + RPCs  (see the "Student onboarding form" entry for the
+--    full get_student_public / submit_onboarding function bodies)
+ALTER TABLE public.students
+  ADD COLUMN IF NOT EXISTS date_of_birth DATE,
+  ADD COLUMN IF NOT EXISTS onboarding_data JSONB,
+  ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMPTZ;
+
+-- 3. Teacher payouts table (+ RLS/admin policy/triggers for an existing DB)
+CREATE TABLE IF NOT EXISTS public.teacher_payouts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NOT NULL REFERENCES public.orgs(id),
+    teacher_id UUID NOT NULL REFERENCES public.teachers(id) ON DELETE CASCADE,
+    period TEXT NOT NULL, amount NUMERIC(10,2) NOT NULL,
+    method TEXT NOT NULL DEFAULT 'bank_transfer', reference TEXT,
+    paid_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), by_user_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(), updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ NULL
+);
+ALTER TABLE public.teacher_payouts ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS admin_full_access_teacher_payouts ON public.teacher_payouts;
+CREATE POLICY admin_full_access_teacher_payouts ON public.teacher_payouts FOR ALL
+  USING (current_user_role() = 'admin' AND org_id = current_user_org_id());
+DROP TRIGGER IF EXISTS trg_update_updated_at_teacher_payouts ON public.teacher_payouts;
+CREATE TRIGGER trg_update_updated_at_teacher_payouts BEFORE UPDATE ON public.teacher_payouts
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+DROP TRIGGER IF EXISTS trg_audit_log_teacher_payouts ON public.teacher_payouts;
+CREATE TRIGGER trg_audit_log_teacher_payouts AFTER INSERT OR UPDATE OR DELETE ON public.teacher_payouts
+  FOR EACH ROW EXECUTE FUNCTION audit_log_trigger_func();
+```
+(A clean rebuild from `schema.sql` already includes all three.)
+
+---
+
 ## 2026-08-09 · Convert lead -> student now records the first month as PAID (B)
 
 `tsc` clean. Fixes the "total paid shows 0" after conversion.
