@@ -78,7 +78,8 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   // CONVERT MODAL — student fee fields (students table requires these)
   const [convertFee, setConvertFee] = useState('');
   const [convertSession, setConvertSession] = useState('');
-  const [convertDueDate, setConvertDueDate] = useState('');
+  const [convertPaidDate, setConvertPaidDate] = useState(''); // date first month was paid
+  const [convertMethod, setConvertMethod] = useState('Bank Transfer');
   const [converting, setConverting] = useState(false);
   const [addingLead, setAddingLead] = useState(false);
 
@@ -171,14 +172,15 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
     const feeNum = parseFloat(convertFee);
     if (!convertSession.trim()) { alert('Please enter the exam session.'); return; }
     if (isNaN(feeNum) || feeNum <= 0) { alert('Please enter a valid monthly fee.'); return; }
-    if (!convertDueDate) { alert('Please select the first due date.'); return; }
+    if (!convertPaidDate) { alert('Please select the date the first fee was paid.'); return; }
 
     setConverting(true);
     const res = await convertLead({
       leadId: convertModalLead.id,
       examSession: convertSession,
       monthlyFee: feeNum,
-      nextDueDate: convertDueDate,
+      firstFeePaidDate: convertPaidDate,
+      paymentMethod: convertMethod,
     });
     setConverting(false);
 
@@ -187,9 +189,12 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       setConvertModalLead(null);
       setConvertFee('');
       setConvertSession('');
-      setConvertDueDate('');
+      setConvertPaidDate('');
+      setConvertMethod('Bank Transfer');
       router.refresh();
-      alert(`${name} was enrolled as an active student and the lead marked Won.`);
+      alert(res.warning
+        ? `${name} was enrolled. Note: ${res.warning}`
+        : `${name} was enrolled - first month recorded as paid, next fee due in 30 days.`);
     } else {
       alert(res.error ?? 'Failed to convert lead.');
     }
@@ -579,10 +584,21 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Monthly Fee (PKR)</label>
                     <input type="number" value={convertFee} onChange={(e) => setConvertFee(e.target.value)} placeholder="e.g. 20000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-mono font-extrabold text-slate-900 dark:text-slate-100" />
                   </div>
-                  <div className="col-span-2">
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">First Fee Due Date</label>
-                    <input type="date" value={convertDueDate} onChange={(e) => setConvertDueDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-bold text-slate-900 dark:text-slate-100" />
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Date First Fee Paid</label>
+                    <input type="date" value={convertPaidDate} onChange={(e) => setConvertPaidDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-bold text-slate-900 dark:text-slate-100" />
                   </div>
+                  <div>
+                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Payment Method</label>
+                    <select value={convertMethod} onChange={(e) => setConvertMethod(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-bold text-slate-900 dark:text-slate-100">
+                      <option value="Bank Transfer">Bank Transfer</option>
+                      <option value="JazzCash">JazzCash</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-semibold">
+                  Converting records the <strong>first month as paid</strong>. The next fee will be due <strong>30 days after</strong> the paid date, and a paid voucher is created automatically.
                 </div>
               </div>
 

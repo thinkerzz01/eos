@@ -44,6 +44,23 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Convert lead -> student now records the first month as PAID (B)
+
+`tsc` clean. Fixes the "total paid shows 0" after conversion.
+- **convertLead** (`app/leads/actions.ts`) now takes `firstFeePaidDate` +
+  `paymentMethod` (was a bare "next due date"). It creates the student, then a PAID
+  voucher for the first month + a matching payment, sets `fee_status = 'paid'`, and
+  sets the next due date to the paid date + 30 days. Best-effort on the finance rows:
+  a manager convert still creates the student (finance is admin-only) and returns a
+  warning to add the first voucher manually.
+- **Convert modal** (`LeadsClient`): "First Fee Due Date" -> "Date First Fee Paid"
+  + a Bank Transfer / JazzCash method, with a note that the first month is recorded
+  paid and the next fee is due 30 days later.
+- **B1** is covered by this + the onboarding form: convert captures the enrollment
+  essentials, the onboarding link collects the fuller details.
+
+---
+
 ## 2026-08-09 · Student onboarding form (post-conversion, richer details)
 
 `tsc` clean. After a demo is won and the student is created, the academy now sends
