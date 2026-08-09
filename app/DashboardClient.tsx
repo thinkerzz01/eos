@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import { FinanceOverview } from '@/components/dashboard/FinanceOverview';
 import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
@@ -36,22 +37,41 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
   const fmtPkr = (n: number) => `PKR ${Math.round(n).toLocaleString()}`;
 
   // DASHBOARD REACTIVE FILTER STATES
-  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('Today');
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('All Time');
   const [selectedProgram, setSelectedProgram] = useState<string>('All Programs');
   const [selectedTeacher, setSelectedTeacher] = useState<string>('All Teachers');
   const [selectedSubject, setSelectedSubject] = useState<string>('All Subjects');
 
   // RESET FILTERS HANDLER
   const handleResetFilters = () => {
-    setSelectedTimeRange('Today');
+    setSelectedTimeRange('All Time');
     setSelectedProgram('All Programs');
     setSelectedTeacher('All Teachers');
     setSelectedSubject('All Subjects');
   };
 
+  // Is a student's enrollment (admission) date within the selected time range?
+  const inTimeRange = (dateStr: string): boolean => {
+    if (selectedTimeRange === 'All Time') return true;
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return false;
+    const now = new Date();
+    if (selectedTimeRange === 'Today') return d.toDateString() === now.toDateString();
+    if (selectedTimeRange === 'This Week') {
+      const wk = new Date(now);
+      wk.setDate(now.getDate() - 7);
+      return d >= wk;
+    }
+    if (selectedTimeRange === 'This Month') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    return true;
+  };
+
   // DYNAMIC REACTIVE FILTERED STUDENTS
   const filteredStudents = useMemo(() => {
     return initialStudents.filter((s) => {
+      // Time range (by enrollment/admission date)
+      if (!inTimeRange(s.admissionDate)) return false;
       // Program Filter
       if (selectedProgram !== 'All Programs' && s.program !== selectedProgram) {
         return false;
@@ -68,7 +88,8 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
       }
       return true;
     });
-  }, [selectedProgram, selectedTeacher, selectedSubject]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedProgram, selectedTeacher, selectedSubject, selectedTimeRange]);
 
   // REACTIVE STATS COMPUTED FROM FILTERED STUDENTS
   const stats = useMemo(() => {
@@ -213,9 +234,10 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
                 onChange={(e) => setSelectedTimeRange(e.target.value)}
                 className="bg-transparent focus:outline-none cursor-pointer font-bold text-xs"
               >
-                <option value="Today">Today</option>
-                <option value="This Week">This Week</option>
-                <option value="This Month">This Month</option>
+                <option value="All Time">All Time</option>
+                <option value="Today">Enrolled Today</option>
+                <option value="This Week">Enrolled This Week</option>
+                <option value="This Month">Enrolled This Month</option>
               </select>
             </div>
 
@@ -485,6 +507,18 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
           </div>
 
         </div>
+
+        {/* FINANCE VISUAL OVERVIEW (charts) */}
+        {metrics && (
+          <FinanceOverview
+            collected={metrics.collected}
+            outstanding={metrics.outstanding}
+            forecast30={metrics.forecast30}
+            paidToTeachers={metrics.paidToTeachers}
+            refunds={metrics.refunds}
+            feeCollectionPct={metrics.feeCollectionPct}
+          />
+        )}
 
         {/* 4. BOTTOM ROW (AI INSIGHTS, RECENT SYSTEM ACTIVITY, SECURITY STATUS) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 font-bold">
