@@ -5,21 +5,23 @@
 // app (onboarding, leads, teachers, etc.) and are kept.
 
 export const ALL_PROGRAMS = [
-  'O Level',
-  'A Level',
+  'O Level (O1)',
+  'O Level (O2)',
+  'A Level (A1)',
+  'A Level (A2)',
   'IGCSE',
-  'Matric (9th)',
-  'Matric (10th)',
-  'Inter (11th)',
-  'Inter (12th)',
+  'Matric (9)',
+  'Matric (10)',
+  'Inter (11)',
+  'Inter (12)',
 ] as const;
 
-export const CAIE_PROGRAMS = ['O Level', 'A Level', 'IGCSE'] as const;
+export const CAIE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE'] as const;
 export const LOCAL_BOARD_PROGRAMS = [
-  'Matric (9th)',
-  'Matric (10th)',
-  'Inter (11th)',
-  'Inter (12th)',
+  'Matric (9)',
+  'Matric (10)',
+  'Inter (11)',
+  'Inter (12)',
 ] as const;
 
 export const ALL_SUBJECTS = [

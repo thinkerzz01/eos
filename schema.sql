@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS public.subjects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES public.orgs(id),
     name TEXT NOT NULL,
-    program TEXT NOT NULL CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
+    program TEXT NOT NULL CHECK (program IN ('O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)')),
     has_syllabus BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -197,7 +197,7 @@ CREATE TABLE IF NOT EXISTS public.teacher_subjects (
 CREATE TABLE IF NOT EXISTS public.syllabus_templates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES public.orgs(id),
-    program TEXT NOT NULL CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
+    program TEXT NOT NULL CHECK (program IN ('O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)')),
     subject_id UUID NOT NULL REFERENCES public.subjects(id),
     academic_year TEXT NOT NULL, -- e.g. '2026'
     cambridge_code TEXT NOT NULL, -- e.g. '9702'
@@ -230,7 +230,7 @@ CREATE TABLE IF NOT EXISTS public.students (
     address TEXT,
     city TEXT,
     gender TEXT NOT NULL DEFAULT 'female' CHECK (gender IN ('male', 'female', 'other')),
-    program TEXT NOT NULL CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
+    program TEXT NOT NULL CHECK (program IN ('O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)')),
     exam_session TEXT NOT NULL, -- e.g. 'May/June 2027'
     enrolled_at DATE NOT NULL DEFAULT CURRENT_DATE,
     months_committed INT NOT NULL DEFAULT 12,
@@ -284,7 +284,7 @@ CREATE TABLE IF NOT EXISTS public.leads (
     parent_name TEXT,
     phone TEXT NOT NULL,
     email TEXT,
-    program TEXT CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
+    program TEXT CHECK (program IN ('O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)')),
     subjects TEXT, -- Free text note at lead stage
     source TEXT NOT NULL DEFAULT 'google' CHECK (source IN ('google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in')),
     utm JSONB DEFAULT '{}'::jsonb,
@@ -516,7 +516,7 @@ CREATE TABLE IF NOT EXISTS public.announcement_targets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES public.orgs(id),
     announcement_id UUID NOT NULL REFERENCES public.announcements(id) ON DELETE CASCADE,
-    program TEXT CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
+    program TEXT CHECK (program IN ('O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)')),
     student_id UUID NULL REFERENCES public.students(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

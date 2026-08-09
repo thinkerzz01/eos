@@ -140,24 +140,6 @@ export default function OnboardingPage({ params }: { params: { studentId: string
   const plain = 'w-full bg-white border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#5B47D6] focus:ring-2 focus:ring-[#5B47D6]/15 transition';
   const label = 'block text-xs font-bold text-slate-700 mb-1.5';
 
-  const Shell = ({ children }: { children: React.ReactNode }) => (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-indigo-50/40 text-[#171A2B] font-sans">
-      <header className="bg-white/80 backdrop-blur border-b border-slate-100 py-3.5 px-6 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <img src="/logo-light.png" alt="Thinkerzz" className="h-8 w-auto object-contain" />
-            <span className="hidden sm:inline text-xs font-extrabold tracking-wider uppercase text-[#5B47D6] border-l border-slate-200 pl-3">Student Onboarding</span>
-          </div>
-          <a href={`https://wa.me/${HELP_WA}`} target="_blank" rel="noreferrer"
-            className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-emerald-700 hover:bg-emerald-100 transition">
-            <MessageCircle className="w-4 h-4" />
-            <span className="text-xs font-bold">Need Help? Chat on WhatsApp</span>
-          </a>
-        </div>
-      </header>
-      <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
-    </div>
-  );
 
   if (loading) return <Shell><p className="text-center text-sm text-slate-500 py-20">Loading...</p></Shell>;
 
@@ -414,6 +396,29 @@ function StepHead({ icon, title, sub }: { icon: React.ReactNode; title: string; 
         <h1 className="font-heading font-extrabold text-2xl text-slate-900 tracking-tight">{title}</h1>
         <p className="text-sm text-slate-500 font-medium">{sub}</p>
       </div>
+    </div>
+  );
+}
+
+// Module-level so it is NOT recreated on every keystroke (that remounts the tree
+// and makes inputs lose focus). Page chrome + WhatsApp help header.
+function Shell({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-indigo-50/40 text-[#171A2B] font-sans">
+      <header className="bg-white/80 backdrop-blur border-b border-slate-100 py-3.5 px-6 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <img src="/logo-light.png" alt="Thinkerzz" className="h-8 w-auto object-contain" />
+            <span className="hidden sm:inline text-xs font-extrabold tracking-wider uppercase text-[#5B47D6] border-l border-slate-200 pl-3">Student Onboarding</span>
+          </div>
+          <a href={`https://wa.me/${HELP_WA}`} target="_blank" rel="noreferrer"
+            className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-emerald-700 hover:bg-emerald-100 transition">
+            <MessageCircle className="w-4 h-4" />
+            <span className="text-xs font-bold">Need Help? Chat on WhatsApp</span>
+          </a>
+        </div>
+      </header>
+      <main className="max-w-6xl mx-auto px-4 py-8">{children}</main>
     </div>
   );
 }
