@@ -44,6 +44,32 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Student onboarding form (post-conversion, richer details)
+
+`tsc` clean. After a demo is won and the student is created, the academy now sends
+a per-student onboarding link to collect the fuller record and set up portal access.
+- **schema.sql** - `students` gains `date_of_birth DATE`, `onboarding_data JSONB`,
+  `onboarding_completed_at TIMESTAMPTZ`. New SECURITY DEFINER RPCs (anon-granted):
+  `get_student_public(id)` (safe pre-fill of name/program), `submit_onboarding(...)`
+  (updates whatsapp/email/city/address/gender/DOB + stores the JSON answers).
+- **/onboarding/[studentId]** - public form (school, CNIC/B-Form, subjects, guardian
+  occupation/relationship, city/address, emergency contact, notes). Draft field set,
+  easy to adjust once the owner confirms exactly what to collect. Added to public
+  routes in middleware.
+- **Students screen** - row menu gains "Onboarding Form" (admin/manager) that copies
+  the `/onboarding/<id>` link to send to the student.
+
+**Run once on the live DB (also in schema.sql):**
+```sql
+ALTER TABLE public.students
+  ADD COLUMN IF NOT EXISTS date_of_birth DATE,
+  ADD COLUMN IF NOT EXISTS onboarding_data JSONB,
+  ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMPTZ;
+```
+Then run the two functions `get_student_public` and `submit_onboarding` from schema.sql.
+
+---
+
 ## 2026-08-09 · Testing round fixes - batch 1 (source, payment, voucher date)
 
 `tsc` clean. First batch from the owner's go-live testing pass.

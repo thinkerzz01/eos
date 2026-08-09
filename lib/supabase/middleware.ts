@@ -50,6 +50,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname.startsWith('/book') ||
     request.nextUrl.pathname.startsWith('/enroll') ||
+    request.nextUrl.pathname.startsWith('/onboarding') ||
     request.nextUrl.pathname.startsWith('/set-password') ||
     request.nextUrl.pathname.startsWith('/api');
 

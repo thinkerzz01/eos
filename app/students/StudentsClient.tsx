@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
+import { useToast } from '@/components/ui/Toast';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
 import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
 import { bulkCreateStudents, updateStudent, softDeleteStudent } from './actions';
@@ -41,6 +42,7 @@ import {
   BookOpen,
   Tag,
   Trash2,
+  GraduationCap,
   Archive,
   Paperclip,
   ExternalLink,
@@ -112,6 +114,19 @@ interface SavedView {
 
 export function StudentsClient({ initialStudents }: { initialStudents: Student[] }) {
   const { role } = useRole();
+  const { showToast } = useToast();
+
+  // Copy the public onboarding link for a student so the admin can send it (e.g.
+  // over WhatsApp). The student opens it to complete their fuller record.
+  const copyOnboardingLink = async (studentId: string) => {
+    const url = `${window.location.origin}/onboarding/${studentId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Onboarding form link copied - send it to the student.', 'success');
+    } catch {
+      showToast(url, 'success');
+    }
+  };
 
   // Seeded from the server (real, RLS-authorized DB rows). Local edits/CSV
   // import still mutate this client copy until those actions are wired to the DB.
@@ -1071,6 +1086,16 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                                 <UserCog className="w-3.5 h-3.5" />
                                 <span>View Profile</span>
                               </button>
+
+                              {(role === 'admin' || role === 'manager') && (
+                                <button
+                                  onClick={() => { copyOnboardingLink(s.id); setActiveRowMenuId(null); }}
+                                  className="w-full px-2.5 py-1.5 rounded-lg hover:bg-emerald-50 text-emerald-700 flex items-center gap-2 cursor-pointer"
+                                >
+                                  <GraduationCap className="w-3.5 h-3.5" />
+                                  <span>Onboarding Form</span>
+                                </button>
+                              )}
 
                               {(role === 'admin' || role === 'manager') && (
                                 <ResetPasswordControl id={s.id} kind="student" label="Reset Password" />
