@@ -20,6 +20,7 @@ import {
   Save,
   Globe,
   Sliders,
+  Download as DownloadIcon,
 } from 'lucide-react';
 
 export default function SettingsPage() {
@@ -226,6 +227,20 @@ export default function SettingsPage() {
               <div>
                 <label className="text-slate-700 block mb-1">Resend Daily Free Tier Cap Threshold <span className="text-slate-400 normal-case font-medium">(enforced in code)</span></label>
                 <input type="number" disabled value={resendCap} className="w-full bg-slate-100 border rounded-xl p-2.5 font-mono text-slate-500 cursor-not-allowed" />
+              </div>
+
+              <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+                <div className="font-extrabold text-slate-800 normal-case">Data Backup</div>
+                <p className="text-xs text-slate-500 font-medium normal-case">
+                  Download a full copy of the database (every table) as a JSON file. This is the same
+                  data the weekly cron backs up - use this to grab a copy on demand.
+                </p>
+                <a
+                  href="/api/admin/backup"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#5B47D6] hover:bg-[#4F3DC7] text-white px-4 py-2.5 text-xs font-extrabold shadow-sm transition normal-case"
+                >
+                  <DownloadIcon className="w-4 h-4" /> Download Full Backup
+                </a>
               </div>
             </div>
           )}
