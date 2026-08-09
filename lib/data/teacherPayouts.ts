@@ -47,5 +47,33 @@ export async function getTeacherPayouts(): Promise<TeacherPayout[]> {
     seen.add(r.teacher_id);
     return true;
   });
-  return latestPerTeacher.map(mapRow);
+
+  // Mark a teacher Paid if there is a payout recorded for the current month.
+  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const now = new Date();
+  const period = `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  const paidByTeacher = new Map<string, { amount: number; at: string }>();
+  const { data: payoutRows } = await supabase
+    .from('teacher_payouts')
+    .select('teacher_id,amount,paid_at,period')
+    .eq('period', period)
+    .is('deleted_at', null);
+  for (const p of (payoutRows as any[]) ?? []) {
+    const prev = paidByTeacher.get(p.teacher_id);
+    paidByTeacher.set(p.teacher_id, {
+      amount: (prev?.amount ?? 0) + Number(p.amount || 0),
+      at: p.paid_at,
+    });
+  }
+
+  return latestPerTeacher.map((r) => {
+    const row = mapRow(r);
+    const paid = paidByTeacher.get(r.teacher_id);
+    if (paid) {
+      row.status = 'Paid';
+      row.grossAmount = paid.amount;
+      row.payoutDate = String(paid.at).slice(0, 10);
+    }
+    return row;
+  });
 }

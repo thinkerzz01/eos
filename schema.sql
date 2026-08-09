@@ -143,6 +143,22 @@ CREATE TABLE IF NOT EXISTS public.teacher_pay_rates (
     deleted_at TIMESTAMPTZ NULL
 );
 
+-- Actual payments made to a teacher (admin-only, like teacher_pay_rates).
+CREATE TABLE IF NOT EXISTS public.teacher_payouts (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_id UUID NOT NULL REFERENCES public.orgs(id),
+    teacher_id UUID NOT NULL REFERENCES public.teachers(id) ON DELETE CASCADE,
+    period TEXT NOT NULL, -- e.g. 'September 2026'
+    amount NUMERIC(10,2) NOT NULL,
+    method TEXT NOT NULL DEFAULT 'bank_transfer',
+    reference TEXT,
+    paid_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    by_user_id UUID REFERENCES auth.users(id),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    deleted_at TIMESTAMPTZ NULL
+);
+
 CREATE TABLE IF NOT EXISTS public.teacher_leave (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES public.orgs(id),
@@ -601,7 +617,7 @@ DO $$
 DECLARE
     t text;
     tables text[] := ARRAY[
-        'orgs', 'profiles', 'teachers', 'teacher_pay_rates', 'teacher_leave',
+        'orgs', 'profiles', 'teachers', 'teacher_pay_rates', 'teacher_payouts', 'teacher_leave',
         'subjects', 'teacher_subjects', 'syllabus_templates', 'syllabus_topics',
         'students', 'student_subjects', 'syllabus_progress', 'leads', 'lead_communications',
         'demos', 'class_sessions', 'attendance', 'class_notes', 'homework', 'tests',
@@ -631,7 +647,7 @@ DO $$
 DECLARE
     t text;
     tables text[] := ARRAY[
-        'orgs', 'profiles', 'teachers', 'teacher_pay_rates', 'teacher_leave',
+        'orgs', 'profiles', 'teachers', 'teacher_pay_rates', 'teacher_payouts', 'teacher_leave',
         'subjects', 'teacher_subjects', 'syllabus_templates', 'syllabus_topics',
         'students', 'student_subjects', 'syllabus_progress', 'leads', 'lead_communications',
         'demos', 'class_sessions', 'attendance', 'class_notes', 'homework', 'tests',
