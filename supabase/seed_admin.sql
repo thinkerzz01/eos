@@ -20,16 +20,16 @@
 --
 -- STEP 3 — Run this script
 --   Dashboard -> SQL Editor -> paste this file -> set the email below -> Run.
+--   NOTE: the Supabase SQL Editor is NOT psql, so we set the email inside the
+--   block below (the old "\set" meta-command only works in the psql CLI).
 -- ============================================================================
-
--- >>> EDIT THIS to the exact email you created in Step 1 <<<
-\set admin_email 'admin@thinkerzz.com'
 
 -- Fixed single-tenant org id (matches the app's default org).
 DO $$
 DECLARE
     v_org_id  UUID := '00000000-0000-0000-0000-000000000001';
-    v_email   TEXT := :'admin_email';
+    -- >>> EDIT THIS to the exact email you created in Step 1 <<<
+    v_email   TEXT := 'admin@thinkerzz.com';
     v_user_id UUID;
 BEGIN
     -- Ensure the organisation exists.

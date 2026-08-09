@@ -15,6 +15,12 @@ DECLARE
         'English (First Language)'
     ];
 BEGIN
+    -- Make sure the org exists so the FK below never fails, regardless of
+    -- whether seed_admin.sql has run yet.
+    INSERT INTO public.orgs (id, name)
+    VALUES (v_org, 'Thinkerzz Academy')
+    ON CONFLICT (id) DO NOTHING;
+
     FOREACH prog IN ARRAY progs LOOP
         FOREACH subj IN ARRAY subjs LOOP
             IF NOT EXISTS (
