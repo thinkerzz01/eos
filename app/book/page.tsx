@@ -26,6 +26,17 @@ function todayPKT(): string {
   return new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
 }
 
+// Build a 24h "HH:MM" from friendly 12-hour parts (hour 1-12, minute, AM/PM).
+function to24(hour12: string, minute: string, ampm: string): string {
+  if (!hour12) return '';
+  let h = parseInt(hour12, 10) % 12; // 12 -> 0
+  if (ampm === 'PM') h += 12; // 12 PM -> 12, 12 AM -> 0
+  return `${String(h).padStart(2, '0')}:${minute}`;
+}
+
+const HOURS_12 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
+const MINUTES = ['00', '15', '30', '45'];
+
 export default function PublicBookingPage() {
   const [studentName, setStudentName] = useState('');
   const [parentName, setParentName] = useState('');
@@ -35,7 +46,11 @@ export default function PublicBookingPage() {
   const [subject, setSubject] = useState('');
   const [source, setSource] = useState('');
   const [date, setDate] = useState<string>(todayPKT());
-  const [time, setTime] = useState<string>('');
+  // Human-friendly time parts; combined into a 24h "HH:MM" for the backend.
+  const [hour12, setHour12] = useState<string>('');
+  const [minute, setMinute] = useState<string>('00');
+  const [ampm, setAmpm] = useState<string>('PM');
+  const time = to24(hour12, minute, ampm);
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
@@ -143,7 +158,7 @@ export default function PublicBookingPage() {
                   <span>Select Demo Date & Time</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-bold">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-bold">
                   <div>
                     <label className="text-slate-700 block mb-1">Preferred Date *</label>
                     <input
@@ -152,16 +167,6 @@ export default function PublicBookingPage() {
                       value={date}
                       min={todayPKT()}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-slate-700 block mb-1">Preferred Time (PKT) *</label>
-                    <input
-                      type="time"
-                      required
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
                       className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
                     />
                   </div>
@@ -178,7 +183,46 @@ export default function PublicBookingPage() {
                     </select>
                   </div>
                 </div>
-                <p className="text-xs text-slate-400 font-medium">Pick any time (Pakistan Standard Time). The free demo is one 45-minute class.</p>
+
+                {/* SIMPLE TIME PICKER — hour : minute AM/PM, the way people read a clock */}
+                <div className="text-xs font-bold">
+                  <label className="text-slate-700 block mb-1">Preferred Time (Pakistan Time) *</label>
+                  <div className="flex items-stretch gap-2">
+                    <select
+                      required
+                      value={hour12}
+                      onChange={(e) => setHour12(e.target.value)}
+                      className="flex-1 bg-[#F8F9FD] border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 text-sm focus:outline-none focus:border-[#5B47D6]"
+                      aria-label="Hour"
+                    >
+                      <option value="">Hour</option>
+                      {HOURS_12.map((h) => (<option key={h} value={h}>{h}</option>))}
+                    </select>
+                    <span className="flex items-center font-extrabold text-slate-400">:</span>
+                    <select
+                      value={minute}
+                      onChange={(e) => setMinute(e.target.value)}
+                      className="flex-1 bg-[#F8F9FD] border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 text-sm focus:outline-none focus:border-[#5B47D6]"
+                      aria-label="Minutes"
+                    >
+                      {MINUTES.map((m) => (<option key={m} value={m}>{m}</option>))}
+                    </select>
+                    <select
+                      value={ampm}
+                      onChange={(e) => setAmpm(e.target.value)}
+                      className="flex-1 bg-[#F8F9FD] border border-slate-200 rounded-xl px-3 py-2.5 text-slate-900 text-sm focus:outline-none focus:border-[#5B47D6]"
+                      aria-label="AM or PM"
+                    >
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
+                    </select>
+                  </div>
+                  <p className="mt-2 font-medium text-slate-500">
+                    {time
+                      ? <>You chose: <strong className="text-[#5B47D6]">{prettyTime(time)}</strong> (Pakistan Time). The free demo is one 45-minute class.</>
+                      : <>Choose an hour to set your demo time. The free demo is one 45-minute class.</>}
+                  </p>
+                </div>
               </div>
 
               {/* STEP 2: PARENT & STUDENT DETAILS */}
@@ -316,7 +360,9 @@ export default function PublicBookingPage() {
                 setParentName('');
                 setParentPhone('');
                 setParentEmail('');
-                setTime('');
+                setHour12('');
+                setMinute('00');
+                setAmpm('PM');
                 setSubject('');
                 setSource('');
                 setBookingRef('');

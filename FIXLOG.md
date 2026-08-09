@@ -44,6 +44,17 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Booking page: simpler time picker
+
+Verified in-browser (selecting 4 / 30 / PM shows "You chose: 4:30 PM"), no console
+errors. The native `<input type="time">` renders differently on every browser/phone
+and confused people. Replaced it on `/book` with three plain dropdowns - Hour (1-12)
+: Minute (00/15/30/45) AM/PM - the way people read a clock, plus a live "You chose:
+4:30 PM" preview. Parts combine into a 24h HH:MM for the backend (unchanged), so
+`submitPublicBooking` is untouched. Date + Subject now sit on one row above it.
+
+---
+
 ## 2026-08-09 · Password reset (self-service + admin), never retrieval
 
 `tsc` clean; login "Forgot password?" verified rendering with no console errors.
