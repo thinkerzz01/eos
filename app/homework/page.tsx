@@ -1,4 +1,4 @@
-// Homework — SERVER Component (real, RLS-authorized rows -> client UI).
+// Homework - SERVER Component (real, RLS-authorized rows -> client UI).
 import { getHomework } from '@/lib/data/homework';
 import { getStudents } from '@/lib/data/students';
 import { getTeachers } from '@/lib/data/teachers';

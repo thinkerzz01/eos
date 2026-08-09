@@ -40,7 +40,7 @@ export function ResultSlip({
         </div>
 
         <div className="px-3 py-1 bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 rounded-xl text-xs font-bold text-[#5A31F4] dark:text-purple-300 self-start sm:self-auto">
-          Cambridge Scale (A*–U)
+          Cambridge Scale (A*-U)
         </div>
       </div>
 
@@ -78,7 +78,7 @@ export function ResultSlip({
                 </td>
                 <td className="px-4 py-3.5 text-center">
                   <span className="font-heading font-bold text-slate-700 dark:text-slate-300 px-2.5 py-1 bg-slate-100 dark:bg-slate-800 rounded-lg">
-                    {g.internalAverage || '—'}
+                    {g.internalAverage || '-'}
                   </span>
                 </td>
                 <td className="px-4 py-3.5 text-center">

@@ -305,7 +305,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">Avg. Load Capacity</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{teachersList.length ? `${Math.round(teachersList.reduce((s, t) => s + (t.capacity ? (t.currentLoad / t.capacity) * 100 : 0), 0) / teachersList.length)}%` : '—'}</div>
+              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{teachersList.length ? `${Math.round(teachersList.reduce((s, t) => s + (t.capacity ? (t.currentLoad / t.capacity) * 100 : 0), 0) / teachersList.length)}%` : '-'}</div>
               <div className="text-xs font-bold text-blue-600 mt-1">Avg load</div>
             </div>
             <span className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-0.5">View report →</span>

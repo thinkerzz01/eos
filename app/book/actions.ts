@@ -5,7 +5,7 @@
 // `create_public_booking` SECURITY DEFINER routine (schema.sql §6), which is
 // GRANTed to `anon` and creates a lead + an unassigned demo (teacher NULL,
 // status 'needs_teacher') for exactly one org. The org is fixed per deployment
-// via BOOKING_ORG_ID — a single academy owns the public form.
+// via BOOKING_ORG_ID - a single academy owns the public form.
 import { createClient } from '@/lib/supabase/server';
 
 // Programs the leads table accepts (program CHECK). Anything else is stored NULL.

@@ -102,15 +102,11 @@ export default function LoginPage() {
       </div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10 text-center">
-        {/* Brand Logo Badge */}
-        <div className="mx-auto w-14 h-14 bg-gradient-to-tr from-indigo-600 via-indigo-500 to-sky-500 rounded-2xl flex items-center justify-center text-white font-black text-2xl tracking-widest shadow-xl shadow-indigo-500/30 mb-4 transition-transform hover:scale-105">
-          TZ
-        </div>
-        <h1 className="text-3xl font-extrabold text-slate-900 dark:text-slate-100 tracking-tight">
-          Thinkerzz EOS
-        </h1>
+        {/* Brand Logo (light logo on light bg, white logo on dark bg) */}
+        <img src="/logo-light.png" alt="Thinkerzz" className="mx-auto h-11 w-auto object-contain mb-3 dark:hidden" />
+        <img src="/logo-dark.png" alt="Thinkerzz" className="mx-auto h-11 w-auto object-contain mb-3 hidden dark:block" />
         <p className="mt-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-          Academy Operating System & Portal Suite
+          Operating System & Portal Suite
         </p>
       </div>
 

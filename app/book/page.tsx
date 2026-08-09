@@ -112,13 +112,7 @@ export default function PublicBookingPage() {
       <header className="bg-white border-b border-[#EBEDF3] py-4 px-6 sticky top-0 z-50 shadow-xs">
         <div className="max-w-5xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-heading font-black text-xl shadow-md">
-              T
-            </div>
-            <div>
-              <div className="font-heading font-extrabold text-xl tracking-tight text-slate-900">THINKERZZ ACADEMY</div>
-              <div className="text-xs font-bold text-[#5B47D6] tracking-wider uppercase">Question. Think. Achieve.</div>
-            </div>
+            <img src="/logo-light.png" alt="Thinkerzz" className="h-9 w-auto object-contain" />
           </div>
 
           <div className="flex items-center gap-2">
@@ -184,7 +178,7 @@ export default function PublicBookingPage() {
                   </div>
                 </div>
 
-                {/* SIMPLE TIME PICKER — hour : minute AM/PM, the way people read a clock */}
+                {/* SIMPLE TIME PICKER - hour : minute AM/PM, the way people read a clock */}
                 <div className="text-xs font-bold">
                   <label className="text-slate-700 block mb-1">Preferred Time (Pakistan Time) *</label>
                   <div className="flex items-stretch gap-2">
@@ -377,7 +371,7 @@ export default function PublicBookingPage() {
 
       {/* FOOTER */}
       <footer className="border-t border-[#EBEDF3] py-4 text-center text-xs text-slate-400 font-medium">
-        Thinkerzz Academy Operating System (EOS v3.1) · All rights reserved.
+        Thinkerzz Operating System (EOS v3.1) · All rights reserved.
       </footer>
 
     </div>

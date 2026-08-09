@@ -1,4 +1,4 @@
-// Tickets data-access — RLS-enforced, server-only.
+// Tickets data-access - RLS-enforced, server-only.
 // SLA: 1-hour reply target across 7 AM-11 PM; past-target tickets flag red.
 import { createClient } from '@/lib/supabase/server';
 import type { SupportTicket } from '@/lib/mockSupportData';

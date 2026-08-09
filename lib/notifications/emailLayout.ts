@@ -46,12 +46,12 @@ ${preheader}
   <tr><td align="center">
     <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #EBEDF3;">
       <tr><td style="background:${BRAND};padding:18px 24px;">
-        <span style="font-size:18px;font-weight:800;letter-spacing:0.5px;color:#ffffff;">THINKERZZ ACADEMY</span>
+        <span style="font-size:18px;font-weight:800;letter-spacing:0.5px;color:#ffffff;">THINKERZZ</span>
         <span style="display:block;font-size:11px;font-weight:600;letter-spacing:1px;color:#e5e0ff;text-transform:uppercase;margin-top:2px;">Question. Think. Achieve.</span>
       </td></tr>
       <tr><td style="padding:26px 24px 6px;">${heading}${paras}${cta}</td></tr>
       <tr><td style="padding:14px 24px 22px;border-top:1px solid #EBEDF3;">
-        <p style="margin:0;font-size:12px;color:${MUTED};">Thinkerzz Academy Operating System · This is an automated message, please do not reply.</p>
+        <p style="margin:0;font-size:12px;color:${MUTED};">Thinkerzz Operating System · This is an automated message, please do not reply.</p>
       </td></tr>
     </table>
   </td></tr>

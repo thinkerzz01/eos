@@ -111,7 +111,7 @@ export function DemosClient({
       router.refresh();
       alert(`Teacher assigned to ${studentName}'s demo.`);
     } else if (res.conflict) {
-      setConflictErrorMessage(res.error ?? 'Scheduling conflict — assignment blocked.');
+      setConflictErrorMessage(res.error ?? 'Scheduling conflict - assignment blocked.');
     } else {
       setConflictErrorMessage(res.error ?? 'Failed to assign teacher.');
     }
@@ -424,7 +424,7 @@ export function DemosClient({
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
                 <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
-                  Log Demo Outcome — {outcomeModalDemo.studentName}
+                  Log Demo Outcome - {outcomeModalDemo.studentName}
                 </h3>
                 <button onClick={() => setOutcomeModalDemo(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>

@@ -1,4 +1,4 @@
-// Audit Log — SERVER Component (real, RLS-authorized rows -> client UI).
+// Audit Log - SERVER Component (real, RLS-authorized rows -> client UI).
 import { getAuditLog } from '@/lib/data/auditLog';
 import { AuditLogClient } from './AuditLogClient';
 

@@ -130,10 +130,10 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 font-bold">
             {[
-              { label: 'My Attendance Rate', value: '—' },
-              { label: 'Target vs Assessed', value: '—' },
+              { label: 'My Attendance Rate', value: '-' },
+              { label: 'Target vs Assessed', value: '-' },
               { label: 'Pending Homework', value: '0' },
-              { label: 'Fee Voucher Status', value: '—' },
+              { label: 'Fee Voucher Status', value: '-' },
             ].map((k) => (
               <div key={k.label} className="bg-white border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
                 <div className="text-xs text-slate-500 uppercase">{k.label}</div>
@@ -163,8 +163,8 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
             {[
               { label: 'Classes Today', value: '0' },
               { label: 'Pending Homework Reviews', value: '0' },
-              { label: 'Load Capacity', value: '—' },
-              { label: 'Monthly Payout Status', value: '—' },
+              { label: 'Load Capacity', value: '-' },
+              { label: 'Monthly Payout Status', value: '-' },
             ].map((k) => (
               <div key={k.label} className="bg-white border rounded-2xl p-4 shadow-sm space-y-1">
                 <div className="text-xs text-slate-500 uppercase">{k.label}</div>
@@ -213,7 +213,7 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
     );
   }
 
-  // 4. FULL EXECUTIVE DASHBOARD VIEW (ADMIN ROLE — MATCHING SCREENSHOT 100%)
+  // 4. FULL EXECUTIVE DASHBOARD VIEW (ADMIN ROLE - MATCHING SCREENSHOT 100%)
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12 text-xs">
@@ -366,7 +366,7 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
 
             <div className="space-y-2 text-xs font-bold pt-3 border-t border-white/10">
               <div className="flex justify-between items-center"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Attendance</span><span className="text-emerald-300">{stats.avgAttendancePct}%</span></div>
-              <div className="flex justify-between items-center"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" /> Fee Collection</span><span className="text-amber-300">{metrics ? `${metrics.feeCollectionPct}%` : '—'}</span></div>
+              <div className="flex justify-between items-center"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" /> Fee Collection</span><span className="text-amber-300">{metrics ? `${metrics.feeCollectionPct}%` : '-'}</span></div>
               <div className="flex justify-between items-center"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-400" /> Student Health</span><span className="text-purple-300">{stats.avgHealthPct}%</span></div>
             </div>
 
@@ -527,7 +527,7 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
           <div className="lg:col-span-5 bg-gradient-to-r from-purple-900 to-indigo-950 text-white rounded-[18px] p-5 shadow-sm space-y-3">
             <div className="flex items-center gap-2 text-purple-200 font-extrabold text-xs uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-purple-300" />
-              <span>AI Academy Insights</span>
+              <span>AI Insights</span>
             </div>
             <div className="space-y-2 text-xs font-medium">
               <div className="p-3 bg-white/10 rounded-xl text-slate-200 text-xs">Insights will appear here once there is enough activity to analyze.</div>

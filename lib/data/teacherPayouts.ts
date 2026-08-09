@@ -1,4 +1,4 @@
-// Teacher payouts data-access — RLS-enforced, server-only. Admin-only
+// Teacher payouts data-access - RLS-enforced, server-only. Admin-only
 // (teacher_pay_rates is the isolated pay table; Managers are DENIED at the DB).
 import { createClient } from '@/lib/supabase/server';
 import type { TeacherPayout } from '@/app/teacher-payouts/TeacherPayoutsClient';

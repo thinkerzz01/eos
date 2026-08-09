@@ -51,7 +51,7 @@ export function SetPayRateModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`Set Per-Class Pay Rate — ${teacherName}`}
+      title={`Set Per-Class Pay Rate - ${teacherName}`}
       subtitle="Pay rates live in a SEPARATE table with Admin-only RLS. Never queryable by Managers or Teachers."
       maxWidth="md"
       footerButtons={

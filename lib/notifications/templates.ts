@@ -101,7 +101,7 @@ export const TEMPLATES: Record<NotificationType, Template> = {
     body: '{{body}}',
   },
   // Internal, Admin-facing alert (not a parent message) when a grace period has
-  // expired unpaid — pushes the Stop/Extend/Mark-Paid decision (Master Plan §7).
+  // expired unpaid - pushes the Stop/Extend/Mark-Paid decision (Master Plan §7).
   grace_expired_admin: {
     subject: 'Fee decision needed for {{student_name}}',
     body:

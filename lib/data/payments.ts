@@ -1,4 +1,4 @@
-// Payments data-access — RLS-enforced, server-only. Admin-only.
+// Payments data-access - RLS-enforced, server-only. Admin-only.
 // A refund is a NEGATIVE-amount payment linked to the original voucher.
 import { createClient } from '@/lib/supabase/server';
 import type { PaymentTransaction } from '@/lib/mockFinanceData';

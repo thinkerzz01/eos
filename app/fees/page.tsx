@@ -1,4 +1,4 @@
-// Fees — SERVER Component. RLS auto-scopes vouchers to the viewer (admin: all;
+// Fees - SERVER Component. RLS auto-scopes vouchers to the viewer (admin: all;
 // parent: own child). Manager is denied at the DB.
 import { getFeeVouchers } from '@/lib/data/fees';
 import { getPaymentInfo } from '@/lib/config/paymentInfo';

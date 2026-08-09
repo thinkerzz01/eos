@@ -59,7 +59,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
             <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Academy Announcements & Broadcasts</span>
+              <span>Announcements & Broadcasts</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
               Broadcast system-wide notices to Students, Parents, and Faculty.
@@ -92,7 +92,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                   <h3 className="font-heading font-extrabold text-base text-slate-900 dark:text-white">{anc.title}</h3>
                 </div>
                 <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
-                  Audience: All Academy
+                  Audience: Everyone
                 </span>
               </div>
 

@@ -2,7 +2,7 @@
 
 // Tests write action. A test is a raw academic record (student, subject, score).
 // Per the plan the teacher also sets the CAIE assessed_grade on student_subjects
-// after a test — that requires the subject enrolment and is a follow-up; here we
+// after a test - that requires the subject enrolment and is a follow-up; here we
 // record the test itself. RLS decides permission.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';

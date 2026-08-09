@@ -1,4 +1,4 @@
-// Assessments — SERVER Component (real, RLS-authorized rows -> client UI).
+// Assessments - SERVER Component (real, RLS-authorized rows -> client UI).
 import { getAssessments } from '@/lib/data/assessments';
 import { getStudents } from '@/lib/data/students';
 import { getSubjects } from '@/lib/data/subjects';

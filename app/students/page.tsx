@@ -1,4 +1,4 @@
-// Students — SERVER Component (Step 2 reference wiring).
+// Students - SERVER Component (Step 2 reference wiring).
 // Fetches real, RLS-authorized rows on the server, then hands them to the
 // existing interactive client UI. No mock data, no service-role bypass.
 import { getStudents } from '@/lib/data/students';

@@ -397,7 +397,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
       alert(
         `Imported ${res.inserted} student${res.inserted === 1 ? '' : 's'}.` +
           (res.skipped ? ` Skipped ${res.skipped} (missing name/parent or non-CAIE program).` : '') +
-          ' Fee and exam session default to 0 / "To be set" — edit each student to complete.'
+          ' Fee and exam session default to 0 / "To be set" - edit each student to complete.'
       );
       return;
     }

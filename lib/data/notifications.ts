@@ -1,4 +1,4 @@
-// Notifications queue (email-queue screen) data-access — RLS-enforced, server-only.
+// Notifications queue (email-queue screen) data-access - RLS-enforced, server-only.
 import { createClient } from '@/lib/supabase/server';
 import type { NotificationItem } from '@/lib/mockIntelligenceData';
 

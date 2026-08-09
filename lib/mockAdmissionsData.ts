@@ -40,7 +40,7 @@ export interface DemoSession {
 
 
 // Dummy data removed. Populate via the app / real database.
-// (Public booking slots are no longer a mock array — /book generates real
+// (Public booking slots are no longer a mock array - /book generates real
 // PKT time slots and books through the create_public_booking DB routine.)
 export const MOCK_LEADS: Lead[] = [];
 export const MOCK_DEMOS: DemoSession[] = [];

@@ -76,7 +76,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
     setSelectedLeadDrawer((prev) => (prev ? initialLeads.find((l) => l.id === prev.id) ?? null : null));
   }, [initialLeads]);
 
-  // CONVERT MODAL — student fee fields (students table requires these)
+  // CONVERT MODAL - student fee fields (students table requires these)
   const [convertFee, setConvertFee] = useState('');
   const [convertSession, setConvertSession] = useState('');
   const [convertPaidDate, setConvertPaidDate] = useState(''); // date first month was paid
@@ -466,7 +466,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 </a>
               </div>
 
-              {/* INLINE EDIT — stage & temperature (persists) */}
+              {/* INLINE EDIT - stage & temperature (persists) */}
               {role !== 'student' && role !== 'teacher' && (
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>

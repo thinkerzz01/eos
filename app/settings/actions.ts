@@ -76,11 +76,11 @@ export async function saveSettings(input: {
 
   const { error: orgErr } = await supabase
     .from('orgs')
-    .update({ name: input.academyName?.trim() || 'Academy', academic_year: input.academicYear?.trim() || '' })
+    .update({ name: input.academyName?.trim() || 'Thinkerzz', academic_year: input.academicYear?.trim() || '' })
     .eq('id', orgId);
   if (orgErr) return { ok: false, error: orgErr.message };
 
-  // settings has one row per org (org_id UNIQUE) — update if present, else insert.
+  // settings has one row per org (org_id UNIQUE) - update if present, else insert.
   const { data: existing } = await supabase
     .from('settings')
     .select('id')

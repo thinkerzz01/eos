@@ -97,7 +97,7 @@ export async function assignTeacher(input: {
     const attendees = [lead?.email, (teacher as any)?.email].filter(Boolean) as string[];
     const meet = await createMeetEvent({
       summary: `Demo class - ${lead?.name ?? 'Student'}${subj?.name ? ` (${subj.name})` : ''}`,
-      description: 'Thinkerzz Academy free demo class. The teacher will start the meeting.',
+      description: 'Thinkerzz free demo class. The teacher will start the meeting.',
       startISO: start.toISOString(),
       endISO: end.toISOString(),
       attendees,

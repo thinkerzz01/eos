@@ -1,4 +1,4 @@
-// Thinkerzz EOS — Student Health Score (locked formula)
+// Thinkerzz EOS - Student Health Score (locked formula)
 // Master Plan v3.1 §6.1 / AGENTS.md §"Scoring". Single source of truth so the
 // dashboard, the students table, and the report can never disagree.
 //

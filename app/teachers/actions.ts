@@ -1,8 +1,8 @@
 'use server';
 
 // Teachers write actions. LOCKED POLICY: only the Admin adds teachers and sets
-// capacity (Managers cannot). RLS also enforces this — the teachers table gives
-// Manager SELECT-only — but we check role here too for a friendly error.
+// capacity (Managers cannot). RLS also enforces this - the teachers table gives
+// Manager SELECT-only - but we check role here too for a friendly error.
 // New teachers start every score at 0 (DB defaults) and render as "New".
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';

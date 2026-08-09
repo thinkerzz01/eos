@@ -1,4 +1,4 @@
-// Leads — SERVER Component (real, RLS-authorized rows -> client UI).
+// Leads - SERVER Component (real, RLS-authorized rows -> client UI).
 import { getLeads } from '@/lib/data/leads';
 import { LeadsClient } from './LeadsClient';
 

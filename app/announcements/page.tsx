@@ -1,4 +1,4 @@
-// Announcements — SERVER Component (real, RLS-authorized rows -> client UI).
+// Announcements - SERVER Component (real, RLS-authorized rows -> client UI).
 import { getAnnouncements } from '@/lib/data/announcements';
 import { AnnouncementsClient } from './AnnouncementsClient';
 

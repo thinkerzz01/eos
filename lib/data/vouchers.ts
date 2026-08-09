@@ -1,4 +1,4 @@
-// Vouchers data-access — RLS-enforced, server-only. Admin-only (Manager DENIED
+// Vouchers data-access - RLS-enforced, server-only. Admin-only (Manager DENIED
 // on every finance table at the DB). Sums payments for the running balance;
 // partial payments keep the voucher Due with a balance (locked policy).
 import { createClient } from '@/lib/supabase/server';

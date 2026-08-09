@@ -1,6 +1,6 @@
 // Idempotent enqueue into the `notifications` queue.
 // Nothing sends directly; features/cron write a row here and the sender drains
-// it. Idempotency is by (org_id, unique_key) — re-enqueuing the same event is a
+// it. Idempotency is by (org_id, unique_key) - re-enqueuing the same event is a
 // no-op (AGENTS.md §3.5). Relies on the partial unique index
 // `idx_uniq_notifications_key`.
 import type { SupabaseClient } from '@supabase/supabase-js';

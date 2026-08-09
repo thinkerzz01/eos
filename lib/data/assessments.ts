@@ -1,8 +1,8 @@
-// Assessments (tests) data-access — RLS-enforced, server-only.
+// Assessments (tests) data-access - RLS-enforced, server-only.
 // Each `tests` row is one student's score. We group rows that belong to the
 // same test (name + date + subject) into one AssessmentRecord with a grades[]
 // list. The letter shown here is the INTERNAL grade derived from the raw score
-// (A/B/C scale) — the Cambridge assessed_grade lives on student_subjects and is
+// (A/B/C scale) - the Cambridge assessed_grade lives on student_subjects and is
 // surfaced on the Result Slip, not invented here.
 import { createClient } from '@/lib/supabase/server';
 import type { AssessmentRecord } from '@/lib/mockAcademicsData';

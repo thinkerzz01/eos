@@ -29,7 +29,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
     );
   }, [initialReports]);
 
-  // Deterministic report DRAFT, assembled from the student's real numbers — no
+  // Deterministic report DRAFT, assembled from the student's real numbers - no
   // invented facts, no raw test scores, first name only. This is the same shape
   // the month-end job sends; that job additionally runs a warm LLM phrasing pass
   // server-side (lib/reports/monthlyReport.ts). This button does NOT call the LLM.
@@ -38,11 +38,11 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
       ? `covered ${rpt.topicsCovered.length} syllabus topic${rpt.topicsCovered.length === 1 ? '' : 's'} (${rpt.topicsCovered.join(', ')})`
       : 'has no syllabus topics logged yet';
     return (
-      `Progress summary for ${rpt.firstName} — ${rpt.month}. ` +
+      `Progress summary for ${rpt.firstName} - ${rpt.month}. ` +
       `Attendance stands at ${rpt.attendancePct}%. ` +
       `${rpt.firstName} ${topics} and sat ${rpt.testsConductedCount} assessment${rpt.testsConductedCount === 1 ? '' : 's'}, ` +
       `with the assessed-grade trend moving ${rpt.gradeTrend.toUpperCase()}. ` +
-      `No raw test scores are shared. — Thinkerzz`
+      `No raw test scores are shared. - Thinkerzz`
     );
   };
 
@@ -60,7 +60,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
             <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Academy Intelligence & Monthly AI Reports</span>
+              <span>Monthly AI Reports</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
               Generate privacy-compliant monthly parent reports (first name & facts only, no raw test scores).
@@ -184,13 +184,13 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
             <div id="report-print-area" className="lg:col-span-7 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-6 space-y-5">
               {/* Print-only branded header */}
               <div className="hidden print:block text-center border-b pb-4 mb-2">
-                <div className="text-xl font-extrabold text-slate-900">Thinkerzz Academy</div>
+                <div className="text-xl font-extrabold text-slate-900">Thinkerzz</div>
                 <div className="text-xs font-semibold uppercase tracking-widest text-slate-500">Monthly Progress Report</div>
               </div>
               <div className="flex justify-between items-center border-b pb-4">
                 <div>
                   <h3 className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">
-                    Monthly Report Preview — {selectedReport.firstName}
+                    Monthly Report Preview - {selectedReport.firstName}
                   </h3>
                   <p className="text-xs text-[#6B7185] font-medium">{selectedReport.month} Academic Summary</p>
                 </div>
@@ -256,7 +256,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
               </div>
 
               <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 pt-2 no-print">
-                <span className="text-xs text-slate-400 font-medium">Dispatch is automatic — the month-end cron enqueues &amp; emails this report to parents.</span>
+                <span className="text-xs text-slate-400 font-medium">Dispatch is automatic - the month-end cron enqueues &amp; emails this report to parents.</span>
                 <button
                   onClick={() => window.print()}
                   className="px-4 py-2 border rounded-xl font-bold text-xs cursor-pointer hover:bg-slate-50 transition-colors"

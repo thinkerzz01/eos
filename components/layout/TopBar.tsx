@@ -69,7 +69,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
             <span>👋</span>
           </h1>
           <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium hidden sm:block">
-            Here's what's happening at Thinkerzz Academy today.
+            Here's what's happening at Thinkerzz today.
           </p>
         </div>
       </div>
@@ -89,7 +89,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
           </kbd>
         </div>
 
-        {/* Top Quick Action Button — create actions are admin/manager only */}
+        {/* Top Quick Action Button - create actions are admin/manager only */}
         {(role === 'admin' || role === 'manager') && (
         <div className="relative">
           <button
@@ -219,7 +219,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
           )}
         </button>
 
-        {/* Profile (SIMPLE "Admin" NAME WITH ICON — NO "SUPER ADMIN") */}
+        {/* Profile (SIMPLE "Admin" NAME WITH ICON - NO "SUPER ADMIN") */}
         <div className="relative">
           <button
             onClick={() => setShowProfileMenu(!showProfileMenu)}

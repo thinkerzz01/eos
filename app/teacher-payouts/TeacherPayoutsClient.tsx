@@ -118,7 +118,7 @@ export function TeacherPayoutsClient({ initialPayouts }: { initialPayouts: Teach
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
             <div className="text-xs font-bold text-slate-500 uppercase">Dispatched Payouts</div>
             <div className="font-heading font-extrabold text-2xl text-emerald-600">{fmt(dispatchedSum)}</div>
-            <div className="text-xs text-emerald-600 font-bold">{dispatchedSum > 0 ? 'Paid' : '—'}</div>
+            <div className="text-xs text-emerald-600 font-bold">{dispatchedSum > 0 ? 'Paid' : '-'}</div>
           </div>
         </div>
 

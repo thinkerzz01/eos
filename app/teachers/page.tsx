@@ -1,4 +1,4 @@
-// Teachers — SERVER Component (real, RLS-authorized rows -> client UI).
+// Teachers - SERVER Component (real, RLS-authorized rows -> client UI).
 import { getTeachers } from '@/lib/data/teachers';
 import { TeachersClient } from './TeachersClient';
 

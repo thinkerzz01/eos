@@ -23,7 +23,7 @@ export function AddTeacherModal({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // NO PRE-FILLED DEFAULT VALUES — ONLY PLACEHOLDERS
+  // NO PRE-FILLED DEFAULT VALUES - ONLY PLACEHOLDERS
   const [formData, setFormData] = useState({
     name: '',
     email: '',

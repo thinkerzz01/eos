@@ -3,7 +3,7 @@
 // Announcements write action. RLS: admin + manager may post (teacher/student
 // denied at the DB). Audience targeting (announcement_targets) is program/
 // student based in the schema, not the All/Students/Teachers/Parents enum the
-// UI uses, so audience is not persisted here yet — follow-up.
+// UI uses, so audience is not persisted here yet - follow-up.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 

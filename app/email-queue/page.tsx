@@ -1,4 +1,4 @@
-// Email Queue (notifications) — SERVER Component (real, RLS-authorized rows).
+// Email Queue (notifications) - SERVER Component (real, RLS-authorized rows).
 import { getNotifications } from '@/lib/data/notifications';
 import { EmailQueueClient } from './EmailQueueClient';
 

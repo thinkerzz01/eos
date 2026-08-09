@@ -1,4 +1,4 @@
-// Fees (parent's own vouchers) data-access — RLS-enforced, server-only.
+// Fees (parent's own vouchers) data-access - RLS-enforced, server-only.
 // RLS auto-scopes: an admin sees all vouchers; a student/parent sees only their
 // own child's (student_read_own_vouchers policy). Same query, different result.
 import { createClient } from '@/lib/supabase/server';

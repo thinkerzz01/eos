@@ -172,7 +172,7 @@ export async function bulkCreateStudents(
   };
   const dueDefault = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10);
 
-  // students.phone is NOT NULL with a unique index — rows without a phone must be
+  // students.phone is NOT NULL with a unique index - rows without a phone must be
   // skipped (counted in `skipped`), not force-inserted as 'N/A' (which collides).
   const valid = rows.filter(
     (r) => r.name?.trim() && r.parentName?.trim() && r.parentPhone?.trim() && ENROLLABLE_PROGRAMS.includes(r.program)
@@ -183,7 +183,7 @@ export async function bulkCreateStudents(
       ok: false,
       inserted: 0,
       skipped,
-      error: 'No valid rows — each needs a name, a parent name, and a CAIE program (O/A Level, IGCSE).',
+      error: 'No valid rows - each needs a name, a parent name, and a CAIE program (O/A Level, IGCSE).',
     };
   }
 

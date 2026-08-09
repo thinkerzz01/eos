@@ -1,4 +1,4 @@
-// Monthly parent report — assembly + optional LLM phrasing.
+// Monthly parent report - assembly + optional LLM phrasing.
 // LOCKED invariants (Master Plan §6.2/§8/§11, AGENTS.md §3.6):
 //   - NO raw test scores. Only the COUNT of tests conducted + the assessed-grade
 //     trend (up/same/down) + attendance/homework completion + topics covered.
@@ -28,7 +28,7 @@ export async function assembleReportFacts(
   const firstName = (student.name ?? 'Student').split(' ')[0] || 'Student';
   const since = monthStartISODate();
 
-  // Tests conducted this month (COUNT only — never the scores).
+  // Tests conducted this month (COUNT only - never the scores).
   const { count: testsConducted } = await admin
     .from('tests')
     .select('id', { count: 'exact', head: true })
@@ -111,7 +111,7 @@ export async function assembleReportFacts(
 // commas or plain spacing, so parent-facing reports never contain a "-" style dash.
 function stripDashes(s: string): string {
   return s
-    .replace(/\s*[—–]\s*/g, ', ') // em/en dash -> comma
+    .replace(/\s*[--]\s*/g, ', ') // em/en dash -> comma
     .replace(/\s+-\s+/g, ', ') // spaced hyphen -> comma
     .replace(/,\s*,/g, ',') // tidy any double commas
     .replace(/\s{2,}/g, ' ')

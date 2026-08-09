@@ -1,6 +1,6 @@
 // Monthly reports data-access (RLS-enforced, server-only). Builds one report per
 // active student from real attendance + tests. Per the locked policy the report
-// carries NO raw test scores — only the COUNT of tests conducted and the trend.
+// carries NO raw test scores - only the COUNT of tests conducted and the trend.
 // (For richer phrasing, the Phase 6 backend `lib/reports/monthlyReport.ts` +
 // the /api/cron/monthly-reports route assemble & enqueue these to parents.)
 import { createClient } from '@/lib/supabase/server';
@@ -72,12 +72,12 @@ export async function getMonthlyReports(): Promise<MonthlyReportData[]> {
       topicsCovered: [], // from syllabus_progress topic names (later slice)
       testsConductedCount: testStats.get(s.id)?.count ?? 0,
       gradeTrend: 'same', // needs grade history to compute a real trend
-      // Derived from the student's real test scores; '—' when no tests yet.
+      // Derived from the student's real test scores; '-' when no tests yet.
       assessedGrade: (() => {
         const ts = testStats.get(s.id);
         return ts && ts.count > 0 && ts.max > 0
           ? gradeFromPct((ts.score / ts.max) * 100)
-          : ('—' as MonthlyReportData['assessedGrade']);
+          : ('-' as MonthlyReportData['assessedGrade']);
       })(),
       attendancePct,
     } as MonthlyReportData;

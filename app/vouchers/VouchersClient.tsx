@@ -56,7 +56,7 @@ function waDigits(phone: string): string {
 // Build the WhatsApp fee-voucher message (voucher details + how to pay).
 function voucherWhatsappText(v: FeeVoucher, pay?: PaymentInfo | null): string {
   const lines = [
-    `*Thinkerzz Academy - Fee Voucher*`,
+    `*Thinkerzz - Fee Voucher*`,
     ``,
     `Voucher: ${v.voucherNo}`,
     `Student: ${v.studentName}`,
@@ -166,7 +166,7 @@ export function VouchersClient({
     }
   };
 
-  // HANDLE REFUND — negative payment linked to the voucher (server action, audited)
+  // HANDLE REFUND - negative payment linked to the voucher (server action, audited)
   const handleIssueRefund = async () => {
     if (!refundVoucher) return;
     const refundNum = parseFloat(refundAmountInput);
@@ -189,7 +189,7 @@ export function VouchersClient({
     }
   };
 
-  // HANDLE ADMIN FEE DECISION (STOP / EXTEND / MARK PAID) — audited to fee_decisions
+  // HANDLE ADMIN FEE DECISION (STOP / EXTEND / MARK PAID) - audited to fee_decisions
   const handleAdminDecision = async (choice: 'Stop' | 'Extend' | 'Mark Paid') => {
     if (!decisionVoucher) return;
 
@@ -561,7 +561,7 @@ export function VouchersClient({
                 <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
                   <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-black text-lg">T</div>
                   <div>
-                    <div className="font-extrabold text-base leading-tight">Thinkerzz Academy</div>
+                    <div className="font-extrabold text-base leading-tight">Thinkerzz</div>
                     <div className="text-xs text-slate-500 font-semibold">Fee Voucher</div>
                   </div>
                   <div className="ml-auto text-right">
@@ -616,7 +616,7 @@ export function VouchersClient({
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
                 <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
-                  Record Fee Payment — {partialPayVoucher.studentName}
+                  Record Fee Payment - {partialPayVoucher.studentName}
                 </h3>
                 <button onClick={() => setPartialPayVoucher(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
@@ -670,7 +670,7 @@ export function VouchersClient({
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
                 <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
-                  Issue Refund — {refundVoucher.studentName}
+                  Issue Refund - {refundVoucher.studentName}
                 </h3>
                 <button onClick={() => setRefundVoucher(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>

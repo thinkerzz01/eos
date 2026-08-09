@@ -28,7 +28,7 @@ export function OnboardStudentModal({
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  // NO PRE-FILLED DEFAULTS — ONLY PLACEHOLDERS
+  // NO PRE-FILLED DEFAULTS - ONLY PLACEHOLDERS
   const [formData, setFormData] = useState({
     name: '',
     parent_name: '',

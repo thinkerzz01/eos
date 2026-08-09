@@ -27,7 +27,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<'Branding' | 'Financial' | 'Security' | 'API' | 'Notifications'>('Branding');
 
   // FORM STATES
-  const [academyName, setAcademyName] = useState('Thinkerzz Academy');
+  const [academyName, setAcademyName] = useState('Thinkerzz');
   const [academicYear, setAcademicYear] = useState('Academic Year 2026');
   const [gracePeriodDays, setGracePeriodDays] = useState(3);
   const [saving, setSaving] = useState(false);
@@ -221,7 +221,7 @@ export default function SettingsPage() {
             <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
               <div>
                 <label className="text-slate-700 block mb-1">cPanel Cron Bearer Secret Token (Authorization: Bearer)</label>
-                <input type="text" disabled value="•••••••••• — set via the CRON_SECRET_TOKEN env var (never stored here)" className="w-full bg-slate-100 border rounded-xl p-2.5 font-mono text-slate-500 cursor-not-allowed" />
+                <input type="text" disabled value="•••••••••• - set via the CRON_SECRET_TOKEN env var (never stored here)" className="w-full bg-slate-100 border rounded-xl p-2.5 font-mono text-slate-500 cursor-not-allowed" />
               </div>
               <div>
                 <label className="text-slate-700 block mb-1">Resend Daily Free Tier Cap Threshold <span className="text-slate-400 normal-case font-medium">(enforced in code)</span></label>

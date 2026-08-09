@@ -1,4 +1,4 @@
-// Vouchers — SERVER Component (Admin-only finance; RLS-authorized rows).
+// Vouchers - SERVER Component (Admin-only finance; RLS-authorized rows).
 import { getVouchers } from '@/lib/data/vouchers';
 import { getPayments } from '@/lib/data/payments';
 import { getStudents } from '@/lib/data/students';

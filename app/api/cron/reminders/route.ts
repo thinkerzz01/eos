@@ -2,7 +2,7 @@
 // Auth: `Authorization: Bearer <CRON_SECRET_TOKEN>` header (never query string).
 // Enqueues time-critical reminders into the notifications queue. Idempotent by
 // unique_key, so running it every few minutes never double-sends. It does NOT
-// send anything — /api/cron/send drains the queue.
+// send anything - /api/cron/send drains the queue.
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronBearerHeader } from '@/lib/security';
 import { createAdminClient } from '@/lib/supabase/admin';
@@ -138,7 +138,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // 4) Lead follow-ups due today (priority 2) — Master Plan §3.3
+  // 4) Lead follow-ups due today (priority 2) - Master Plan §3.3
   const { data: followLeads } = await admin
     .from('leads')
     .select('id,org_id,name,parent_name,email')
@@ -160,7 +160,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // 5) Admin alert: grace period EXPIRED and still unpaid (Master Plan §7) — push
+  // 5) Admin alert: grace period EXPIRED and still unpaid (Master Plan §7) - push
   //    the Stop/Extend/Mark-Paid decision to the org's admin (once per voucher).
   const { data: adminProfiles } = await admin
     .from('profiles')

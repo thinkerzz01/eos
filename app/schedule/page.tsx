@@ -1,4 +1,4 @@
-// Schedule — SERVER Component (real, RLS-authorized rows -> client UI).
+// Schedule - SERVER Component (real, RLS-authorized rows -> client UI).
 import { getSchedule } from '@/lib/data/schedule';
 import { getStudents } from '@/lib/data/students';
 import { getTeachers } from '@/lib/data/teachers';

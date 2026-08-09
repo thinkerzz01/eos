@@ -44,7 +44,7 @@ export function MarketingClient({ initialStats }: { initialStats: SourceStat[] }
           </div>
           <div className="p-4 bg-white dark:bg-slate-900 border rounded-2xl space-y-1">
             <div className="text-slate-500 uppercase">Ad Spend</div>
-            <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white">{totalSpend > 0 ? `PKR ${totalSpend.toLocaleString()}` : '—'}</div>
+            <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white">{totalSpend > 0 ? `PKR ${totalSpend.toLocaleString()}` : '-'}</div>
           </div>
         </div>
 
@@ -69,8 +69,8 @@ export function MarketingClient({ initialStats }: { initialStats: SourceStat[] }
                     <td className="py-3.5 px-3 font-bold text-slate-900 dark:text-slate-100">{r.leads}</td>
                     <td className="py-3.5 px-3 font-bold text-emerald-600">{r.won}</td>
                     <td className="py-3.5 px-3 font-bold text-purple-600">{r.conversionPct}%</td>
-                    <td className="py-3.5 px-3 font-mono text-slate-900 dark:text-slate-100">{r.spend > 0 ? `PKR ${r.spend.toLocaleString()}` : '—'}</td>
-                    <td className="py-3.5 px-3 font-mono text-slate-900 dark:text-slate-100">{r.costPerStudent != null ? `PKR ${r.costPerStudent.toLocaleString()}` : '—'}</td>
+                    <td className="py-3.5 px-3 font-mono text-slate-900 dark:text-slate-100">{r.spend > 0 ? `PKR ${r.spend.toLocaleString()}` : '-'}</td>
+                    <td className="py-3.5 px-3 font-mono text-slate-900 dark:text-slate-100">{r.costPerStudent != null ? `PKR ${r.costPerStudent.toLocaleString()}` : '-'}</td>
                   </tr>
                 ))}
               </tbody>

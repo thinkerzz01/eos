@@ -1,6 +1,6 @@
 'use server';
 
-// Teacher payout write action (Admin only — RLS denies Manager on the pay tables).
+// Teacher payout write action (Admin only - RLS denies Manager on the pay tables).
 // Records an actual payment made to a teacher into teacher_payouts.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';

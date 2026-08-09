@@ -1,4 +1,4 @@
-// Announcements data-access — RLS-enforced, server-only.
+// Announcements data-access - RLS-enforced, server-only.
 import { createClient } from '@/lib/supabase/server';
 import type { AcademyAnnouncement } from '@/lib/mockSupportData';
 

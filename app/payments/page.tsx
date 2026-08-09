@@ -1,4 +1,4 @@
-// Payments — SERVER Component (Admin-only finance; RLS-authorized rows).
+// Payments - SERVER Component (Admin-only finance; RLS-authorized rows).
 import { getPayments } from '@/lib/data/payments';
 import { PaymentsClient } from './PaymentsClient';
 

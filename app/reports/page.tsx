@@ -1,4 +1,4 @@
-// Reports — SERVER Component (real per-student monthly reports + funnel from the DB).
+// Reports - SERVER Component (real per-student monthly reports + funnel from the DB).
 import { getMonthlyReports, getFunnelStats } from '@/lib/data/reports';
 import { ReportsClient } from './ReportsClient';
 

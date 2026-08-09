@@ -79,7 +79,7 @@ export async function createLead(input: {
     parent_name: parentName,
     phone: parentPhone,
     email: input.parentEmail?.trim() || null,
-    // leads.program is CAIE-only (nullable) — store only if valid, else leave null.
+    // leads.program is CAIE-only (nullable) - store only if valid, else leave null.
     program: ENROLLABLE_PROGRAMS.includes(input.program) ? input.program : null,
     subjects: input.subjects?.trim() || null,
     source: SOURCE_MAP[input.source ?? ''] ?? 'walk_in',

@@ -1,4 +1,4 @@
-// Audit log data-access — RLS-enforced, server-only. Admin-only (Manager DENIED
+// Audit log data-access - RLS-enforced, server-only. Admin-only (Manager DENIED
 // at the DB). Append-only; read newest first.
 import { createClient } from '@/lib/supabase/server';
 import type { AuditLogEntry } from '@/lib/mockSupportData';

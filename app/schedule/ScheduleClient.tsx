@@ -145,7 +145,7 @@ export function ScheduleClient({
   const handleSaveClassCompletion = async () => {
     if (!selectedClassForCompletion) return;
     if (selectedClassForCompletion.status === 'Completed') {
-      alert('This class is already completed — attendance was already recorded.');
+      alert('This class is already completed - attendance was already recorded.');
       return;
     }
     if (!selectedClassForCompletion.studentId) { alert('This session has no linked student.'); return; }
@@ -287,7 +287,7 @@ export function ScheduleClient({
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <div className="font-extrabold text-slate-900 dark:text-slate-100">{cls.studentName || '—'}</div>
+                          <div className="font-extrabold text-slate-900 dark:text-slate-100">{cls.studentName || '-'}</div>
                           <div className="text-xs text-[#6B7185]">{cls.program}</div>
                         </td>
 
@@ -334,7 +334,7 @@ export function ScheduleClient({
                               {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class →'}
                             </button>
                           ) : (
-                            <span className="text-slate-400 text-xs font-semibold">—</span>
+                            <span className="text-slate-400 text-xs font-semibold">-</span>
                           )}
                         </td>
                       </tr>
@@ -371,7 +371,7 @@ export function ScheduleClient({
               <div className="flex justify-between items-center border-b pb-3.5">
                 <div>
                   <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-lg">
-                    Class Completion — {selectedClassForCompletion.subject}
+                    Class Completion - {selectedClassForCompletion.subject}
                   </h3>
                   <div className="text-xs text-[#6B7185]">
                     {selectedClassForCompletion.studentName || 'Student'} · {selectedClassForCompletion.startAt}
@@ -380,7 +380,7 @@ export function ScheduleClient({
                 <button onClick={() => setSelectedClassForCompletion(null)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600" /></button>
               </div>
 
-              {/* ATTENDANCE — one student per session */}
+              {/* ATTENDANCE - one student per session */}
               <div className="space-y-3 text-xs">
                 <div className="font-extrabold text-slate-900 uppercase">Mark Attendance</div>
                 <div className="flex justify-between items-center p-3 bg-slate-50 rounded-xl border">
@@ -412,7 +412,7 @@ export function ScheduleClient({
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button onClick={() => setSelectedClassForCompletion(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Close</button>
                 {selectedClassForCompletion.status === 'Completed' ? (
-                  <span className="px-4 py-2 text-emerald-600 font-extrabold text-xs">Already completed — attendance recorded</span>
+                  <span className="px-4 py-2 text-emerald-600 font-extrabold text-xs">Already completed - attendance recorded</span>
                 ) : (
                   <button onClick={handleSaveClassCompletion} disabled={savingCompletion} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
                     {savingCompletion ? 'Saving...' : 'Complete & Save Attendance'}
@@ -451,13 +451,13 @@ export function ScheduleClient({
                 <label className="text-slate-700 dark:text-slate-300 block font-bold">Student</label>
                 <select value={wizStudentId} onChange={(e) => setWizStudentId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-3 text-slate-900 dark:text-slate-100 font-bold">
                   <option value="">Select a student...</option>
-                  {wizStudentList.map((s) => (<option key={s.id} value={s.id}>{s.name}{s.program ? ` — ${s.program}` : ''}</option>))}
+                  {wizStudentList.map((s) => (<option key={s.id} value={s.id}>{s.name}{s.program ? ` - ${s.program}` : ''}</option>))}
                 </select>
                 {wizStudentList.length === 0 && (
                   <p className="text-xs text-amber-600 font-medium">No {studentTab === 'new' ? 'unscheduled' : 'scheduled'} students in this list.</p>
                 )}
                 {wizProgram && (
-                  <p className="text-xs text-[#6B7185]">Program: <strong className="text-slate-800 dark:text-slate-200">{wizProgram}</strong> — subjects below are filtered to it.</p>
+                  <p className="text-xs text-[#6B7185]">Program: <strong className="text-slate-800 dark:text-slate-200">{wizProgram}</strong> - subjects below are filtered to it.</p>
                 )}
               </div>
 

@@ -101,18 +101,13 @@ export default function OnboardingPage({ params }: { params: { studentId: string
     <div className="min-h-screen bg-[#F8F9FD] text-[#171A2B] font-sans flex flex-col justify-between">
       <header className="bg-white border-b border-[#EBEDF3] py-4 px-6 sticky top-0 z-50 shadow-xs">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-heading font-black text-xl shadow-md">
-            T
-          </div>
-          <div>
-            <div className="font-heading font-extrabold text-xl tracking-tight text-slate-900">THINKERZZ ACADEMY</div>
-            <div className="text-xs font-bold text-[#5B47D6] tracking-wider uppercase">Student Onboarding</div>
-          </div>
+          <img src="/logo-light.png" alt="Thinkerzz" className="h-9 w-auto object-contain" />
+          <div className="text-xs font-bold text-[#5B47D6] tracking-wider uppercase border-l border-slate-200 pl-3">Student Onboarding</div>
         </div>
       </header>
       <main className="max-w-3xl mx-auto px-4 py-8 flex-1 w-full">{children}</main>
       <footer className="border-t border-[#EBEDF3] py-4 text-center text-xs text-slate-400 font-medium">
-        Thinkerzz Academy Operating System (EOS v3.1) · All rights reserved.
+        Thinkerzz Operating System (EOS v3.1) · All rights reserved.
       </footer>
     </div>
   );

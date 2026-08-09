@@ -1,4 +1,4 @@
-// Teacher Payouts — SERVER Component (Admin-only pay table; RLS-authorized rows).
+// Teacher Payouts - SERVER Component (Admin-only pay table; RLS-authorized rows).
 import { getTeacherPayouts } from '@/lib/data/teacherPayouts';
 import { TeacherPayoutsClient } from './TeacherPayoutsClient';
 

@@ -55,7 +55,7 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname.startsWith('/api');
 
   // Deny-by-default: an unauthenticated request to any protected route is
-  // redirected to /login. There is no demo/bypass cookie — the database
+  // redirected to /login. There is no demo/bypass cookie - the database
   // session is the only source of truth for who you are.
   if (!user && !isPublicRoute) {
     const redirectUrl = request.nextUrl.clone();

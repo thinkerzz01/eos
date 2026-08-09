@@ -1,10 +1,10 @@
 'use server';
 
-// Finance write actions (Admin only — RLS denies Manager on every finance table).
+// Finance write actions (Admin only - RLS denies Manager on every finance table).
 // Runs server-side with the user's session; Postgres RLS enforces permission.
 // Locked policy (AGENTS.md §4): partial payment keeps the voucher Due with a
 // running balance; a refund is a NEGATIVE payment linked to the voucher (the
-// original payment is never edited/deleted); grace expiry never auto-stops —
+// original payment is never edited/deleted); grace expiry never auto-stops -
 // the Admin decides (Stop / Extend / Mark paid), and every choice is audited.
 // The health engine and the fee badge both read students.fee_status, so we keep
 // it in sync here.
@@ -167,7 +167,7 @@ export async function issueRefund(input: {
   return { ok: true };
 }
 
-/** Admin grace decision: Stop / Extend / Mark Paid — audited to fee_decisions. */
+/** Admin grace decision: Stop / Extend / Mark Paid - audited to fee_decisions. */
 export async function adminFeeDecision(input: {
   voucherId: string;
   choice: 'Stop' | 'Extend' | 'Mark Paid';

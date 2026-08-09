@@ -1,9 +1,9 @@
-// Thinkerzz EOS — Students data-access layer (RLS-enforced, server-only)
+// Thinkerzz EOS - Students data-access layer (RLS-enforced, server-only)
 // ---------------------------------------------------------------------------
 // REFERENCE PATTERN for Step 2 of the audit remediation. Every other screen
 // should follow this shape:
 //   1. Use the SERVER Supabase client (carries the user's session cookie).
-//   2. Query normally — Postgres RLS does the authorization. We never bypass
+//   2. Query normally - Postgres RLS does the authorization. We never bypass
 //      it with the service-role key.
 //   3. Always filter `deleted_at IS NULL` (global soft-delete invariant).
 //   4. Map DB rows -> the view-model the presentational UI already expects.

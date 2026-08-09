@@ -65,7 +65,7 @@ export async function sendResetById(
     `A password reset was requested for your Thinkerzz account.\n\n` +
     `Username: ${target.email}\n\n` +
     `Set a new password (single-use link):\n${link}\n\n` +
-    `If you did not request this, you can ignore this email.\n\n- Thinkerzz Academy`;
+    `If you did not request this, you can ignore this email.\n\n- Thinkerzz`;
   const html = renderEmailHtml({
     heading: 'Reset your password',
     preheader: 'Set a new password for your Thinkerzz account.',

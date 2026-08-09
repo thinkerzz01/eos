@@ -39,9 +39,10 @@ const plusJakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Thinkerzz Admin — Academy Operating System',
+  title: 'Thinkerzz',
+  icons: { icon: '/icon.png', apple: '/icon.png' },
   description:
-    'CRM, Scheduling, Booking, CAIE Syllabus, Fees, and Role Portals for Thinkerzz Academy.',
+    'CRM, Scheduling, Booking, CAIE Syllabus, Fees, and Role Portals for Thinkerzz.',
 };
 
 export default async function RootLayout({

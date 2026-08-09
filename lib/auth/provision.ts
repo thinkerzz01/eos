@@ -30,12 +30,12 @@ const ROLE_COPY: Record<'teacher' | 'student', { subject: string; intro: string 
   teacher: {
     subject: 'Your Thinkerzz teacher portal - set your password',
     intro:
-      'You have been added as a teacher at Thinkerzz Academy. Set your password to access your portal, where you can see your classes and students.',
+      'You have been added as a teacher at Thinkerzz. Set your password to access your portal, where you can see your classes and students.',
   },
   student: {
     subject: 'Welcome to Thinkerzz - set your portal password',
     intro:
-      'You have been enrolled at Thinkerzz Academy. Set your password to access your student portal, where you can see your schedule, fees, and vouchers.',
+      'You have been enrolled at Thinkerzz. Set your password to access your student portal, where you can see your schedule, fees, and vouchers.',
   },
 };
 
@@ -129,7 +129,7 @@ export async function provisionLogin(opts: {
     `${copy.intro}\n\n` +
     `Set your password here (single-use link):\n${actionLink}\n\n` +
     `After setting it, sign in at ${siteUrl()}/login with this email.\n\n` +
-    `- Thinkerzz Academy`;
+    `- Thinkerzz`;
   const html = renderEmailHtml({
     heading: opts.role === 'teacher' ? 'Welcome to Thinkerzz' : 'Welcome to Thinkerzz',
     preheader: 'Set your password to access your Thinkerzz portal.',

@@ -67,7 +67,7 @@ export const EXAM_SESSIONS = [
 ];
 
 // Labels must normalize to the DB source enum (google/facebook/instagram/
-// whatsapp/referral/walk_in) — see normalizeSource in app/students/actions.ts.
+// whatsapp/referral/walk_in) - see normalizeSource in app/students/actions.ts.
 export const LEAD_SOURCES = [
   'Instagram',
   'Facebook',

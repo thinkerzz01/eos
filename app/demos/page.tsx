@@ -1,4 +1,4 @@
-// Demos — SERVER Component (real, RLS-authorized rows -> client UI).
+// Demos - SERVER Component (real, RLS-authorized rows -> client UI).
 import { getDemos } from '@/lib/data/demos';
 import { getTeachers } from '@/lib/data/teachers';
 import { DemosClient } from './DemosClient';

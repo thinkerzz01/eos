@@ -146,7 +146,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
               <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
                 <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-black text-lg">T</div>
                 <div>
-                  <div className="font-extrabold text-base leading-tight">Thinkerzz Academy</div>
+                  <div className="font-extrabold text-base leading-tight">Thinkerzz</div>
                   <div className="text-xs text-slate-500 font-semibold">Payment Receipt</div>
                 </div>
                 <div className="ml-auto font-mono font-bold text-sm">{receipt.receiptNo}</div>

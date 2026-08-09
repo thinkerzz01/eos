@@ -1,4 +1,4 @@
-// Homework data-access — RLS-enforced, server-only.
+// Homework data-access - RLS-enforced, server-only.
 import { createClient } from '@/lib/supabase/server';
 import type { HomeworkAssignment } from '@/lib/mockAcademicsData';
 

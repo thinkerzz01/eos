@@ -1,4 +1,4 @@
-// Schedule (class_sessions) data-access — RLS-enforced, server-only.
+// Schedule (class_sessions) data-access - RLS-enforced, server-only.
 import { createClient } from '@/lib/supabase/server';
 import type { ScheduledClass } from '@/lib/mockAcademicsData';
 

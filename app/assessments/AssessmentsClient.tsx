@@ -183,20 +183,20 @@ export function AssessmentsClient({
               {/* RESULT SLIP HEADER */}
               <div className="flex justify-between items-start border-b pb-4">
                 <div>
-                  <div className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">THINKERZZ ACADEMY</div>
+                  <div className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">THINKERZZ</div>
                   <div className="text-xs text-[#5B47D6] font-bold">OFFICIAL CAIE RESULT SLIP</div>
                   <div className="text-xs text-slate-500 mt-1 font-medium">{selectedAssessmentForSlip.testTitle} ({selectedAssessmentForSlip.dateConducted})</div>
                 </div>
                 <button onClick={() => setShowResultSlipModal(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600" /></button>
               </div>
 
-              {/* 3 SEPARATELY LABELLED ITEMS REQUIRED BY AGENTS.MD §4 —
+              {/* 3 SEPARATELY LABELLED ITEMS REQUIRED BY AGENTS.MD §4 -
                   computed from the real grades on this assessment. */}
               {(() => {
                 const total = selectedAssessmentForSlip.totalMarks || 100;
                 const pcts = selectedAssessmentForSlip.grades.map((g) => (g.marksObtained / total) * 100);
                 const avg = pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : 0;
-                const assessed = pcts.length ? gradeFromPct(avg) : '—';
+                const assessed = pcts.length ? gradeFromPct(avg) : '-';
                 return (
                   <div className="grid grid-cols-3 gap-3 text-center">
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
@@ -211,7 +211,7 @@ export function AssessmentsClient({
 
                     <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
                       <div className="text-xs font-bold text-emerald-700 uppercase">Target Grade</div>
-                      <div className="font-heading font-extrabold text-2xl text-emerald-600 mt-1">—</div>
+                      <div className="font-heading font-extrabold text-2xl text-emerald-600 mt-1">-</div>
                     </div>
                   </div>
                 );

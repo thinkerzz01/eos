@@ -1,6 +1,6 @@
 'use server';
 
-// Schedule (class_sessions) write actions — one student per session (schema/plan
+// Schedule (class_sessions) write actions - one student per session (schema/plan
 // model). RLS decides permission. Teacher time overlaps are blocked by the DB
 // `no_overlapping_teacher_sessions` EXCLUDE constraint (btree_gist); we catch it
 // and return a friendly conflict. Times are entered in PKT (+05:00) and stored
@@ -159,7 +159,7 @@ export async function bulkScheduleClasses(input: {
       const attendees = [studentEmail, (teacher as any)?.email].filter(Boolean) as string[];
       const meet = await createMeetEvent({
         summary: `${(subject as any)?.name ?? 'Class'} - ${studentName}`,
-        description: 'Thinkerzz Academy class. The teacher will start the meeting.',
+        description: 'Thinkerzz class. The teacher will start the meeting.',
         startISO: occ[0].startIso,
         endISO: occ[0].endIso,
         attendees,
