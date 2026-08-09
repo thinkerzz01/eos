@@ -72,7 +72,7 @@ onboarding, the app now auto-provisions the login:
 
 **Required config for the emails to actually deliver:**
 1. `.env.local`: add `NEXT_PUBLIC_SITE_URL` = the real site URL (e.g.
-   `https://app.thinkerzz.com`; `http://localhost:3000` in dev). The set-password link
+   `https://portal.thinkerzz.com`; `http://localhost:3000` in dev). The set-password link
    redirects here.
 2. Supabase -> Authentication -> URL Configuration: add `<SITE_URL>/set-password` to
    the allowed **Redirect URLs** (and set Site URL). Otherwise the link is rejected.

@@ -191,7 +191,7 @@ persist to the database yet:
 
 ### D. Ops / deployment (not done)
 - cPanel cron not set up yet (endpoints exist; see §5).
-- Not deployed to `app.thinkerzz.com`.
+- Not deployed to `portal.thinkerzz.com`.
 
 ### E. Polish (low priority)
 - Detail drawers on **other** screens (teacher drawer, ticket detail) may still
@@ -249,8 +249,8 @@ persist to the database yet:
 6. **Cron (for reminders/reports), when deploying:** point cPanel Custom cron at,
    every 10–15 min:
    ```bash
-   curl -s -H "Authorization: Bearer $CRON_SECRET_TOKEN" https://app.thinkerzz.com/api/cron/reminders
-   curl -s -H "Authorization: Bearer $CRON_SECRET_TOKEN" https://app.thinkerzz.com/api/cron/send
+   curl -s -H "Authorization: Bearer $CRON_SECRET_TOKEN" https://portal.thinkerzz.com/api/cron/reminders
+   curl -s -H "Authorization: Bearer $CRON_SECRET_TOKEN" https://portal.thinkerzz.com/api/cron/send
    ```
    and monthly: `.../api/cron/monthly-reports`.
 
@@ -266,7 +266,7 @@ persist to the database yet:
 3. **Close the security items:** derive role server-side from `profiles` and
    remove the switcher; replace the fake `generateSignedStorageUrl` with real
    Supabase signed URLs; test RLS denial per role.
-4. **Deploy** to `app.thinkerzz.com` and wire the cron.
+4. **Deploy** to `portal.thinkerzz.com` and wire the cron.
 5. **Polish** (§3.E).
 
 ### The write-action recipe (copy this for each new form)

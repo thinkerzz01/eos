@@ -18,7 +18,7 @@ Question · Think · Achieve
 > 9. **1-hour ticket SLA = a target (not a guarantee), 7 AM–11 PM.**
 > 10. **Partial payment and refund LOCKED** — no longer open items.
 > 11. **Schedule filters + makeup class type** specified.
-> 12. **Domain split** — marketing on `thinkerzz.com`, app on `app.thinkerzz.com`, public booking at `thinkerzz.com/book`.
+> 12. **Domain split** — marketing on `thinkerzz.com`, app on `portal.thinkerzz.com`, public booking at `thinkerzz.com/book`.
 
 ---
 
@@ -99,7 +99,7 @@ Every decision, in one place. Final unless changed here.
 - **Parent and student share one login (LOCKED).** The parent manages everything for the student. A separate student login can be added later as a `role` addition, not a rebuild — but it is **not** built now and is **removed from open items**.
 
 ### Hosting, domain and infrastructure
-- **Domain split (locked):** `thinkerzz.com` = WordPress marketing site (SEO untouched); **`app.thinkerzz.com`** = the Next.js EOS app (on Vercel/Cloudflare); **`thinkerzz.com/book`** = public demo booking page. The cron lives on cPanel and calls the app over the internet — two surfaces to monitor if reminders ever stop.
+- **Domain split (locked):** `thinkerzz.com` = WordPress marketing site (SEO untouched); **`portal.thinkerzz.com`** = the Next.js EOS app (on Vercel/Cloudflare); **`thinkerzz.com/book`** = public demo booking page. The cron lives on cPanel and calls the app over the internet — two surfaces to monitor if reminders ever stop.
 - **cPanel Custom cron is confirmed available.** Use the Custom type (not the PHP wp-cron type). It calls a secret app endpoint every 10-15 minutes.
 - **Vercel Hobby cron cannot run reminders** (daily only). Fallbacks if ever needed: Cloudflare Workers cron (free, per-minute) or pg_cron.
 
@@ -115,7 +115,7 @@ Every decision, in one place. Final unless changed here.
 ## 3. System architecture
 
 ### 3.1 Technology stack
-- **App:** Next.js (Vercel or Cloudflare free tier), all four portals in one codebase, gated by role. Served at `app.thinkerzz.com`.
+- **App:** Next.js (Vercel or Cloudflare free tier), all four portals in one codebase, gated by role. Served at `portal.thinkerzz.com`.
 - **DB / Auth / Storage:** Supabase (free tier) — Postgres + RLS, email/password auth, private buckets.
 - **Cron:** cPanel Custom cron -> secret app endpoint every 10-15 min.
 - **Email:** Resend free tier (3,000/month, 100/day, one verified domain) with a priority queue.
@@ -248,7 +248,7 @@ Internal (staff decisions): Defaulters (in-grace vs overdue, WhatsApp round, not
 
 ## 12. Recommended build order (7 phases)
 
-1. **Foundation** — Supabase project; all tables with org_id/timestamps/soft-delete/audit; RLS deny-by-default; email/password auth; four roles; `teacher_pay_rates` separate. App on `app.thinkerzz.com`.
+1. **Foundation** — Supabase project; all tables with org_id/timestamps/soft-delete/audit; RLS deny-by-default; email/password auth; four roles; `teacher_pay_rates` separate. App on `portal.thinkerzz.com`.
 2. **Core records** — Students, Teachers (Admin-only add + capacity), Subjects, **CAIE syllabus templates + topics preloaded and versioned**, `student_subjects` with target/assessed grade.
 3. **Admissions** — Leads CRM, Demos (assign + conflict re-check), public Booking page (two locked functions, visual calendar), Convert.
 4. **Academics** — Schedule + EXCLUDE conflict rule + per-slot capacity + filters + makeup type, class-completion flow (mobile-first, partial-save safe), Homework, Tests + assessed grade.

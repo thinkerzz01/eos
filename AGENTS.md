@@ -168,7 +168,7 @@ If your solution requires changing any of these, you have the wrong solution. St
 - Filters: date range (Today / Week / Month / custom), teacher, student, subject, type, status.
 
 **Infrastructure**
-- `thinkerzz.com` = WordPress marketing site, **untouched**. `app.thinkerzz.com` = the Next.js app. `thinkerzz.com/book` = public booking page.
+- `thinkerzz.com` = WordPress marketing site, **untouched**. `portal.thinkerzz.com` = the Next.js app. `thinkerzz.com/book` = public booking page.
 - cPanel **Custom** cron (not the PHP wp-cron type), calling a secret app endpoint every 10 to 15 minutes.
 - Vercel Hobby cron cannot run reminders. Do not propose it.
 - Ticket reply is a **1-hour target, not a guarantee**, across 7 AM to 11 PM. Past-target tickets flag red.
