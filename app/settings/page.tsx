@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { createClient } from '@/lib/supabase/client';
-import { saveSettings } from './actions';
+import { saveSettings, sendTestEmail } from './actions';
 import {
   Settings as SettingsIcon,
   ShieldCheck,
@@ -31,6 +31,19 @@ export default function SettingsPage() {
   const [academicYear, setAcademicYear] = useState('Academic Year 2026');
   const [gracePeriodDays, setGracePeriodDays] = useState(3);
   const [saving, setSaving] = useState(false);
+
+  // Test-email tool (verify Resend delivery after domain verification)
+  const [testEmail, setTestEmail] = useState('');
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<string>('');
+
+  const handleSendTest = async () => {
+    setTesting(true);
+    setTestResult('');
+    const res = await sendTestEmail(testEmail);
+    setTesting(false);
+    setTestResult(res.ok ? `✓ ${res.info ?? 'Sent.'}` : `✗ ${res.error ?? 'Failed.'}`);
+  };
 
   // Reference-only values. These are shown for context but NOT persisted (no
   // schema columns for them). The cron secret lives in the CRON_SECRET_TOKEN env
@@ -225,6 +238,35 @@ export default function SettingsPage() {
                 <div className="text-xs font-medium">
                   Adapter drains Priority 1 fully, then Priority 2, then Priority 3. Templates enforce <code className="bg-white px-1 py-0.5 rounded font-mono font-bold text-slate-800">{"{{student_name}}"}</code> and <code className="bg-white px-1 py-0.5 rounded font-mono font-bold text-slate-800">{"{{pronoun}}"}</code> merge fields.
                 </div>
+              </div>
+
+              {/* SEND TEST EMAIL - verify Resend delivery */}
+              <div className="p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2">
+                <div className="font-extrabold text-slate-800">Send a test email</div>
+                <div className="text-xs font-medium text-slate-500 normal-case">
+                  Use this after verifying your Resend domain to confirm real delivery. Sends one email to the address below.
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="flex-1 bg-slate-50 border rounded-xl p-2.5 text-slate-900 font-medium"
+                  />
+                  <button
+                    onClick={handleSendTest}
+                    disabled={testing}
+                    className="px-4 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-extrabold text-xs shadow-sm disabled:opacity-50"
+                  >
+                    {testing ? 'Sending...' : 'Send Test Email'}
+                  </button>
+                </div>
+                {testResult && (
+                  <div className={`text-xs font-semibold normal-case ${testResult.startsWith('✓') ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {testResult}
+                  </div>
+                )}
               </div>
             </div>
           )}

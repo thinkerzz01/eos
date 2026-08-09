@@ -44,6 +44,21 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Email readiness (test tool + payment-received email)
+
+`tsc` clean. Making the email side complete before the Resend domain goes live.
+- **Send test email** - Settings -> Notifications tab has an admin "Send Test Email"
+  tool (`sendTestEmail` action) to verify Resend delivery once the domain is verified.
+- **payment_received** template was defined but never triggered - `recordPayment`
+  now enqueues it to the parent's email (best-effort; queued, drained by the cron).
+- Confirmed the rest of the email system is wired: invites (provisionLogin), password
+  resets, fee_due / grace_ending / class_reminder / follow_up (reminders cron), and
+  monthly reports all enqueue/send. `demo_confirmed` intentionally left to Google
+  Calendar's own invite email (avoids double-emailing on demo booking).
+- All email delivery still gated on verifying a Resend domain + setting RESEND_FROM.
+
+---
+
 ## 2026-08-09 · Testing round batch 2 (C, A2/A3, D1, E2, F/G)
 
 `tsc` clean throughout. Worked down the owner's testing list:

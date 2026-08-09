@@ -9,6 +9,8 @@
 // The health engine and the fee badge both read students.fee_status, so we keep
 // it in sync here.
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
+import { enqueueNotification } from '@/lib/notifications/enqueue';
 import { revalidatePath } from 'next/cache';
 
 const METHOD_DB: Record<string, string> = {
@@ -60,21 +62,47 @@ export async function recordPayment(input: {
 
   const { data: voucher } = await supabase
     .from('vouchers')
-    .select('id,amount,student_id,status')
+    .select('id,amount,student_id,status,students(name,parent_name,email,gender)')
     .eq('id', input.voucherId)
     .is('deleted_at', null)
     .maybeSingle();
   if (!voucher) return { ok: false, error: 'Voucher not found.' };
 
-  const { error: payErr } = await supabase.from('payments').insert({
-    org_id: orgId,
-    voucher_id: input.voucherId,
-    amount: input.amount,
-    method: METHOD_DB[input.method] ?? 'other',
-    reference: input.reference?.trim() || null,
-    reconciled_by: user.id,
-  });
+  const { data: newPayment, error: payErr } = await supabase
+    .from('payments')
+    .insert({
+      org_id: orgId,
+      voucher_id: input.voucherId,
+      amount: input.amount,
+      method: METHOD_DB[input.method] ?? 'other',
+      reference: input.reference?.trim() || null,
+      reconciled_by: user.id,
+    })
+    .select('id')
+    .single();
   if (payErr) return { ok: false, error: payErr.message };
+
+  // Email the parent a "payment received" note (best-effort; queued, not sent here).
+  const stu = Array.isArray((voucher as any).students) ? (voucher as any).students[0] : (voucher as any).students;
+  if (stu?.email) {
+    try {
+      await enqueueNotification(createAdminClient(), {
+        orgId,
+        type: 'payment_received',
+        priority: 2,
+        uniqueKey: `payment_received:${(newPayment as any).id}`,
+        payload: {
+          student_name: stu.name ?? '',
+          parent_name: stu.parent_name ?? '',
+          email: stu.email,
+          gender: stu.gender ?? '',
+          amount: input.amount,
+        },
+      });
+    } catch {
+      /* never block a recorded payment on the notification queue */
+    }
+  }
 
   const { data: pays } = await supabase
     .from('payments')

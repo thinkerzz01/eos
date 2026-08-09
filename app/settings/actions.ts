@@ -7,10 +7,45 @@
 // persisted here.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { sendViaResend } from '@/lib/notifications/resend';
 
 export interface ActionResult {
   ok: boolean;
   error?: string;
+}
+
+/**
+ * Send a one-off test email to confirm Resend is delivering (admin-only). Use it
+ * after verifying a Resend domain + setting RESEND_FROM to confirm real delivery.
+ */
+export async function sendTestEmail(toEmail: string): Promise<{ ok: boolean; error?: string; info?: string }> {
+  const email = toEmail?.trim();
+  if (!email || !/^\S+@\S+\.\S+$/.test(email)) return { ok: false, error: 'Enter a valid email address.' };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (profile?.role !== 'admin') return { ok: false, error: 'Only an admin can send a test email.' };
+
+  const from = process.env.RESEND_FROM ?? 'onboarding@resend.dev';
+  const res = await sendViaResend(
+    email,
+    'Thinkerzz EOS - test email',
+    `This is a test email from Thinkerzz EOS.\n\nFrom: ${from}\n\nIf you received this, Resend is delivering correctly. If not, verify your sending domain in Resend and set RESEND_FROM to an address on it.\n\n- Thinkerzz`
+  );
+  if (!res.ok) return { ok: false, error: res.error ?? 'Send failed.' };
+  return {
+    ok: true,
+    info: `Sent from ${from}. If it does not arrive, your domain is not verified yet (or RESEND_FROM is unset).`,
+  };
 }
 
 export async function saveSettings(input: {
