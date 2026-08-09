@@ -33,3 +33,6 @@ _archive/
 # Google OAuth credentials file (contains client secret) - keep local only
 Google Claneder ID & Data.json
 *Google*ID*Data*.json
+
+# Sensitive - never commit
+recovery-codes.txt
