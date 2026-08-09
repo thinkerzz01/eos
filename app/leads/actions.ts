@@ -43,6 +43,12 @@ async function ctx() {
   return { supabase, user, orgId: (profile?.org_id as string) ?? null };
 }
 
+// "How did you find us?" label -> DB source enum (same set as the public booking).
+const SOURCE_MAP: Record<string, string> = {
+  Google: 'google', Facebook: 'facebook', Instagram: 'instagram',
+  WhatsApp: 'whatsapp', Referral: 'referral', 'Walk-in': 'walk_in', 'Walk In': 'walk_in',
+};
+
 /** Add a new lead. */
 export async function createLead(input: {
   studentName: string;
@@ -51,6 +57,7 @@ export async function createLead(input: {
   parentEmail?: string;
   program: string;
   subjects?: string;
+  source?: string;
   temperature?: 'Hot' | 'Warm' | 'Cold';
 }): Promise<ActionResult> {
   const studentName = input.studentName?.trim();
@@ -75,7 +82,7 @@ export async function createLead(input: {
     // leads.program is CAIE-only (nullable) — store only if valid, else leave null.
     program: ENROLLABLE_PROGRAMS.includes(input.program) ? input.program : null,
     subjects: input.subjects?.trim() || null,
-    source: 'walk_in',
+    source: SOURCE_MAP[input.source ?? ''] ?? 'walk_in',
     status: 'new',
     temperature: (input.temperature ?? 'Warm').toLowerCase(),
   });

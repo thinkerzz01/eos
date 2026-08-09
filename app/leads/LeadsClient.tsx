@@ -63,6 +63,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
     program: 'O Level',
     grade: 'Grade 10',
     subjects: 'Mathematics',
+    source: 'Walk-in',
     temperature: 'Hot' as 'Hot' | 'Warm' | 'Cold',
     notes: '',
   });
@@ -132,6 +133,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       parentEmail: newLeadData.parentEmail,
       program: newLeadData.program,
       subjects: newLeadData.subjects,
+      source: newLeadData.source,
       temperature: newLeadData.temperature,
     });
     setAddingLead(false);
@@ -146,6 +148,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
         program: 'O Level',
         grade: 'Grade 10',
         subjects: 'Mathematics',
+        source: 'Walk-in',
         temperature: 'Hot',
         notes: '',
       });
@@ -636,12 +639,35 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     <input type="text" value={newLeadData.parentPhone} onChange={(e) => setNewLeadData({ ...newLeadData, parentPhone: e.target.value })} placeholder="+92 300..." className="w-full bg-slate-50 border rounded-xl p-2 font-bold" />
                   </div>
                   <div>
+                    <label className="font-bold text-slate-700 block mb-1">Parent Email</label>
+                    <input type="email" value={newLeadData.parentEmail} onChange={(e) => setNewLeadData({ ...newLeadData, parentEmail: e.target.value })} placeholder="parent@example.com" className="w-full bg-slate-50 border rounded-xl p-2 font-bold" />
+                  </div>
+                  <div>
                     <label className="font-bold text-slate-700 block mb-1">Program</label>
                     <select value={newLeadData.program} onChange={(e) => setNewLeadData({ ...newLeadData, program: e.target.value })} className="w-full bg-slate-50 border rounded-xl p-2 font-bold">
                       {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                     </select>
                   </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Subject(s)</label>
+                    <input type="text" value={newLeadData.subjects} onChange={(e) => setNewLeadData({ ...newLeadData, subjects: e.target.value })} placeholder="e.g. Physics, Maths" className="w-full bg-slate-50 border rounded-xl p-2 font-bold" />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">How did they find us?</label>
+                    <select value={newLeadData.source} onChange={(e) => setNewLeadData({ ...newLeadData, source: e.target.value })} className="w-full bg-slate-50 border rounded-xl p-2 font-bold">
+                      {['Google', 'Facebook', 'Instagram', 'WhatsApp', 'Referral', 'Walk-in'].map((s) => (<option key={s} value={s}>{s}</option>))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Interest (Temperature)</label>
+                    <select value={newLeadData.temperature} onChange={(e) => setNewLeadData({ ...newLeadData, temperature: e.target.value as 'Hot' | 'Warm' | 'Cold' })} className="w-full bg-slate-50 border rounded-xl p-2 font-bold">
+                      <option value="Hot">Hot (very interested)</option>
+                      <option value="Warm">Warm (considering)</option>
+                      <option value="Cold">Cold (just inquiring)</option>
+                    </select>
+                  </div>
                 </div>
+                <p className="text-[11px] text-slate-400 font-medium">Temperature = how likely this lead is to enroll: Hot (ready), Warm (considering), Cold (just asking). It helps prioritize follow-ups.</p>
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t">
