@@ -3,6 +3,7 @@
 import React from 'react';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { DataTable } from '@/components/ui/DataTable';
+import type { PaymentInfo } from '@/lib/config/paymentInfo';
 
 export interface VoucherRow {
   id: string;
@@ -15,7 +16,13 @@ export interface VoucherRow {
   status: string;
 }
 
-export function FeesClient({ initialVouchers }: { initialVouchers: VoucherRow[] }) {
+export function FeesClient({
+  initialVouchers,
+  paymentInfo,
+}: {
+  initialVouchers: VoucherRow[];
+  paymentInfo?: PaymentInfo | null;
+}) {
   const columns = [
     { header: 'Voucher No', accessorKey: 'voucher_no' as keyof VoucherRow },
     { header: 'Student', accessorKey: 'student_name' as keyof VoucherRow },
@@ -54,6 +61,39 @@ export function FeesClient({ initialVouchers }: { initialVouchers: VoucherRow[] 
       subtitle="Issue fee vouchers, record payments/partial payments, handle grace decisions, and view financial ledger."
       allowedRoles={['admin', 'student']} // Manager DENIED per locked policy
     >
+      {paymentInfo && (
+        <div className="mb-4 rounded-lg border border-slate-700 bg-slate-800/50 p-4">
+          <h3 className="text-sm font-semibold text-slate-200">How to pay your fee</h3>
+          <div className="mt-2 grid gap-1 text-sm text-slate-300">
+            {paymentInfo.bankTitle && (
+              <div>
+                Bank Title:{' '}
+                <span className="font-medium text-slate-100">{paymentInfo.bankTitle}</span>
+              </div>
+            )}
+            {paymentInfo.bankAccountNo && (
+              <div>
+                Account No:{' '}
+                <span className="font-mono text-slate-100">{paymentInfo.bankAccountNo}</span>
+              </div>
+            )}
+            {paymentInfo.bankIban && (
+              <div>
+                IBAN: <span className="font-mono text-slate-100">{paymentInfo.bankIban}</span>
+              </div>
+            )}
+            {paymentInfo.wallet && (
+              <div>
+                Mobile Wallet:{' '}
+                <span className="font-medium text-slate-100">{paymentInfo.wallet}</span>
+              </div>
+            )}
+          </div>
+          <p className="mt-2 text-xs text-slate-400">
+            After paying, share your receipt with the academy so your voucher is marked paid.
+          </p>
+        </div>
+      )}
       <DataTable
         columns={columns}
         data={initialVouchers}

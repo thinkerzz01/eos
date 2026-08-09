@@ -44,6 +44,16 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Fee vouchers now show where to pay
+
+`tsc` clean. The `BANK_NAME_TITLE` / `BANK_ACCOUNT_NO` / `BANK_ACCOUNT_IBAN` /
+`MOBILE_WALLET_INFO` env vars existed but nothing read them, so a student's voucher
+never showed the academy's bank/JazzCash details. Added `lib/config/paymentInfo.ts`
+(server-only reader; returns null if none set) and a "How to pay your fee" panel on
+the student Fees screen (`app/fees`). Hidden automatically when the vars are unset.
+
+---
+
 ## 2026-08-09 · Auto-provision teacher & student portal logins
 
 `tsc` clean. `/set-password` page verified rendering (shows "invalid link" with no
