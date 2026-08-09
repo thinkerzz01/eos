@@ -9,16 +9,16 @@ import {
   KeyRound,
   Mail,
   ArrowRight,
-  ShieldCheck,
   Sun,
   Moon,
-  GraduationCap,
-  CheckCircle2,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { showToast } = useToast();
@@ -152,14 +152,26 @@ export default function LoginPage() {
                 <input
                   id="password"
                   name="password"
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm rounded-xl pl-10 pr-4 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400 transition-all font-medium"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm rounded-xl pl-10 pr-10 py-3 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 placeholder:text-slate-400 transition-all font-medium"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                  title={showPassword ? 'Hide Password' : 'Show Password'}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
               </div>
               <div className="mt-1.5 text-right">
                 <button
@@ -188,32 +200,10 @@ export default function LoginPage() {
               )}
             </button>
           </form>
-
-          {/* Role Access Information */}
-          <div className="pt-6 border-t border-slate-200/80 dark:border-slate-800/80">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 mb-3">
-              <ShieldCheck className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-              <span>Multi-Role Access Control</span>
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-xs font-mono">
-              <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-xl">
-                <span className="text-indigo-600 dark:text-indigo-400 font-bold">Admin:</span> Full Control
-              </div>
-              <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-xl">
-                <span className="text-sky-600 dark:text-sky-400 font-bold">Manager:</span> Ops Only
-              </div>
-              <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-xl">
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold">Teacher:</span> Own Classes
-              </div>
-              <div className="p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800/80 rounded-xl">
-                <span className="text-purple-600 dark:text-purple-400 font-bold">Student:</span> Parent Login
-              </div>
-            </div>
-          </div>
         </div>
 
         <p className="mt-6 text-center text-xs font-medium text-slate-500 dark:text-slate-400">
-          Question · Think · Achieve · Thinkerzz EOS v3.1
+          Question · Think · Achieve
         </p>
       </div>
     </div>
