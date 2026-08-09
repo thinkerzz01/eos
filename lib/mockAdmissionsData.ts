@@ -12,7 +12,7 @@ export interface Lead {
   subjects: string[];
   stage: 'New' | 'Contacted' | 'Demo Set' | 'Demo Done' | 'Won' | 'Lost';
   temperature: 'Hot' | 'Warm' | 'Cold';
-  source: 'Public Booking' | 'WhatsApp' | 'Walk-in' | 'Facebook' | 'Referral';
+  source: 'Google' | 'Instagram' | 'Public Booking' | 'WhatsApp' | 'Walk-in' | 'Facebook' | 'Referral';
   createdDate: string;
   notes: string;
   assignedTeacherId?: string;

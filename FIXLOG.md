@@ -44,6 +44,27 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Testing round fixes - batch 1 (source, payment, voucher date)
+
+`tsc` clean. First batch from the owner's go-live testing pass.
+- **A1 Lead source** - `lib/data/leads.ts` forced google/instagram to the label
+  "Public Booking", hiding the real source from Leads/Demos (marketing data). Now
+  google -> Google, instagram -> Instagram; widened the `Lead.source` type.
+- **C2 Payment methods** - vouchers now offer only Bank Transfer + JazzCash
+  (removed Cash + Easypaisa) per owner.
+- **C1 Voucher paid date** - replaced the free-text "Fee Period" with a "Date Fee
+  Paid" date picker; the next due date auto-fills to +30 days (still editable), and
+  the period is derived from the paid month.
+
+Remaining from the testing pass (queued): A2 manual-lead full fields, A3 lead
+temperature, B1 proper convert/enrollment form, B2 first-month-paid on convert,
+C3 voucher preview + WhatsApp send, C4 payment-ledger actions, C5 ledger-vs-voucher
+explainer, D1 pay-teacher action, E1 fewer icons, E2 no dashes in report summary,
+E3 print-report redesign (needs screenshot), F1-3 finance graphs/forecast/collection,
+G1-2 dashboard filters + active-students count.
+
+---
+
 ## 2026-08-09 · Booking page: simpler time picker
 
 Verified in-browser (selecting 4 / 30 / PM shows "You chose: 4:30 PM"), no console

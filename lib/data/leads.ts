@@ -31,8 +31,8 @@ const SOURCE_UI: Record<LeadRow['source'], Lead['source']> = {
   whatsapp: 'WhatsApp',
   referral: 'Referral',
   walk_in: 'Walk-in',
-  google: 'Public Booking',
-  instagram: 'Public Booking',
+  google: 'Google',
+  instagram: 'Instagram',
 };
 
 function mapRow(r: LeadRow): Lead {
@@ -48,7 +48,7 @@ function mapRow(r: LeadRow): Lead {
     subjects: r.subjects ? r.subjects.split(',').map((s) => s.trim()).filter(Boolean) : [],
     stage: STAGE_UI[r.status] ?? 'New',
     temperature: (r.temperature.charAt(0).toUpperCase() + r.temperature.slice(1)) as Lead['temperature'],
-    source: SOURCE_UI[r.source] ?? 'Public Booking',
+    source: SOURCE_UI[r.source] ?? 'Walk-in',
     createdDate: r.created_at,
     notes: r.lost_reason ?? '',
   };

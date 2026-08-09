@@ -28,6 +28,21 @@ import {
   Sparkles,
 } from 'lucide-react';
 
+// Add N days to a YYYY-MM-DD date, returned as YYYY-MM-DD (PKT calendar).
+function addDaysPKT(ymd: string, n: number): string {
+  const dt = new Date(`${ymd}T00:00:00+05:00`);
+  dt.setDate(dt.getDate() + n);
+  return dt.toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+}
+// Human month label for a date, e.g. "September 2026" (used as the voucher period).
+function monthLabelPKT(ymd: string): string {
+  return new Date(`${ymd}T00:00:00+05:00`).toLocaleDateString('en-GB', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Asia/Karachi',
+  });
+}
+
 export function VouchersClient({
   initialVouchers,
   initialPayments,
@@ -51,9 +66,9 @@ export function VouchersClient({
   // CREATE VOUCHER MODAL STATE
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newStudentId, setNewStudentId] = useState('');
-  const [newPeriod, setNewPeriod] = useState('');
+  const [newPaidDate, setNewPaidDate] = useState(''); // date the student paid this fee
   const [newAmount, setNewAmount] = useState('');
-  const [newDueDate, setNewDueDate] = useState('');
+  const [newDueDate, setNewDueDate] = useState(''); // auto = paid date + 30 days (editable)
   const [creating, setCreating] = useState(false);
   const [selectedStatusTab, setSelectedStatusTab] = useState<string>('All Vouchers');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -61,7 +76,7 @@ export function VouchersClient({
   // MODAL STATES
   const [partialPayVoucher, setPartialPayVoucher] = useState<FeeVoucher | null>(null);
   const [payAmountInput, setPayAmountInput] = useState<string>('');
-  const [payMethod, setPayMethod] = useState<'Bank Transfer' | 'Cash' | 'JazzCash' | 'Easypaisa'>('Bank Transfer');
+  const [payMethod, setPayMethod] = useState<'Bank Transfer' | 'JazzCash'>('Bank Transfer');
 
   const [refundVoucher, setRefundVoucher] = useState<FeeVoucher | null>(null);
   const [refundAmountInput, setRefundAmountInput] = useState<string>('');
@@ -157,12 +172,13 @@ export function VouchersClient({
     const amountNum = parseFloat(newAmount);
     if (!newStudentId) { alert('Please select a student.'); return; }
     if (isNaN(amountNum) || amountNum <= 0) { alert('Please enter a valid fee amount.'); return; }
-    if (!newDueDate) { alert('Please select a due date.'); return; }
+    if (!newPaidDate) { alert('Please select the date the fee was paid.'); return; }
+    if (!newDueDate) { alert('Please select a next due date.'); return; }
 
     setCreating(true);
     const res = await createVoucher({
       studentId: newStudentId,
-      period: newPeriod,
+      period: monthLabelPKT(newPaidDate), // derived from the paid date
       amount: amountNum,
       dueDate: newDueDate,
     });
@@ -171,7 +187,7 @@ export function VouchersClient({
     if (res.ok) {
       setShowCreateModal(false);
       setNewStudentId('');
-      setNewPeriod('');
+      setNewPaidDate('');
       setNewAmount('');
       setNewDueDate('');
       router.refresh();
@@ -439,14 +455,21 @@ export function VouchersClient({
                 </div>
 
                 <div>
-                  <label className="text-slate-700 dark:text-slate-300 block mb-1">Fee Period</label>
+                  <label className="text-slate-700 dark:text-slate-300 block mb-1">Date Fee Paid</label>
                   <input
-                    type="text"
-                    value={newPeriod}
-                    onChange={(e) => setNewPeriod(e.target.value)}
-                    placeholder="e.g. August 2026"
+                    type="date"
+                    value={newPaidDate}
+                    onChange={(e) => {
+                      const d = e.target.value;
+                      setNewPaidDate(d);
+                      // Auto-set the next due date to 30 days later (still editable below).
+                      if (d) setNewDueDate(addDaysPKT(d, 30));
+                    }}
                     className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100"
                   />
+                  <p className="text-xs text-slate-500 font-medium mt-1">
+                    The day the student paid this month&apos;s fee. The next due date is set to 30 days later automatically.
+                  </p>
                 </div>
 
                 <div>
@@ -461,14 +484,16 @@ export function VouchersClient({
                 </div>
 
                 <div>
-                  <label className="text-slate-700 dark:text-slate-300 block mb-1">Due Date</label>
+                  <label className="text-slate-700 dark:text-slate-300 block mb-1">Next Due Date (auto +30 days)</label>
                   <input
                     type="date"
                     value={newDueDate}
                     onChange={(e) => setNewDueDate(e.target.value)}
                     className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100"
                   />
-                  <p className="text-xs text-slate-500 font-medium mt-1">A 3-day grace deadline is set automatically.</p>
+                  <p className="text-xs text-slate-500 font-medium mt-1">
+                    Auto-filled to 30 days after the paid date. Edit it only if you need a different due date. A 3-day grace deadline is added automatically.
+                  </p>
                 </div>
               </div>
 
@@ -524,9 +549,7 @@ export function VouchersClient({
                     className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900"
                   >
                     <option value="Bank Transfer">Bank Transfer</option>
-                    <option value="Cash">Cash</option>
                     <option value="JazzCash">JazzCash</option>
-                    <option value="Easypaisa">Easypaisa</option>
                   </select>
                 </div>
               </div>
