@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { sendViaResend } from '@/lib/notifications/resend';
+import { renderEmailHtml } from '@/lib/notifications/emailLayout';
 
 export interface ActionResult {
   ok: boolean;
@@ -36,11 +37,13 @@ export async function sendTestEmail(toEmail: string): Promise<{ ok: boolean; err
   if (profile?.role !== 'admin') return { ok: false, error: 'Only an admin can send a test email.' };
 
   const from = process.env.RESEND_FROM ?? 'onboarding@resend.dev';
-  const res = await sendViaResend(
-    email,
-    'Thinkerzz EOS - test email',
-    `This is a test email from Thinkerzz EOS.\n\nFrom: ${from}\n\nIf you received this, Resend is delivering correctly. If not, verify your sending domain in Resend and set RESEND_FROM to an address on it.\n\n- Thinkerzz`
-  );
+  const bodyText = `This is a test email from Thinkerzz EOS.\n\nFrom: ${from}\n\nIf you received this, Resend is delivering correctly.\n\n- Thinkerzz`;
+  const html = renderEmailHtml({
+    heading: 'Test email',
+    preheader: 'Confirming Thinkerzz email delivery.',
+    bodyText: `This is a test email from Thinkerzz EOS.\n\nFrom: ${from}\n\nIf you received this, your email delivery is working correctly.`,
+  });
+  const res = await sendViaResend(email, 'Thinkerzz EOS - test email', bodyText, html);
   if (!res.ok) return { ok: false, error: res.error ?? 'Send failed.' };
   return {
     ok: true,

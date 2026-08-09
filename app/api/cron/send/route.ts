@@ -8,6 +8,7 @@ import { verifyCronBearerHeader } from '@/lib/security';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { TEMPLATES, buildVars, renderTemplate, type NotificationType } from '@/lib/notifications/templates';
 import { sendViaResend } from '@/lib/notifications/resend';
+import { renderEmailHtml } from '@/lib/notifications/emailLayout';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -85,8 +86,9 @@ export async function GET(req: NextRequest) {
     const vars = buildVars(payload);
     const subject = renderTemplate(tpl.subject, vars);
     const body = renderTemplate(tpl.body, vars);
+    const html = renderEmailHtml({ bodyText: body, preheader: subject });
 
-    const result = await sendViaResend(to, subject, body);
+    const result = await sendViaResend(to, subject, body, html);
     if (result.ok) {
       await admin.from('notifications').update({ status: 'sent' }).eq('id', row.id);
       sent++;

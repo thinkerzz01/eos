@@ -14,6 +14,7 @@ import 'server-only';
 // service-role key (server-only).
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendViaResend } from '@/lib/notifications/resend';
+import { renderEmailHtml } from '@/lib/notifications/emailLayout';
 
 export interface ProvisionResult {
   ok: boolean;
@@ -123,14 +124,20 @@ export async function provisionLogin(opts: {
     return { ok: false, error: 'Login created but no set-password link was returned.' };
   }
   const copy = ROLE_COPY[opts.role];
-  const body =
+  const bodyText =
     `Hi ${opts.name},\n\n` +
     `${copy.intro}\n\n` +
-    `Set your password here (link is single-use):\n${actionLink}\n\n` +
+    `Set your password here (single-use link):\n${actionLink}\n\n` +
     `After setting it, sign in at ${siteUrl()}/login with this email.\n\n` +
     `- Thinkerzz Academy`;
+  const html = renderEmailHtml({
+    heading: opts.role === 'teacher' ? 'Welcome to Thinkerzz' : 'Welcome to Thinkerzz',
+    preheader: 'Set your password to access your Thinkerzz portal.',
+    bodyText: `Hi ${opts.name},\n\n${copy.intro}\n\nAfter you set your password, sign in at ${siteUrl()}/login using this email address.`,
+    cta: { label: 'Set your password', url: actionLink },
+  });
 
-  const sent = await sendViaResend(email, copy.subject, body);
+  const sent = await sendViaResend(email, copy.subject, bodyText, html);
   if (!sent.ok) {
     return { ok: false, error: `Login ready but email failed to send: ${sent.error ?? 'unknown'}` };
   }

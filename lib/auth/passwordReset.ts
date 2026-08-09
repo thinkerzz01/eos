@@ -10,6 +10,7 @@ import 'server-only';
 import crypto from 'crypto';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendViaResend } from '@/lib/notifications/resend';
+import { renderEmailHtml } from '@/lib/notifications/emailLayout';
 
 type Kind = 'teacher' | 'student';
 
@@ -60,12 +61,18 @@ export async function sendResetById(
   const link = data?.properties?.action_link;
   if (error || !link) return { ok: false, error: error?.message ?? 'Could not create a reset link.' };
 
-  const body =
+  const bodyText =
     `A password reset was requested for your Thinkerzz account.\n\n` +
     `Username: ${target.email}\n\n` +
     `Set a new password (single-use link):\n${link}\n\n` +
     `If you did not request this, you can ignore this email.\n\n- Thinkerzz Academy`;
-  const sent = await sendViaResend(target.email, 'Reset your Thinkerzz password', body);
+  const html = renderEmailHtml({
+    heading: 'Reset your password',
+    preheader: 'Set a new password for your Thinkerzz account.',
+    bodyText: `A password reset was requested for your Thinkerzz account.\n\nUsername: ${target.email}\n\nIf you did not request this, you can safely ignore this email.`,
+    cta: { label: 'Set a new password', url: link },
+  });
+  const sent = await sendViaResend(target.email, 'Reset your Thinkerzz password', bodyText, html);
   if (!sent.ok) return { ok: false, error: `Reset link created but the email failed to send: ${sent.error}` };
   return { ok: true };
 }

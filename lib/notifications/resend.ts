@@ -9,7 +9,8 @@ export interface SendResult {
 export async function sendViaResend(
   to: string,
   subject: string,
-  text: string
+  text: string,
+  html?: string
 ): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
   if (!key) return { ok: false, error: 'RESEND_API_KEY not configured' };
@@ -23,7 +24,8 @@ export async function sendViaResend(
         Authorization: `Bearer ${key}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ from, to, subject, text }),
+      // text is kept as the plain-text fallback; html renders the branded version.
+      body: JSON.stringify({ from, to, subject, text, ...(html ? { html } : {}) }),
     });
     if (res.ok) return { ok: true };
     const detail = await res.text();
