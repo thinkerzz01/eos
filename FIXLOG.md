@@ -44,6 +44,31 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Fix: every non-admin login landed on the student portal
+
+`tsc` clean. **Bug:** `getServerRole()` (app/layout.tsx) resolved the signed-in
+user's role with a plain `from('profiles').select('role')`, which is subject to
+RLS - and there was NO policy letting a non-admin read their own profile row. So
+the query returned nothing for teacher/manager/student and the code fell back to
+'student', sending everyone to the student portal. The same gap blocked a manager
+from reading their org_id when creating students.
+
+**Fix (two parts):**
+- `app/layout.tsx` - resolve role via the `current_user_role()` SECURITY DEFINER
+  RPC instead of a plain RLS-gated select. Works without any per-role read policy.
+- `schema.sql` - add `own_profile_read` policy: `FOR SELECT USING (user_id =
+  auth.uid())` so any signed-in user can read their OWN profile (needed for
+  manager org_id lookups and any other direct profile reads). Restricted to the
+  user's own row - reads no one else's.
+
+**Run once on the live DB (also in schema.sql now):**
+```sql
+DROP POLICY IF EXISTS own_profile_read ON public.profiles;
+CREATE POLICY own_profile_read ON public.profiles FOR SELECT USING (user_id = auth.uid());
+```
+
+---
+
 ## 2026-08-09 · Fee vouchers now show where to pay
 
 `tsc` clean. The `BANK_NAME_TITLE` / `BANK_ACCOUNT_NO` / `BANK_ACCOUNT_IBAN` /

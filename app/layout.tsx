@@ -16,13 +16,11 @@ async function getServerRole(): Promise<UserRole> {
       data: { user },
     } = await supabase.auth.getUser();
     if (!user) return 'student';
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role')
-      .eq('user_id', user.id)
-      .is('deleted_at', null)
-      .maybeSingle();
-    return ((profile?.role as UserRole) ?? 'student');
+    // Use the SECURITY DEFINER helper so role resolution does NOT depend on a
+    // per-role RLS read policy on `profiles` (non-admins have none, which made
+    // every non-admin fall back to 'student' and land on the student portal).
+    const { data: role } = await supabase.rpc('current_user_role');
+    return ((role as UserRole) ?? 'student');
   } catch {
     return 'student';
   }

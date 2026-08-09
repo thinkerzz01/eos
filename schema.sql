@@ -696,6 +696,14 @@ BEGIN
     END LOOP;
 END $$;
 
+-- Every signed-in user may read their OWN profile row (role/org resolution).
+-- Without this, non-admins cannot read their own profile via a normal query, so
+-- the app can't resolve their role/org (it fell back to least-privilege 'student',
+-- sending every non-admin to the student portal, and blocked managers from
+-- reading their org_id when creating students). Restricted to the user's own row.
+DROP POLICY IF EXISTS own_profile_read ON public.profiles;
+CREATE POLICY own_profile_read ON public.profiles FOR SELECT USING (user_id = auth.uid());
+
 -- 5.3 RLS Policies: Manager (Operational access MINUS Finance, Pay, Settings, Audit Log)
 -- Manager Read/Write allowed on: leads, lead_communications, demos, students, student_subjects, syllabus_progress, class_sessions, attendance, class_notes, homework, tests, announcements, announcement_targets, tickets, ticket_messages, documents, referrals, ad_spend
 DO $$
