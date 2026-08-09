@@ -107,6 +107,17 @@ export async function assembleReportFacts(
   };
 }
 
+// Remove "AI dashes" from generated text: em/en dashes and spaced hyphens become
+// commas or plain spacing, so parent-facing reports never contain a "-" style dash.
+function stripDashes(s: string): string {
+  return s
+    .replace(/\s*[—–]\s*/g, ', ') // em/en dash -> comma
+    .replace(/\s+-\s+/g, ', ') // spaced hyphen -> comma
+    .replace(/,\s*,/g, ',') // tidy any double commas
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 /** Deterministic report text. These numbers are fixed by our code. */
 export function assembleReportText(f: ReportFacts): string {
   return (
@@ -152,7 +163,7 @@ export async function phraseReport(f: ReportFacts): Promise<string> {
     if (!res.ok) return assembled;
     const json: any = await res.json();
     const text = json?.choices?.[0]?.message?.content;
-    return typeof text === 'string' && text.trim() ? text.trim() : assembled;
+    return typeof text === 'string' && text.trim() ? stripDashes(text.trim()) : assembled;
   } catch {
     return assembled;
   }
