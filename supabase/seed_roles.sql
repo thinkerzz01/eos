@@ -8,7 +8,7 @@
 --   Supabase Dashboard -> Authentication -> Users -> "Add user"
 --   Add these three emails, each with a password, "Auto Confirm User" ticked:
 --     - manager@thinkerzz.com
---     - teacher@thinkerzz.com
+--     - muzammal@thinkerzz.com
 --     - student@thinkerzz.com
 --   (Change the emails below if you want different ones - keep them in sync.)
 --
@@ -23,7 +23,7 @@ DECLARE
 
     -- >>> EDIT these to the exact emails you created in STEP 1 <<<
     v_manager_email TEXT := 'manager@thinkerzz.com';
-    v_teacher_email TEXT := 'teacher@thinkerzz.com';
+    v_teacher_email TEXT := 'muzammal@thinkerzz.com';
     v_student_email TEXT := 'student@thinkerzz.com';
 
     v_user_id      UUID;
@@ -32,7 +32,7 @@ DECLARE
 BEGIN
     -- Make sure the org exists (harmless if it already does).
     INSERT INTO public.orgs (id, name)
-    VALUES (v_org_id, 'Thinkerzz Academy')
+    VALUES (v_org_id, 'Thinkerzz')
     ON CONFLICT (id) DO NOTHING;
 
     -- ---- MANAGER ----------------------------------------------------------
@@ -79,7 +79,7 @@ BEGIN
              monthly_fee, next_due_date)
         VALUES
             (v_org_id, 'Test Student', 'Test Parent', '03000000001', v_student_email,
-             'O Level', 'May/June 2027', 5000, CURRENT_DATE + INTERVAL '30 days')
+             'O Level (O1)', 'May/June 2027', 5000, CURRENT_DATE + INTERVAL '30 days')
         RETURNING id INTO v_student_id;
     END IF;
     DELETE FROM public.profiles WHERE email = v_student_email AND user_id <> v_user_id;

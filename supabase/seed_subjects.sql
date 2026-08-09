@@ -8,7 +8,7 @@ DECLARE
     v_org  UUID := '00000000-0000-0000-0000-000000000001';
     prog   TEXT;
     subj   TEXT;
-    progs  TEXT[] := ARRAY['O Level', 'A Level', 'IGCSE'];
+    progs  TEXT[] := ARRAY['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE'];
     subjs  TEXT[] := ARRAY[
         'Mathematics', 'Additional Mathematics', 'Physics', 'Chemistry', 'Biology',
         'Computer Science', 'Economics', 'Accounting', 'Business Studies',
@@ -18,7 +18,7 @@ BEGIN
     -- Make sure the org exists so the FK below never fails, regardless of
     -- whether seed_admin.sql has run yet.
     INSERT INTO public.orgs (id, name)
-    VALUES (v_org, 'Thinkerzz Academy')
+    VALUES (v_org, 'Thinkerzz')
     ON CONFLICT (id) DO NOTHING;
 
     FOREACH prog IN ARRAY progs LOOP

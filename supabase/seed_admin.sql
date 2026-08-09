@@ -34,7 +34,7 @@ DECLARE
 BEGIN
     -- Ensure the organisation exists.
     INSERT INTO public.orgs (id, name)
-    VALUES (v_org_id, 'Thinkerzz Academy')
+    VALUES (v_org_id, 'Thinkerzz')
     ON CONFLICT (id) DO NOTHING;
 
     -- Find the auth user created in Step 1.
