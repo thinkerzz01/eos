@@ -44,6 +44,22 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-09 · Strategic sequential IDs (TZ-STU-0001, ...)
+
+`tsc` clean. Display IDs were derived from the random UUID (looked random). Now each
+record has a real sequential `code` from a Postgres sequence:
+- students TZ-STU-0001, teachers TZ-TCH-0001, leads TZ-LEAD-0001, vouchers
+  TZ-VCH-0001, payments/receipts TZ-RCP-0001, teacher_payouts TZ-PAY-0001.
+- schema.sql + `supabase/migrations/2026-08-09_strategic_codes.sql` add a per-table
+  sequence, a `code` column with a DB default, and a unique index; the migration
+  also backfills existing rows in creation order. voucher_no is now nullable (legacy);
+  the app stopped generating the random VCH-####. UUID stays the internal key.
+- Data layers show `code` (fallback to the old derived id if a row has none yet).
+
+**RUN on the live DB:** `supabase/migrations/2026-08-09_strategic_codes.sql`.
+
+---
+
 ## 2026-08-09 · Remaining items: F1 graphs, G1 filter, E3 print, E1 icons
 
 `tsc` clean.

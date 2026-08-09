@@ -29,7 +29,7 @@ function mapRow(r: any): FeeVoucher {
     r.status !== 'paid' && !!graceDeadline && todayPKT > graceDeadline;
   return {
     id: r.id,
-    voucherNo: r.voucher_no,
+    voucherNo: r.code ?? r.voucher_no,
     studentId: r.student_id,
     studentName: student?.name ?? '',
     parentName: student?.parent_name ?? '',
@@ -54,7 +54,7 @@ export async function getVouchers(): Promise<FeeVoucher[]> {
 
   const { data, error } = await supabase
     .from('vouchers')
-    .select('id,student_id,voucher_no,period,amount,due_date,grace_deadline,status,students(name,parent_name,phone,program),payments(amount)')
+    .select('id,code,student_id,voucher_no,period,amount,due_date,grace_deadline,status,students(name,parent_name,phone,program),payments(amount)')
     .is('deleted_at', null)
     .order('due_date', { ascending: false });
 

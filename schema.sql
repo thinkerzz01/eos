@@ -1049,3 +1049,39 @@ REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon;
 -- left with EXECUTE only on the two functions granted above.
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC;
 GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated, service_role;
+
+-- ============================================================================
+-- STRATEGIC HUMAN-READABLE CODES (TZ-STU-0001, TZ-TCH-0001, ...)
+-- Sequential `code` per record from a Postgres sequence (not random). The hidden
+-- UUID stays the internal key. See supabase/migrations/2026-08-09_strategic_codes.sql.
+-- ============================================================================
+CREATE SEQUENCE IF NOT EXISTS students_code_seq;
+ALTER TABLE public.students ADD COLUMN IF NOT EXISTS code TEXT;
+ALTER TABLE public.students ALTER COLUMN code SET DEFAULT ('TZ-STU-' || to_char(nextval('students_code_seq'), 'FM0000'));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_students_code ON public.students(code);
+
+CREATE SEQUENCE IF NOT EXISTS teachers_code_seq;
+ALTER TABLE public.teachers ADD COLUMN IF NOT EXISTS code TEXT;
+ALTER TABLE public.teachers ALTER COLUMN code SET DEFAULT ('TZ-TCH-' || to_char(nextval('teachers_code_seq'), 'FM0000'));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_teachers_code ON public.teachers(code);
+
+CREATE SEQUENCE IF NOT EXISTS leads_code_seq;
+ALTER TABLE public.leads ADD COLUMN IF NOT EXISTS code TEXT;
+ALTER TABLE public.leads ALTER COLUMN code SET DEFAULT ('TZ-LEAD-' || to_char(nextval('leads_code_seq'), 'FM0000'));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_leads_code ON public.leads(code);
+
+CREATE SEQUENCE IF NOT EXISTS vouchers_code_seq;
+ALTER TABLE public.vouchers ADD COLUMN IF NOT EXISTS code TEXT;
+ALTER TABLE public.vouchers ALTER COLUMN voucher_no DROP NOT NULL;
+ALTER TABLE public.vouchers ALTER COLUMN code SET DEFAULT ('TZ-VCH-' || to_char(nextval('vouchers_code_seq'), 'FM0000'));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_vouchers_code ON public.vouchers(code);
+
+CREATE SEQUENCE IF NOT EXISTS payments_code_seq;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS code TEXT;
+ALTER TABLE public.payments ALTER COLUMN code SET DEFAULT ('TZ-RCP-' || to_char(nextval('payments_code_seq'), 'FM0000'));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_payments_code ON public.payments(code);
+
+CREATE SEQUENCE IF NOT EXISTS payouts_code_seq;
+ALTER TABLE public.teacher_payouts ADD COLUMN IF NOT EXISTS code TEXT;
+ALTER TABLE public.teacher_payouts ALTER COLUMN code SET DEFAULT ('TZ-PAY-' || to_char(nextval('payouts_code_seq'), 'FM0000'));
+CREATE UNIQUE INDEX IF NOT EXISTS uq_payouts_code ON public.teacher_payouts(code);

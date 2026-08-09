@@ -159,14 +159,11 @@ export async function convertLead(input: {
   // (finance tables are admin-only at the DB) - a manager convert still creates the
   // student; the paid voucher is just skipped with a warning.
   let warning: string | undefined;
-  const yymm = input.firstFeePaidDate.slice(0, 7).replace('-', '');
-  const voucherNo = `VCH-${yymm}-${Math.floor(1000 + Math.random() * 9000)}`;
   const { data: voucher, error: vErr } = await supabase
     .from('vouchers')
     .insert({
       org_id: orgId,
       student_id: studentId,
-      voucher_no: voucherNo,
       period: monthLabelYMD(input.firstFeePaidDate),
       amount: input.monthlyFee,
       due_date: input.firstFeePaidDate,

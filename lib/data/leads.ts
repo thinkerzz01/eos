@@ -4,6 +4,7 @@ import type { Lead } from '@/lib/mockAdmissionsData';
 
 interface LeadRow {
   id: string;
+  code?: string | null;
   name: string;
   parent_name: string | null;
   phone: string;
@@ -38,7 +39,7 @@ const SOURCE_UI: Record<LeadRow['source'], Lead['source']> = {
 function mapRow(r: LeadRow): Lead {
   return {
     id: r.id,
-    leadId: `LD-${r.id.split('-')[0].toUpperCase()}`,
+    leadId: r.code ?? `LD-${r.id.split('-')[0].toUpperCase()}`,
     parentName: r.parent_name ?? '',
     parentPhone: r.phone,
     parentEmail: r.email ?? '',
@@ -63,7 +64,7 @@ export async function getLeads(): Promise<Lead[]> {
 
   const { data, error } = await supabase
     .from('leads')
-    .select('id,name,parent_name,phone,email,program,subjects,source,status,temperature,next_follow_up,lost_reason,created_at')
+    .select('id,code,name,parent_name,phone,email,program,subjects,source,status,temperature,next_follow_up,lost_reason,created_at')
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 

@@ -232,13 +232,10 @@ export async function createVoucher(input: {
   const grace = new Date(input.dueDate);
   grace.setDate(grace.getDate() + 3); // locked: 3-day grace
 
-  const yymm = input.dueDate.slice(0, 7).replace('-', '');
-  const voucherNo = `VCH-${yymm}-${Math.floor(1000 + Math.random() * 9000)}`;
-
+  // voucher_no is legacy; the strategic TZ-VCH-#### `code` is set by the DB default.
   const { error } = await supabase.from('vouchers').insert({
     org_id: orgId,
     student_id: input.studentId,
-    voucher_no: voucherNo,
     period: input.period?.trim() || input.dueDate.slice(0, 7),
     amount: input.amount,
     due_date: input.dueDate,

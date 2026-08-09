@@ -21,7 +21,7 @@ function mapRow(r: any): PaymentTransaction {
   const amount = Number(r.amount || 0);
   return {
     id: r.id,
-    receiptNo: `RCP-${String(r.id).split('-')[0].toUpperCase()}`,
+    receiptNo: r.code ?? `RCP-${String(r.id).split('-')[0].toUpperCase()}`,
     voucherId: r.voucher_id,
     studentName: student?.name ?? '',
     amount,
@@ -42,7 +42,7 @@ export async function getPayments(): Promise<PaymentTransaction[]> {
 
   const { data, error } = await supabase
     .from('payments')
-    .select('id,voucher_id,amount,method,reference,reconciled_by,at,vouchers(voucher_no,students(name))')
+    .select('id,code,voucher_id,amount,method,reference,reconciled_by,at,vouchers(voucher_no,students(name))')
     .is('deleted_at', null)
     .order('at', { ascending: false });
 

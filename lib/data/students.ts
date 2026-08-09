@@ -23,6 +23,7 @@ import { computeHealth, type FeeStatus } from '@/lib/health';
 
 interface StudentRow {
   id: string;
+  code?: string | null;
   name: string;
   parent_name: string;
   phone: string;
@@ -77,7 +78,7 @@ function mapRow(r: StudentRow, acad?: StudentAcademics): Student {
 
   return {
     id: r.id,
-    stuId: `THM-${shortId(r.id)}`,
+    stuId: r.code ?? `THM-${shortId(r.id)}`,
     name: r.name,
     dob: '',
     gender: r.gender,
@@ -177,7 +178,7 @@ export async function getStudents(): Promise<Student[]> {
   const { data, error } = await supabase
     .from('students')
     .select(
-      'id,name,parent_name,phone,whatsapp,email,gender,program,exam_session,enrolled_at,months_committed,status,monthly_fee,fee_status,next_due_date'
+      'id,code,name,parent_name,phone,whatsapp,email,gender,program,exam_session,enrolled_at,months_committed,status,monthly_fee,fee_status,next_due_date'
     )
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
