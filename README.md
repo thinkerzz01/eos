@@ -69,9 +69,13 @@ program labels.
 **Fresh rebuild (recommended when you have only test data):**
 1. `supabase/reset_database.sql` (wipes `public`; auth logins survive)
 2. the whole `schema.sql`
-3. Re-seed: your admin SQL (`seed_admin.sql` for `admin@thinkerzz.com`),
-   `seed_subjects.sql`, and `seed_roles.sql` (manager/teacher/student test logins -
-   create the Auth users first in Authentication -> Users).
+3. Re-seed in ONE paste: `supabase/seed_all.sql` (org + admin + subjects + the
+   manager/teacher/student test logins). Create the Auth users in Authentication ->
+   Users first; the admin login is required, the others are skipped if missing.
+
+> After ANY reset you MUST re-seed - the reset wipes profiles/orgs/subjects. If the
+> admin profile is missing, admin login falls back to the student portal. `seed_all.sql`
+> fixes that in one run.
 
 Accounts: the very first admin is seeded by SQL because auth is deny-by-default. Real
 teachers/students get logins automatically (add teacher / enroll student). Turn OFF
