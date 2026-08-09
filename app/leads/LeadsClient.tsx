@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { Lead } from '@/lib/mockAdmissionsData';
-import { createLead, convertLead, updateLead } from './actions';
+import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
+import { createLead, convertLead, updateLead, softDeleteLead } from './actions';
 import {
   Users,
   UserCheck,
@@ -154,6 +155,17 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   };
 
   // CONVERT LEAD -> STUDENT (creates a real student, links + marks Won)
+  const handleDeleteLead = async (leadId: string, name: string) => {
+    if (!confirm(`Delete lead "${name}"? This removes it from the pipeline.`)) return;
+    const res = await softDeleteLead(leadId);
+    if (res.ok) {
+      setSelectedLeadDrawer(null);
+      router.refresh();
+    } else {
+      alert(res.error ?? 'Failed to delete lead.');
+    }
+  };
+
   const handleConvertLeadToStudent = async () => {
     if (!convertModalLead) return;
     const feeNum = parseFloat(convertFee);
@@ -421,7 +433,17 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     Lead ID: <span className="font-mono font-bold text-slate-800">{selectedLeadDrawer.leadId}</span> · Created {selectedLeadDrawer.createdDate}
                   </div>
                 </div>
-                <button onClick={() => setSelectedLeadDrawer(null)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600" /></button>
+                <div className="flex items-center gap-2">
+                  {role === 'admin' && (
+                    <button
+                      onClick={() => handleDeleteLead(selectedLeadDrawer.id, selectedLeadDrawer.studentName)}
+                      className="px-2.5 py-1 bg-rose-50 text-rose-600 font-extrabold text-xs rounded-lg border border-rose-200 hover:bg-rose-100 cursor-pointer"
+                    >
+                      Delete
+                    </button>
+                  )}
+                  <button onClick={() => setSelectedLeadDrawer(null)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600" /></button>
+                </div>
               </div>
 
               {/* QUICK ACTIONS */}
@@ -600,9 +622,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   <div>
                     <label className="font-bold text-slate-700 block mb-1">Program</label>
                     <select value={newLeadData.program} onChange={(e) => setNewLeadData({ ...newLeadData, program: e.target.value })} className="w-full bg-slate-50 border rounded-xl p-2 font-bold">
-                      <option value="O Level">O Level</option>
-                      <option value="A Level">A Level</option>
-                      <option value="IGCSE">IGCSE</option>
+                      {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                     </select>
                   </div>
                 </div>

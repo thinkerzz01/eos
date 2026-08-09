@@ -81,12 +81,6 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
           icon: Calendar,
           allowedRoles: ['admin', 'manager', 'teacher', 'student'],
         },
-        {
-          label: 'Subjects',
-          href: '/syllabus',
-          icon: BookOpen,
-          allowedRoles: ['admin', 'manager', 'teacher', 'student'],
-        },
       ],
     },
     {
@@ -102,6 +96,12 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
           label: 'Booking & Schedule',
           href: '/demos',
           icon: UserCheck,
+          allowedRoles: ['admin', 'manager'],
+        },
+        {
+          label: 'Marketing',
+          href: '/marketing',
+          icon: TrendingUp,
           allowedRoles: ['admin', 'manager'],
         },
       ],

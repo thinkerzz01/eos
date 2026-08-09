@@ -21,6 +21,17 @@ function one<T>(rel: T | T[] | null | undefined): T | null {
   return rel ?? null;
 }
 
+// Human-readable PKT time, e.g. "Mon, 11 Aug, 4:30 PM".
+function fmtPkt(iso: string | null | undefined): string {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  return d.toLocaleString('en-GB', {
+    weekday: 'short', day: 'numeric', month: 'short',
+    hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Karachi',
+  });
+}
+
 function mapRow(r: any): DemoSession {
   const lead = one<any>(r.leads);
   const subject = one<any>(r.subjects);
@@ -36,7 +47,7 @@ function mapRow(r: any): DemoSession {
     subject: subject?.name ?? '',
     teacherId: r.teacher_id ?? null,
     teacherName: teacher?.name ?? null,
-    scheduledTime: r.scheduled_at,
+    scheduledTime: fmtPkt(r.scheduled_at),
     durationMinutes: 60,
     meetingLink: r.meeting_link ?? '',
     status: STATUS_UI[r.status as string] ?? 'Scheduled',

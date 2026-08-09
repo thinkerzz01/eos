@@ -5,6 +5,222 @@ entries at the top. Each entry: date/time (PKT), what was broken, what changed.
 
 ---
 
+## SETUP & DEPLOY (read this first)
+
+**Important: GitHub does NOT update Supabase.** GitHub stores the code; Supabase is
+a separate hosted database. Pushing `schema.sql` to GitHub versions the file but
+changes nothing in the live DB. You apply database changes by running SQL in the
+**Supabase Dashboard -> SQL Editor** (or via the Supabase CLI) - manually.
+
+**1. Environment variables** (`.env.local`, gitignored - never committed):
+`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
+`RESEND_API_KEY`, `OPENROUTER_API_KEY`, `ADMIN_EMAIL`, `CRON_SECRET_TOKEN`,
+`BOOKING_ORG_ID`, bank/wallet vars, and Google:
+`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REFRESH_TOKEN`, `GOOGLE_CALENDAR_ID`.
+After changing `.env.local` you MUST restart the dev/prod server (env is read at start).
+
+**2. Apply the database (fresh rebuild):** in Supabase SQL Editor, run in order:
+  1. `supabase/reset_database.sql`  (WIPES public data; keeps auth login users)
+  2. the whole `schema.sql`         (tables, RLS, functions, realtime, anon lockdown)
+  3. Re-seed: your admin SQL for `thinkerzz01@gmail.com`, `supabase/seed_subjects.sql`,
+     and (optional) the manager/teacher/student test-role SQL.
+  (For an existing DB you don't want to wipe, run only the small migrations noted in
+  the batch entries below instead of the reset.)
+
+**3. Google Calendar/Meet:** publish the OAuth consent screen to **"In production"**
+so the refresh token doesn't expire in ~7 days. Restart the server after setting the
+token. Meet links + calendar invites are created on demo assignment and class
+scheduling (best-effort - if Google is off, everything else still works).
+
+**4. Cron (cPanel or similar), each with `Authorization: Bearer $CRON_SECRET_TOKEN`:**
+`/api/cron/reminders` + `/api/cron/send` every 10-15 min; `/api/cron/monthly-reports`
+at month-end; `/api/cron/backup-export` weekly.
+
+**5. Auth:** turn OFF public sign-ups in Supabase (Authentication -> Providers ->
+Email) so accounts are admin-provisioned only.
+
+**6. Public pages** (no login): `/book` (demo booking), `/enroll/<leadId>` (won-student
+enrollment). Everything else redirects to `/login`.
+
+---
+
+## 2026-08-08 · Build batch: enrollment form + admin delete (5 & 6)
+
+`tsc` clean. Completes the owner's 6-item list.
+- **Won demo -> enrollment form (#5)** - new public page `app/enroll/[leadId]` +
+  `submit_enrollment` SECURITY DEFINER function (schema.sql, anon-granted) that
+  creates the student from the won lead and marks it converted (fee stays 0; admin
+  sets fee + schedule after). Added `students.first_class_date`. Marking a demo
+  "Won" now pops a copyable enrollment link (replacing the separate Convert step).
+  `/enroll` added to the public routes in middleware.
+- **Admin delete actions (#6)** - `softDeleteLead` + `deleteDemo` server actions;
+  admin-only Delete buttons on the Booking & Schedule rows and the lead drawer.
+
+---
+
+## 2026-08-08 · Build batch: booking, times, realtime, Google Meet
+
+`tsc` clean. (Used plain `fetch` for Google - no new npm dependency.)
+- **Booking page** (/book): replaced fixed hourly slots with a real **time picker**
+  (any time, clickable AM/PM), added a **Subject** dropdown and a **"How did you
+  find us?"** field that becomes the lead's real source. `create_public_booking`
+  now takes `p_source` (schema.sql, defaulted so nothing breaks).
+- **Human-readable times** on Booking & Schedule (e.g. "Mon, 11 Aug, 4:30 PM").
+- **Realtime auto-refresh** - DemosClient subscribes to demos/leads inserts and
+  refreshes automatically; schema.sql adds those tables to the realtime publication.
+- **Google Meet + Calendar** - `lib/google/calendar.ts` (OAuth refresh-token ->
+  access token -> Calendar API, best-effort). Demo **assignment** creates a one-off
+  Meet + invites student & teacher; **class scheduling** creates one recurring Meet
+  series per subject and shares its link across the generated sessions. `meeting_link`
+  + `calendar_event_id` stored. Guests join-only (can't invite/modify). Fails safe
+  if Google is unset/token lapses.
+
+Still to build (owner's list): **#5 Won-demo -> enrollment form** (new public page +
+SECURITY DEFINER submit function + `students.first_class_date`), **#6 admin full
+add/delete/actions** across screens.
+
+---
+
+## 2026-08-08 · Program list widened to the 7-set (Matric/Inter now allowed)
+
+Owner confirmed the canonical programs: O Level, A Level, IGCSE, Matric (9th),
+Matric (10th), Inter (11th), Inter (12th). Matric/Inter were being rejected by the
+DB CHECK (CAIE-only), which is why they weren't selectable. Widened everywhere:
+- schema.sql program CHECK constraints widened to the 7-set.
+- Validation lists in app/students/actions.ts, app/leads/actions.ts,
+  app/book/actions.ts renamed CAIE_PROGRAMS -> ENROLLABLE_PROGRAMS (the 7).
+- Program dropdowns now map ALL_PROGRAMS (the 7): OnboardStudentModal, LeadsClient
+  add-lead, StudentsClient edit, and the public /book page.
+`tsc` clean.
+
+**Live-DB migration (run once):**
+```sql
+ALTER TABLE public.students DROP CONSTRAINT IF EXISTS students_program_check;
+ALTER TABLE public.students ADD CONSTRAINT students_program_check
+  CHECK (program IN ('O Level','A Level','IGCSE','Matric (9th)','Matric (10th)','Inter (11th)','Inter (12th)'));
+ALTER TABLE public.leads DROP CONSTRAINT IF EXISTS leads_program_check;
+ALTER TABLE public.leads ADD CONSTRAINT leads_program_check
+  CHECK (program IN ('O Level','A Level','IGCSE','Matric (9th)','Matric (10th)','Inter (11th)','Inter (12th)') OR program IS NULL);
+```
+
+---
+
+## 2026-08-08 · Schedule modal → "set up a student's timetable" wizard
+
+Rebuilt the Schedule-a-class modal per owner spec. `tsc` clean.
+- **Bigger modal + larger fonts** (max-w-3xl, text-sm base).
+- **Student filter tabs**: New (no classes yet) vs Already-scheduled (derived from
+  existing class_sessions).
+- Student's **program auto-detected**; the subject dropdowns are filtered to it.
+- **Multiple subject rows** — each with its own **teacher**, **weekdays**
+  (default Mon–Fri; Sat/Sun off unless ticked), and **start/end time**.
+- **Auto-generates ~1 month** (choose 1wk / 2wk / 1mo / 2mo) of class_sessions on
+  the selected weekdays from a start date. New `bulkScheduleClasses` action;
+  teacher time conflicts are skipped (EXCLUDE 23P01) and reported as a count.
+- **Class types explained inline**: Regular = normal class · Makeup = free
+  replacement for a missed class · Test = assessment session.
+- `app/schedule/page.tsx` now passes `program`; `bulkScheduleClasses` added to
+  `app/schedule/actions.ts`.
+- NOTE: the empty Subject dropdown was NOT a bug — the `subjects` table is unseeded.
+  **Run `supabase/seed_subjects.sql`** and subjects appear (filtered by program).
+
+---
+
+## 2026-08-08 · Last two items: dashboard tiles + admin grace alert
+
+- **Dashboard aggregate tiles wired** (§9) — new `lib/data/dashboard.ts`
+  `getDashboardMetrics()` (fail-safe) feeds the admin view: Active Teachers,
+  Classes Today (+ today's schedule list), Revenue this month, Demos-need-teacher,
+  Tickets-urgent, Fee Collection %, Teacher Capacity list (load/capacity bars), and
+  the Financial Snapshot (Collected / Outstanding / Refunds). `app/page.tsx` now
+  fetches metrics alongside students.
+- **Admin "grace expired" notification** (§7) — new `grace_expired_admin`
+  notification type + Admin-facing template; the reminders cron enqueues one alert
+  per voucher to the org's admin when a grace period ends unpaid.
+
+**Extra DB migration for the admin alert (run on live DB):**
+```sql
+ALTER TABLE public.notifications DROP CONSTRAINT IF EXISTS notifications_type_check;
+ALTER TABLE public.notifications ADD CONSTRAINT notifications_type_check
+  CHECK (type IN ('class_reminder','fee_due','grace_ending','demo_confirmed','payment_received','monthly_report','follow_up','announcement','grace_expired_admin'));
+```
+
+`tsc` clean. Both previously-remaining items are now done.
+
+---
+
+## 2026-08-08 · Syllabus feature removed (archived locally)
+
+Owner request: "remove Syllabus from system but save in my local to use in future."
+- **Archived** to `_archive/syllabus/` (gitignored + excluded from tsconfig, so it
+  stays local only): `page.tsx` (the screen), `syllabusData.ts` (the removed master
+  data), `StudentDrawer.tsx` (an orphan component that used it), and a `README.md`
+  with restore steps.
+- **Removed from the app:** the `/syllabus` route, the "Subjects" sidebar nav item,
+  the orphan `components/students/StudentDrawer.tsx`, and the syllabus exports
+  (`MASTER_SYLLABI`, `CAIE_MASTER_SYLLABI`, `getSyllabusTemplate`,
+  `SyllabusTemplate`, `SyllabusTopic`) from `lib/syllabiSeed.ts`. The shared
+  exports there (`ALL_PROGRAMS`, `CAIE_PROGRAMS`, `ALL_SUBJECTS`, `EXAM_SESSIONS`,
+  `LEAD_SOURCES`, `LOCAL_BOARD_PROGRAMS`) were **kept** — other screens use them.
+- `tsc` clean.
+
+---
+
+## 2026-08-08 · Batch 8: spec build-out ("remove Documents vault, fix rest")
+
+Removed the Documents vault and built/fixed the remaining spec deviations. `tsc`
+clean throughout (dev server left running — verify with tsc, not `next build`).
+
+- **Documents vault removed** — the student-drawer Documents tab + its type/content
+  and the unused `lib/storage.ts` signed-URL helper are gone.
+- **anon EXECUTE lockdown** (§3.3) — done the SAFE way: `REVOKE EXECUTE … FROM
+  PUBLIC` then re-`GRANT` to authenticated + service_role, so RLS helper functions
+  keep working and anon is left with only the two booking functions. (schema.sql)
+- **Teacher score** (§6.3) — DemoConversion% now computed from the real demos table
+  over a rolling 90-day window (only demos with a recorded outcome; cold-start < 5),
+  not stale stored counts. (lib/data/teachers.ts)
+- **Retry backoff** (§3.5) — added `next_retry_at`; the sender now backs off
+  exponentially (1,2,4,8,16 min) and skips rows that aren't yet re-eligible.
+  (schema.sql + app/api/cron/send/route.ts)
+- **Weekly backup-export cron** (§3.3) — new bearer-auth route dumps core tables to
+  a downloadable JSON. (app/api/cron/backup-export/route.ts)
+- **Marketing screen** (§9/§11) — new route + data layer: source performance
+  (Google first) from leads.source, conversion, ad spend, cost/student (blank until
+  ads). Added to the Admissions nav (admin/manager). (app/marketing/*, lib/data/marketing.ts)
+- **Funnel + lost-reason reports** (§11) — enrolled/demos-booked funnel % and a
+  lost-reason breakdown added to the Reports screen. (lib/data/reports.ts + ReportsClient)
+
+**DB SQL to run on the live database (accumulated — safe to run together):**
+```sql
+ALTER TABLE public.notifications ADD COLUMN IF NOT EXISTS next_retry_at TIMESTAMPTZ NULL;
+
+DROP POLICY IF EXISTS student_insert_own_payments ON public.payments;
+CREATE POLICY student_insert_own_payments ON public.payments FOR INSERT WITH CHECK (
+  current_user_role() = 'student' AND amount > 0 AND voucher_id IN (SELECT id FROM public.vouchers WHERE student_id = current_student_id() AND deleted_at IS NULL));
+
+REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated, service_role;
+
+-- teacher/student read of subjects + teachers (from Batch 6, if not already run)
+CREATE POLICY teacher_read_subjects ON public.subjects FOR SELECT USING (current_user_role() = 'teacher' AND org_id = current_user_org_id());
+CREATE POLICY student_read_subjects ON public.subjects FOR SELECT USING (current_user_role() = 'student' AND org_id = current_user_org_id());
+CREATE POLICY teacher_read_teachers ON public.teachers FOR SELECT USING (current_user_role() = 'teacher' AND org_id = current_user_org_id());
+CREATE POLICY student_read_teachers ON public.teachers FOR SELECT USING (current_user_role() = 'student' AND org_id = current_user_org_id());
+```
+
+**Still remaining (need a dedicated careful pass — NOT done):**
+- **Dashboard aggregate tiles** (§9) — today's classes / revenue / teacher
+  availability / activity feed still placeholders. Deferred on purpose: it's a
+  500-line 4-role component you're actively testing; wiring it deserves its own
+  pass, not a rushed blind edit.
+- **Syllabus DB-wiring** (§12 P2) — screen reads `lib/syllabiSeed` constants
+  (defensible reference data; displays correctly). Needs a seed + data layer to be
+  DB-versioned.
+- **Admin grace notification** (§7) — needs a new `notifications.type` (CHECK
+  migration) + template; admin still sees the on-screen decision card.
+
+---
+
 ## 2026-08-07 · ~23:27 PKT — Batch 7: requirements-compliance audit (Master Plan v3.1)
 
 Ran a 6-area compliance audit against `Thinkerzz-EOS-Master-Plan-v3.1.md` +
@@ -25,17 +241,33 @@ compliant, 25 deviations.**
 - **Announcements create control** (§5 — Announcements create = Admin + Manager) —
   "+ New Announcement" button/modal now gated to admin/manager (read stays open to
   all). (app/announcements/AnnouncementsClient.tsx)
+- **fee_status lifecycle by time** (§2/§6.1) — the reminders cron now flips an
+  unpaid voucher due→in_grace inside the grace window and mirrors
+  students.fee_status, so the health engine + fee badge stop drifting.
+  (app/api/cron/reminders/route.ts)
+- **Follow-up reminders** (§3.3) — the cron now enqueues lead follow-ups due today
+  (the `follow_up` template already existed). (app/api/cron/reminders/route.ts)
+- **Monthly-report grade trend** (§6.2) — was hardcoded 'same'; now computed from
+  real test scores, this month vs last (up/same/down). (lib/reports/monthlyReport.ts)
+- **Finance-write RLS** (§3.3/§4) — the student payment-insert policy now requires
+  `amount > 0`, blocking negative refund-looking rows. (schema.sql — **run on live DB**)
 
-**Still-open deviations (in-scope, NOT yet done — need a decision on effort):**
-- fee_status lifecycle isn't advanced by time (due→in_grace) — needs a status
-  step in the reminders cron (HIGH). Admin not notified on grace expiry; follow-up
-  reminders not queued; monthly-report trend still a placeholder (compute from
-  tests). Retry lacks backoff. Voucher missing line-item/reference-note/payment-
-  accounts. Finance-write RLS: student can insert negative (refund-looking) payment
-  rows — tighten WITH CHECK. anon EXECUTE not restricted to only the 2 booking
-  functions (defense-in-depth). Teacher-score (DemoConversion%/Reliability%) not
-  computed from real data. Funnel/lost-reason reports + dashboard aggregate tiles
-  still placeholders.
+**Still-open (deferred with reason — NOT silently skipped):**
+- **Admin grace notification** (§7) — deferred: needs a NEW notification template
+  type (an add); the admin still sees the on-screen decision card meanwhile.
+- **Retry backoff** (§3.5) — deferred: needs a new `next_retry_at` column (DB
+  migration) + send-route logic.
+- **anon EXECUTE lockdown** (§3.3) — deferred ON PURPOSE: the naive
+  `REVOKE EXECUTE … FROM PUBLIC` would strip authenticated users' EXECUTE on the
+  RLS helper functions (current_user_role() etc.) and break the whole app.
+  Exploitability today is nil (anon's auth.uid() is NULL). Needs a careful
+  per-function revoke, not a blanket one.
+
+**Feature-builds (net-new work — awaiting go-ahead, since they add features):**
+- Voucher line-item + reference-note + payment-accounts on the voucher.
+- Teacher-score engine (DemoConversion% 90-day window / Reliability%).
+- Funnel + lost-reason reports; dashboard aggregate tiles (today's classes,
+  revenue, teacher availability, funnel, activity feed) wired to real tables.
 
 **OUT-OF-SCOPE additions (spec-required modules that are ABSENT — flagged, NOT
 built, since building them adds features):**

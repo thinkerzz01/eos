@@ -49,6 +49,7 @@ export async function updateSession(request: NextRequest) {
   const isPublicRoute =
     request.nextUrl.pathname === '/login' ||
     request.nextUrl.pathname.startsWith('/book') ||
+    request.nextUrl.pathname.startsWith('/enroll') ||
     request.nextUrl.pathname.startsWith('/api');
 
   // Deny-by-default: an unauthenticated request to any protected route is

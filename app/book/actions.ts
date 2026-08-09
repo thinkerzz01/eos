@@ -8,9 +8,18 @@
 // via BOOKING_ORG_ID — a single academy owns the public form.
 import { createClient } from '@/lib/supabase/server';
 
-// CAIE programs the leads table accepts (program CHECK). Anything else (e.g.
-// "Matric") is stored as NULL rather than violating the constraint.
-const CAIE_PROGRAMS = ['O Level', 'A Level', 'IGCSE'];
+// Programs the leads table accepts (program CHECK). Anything else is stored NULL.
+const ENROLLABLE_PROGRAMS = ['O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)'];
+
+// "How did you find us?" label -> DB source enum.
+const SOURCE_MAP: Record<string, string> = {
+  Google: 'google',
+  Facebook: 'facebook',
+  Instagram: 'instagram',
+  WhatsApp: 'whatsapp',
+  Referral: 'referral',
+  'Walk-in': 'walk_in',
+};
 
 export interface BookingResult {
   ok: boolean;
@@ -24,8 +33,10 @@ export async function submitPublicBooking(input: {
   parentPhone: string;
   parentEmail?: string;
   program: string;
+  subject?: string;
+  source?: string; // "How did you find us?"
   date: string; // YYYY-MM-DD (Pakistan date)
-  hour: number; // 24h start hour in PKT (7..21)
+  time: string; // HH:MM (PKT)
 }): Promise<BookingResult> {
   const studentName = input.studentName?.trim();
   const parentName = input.parentName?.trim();
@@ -34,8 +45,8 @@ export async function submitPublicBooking(input: {
   if (!studentName || !parentName || !parentPhone) {
     return { ok: false, error: 'Student name, parent name, and phone are required.' };
   }
-  if (!input.date || !(input.hour >= 7 && input.hour <= 21)) {
-    return { ok: false, error: 'Please choose a valid date and time slot.' };
+  if (!input.date || !/^\d{2}:\d{2}$/.test(input.time || '')) {
+    return { ok: false, error: 'Please choose a valid date and time.' };
   }
 
   const orgId = process.env.BOOKING_ORG_ID;
@@ -47,10 +58,10 @@ export async function submitPublicBooking(input: {
   }
 
   // Build the scheduled timestamp in Pakistan time (+05:00) → a real TIMESTAMPTZ.
-  const hh = String(input.hour).padStart(2, '0');
-  const scheduledAt = `${input.date}T${hh}:00:00+05:00`;
+  const scheduledAt = `${input.date}T${input.time}:00+05:00`;
 
-  const program = CAIE_PROGRAMS.includes(input.program) ? input.program : null;
+  const program = ENROLLABLE_PROGRAMS.includes(input.program) ? input.program : null;
+  const source = SOURCE_MAP[input.source ?? ''] ?? 'google';
 
   const supabase = createClient(); // no session → anon; RPC is granted to anon
   const { data, error } = await supabase.rpc('create_public_booking', {
@@ -60,8 +71,9 @@ export async function submitPublicBooking(input: {
     p_phone: parentPhone,
     p_email: input.parentEmail?.trim() || null,
     p_program: program,
-    p_subjects: null,
+    p_subjects: input.subject?.trim() || null,
     p_scheduled_at: scheduledAt,
+    p_source: source,
   });
 
   if (error) {

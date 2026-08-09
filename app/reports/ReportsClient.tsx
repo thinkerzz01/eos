@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { MonthlyReportData } from '@/lib/mockIntelligenceData';
+import type { FunnelStats } from '@/lib/data/reports';
 import {
   FileText,
   TrendingUp,
@@ -17,7 +18,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 
-export function ReportsClient({ initialReports }: { initialReports: MonthlyReportData[] }) {
+export function ReportsClient({ initialReports, initialFunnel }: { initialReports: MonthlyReportData[]; initialFunnel?: FunnelStats }) {
   const { role } = useRole();
   const [reports, setReports] = useState<MonthlyReportData[]>(initialReports);
   const [selectedReport, setSelectedReport] = useState<MonthlyReportData | null>(initialReports[0] ?? null);
@@ -96,6 +97,34 @@ export function ReportsClient({ initialReports }: { initialReports: MonthlyRepor
             </div>
           </div>
         </div>
+
+        {/* ADMISSIONS FUNNEL & LOST REASONS (Master Plan §11) */}
+        {initialFunnel && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-4 space-y-3">
+              <div className="font-heading font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider">Admissions Funnel</div>
+              <div className="text-center py-2">
+                <div className="font-heading font-extrabold text-4xl text-[#5B47D6]">{initialFunnel.funnelPct}%</div>
+                <div className="text-xs text-slate-500 font-medium mt-1">{initialFunnel.studentsEnrolled} enrolled / {initialFunnel.demosBooked} demos booked</div>
+              </div>
+            </div>
+            <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-4 space-y-2">
+              <div className="font-heading font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider">Lost Reasons</div>
+              {initialFunnel.lostReasons.length === 0 ? (
+                <div className="text-xs text-slate-400 font-medium py-6 text-center">No lost leads recorded.</div>
+              ) : (
+                <div className="space-y-1.5 pt-1">
+                  {initialFunnel.lostReasons.map((lr) => (
+                    <div key={lr.reason} className="flex justify-between items-center text-xs font-bold">
+                      <span className="text-slate-700 dark:text-slate-300">{lr.reason}</span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">{lr.count}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* REPORTS GENERATOR GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">

@@ -5,7 +5,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-const CAIE_PROGRAMS = ['O Level', 'A Level', 'IGCSE'];
+const ENROLLABLE_PROGRAMS = ['O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)'];
 
 export interface ActionResult {
   ok: boolean;
@@ -57,7 +57,7 @@ export async function createLead(input: {
     phone: parentPhone,
     email: input.parentEmail?.trim() || null,
     // leads.program is CAIE-only (nullable) — store only if valid, else leave null.
-    program: CAIE_PROGRAMS.includes(input.program) ? input.program : null,
+    program: ENROLLABLE_PROGRAMS.includes(input.program) ? input.program : null,
     subjects: input.subjects?.trim() || null,
     source: 'walk_in',
     status: 'new',
@@ -96,7 +96,7 @@ export async function convertLead(input: {
     .maybeSingle();
   if (!lead) return { ok: false, error: 'Lead not found.' };
   if ((lead as any).status === 'won') return { ok: false, error: 'This lead is already converted.' };
-  if (!CAIE_PROGRAMS.includes((lead as any).program)) {
+  if (!ENROLLABLE_PROGRAMS.includes((lead as any).program)) {
     return {
       ok: false,
       error: 'This lead’s program is not a CAIE program (O/A Level, IGCSE), so it cannot be enrolled as a student.',
@@ -133,6 +133,19 @@ export async function convertLead(input: {
 
   revalidatePath('/leads');
   revalidatePath('/students');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/** Soft-delete a lead (admin action). RLS enforces admin/manager write. */
+export async function softDeleteLead(leadId: string): Promise<ActionResult> {
+  if (!leadId) return { ok: false, error: 'Missing lead id.' };
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
+  const { error } = await supabase.from('leads').update({ deleted_at: new Date().toISOString() }).eq('id', leadId);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath('/leads');
+  revalidatePath('/demos');
   revalidatePath('/');
   return { ok: true };
 }

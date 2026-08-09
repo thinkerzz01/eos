@@ -75,13 +75,35 @@ export async function assembleReportFacts(
     .eq('state', 'covered')
     .is('deleted_at', null);
 
+  // Grade trend (Master Plan §6.2): this month's average score % vs last month's.
+  const d0 = new Date();
+  const priorStart = new Date(Date.UTC(d0.getUTCFullYear(), d0.getUTCMonth() - 1, 1)).toISOString().slice(0, 10);
+  const { data: trendRows } = await admin
+    .from('tests')
+    .select('date,score,max_score')
+    .eq('student_id', student.id)
+    .gte('date', priorStart)
+    .is('deleted_at', null);
+  const avgPct = (rows: any[]): number | null => {
+    const tot = rows.reduce((a, r) => a + Number(r.max_score || 0), 0);
+    const sc = rows.reduce((a, r) => a + Number(r.score || 0), 0);
+    return tot > 0 ? (sc / tot) * 100 : null;
+  };
+  const aThis = avgPct((trendRows ?? []).filter((r: any) => r.date >= since));
+  const aPrior = avgPct((trendRows ?? []).filter((r: any) => r.date < since));
+  let gradeTrend: ReportFacts['gradeTrend'] = 'same';
+  if (aThis != null && aPrior != null) {
+    if (aThis > aPrior + 1) gradeTrend = 'up';
+    else if (aThis < aPrior - 1) gradeTrend = 'down';
+  }
+
   return {
     firstName,
     attendancePct,
     homeworkPct,
     testsConducted: testsConducted ?? 0,
     topicsCovered: topicsCovered ?? 0,
-    gradeTrend: 'same', // needs grade history to compute; defaults to same for now
+    gradeTrend,
   };
 }
 

@@ -160,7 +160,7 @@ CREATE TABLE IF NOT EXISTS public.subjects (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES public.orgs(id),
     name TEXT NOT NULL,
-    program TEXT NOT NULL CHECK (program IN ('O Level', 'A Level', 'IGCSE')),
+    program TEXT NOT NULL CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
     has_syllabus BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -181,7 +181,7 @@ CREATE TABLE IF NOT EXISTS public.teacher_subjects (
 CREATE TABLE IF NOT EXISTS public.syllabus_templates (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES public.orgs(id),
-    program TEXT NOT NULL CHECK (program IN ('O Level', 'A Level', 'IGCSE')),
+    program TEXT NOT NULL CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
     subject_id UUID NOT NULL REFERENCES public.subjects(id),
     academic_year TEXT NOT NULL, -- e.g. '2026'
     cambridge_code TEXT NOT NULL, -- e.g. '9702'
@@ -214,7 +214,7 @@ CREATE TABLE IF NOT EXISTS public.students (
     address TEXT,
     city TEXT,
     gender TEXT NOT NULL DEFAULT 'female' CHECK (gender IN ('male', 'female', 'other')),
-    program TEXT NOT NULL CHECK (program IN ('O Level', 'A Level', 'IGCSE')),
+    program TEXT NOT NULL CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
     exam_session TEXT NOT NULL, -- e.g. 'May/June 2027'
     enrolled_at DATE NOT NULL DEFAULT CURRENT_DATE,
     months_committed INT NOT NULL DEFAULT 12,
@@ -222,6 +222,7 @@ CREATE TABLE IF NOT EXISTS public.students (
     monthly_fee NUMERIC(10,2) NOT NULL, -- Flexible manual value
     fee_status TEXT NOT NULL DEFAULT 'due' CHECK (fee_status IN ('paid', 'due', 'in_grace', 'stopped')),
     next_due_date DATE NOT NULL,
+    first_class_date DATE, -- when the student's timetable starts (admin, at scheduling)
     source TEXT NOT NULL DEFAULT 'google' CHECK (source IN ('google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -264,7 +265,7 @@ CREATE TABLE IF NOT EXISTS public.leads (
     parent_name TEXT,
     phone TEXT NOT NULL,
     email TEXT,
-    program TEXT CHECK (program IN ('O Level', 'A Level', 'IGCSE')),
+    program TEXT CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
     subjects TEXT, -- Free text note at lead stage
     source TEXT NOT NULL DEFAULT 'google' CHECK (source IN ('google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in')),
     utm JSONB DEFAULT '{}'::jsonb,
@@ -299,6 +300,7 @@ CREATE TABLE IF NOT EXISTS public.demos (
     teacher_id UUID NULL REFERENCES public.teachers(id),
     scheduled_at TIMESTAMPTZ NOT NULL,
     meeting_link TEXT,
+    calendar_event_id TEXT, -- Google Calendar event id (for Meet link + calendar invites)
     status TEXT NOT NULL DEFAULT 'needs_teacher' CHECK (status IN ('needs_teacher', 'scheduled', 'awaiting_outcome', 'done')),
     outcome TEXT NULL CHECK (outcome IN ('won', 'lost', 'follow_up')),
     reason TEXT NULL,
@@ -319,6 +321,7 @@ CREATE TABLE IF NOT EXISTS public.class_sessions (
     end_at TIMESTAMPTZ NOT NULL,
     status TEXT NOT NULL DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'completed', 'cancelled', 'no_show')),
     meeting_link TEXT,
+    calendar_event_id TEXT, -- Google Calendar event id (for Meet link + calendar invites)
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ NULL,
@@ -466,12 +469,13 @@ CREATE TABLE IF NOT EXISTS public.payment_accounts (
 CREATE TABLE IF NOT EXISTS public.notifications (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES public.orgs(id),
-    type TEXT NOT NULL CHECK (type IN ('class_reminder', 'fee_due', 'grace_ending', 'demo_confirmed', 'payment_received', 'monthly_report', 'follow_up', 'announcement')),
+    type TEXT NOT NULL CHECK (type IN ('class_reminder', 'fee_due', 'grace_ending', 'demo_confirmed', 'payment_received', 'monthly_report', 'follow_up', 'announcement', 'grace_expired_admin')),
     channels TEXT[] NOT NULL DEFAULT '{"calendar", "email", "wa_me"}',
     priority INT NOT NULL DEFAULT 2 CHECK (priority IN (1, 2, 3)), -- 1 time-critical, 2 transactional, 3 FYI
     payload JSONB NOT NULL DEFAULT '{}'::jsonb,
     status TEXT NOT NULL DEFAULT 'queued' CHECK (status IN ('queued', 'sent', 'failed')),
     retry_count INT NOT NULL DEFAULT 0,
+    next_retry_at TIMESTAMPTZ NULL, -- backoff gate: eligible to send only when NULL or <= now (AGENTS §3.5)
     unique_key TEXT NOT NULL, -- Idempotency key
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -493,7 +497,7 @@ CREATE TABLE IF NOT EXISTS public.announcement_targets (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES public.orgs(id),
     announcement_id UUID NOT NULL REFERENCES public.announcements(id) ON DELETE CASCADE,
-    program TEXT CHECK (program IN ('O Level', 'A Level', 'IGCSE')),
+    program TEXT CHECK (program IN ('O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)')),
     student_id UUID NULL REFERENCES public.students(id),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -811,8 +815,11 @@ CREATE POLICY student_read_own_voucher_lines ON public.voucher_lines FOR SELECT 
     current_user_role() = 'student' AND voucher_id IN (SELECT id FROM public.vouchers WHERE student_id = current_student_id() AND deleted_at IS NULL)
 );
 
+-- Parent/student may attach a positive payment against their OWN voucher only.
+-- amount > 0 forbids negative (refund-looking) rows — refunds are Admin-only,
+-- audited (AGENTS §3.3/§4). Admin still reconciles.
 CREATE POLICY student_insert_own_payments ON public.payments FOR INSERT WITH CHECK (
-    current_user_role() = 'student' AND voucher_id IN (SELECT id FROM public.vouchers WHERE student_id = current_student_id() AND deleted_at IS NULL)
+    current_user_role() = 'student' AND amount > 0 AND voucher_id IN (SELECT id FROM public.vouchers WHERE student_id = current_student_id() AND deleted_at IS NULL)
 );
 
 CREATE POLICY student_read_own_payments ON public.payments FOR SELECT USING (
@@ -866,20 +873,25 @@ CREATE OR REPLACE FUNCTION public.create_public_booking(
     p_email TEXT,
     p_program TEXT,
     p_subjects TEXT,
-    p_scheduled_at TIMESTAMPTZ
+    p_scheduled_at TIMESTAMPTZ,
+    p_source TEXT DEFAULT 'google'
 )
 RETURNS UUID AS $$
 DECLARE
     v_lead_id UUID;
+    v_source TEXT;
 BEGIN
     -- Check soft-deleted duplicate phone
     IF EXISTS (SELECT 1 FROM public.leads WHERE org_id = p_org_id AND phone = p_phone AND deleted_at IS NULL) THEN
         RAISE EXCEPTION 'A lead with this phone number already exists.';
     END IF;
 
+    -- "How did you find us?" -> real lead source (sanitised to the allowed enum).
+    v_source := CASE WHEN p_source IN ('google','facebook','instagram','whatsapp','referral','walk_in') THEN p_source ELSE 'google' END;
+
     -- Insert Lead
     INSERT INTO public.leads (org_id, name, parent_name, phone, email, program, subjects, source, status, temperature)
-    VALUES (p_org_id, p_name, p_parent_name, p_phone, p_email, p_program, p_subjects, 'google', 'new', 'hot')
+    VALUES (p_org_id, p_name, p_parent_name, p_phone, p_email, p_program, p_subjects, v_source, 'new', 'hot')
     RETURNING id INTO v_lead_id;
 
     -- Insert Demo (teacher_id NULL, status needs_teacher)
@@ -892,7 +904,70 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Grant EXECUTE to anon and authenticated on public booking functions
 GRANT EXECUTE ON FUNCTION public.get_open_slots(UUID, DATE) TO anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.create_public_booking(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TIMESTAMPTZ) TO anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_public_booking(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TIMESTAMPTZ, TEXT) TO anon, authenticated;
+
+-- Function 3: Public enrollment completion. When a demo is Won, the student opens
+-- /enroll/<lead_id> and submits full details; this creates the student from the
+-- lead and marks the lead won+converted. Anon-safe (SECURITY DEFINER). Fee stays 0
+-- and the schedule is set by the Admin afterwards.
+CREATE OR REPLACE FUNCTION public.submit_enrollment(
+    p_lead_id UUID,
+    p_student_name TEXT,
+    p_parent_name TEXT,
+    p_phone TEXT,
+    p_email TEXT,
+    p_program TEXT,
+    p_exam_session TEXT,
+    p_gender TEXT,
+    p_city TEXT,
+    p_address TEXT
+)
+RETURNS UUID AS $$
+DECLARE
+    v_lead public.leads%ROWTYPE;
+    v_student_id UUID;
+    v_gender TEXT;
+BEGIN
+    SELECT * INTO v_lead FROM public.leads WHERE id = p_lead_id AND deleted_at IS NULL;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'This enrollment link is invalid.';
+    END IF;
+    IF v_lead.converted_student_id IS NOT NULL THEN
+        RAISE EXCEPTION 'This student has already been enrolled.';
+    END IF;
+
+    v_gender := CASE WHEN lower(p_gender) IN ('male', 'female', 'other') THEN lower(p_gender) ELSE 'female' END;
+
+    INSERT INTO public.students (
+        org_id, name, parent_name, phone, email, gender, program, exam_session,
+        monthly_fee, next_due_date, status, fee_status, source, city, address
+    ) VALUES (
+        v_lead.org_id, p_student_name, p_parent_name, p_phone, NULLIF(p_email, ''), v_gender, p_program, p_exam_session,
+        0, CURRENT_DATE + 30, 'active', 'due', v_lead.source, NULLIF(p_city, ''), NULLIF(p_address, '')
+    ) RETURNING id INTO v_student_id;
+
+    UPDATE public.leads SET status = 'won', converted_student_id = v_student_id, updated_at = NOW() WHERE id = p_lead_id;
+
+    RETURN v_student_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+GRANT EXECUTE ON FUNCTION public.submit_enrollment(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO anon, authenticated;
+
+-- ============================================================================
+-- 7. REALTIME (auto-refresh the app when new bookings land)
+-- ============================================================================
+-- The Booking & Schedule screen subscribes to these tables; adding them to the
+-- Supabase realtime publication makes new demos/leads appear without a manual
+-- refresh. (Safe on a fresh DB; on an existing DB, skip if already added.)
+ALTER PUBLICATION supabase_realtime ADD TABLE public.demos, public.leads;
 
 -- Revoke all table privileges from anon role
 REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon;
+
+-- Lock anon to ONLY the two public-booking functions (AGENTS §3.3). Revoke the
+-- default PUBLIC EXECUTE on all functions, then restore it for authenticated +
+-- service_role (RLS helpers like current_user_role() must stay callable). anon is
+-- left with EXECUTE only on the two functions granted above.
+REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC;
+GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO authenticated, service_role;

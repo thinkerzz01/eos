@@ -17,7 +17,7 @@ export default async function SchedulePage() {
   return (
     <ScheduleClient
       initialClasses={classes}
-      students={students.map((s) => ({ id: s.id, name: s.name }))}
+      students={students.map((s) => ({ id: s.id, name: s.name, program: s.program }))}
       teachers={teachers.map((t) => ({ id: t.id, name: t.name }))}
       subjects={subjects}
     />

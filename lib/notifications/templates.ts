@@ -12,7 +12,8 @@ export type NotificationType =
   | 'payment_received'
   | 'monthly_report'
   | 'follow_up'
-  | 'announcement';
+  | 'announcement'
+  | 'grace_expired_admin';
 
 export interface Pronoun {
   subject: string; // he / she / they
@@ -98,5 +99,12 @@ export const TEMPLATES: Record<NotificationType, Template> = {
   announcement: {
     subject: '{{class_subject}}',
     body: '{{body}}',
+  },
+  // Internal, Admin-facing alert (not a parent message) when a grace period has
+  // expired unpaid — pushes the Stop/Extend/Mark-Paid decision (Master Plan §7).
+  grace_expired_admin: {
+    subject: 'Fee decision needed for {{student_name}}',
+    body:
+      'Admin note: the grace period for voucher {{voucher_no}} ({{student_name}}) ended on {{grace_deadline}} and it is still unpaid. Please review and choose Stop, Extend, or Mark Paid on the Fee Vouchers screen.\n\nThinkerzz EOS',
   },
 };

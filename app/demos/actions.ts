@@ -8,8 +8,13 @@
 // session (demo or class) overlapping the demo's time window, and block if so.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { createMeetEvent } from '@/lib/google/calendar';
 
 const DEMO_MINUTES = 60; // demos table has no duration; assume a 60-minute slot
+
+function one<T>(rel: T | T[] | null | undefined): T | null {
+  return Array.isArray(rel) ? rel[0] ?? null : rel ?? null;
+}
 
 export interface ActionResult {
   ok: boolean;
@@ -35,7 +40,7 @@ export async function assignTeacher(input: {
 
   const { data: demo } = await supabase
     .from('demos')
-    .select('id,scheduled_at')
+    .select('id,scheduled_at,leads(name,email),subjects(name)')
     .eq('id', input.demoId)
     .is('deleted_at', null)
     .maybeSingle();
@@ -80,6 +85,45 @@ export async function assignTeacher(input: {
     .eq('id', input.demoId);
   if (error) return { ok: false, error: error.message };
 
+  // Best-effort: create a Google Meet + calendar invites for the student & teacher.
+  try {
+    const lead = one<any>((demo as any).leads);
+    const subj = one<any>((demo as any).subjects);
+    const { data: teacher } = await supabase
+      .from('teachers')
+      .select('name,email')
+      .eq('id', input.teacherId)
+      .maybeSingle();
+    const attendees = [lead?.email, (teacher as any)?.email].filter(Boolean) as string[];
+    const meet = await createMeetEvent({
+      summary: `Demo class - ${lead?.name ?? 'Student'}${subj?.name ? ` (${subj.name})` : ''}`,
+      description: 'Thinkerzz Academy free demo class. The teacher will start the meeting.',
+      startISO: start.toISOString(),
+      endISO: end.toISOString(),
+      attendees,
+    });
+    if (meet) {
+      await supabase
+        .from('demos')
+        .update({ meeting_link: meet.meetLink, calendar_event_id: meet.eventId })
+        .eq('id', input.demoId);
+    }
+  } catch {
+    /* non-fatal: assignment still succeeded */
+  }
+
+  revalidatePath('/demos');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/** Soft-delete a demo (admin action). RLS enforces admin/manager write. */
+export async function deleteDemo(demoId: string): Promise<ActionResult> {
+  if (!demoId) return { ok: false, error: 'Missing demo id.' };
+  const { supabase, user } = await ctx();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+  const { error } = await supabase.from('demos').update({ deleted_at: new Date().toISOString() }).eq('id', demoId);
+  if (error) return { ok: false, error: error.message };
   revalidatePath('/demos');
   revalidatePath('/');
   return { ok: true };

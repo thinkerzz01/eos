@@ -26,3 +26,10 @@ Header Footer/
 Home Page/
 Lahore O - A Level Pages/
 *.pdf
+
+# Local archive of removed features (not part of the app)
+_archive/
+
+# Google OAuth credentials file (contains client secret) - keep local only
+Google Claneder ID & Data.json
+*Google*ID*Data*.json

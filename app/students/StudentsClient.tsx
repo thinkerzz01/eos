@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
+import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
 import { bulkCreateStudents, updateStudent, softDeleteStudent } from './actions';
 import {
   Users,
@@ -172,7 +173,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
   // CENTER POP-UP MODAL STATE FOR STUDENT PROFILE
   const [profileModalStudent, setProfileModalStudent] = useState<Student | null>(null);
   const [modalActiveTab, setModalActiveTab] = useState<
-    'Overview' | 'Academics' | 'Attendance' | 'Finance' | 'Timeline' | 'Documents'
+    'Overview' | 'Academics' | 'Attendance' | 'Finance' | 'Timeline'
   >('Overview');
 
   // PROFILE EDIT MODE STATE
@@ -1296,7 +1297,6 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                     { name: 'Attendance', icon: CheckSquare },
                     { name: 'Finance', icon: DollarSign },
                     { name: 'Timeline', icon: Clock },
-                    { name: 'Documents', icon: FileText },
                   ].map((tab) => {
                     const Icon = tab.icon;
                     const isActive = modalActiveTab === tab.name;
@@ -1353,9 +1353,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           onChange={(e) => setEditFormData({ ...editFormData, program: e.target.value })}
                           className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
                         >
-                          <option value="O Level">O Level</option>
-                          <option value="A Level">A Level</option>
-                          <option value="IGCSE">IGCSE</option>
+                          {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                         </select>
                       </div>
 
@@ -1758,43 +1756,6 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                                 <div className="text-xs text-slate-500 font-medium mt-0.5">{t.desc}</div>
                               </div>
                               <span className="text-xs text-slate-400 font-mono shrink-0">{t.date}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* DOCUMENTS TAB (real data) */}
-                {modalActiveTab === 'Documents' && (
-                  <div className="space-y-6 text-sm">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-                      <div className="p-4 bg-white rounded-2xl border shadow-sm"><div className="text-xs font-bold text-slate-400">Total Vault Files</div><div className="font-extrabold text-2xl text-slate-900">{profileModalStudent.documents.length}</div></div>
-                      <div className="p-4 bg-white rounded-2xl border shadow-sm"><div className="text-xs font-bold text-slate-400">Verified</div><div className="font-extrabold text-2xl text-emerald-600">{profileModalStudent.documents.filter((d) => d.status === 'Verified').length}</div></div>
-                      <div className="p-4 bg-white rounded-2xl border shadow-sm"><div className="text-xs font-bold text-slate-400">Pending</div><div className="font-extrabold text-2xl text-amber-600">{profileModalStudent.documents.filter((d) => d.status === 'Pending').length}</div></div>
-                      <div className="p-4 bg-white rounded-2xl border shadow-sm"><div className="text-xs font-bold text-slate-400">Expired</div><div className="font-extrabold text-2xl text-rose-600">{profileModalStudent.documents.filter((d) => d.status === 'Expired').length}</div></div>
-                    </div>
-
-                    <div className="bg-white border border-slate-200 rounded-2xl p-5 space-y-4 shadow-sm">
-                      <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Student Documents</h3>
-                      {profileModalStudent.documents.length === 0 ? (
-                        <div className="text-center text-[#6B7185] py-10 text-xs font-medium">No documents uploaded yet.</div>
-                      ) : (
-                        <div className="space-y-3">
-                          {profileModalStudent.documents.map((d, idx) => (
-                            <div key={idx} className="p-4 bg-white border border-slate-200 rounded-xl flex justify-between items-center text-sm font-bold hover:bg-slate-50 flex-wrap gap-2">
-                              <div className="flex items-center gap-3.5">
-                                <FileText className="w-5 h-5 text-[#5B47D6]" />
-                                <div>
-                                  <div className="text-slate-900 font-extrabold">{d.name}</div>
-                                  <div className="text-xs text-slate-400 font-medium">{d.type} \u00b7 {d.size} \u00b7 Uploaded {d.date}</div>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-3">
-                                <span className={`px-3 py-1 rounded-full text-xs font-extrabold ${d.statusBg}`}>{d.status}</span>
-                                <button className="p-2 text-slate-400 hover:text-slate-700 cursor-pointer"><Download className="w-4.5 h-4.5" /></button>
-                              </div>
                             </div>
                           ))}
                         </div>

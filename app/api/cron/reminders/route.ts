@@ -38,6 +38,23 @@ export async function GET(req: NextRequest) {
     else errored++;
   };
 
+  // 0) Advance the fee lifecycle by time (Master Plan §2): an unpaid voucher whose
+  //    due date has passed but whose grace deadline has NOT is 'in grace'. Mirror
+  //    it to students.fee_status so the health engine + fee badge stay in sync.
+  const { data: toGrace } = await admin
+    .from('vouchers')
+    .select('id,student_id')
+    .eq('status', 'due')
+    .lte('due_date', today)
+    .gte('grace_deadline', today)
+    .is('deleted_at', null);
+  for (const v of toGrace ?? []) {
+    await admin.from('vouchers').update({ status: 'in_grace' }).eq('id', (v as any).id);
+    if ((v as any).student_id) {
+      await admin.from('students').update({ fee_status: 'in_grace' }).eq('id', (v as any).student_id);
+    }
+  }
+
   // 1) Fees due today (priority 1)
   const { data: dueVouchers } = await admin
     .from('vouchers')
@@ -116,6 +133,66 @@ export async function GET(req: NextRequest) {
           gender: s?.gender ?? '',
           class_subject: subj?.name ?? 'class',
           class_time: new Date((c as any).start_at).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' }),
+        },
+      })
+    );
+  }
+
+  // 4) Lead follow-ups due today (priority 2) — Master Plan §3.3
+  const { data: followLeads } = await admin
+    .from('leads')
+    .select('id,org_id,name,parent_name,email')
+    .eq('next_follow_up', today)
+    .is('deleted_at', null);
+  for (const l of followLeads ?? []) {
+    tally(
+      await enqueueNotification(admin, {
+        orgId: (l as any).org_id,
+        type: 'follow_up',
+        priority: 2,
+        uniqueKey: `follow_up:${(l as any).id}:${today}`,
+        payload: {
+          student_name: (l as any).name ?? '',
+          parent_name: (l as any).parent_name ?? '',
+          email: (l as any).email ?? '',
+        },
+      })
+    );
+  }
+
+  // 5) Admin alert: grace period EXPIRED and still unpaid (Master Plan §7) — push
+  //    the Stop/Extend/Mark-Paid decision to the org's admin (once per voucher).
+  const { data: adminProfiles } = await admin
+    .from('profiles')
+    .select('org_id,email')
+    .eq('role', 'admin')
+    .is('deleted_at', null);
+  const adminEmailByOrg = new Map<string, string>();
+  for (const p of adminProfiles ?? []) {
+    const org = (p as any).org_id as string;
+    if (!adminEmailByOrg.has(org) && (p as any).email) adminEmailByOrg.set(org, (p as any).email);
+  }
+  const { data: expiredVouchers } = await admin
+    .from('vouchers')
+    .select('id,org_id,voucher_no,grace_deadline,students(name)')
+    .lt('grace_deadline', today) // grace ended before today -> overdue (day AFTER deadline)
+    .in('status', ['due', 'in_grace'])
+    .is('deleted_at', null);
+  for (const v of expiredVouchers ?? []) {
+    const adminEmail = adminEmailByOrg.get((v as any).org_id);
+    if (!adminEmail) continue;
+    const s = one<any>((v as any).students);
+    tally(
+      await enqueueNotification(admin, {
+        orgId: (v as any).org_id,
+        type: 'grace_expired_admin',
+        priority: 1,
+        uniqueKey: `grace_expired_admin:${(v as any).id}`, // once per voucher
+        payload: {
+          email: adminEmail,
+          student_name: s?.name ?? '',
+          voucher_no: (v as any).voucher_no,
+          grace_deadline: (v as any).grace_deadline,
         },
       })
     );

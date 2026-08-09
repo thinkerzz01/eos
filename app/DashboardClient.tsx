@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { Student } from '@/lib/mockStudentsData';
+import type { DashboardMetrics } from '@/lib/data/dashboard';
 import {
   Calendar,
   AlertTriangle,
@@ -30,8 +31,9 @@ import {
   Filter,
 } from 'lucide-react';
 
-export function DashboardClient({ initialStudents }: { initialStudents: Student[] }) {
+export function DashboardClient({ initialStudents, metrics }: { initialStudents: Student[]; metrics?: DashboardMetrics }) {
   const { role } = useRole();
+  const fmtPkr = (n: number) => `PKR ${Math.round(n).toLocaleString()}`;
 
   // DASHBOARD REACTIVE FILTER STATES
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('Today');
@@ -311,7 +313,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
               <Link href="/demos" className="p-3 bg-orange-50 border border-orange-200 rounded-2xl space-y-1 block hover:bg-orange-100 transition-colors">
                 <div className="flex items-center gap-1.5 text-orange-600 font-heading font-extrabold text-xl">
                   <UserPlus className="w-4 h-4 shrink-0" />
-                  <span>0</span>
+                  <span>{metrics?.demosNeedingTeacher ?? 0}</span>
                 </div>
                 <div className="font-extrabold text-xs text-slate-900 leading-tight">Demos need teacher</div>
                 <div className="text-xs font-bold text-orange-700">Assign now</div>
@@ -320,7 +322,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
               <Link href="/tickets" className="p-3 bg-rose-50 border border-rose-200 rounded-2xl space-y-1 block hover:bg-rose-100 transition-colors">
                 <div className="flex items-center gap-1.5 text-rose-600 font-heading font-extrabold text-xl">
                   <MessageSquare className="w-4 h-4 shrink-0" />
-                  <span>0</span>
+                  <span>{metrics?.urgentTickets ?? 0}</span>
                 </div>
                 <div className="font-extrabold text-xs text-slate-900 leading-tight">Tickets urgent</div>
                 <div className="text-xs font-bold text-rose-600">Response needed</div>
@@ -342,7 +344,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
 
             <div className="space-y-2 text-xs font-bold pt-3 border-t border-white/10">
               <div className="flex justify-between items-center"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-emerald-400" /> Attendance</span><span className="text-emerald-300">{stats.avgAttendancePct}%</span></div>
-              <div className="flex justify-between items-center"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" /> Fee Collection</span><span className="text-amber-300">—</span></div>
+              <div className="flex justify-between items-center"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-amber-400" /> Fee Collection</span><span className="text-amber-300">{metrics ? `${metrics.feeCollectionPct}%` : '—'}</span></div>
               <div className="flex justify-between items-center"><span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-purple-400" /> Student Health</span><span className="text-purple-300">{stats.avgHealthPct}%</span></div>
             </div>
 
@@ -361,19 +363,19 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
 
               <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl p-4 shadow-sm">
                 <div className="text-xs font-bold text-[#6B7185]">Active Teachers</div>
-                <div className="font-heading font-extrabold text-3xl text-slate-900 dark:text-white mt-1">0</div>
+                <div className="font-heading font-extrabold text-3xl text-slate-900 dark:text-white mt-1">{metrics?.activeTeachers ?? 0}</div>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl p-3.5 shadow-sm space-y-1">
                 <div className="text-xs text-[#6B7185]">Classes Today</div>
-                <div className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">0</div>
+                <div className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">{metrics?.classesToday ?? 0}</div>
               </div>
 
               <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl p-3.5 shadow-sm space-y-1">
                 <div className="text-xs text-[#6B7185]">Revenue (This Month)</div>
-                <div className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">PKR 0</div>
+                <div className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">{fmtPkr(metrics?.revenueThisMonth ?? 0)}</div>
               </div>
             </div>
           </div>
@@ -391,8 +393,20 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
               </div>
             </div>
 
-            <div className="space-y-3 text-xs">
-              <div className="text-center text-[#6B7185] py-8 text-xs font-medium">No classes scheduled.</div>
+            <div className="space-y-2 text-xs">
+              {(metrics?.todaysClasses ?? []).length === 0 ? (
+                <div className="text-center text-[#6B7185] py-8 text-xs font-medium">No classes scheduled.</div>
+              ) : (
+                (metrics?.todaysClasses ?? []).map((c) => (
+                  <div key={c.id} className="flex items-center justify-between p-2.5 bg-slate-50 dark:bg-slate-950 rounded-xl">
+                    <div className="min-w-0">
+                      <div className="font-extrabold text-slate-900 dark:text-slate-100 truncate">{c.subject || 'Class'}</div>
+                      <div className="text-[#6B7185] truncate">{c.student}</div>
+                    </div>
+                    <span className="font-mono font-bold text-[#5B47D6] shrink-0">{c.time}</span>
+                  </div>
+                ))
+              )}
             </div>
 
             <Link href="/schedule" className="text-xs font-bold text-[#5B47D6] hover:underline block text-center border-t pt-3">
@@ -409,8 +423,25 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
               </div>
             </div>
 
-            <div className="space-y-3.5 text-xs">
-              <div className="text-center text-[#6B7185] py-8 text-xs font-medium">No teachers added yet.</div>
+            <div className="space-y-3 text-xs">
+              {(metrics?.teacherCapacity ?? []).length === 0 ? (
+                <div className="text-center text-[#6B7185] py-8 text-xs font-medium">No teachers added yet.</div>
+              ) : (
+                (metrics?.teacherCapacity ?? []).map((t) => {
+                  const pct = t.capacity > 0 ? Math.min(100, Math.round((t.load / t.capacity) * 100)) : 0;
+                  return (
+                    <div key={t.id} className="space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="font-extrabold text-slate-900 dark:text-slate-100 truncate">{t.name}</span>
+                        <span className="text-[#6B7185] font-bold shrink-0">{t.load}/{t.capacity}</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+                        <div style={{ width: `${pct}%` }} className={`h-full rounded-full ${pct >= 100 ? 'bg-rose-500' : pct >= 80 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             <Link href="/teachers" className="text-xs font-bold text-[#5B47D6] hover:underline block text-center border-t pt-3">
@@ -427,11 +458,11 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
             <div className="grid grid-cols-3 gap-2.5 text-center">
               <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-1">
                 <div className="text-xs font-bold text-emerald-800">Collected</div>
-                <div className="font-extrabold text-sm text-emerald-600">PKR 0</div>
+                <div className="font-extrabold text-sm text-emerald-600">{fmtPkr(metrics?.collected ?? 0)}</div>
               </div>
               <div className="p-3 bg-rose-50 border border-rose-200 rounded-2xl space-y-1">
                 <div className="text-xs font-bold text-rose-800">Outstanding</div>
-                <div className="font-extrabold text-sm text-rose-600">PKR 0</div>
+                <div className="font-extrabold text-sm text-rose-600">{fmtPkr(metrics?.outstanding ?? 0)}</div>
               </div>
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-2xl space-y-1">
                 <div className="text-xs font-bold text-amber-800">Pending Verify</div>
@@ -440,7 +471,7 @@ export function DashboardClient({ initialStudents }: { initialStudents: Student[
             </div>
 
             <div className="space-y-2 text-xs font-bold pt-2">
-              <div className="flex justify-between py-1 border-b"><span>Refunds</span><span className="text-purple-600">PKR 0</span></div>
+              <div className="flex justify-between py-1 border-b"><span>Refunds</span><span className="text-purple-600">{fmtPkr(metrics?.refunds ?? 0)}</span></div>
               <div className="flex justify-between py-1 border-b"><span>Forecast (30 Days)</span><span className="text-blue-600">PKR 0</span></div>
               <div className="flex justify-between py-1 items-center">
                 <span>Collection Rate</span>

@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
-import { createClassSession, completeClassWithAttendance } from './actions';
+import { bulkScheduleClasses, completeClassWithAttendance } from './actions';
 import {
   Calendar,
   Clock,
@@ -35,7 +35,7 @@ export function ScheduleClient({
   subjects,
 }: {
   initialClasses: ScheduledClass[];
-  students: { id: string; name: string }[];
+  students: { id: string; name: string; program?: string }[];
   teachers: { id: string; name: string }[];
   subjects: SubjectOption[];
 }) {
@@ -56,17 +56,17 @@ export function ScheduleClient({
   const [attendanceChoice, setAttendanceChoice] = useState<'Present' | 'Late' | 'Absent'>('Present');
   const [savingCompletion, setSavingCompletion] = useState(false);
 
-  // SCHEDULE NEW CLASS MODAL (one student per session — schema model)
+  // SCHEDULE WIZARD (set up a qualified student's whole timetable at once)
+  type WizRow = { subjectId: string; teacherId: string; weekdays: number[]; startTime: string; endTime: string };
+  const emptyRow = (): WizRow => ({ subjectId: '', teacherId: '', weekdays: [1, 2, 3, 4, 5], startTime: '', endTime: '' });
+  const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
   const [showAddClassModal, setShowAddClassModal] = useState<boolean>(false);
-  const [newClassData, setNewClassData] = useState({
-    studentId: '',
-    subjectId: '',
-    teacherId: '',
-    classType: 'Class' as 'Class' | 'Makeup' | 'Test',
-    date: '',
-    startTime: '',
-    endTime: '',
-  });
+  const [studentTab, setStudentTab] = useState<'new' | 'scheduled'>('new');
+  const [wizStudentId, setWizStudentId] = useState('');
+  const [wizType, setWizType] = useState<'Class' | 'Makeup' | 'Test'>('Class');
+  const [wizStartDate, setWizStartDate] = useState(todayStr);
+  const [wizWeeks, setWizWeeks] = useState(4);
+  const [wizRows, setWizRows] = useState<WizRow[]>([emptyRow()]);
   const [overlapWarning, setOverlapWarning] = useState<string | null>(null);
   const [scheduling, setScheduling] = useState(false);
 
@@ -90,37 +90,55 @@ export function ScheduleClient({
     });
   }, [classesList, selectedClassType, selectedSubjectFilter, searchQuery]);
 
-  // Create one class_session (real). Teacher overlaps are blocked by the DB
-  // EXCLUDE constraint; the action returns a conflict flag we surface here.
-  const handleCreateNewClass = async () => {
+  // Split students into "new" (no class sessions yet) vs "already scheduled".
+  const scheduledStudentIds = useMemo(
+    () => new Set(classesList.map((c) => c.studentId).filter(Boolean) as string[]),
+    [classesList]
+  );
+  const wizStudentList = useMemo(
+    () => students.filter((s) => (studentTab === 'scheduled' ? scheduledStudentIds.has(s.id) : !scheduledStudentIds.has(s.id))),
+    [students, studentTab, scheduledStudentIds]
+  );
+  const wizStudent = students.find((s) => s.id === wizStudentId);
+  const wizProgram = wizStudent?.program;
+  const wizSubjects = wizProgram ? subjects.filter((s) => s.program === wizProgram) : subjects;
+
+  const updateRow = (i: number, patch: Partial<WizRow>) =>
+    setWizRows((rows) => rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+  const toggleWeekday = (i: number, day: number) =>
+    setWizRows((rows) =>
+      rows.map((r, idx) =>
+        idx === i
+          ? { ...r, weekdays: r.weekdays.includes(day) ? r.weekdays.filter((d) => d !== day) : [...r.weekdays, day].sort() }
+          : r
+      )
+    );
+  const addRow = () => setWizRows((rows) => [...rows, emptyRow()]);
+  const removeRow = (i: number) => setWizRows((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
+  const resetWizard = () => {
+    setWizStudentId(''); setWizType('Class'); setWizStartDate(todayStr); setWizWeeks(4); setWizRows([emptyRow()]); setOverlapWarning(null);
+  };
+
+  // Bulk-generate the student's timetable. Teacher time conflicts are skipped by
+  // the DB EXCLUDE constraint and reported back as a count.
+  const handleBulkSchedule = async () => {
     setOverlapWarning(null);
-    if (!newClassData.studentId) { setOverlapWarning('Please select a student.'); return; }
-    if (!newClassData.subjectId) { setOverlapWarning('Please select a subject.'); return; }
-    if (!newClassData.teacherId) { setOverlapWarning('Please select a teacher.'); return; }
-    if (!newClassData.date || !newClassData.startTime || !newClassData.endTime) {
-      setOverlapWarning('Please set the date, start time, and end time.');
-      return;
-    }
+    if (!wizStudentId) { setOverlapWarning('Please select a student.'); return; }
+    if (!wizStartDate) { setOverlapWarning('Pick a start date.'); return; }
+    const rows = wizRows.filter((r) => r.subjectId && r.teacherId && r.weekdays.length && r.startTime && r.endTime);
+    if (rows.length === 0) { setOverlapWarning('Add at least one subject with a teacher, day(s), and a time.'); return; }
 
     setScheduling(true);
-    const res = await createClassSession({
-      studentId: newClassData.studentId,
-      subjectId: newClassData.subjectId,
-      teacherId: newClassData.teacherId,
-      type: newClassData.classType,
-      date: newClassData.date,
-      startTime: newClassData.startTime,
-      endTime: newClassData.endTime,
-    });
+    const res = await bulkScheduleClasses({ studentId: wizStudentId, startDate: wizStartDate, weeks: wizWeeks, type: wizType, rows });
     setScheduling(false);
 
     if (res.ok) {
       setShowAddClassModal(false);
-      setNewClassData({ studentId: '', subjectId: '', teacherId: '', classType: 'Class', date: '', startTime: '', endTime: '' });
+      resetWizard();
       router.refresh();
-      alert('Class scheduled.');
+      alert(`Scheduled ${res.created} class${res.created === 1 ? '' : 'es'}${res.conflicts ? ` · ${res.conflicts} skipped (teacher time conflict)` : ''}.`);
     } else {
-      setOverlapWarning(res.error ?? 'Failed to schedule class.');
+      setOverlapWarning(res.error ?? 'Failed to schedule.');
     }
   };
 
@@ -405,79 +423,137 @@ export function ScheduleClient({
           </div>
         )}
 
-        {/* SCHEDULE NEW CLASS MODAL */}
+        {/* SCHEDULE WIZARD MODAL */}
         {showAddClassModal && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-              <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">+ Schedule New Class Session</h3>
-                <button onClick={() => setShowAddClassModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
+          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-3xl w-full shadow-2xl space-y-5 my-6 text-sm">
+              <div className="flex justify-between items-start border-b pb-4">
+                <div>
+                  <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-xl">Schedule a Student's Classes</h3>
+                  <p className="text-xs text-[#6B7185] mt-1 leading-relaxed">Pick the student, add each subject with its teacher, days and time. A month of classes is generated on the selected weekdays (weekends stay off unless you tick them).</p>
+                </div>
+                <button onClick={() => setShowAddClassModal(false)}><X className="w-5 h-5 text-slate-400" /></button>
               </div>
 
-              <div className="space-y-3 text-xs font-bold">
+              {/* STUDENT FILTER TABS + PICKER */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-1 bg-[#F6F7FB] dark:bg-slate-800 p-1 rounded-xl w-max">
+                  {(['new', 'scheduled'] as const).map((t) => (
+                    <button
+                      key={t}
+                      onClick={() => { setStudentTab(t); setWizStudentId(''); }}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-extrabold transition-all ${studentTab === t ? 'bg-[#5B47D6] text-white shadow-sm' : 'text-[#6B7185]'}`}
+                    >
+                      {t === 'new' ? 'New (no classes)' : 'Already scheduled'}
+                    </button>
+                  ))}
+                </div>
+                <label className="text-slate-700 dark:text-slate-300 block font-bold">Student</label>
+                <select value={wizStudentId} onChange={(e) => setWizStudentId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-3 text-slate-900 dark:text-slate-100 font-bold">
+                  <option value="">Select a student...</option>
+                  {wizStudentList.map((s) => (<option key={s.id} value={s.id}>{s.name}{s.program ? ` — ${s.program}` : ''}</option>))}
+                </select>
+                {wizStudentList.length === 0 && (
+                  <p className="text-xs text-amber-600 font-medium">No {studentTab === 'new' ? 'unscheduled' : 'scheduled'} students in this list.</p>
+                )}
+                {wizProgram && (
+                  <p className="text-xs text-[#6B7185]">Program: <strong className="text-slate-800 dark:text-slate-200">{wizProgram}</strong> — subjects below are filtered to it.</p>
+                )}
+              </div>
+
+              {/* SUBJECT ROWS */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-slate-700 dark:text-slate-300 font-bold">Subjects, teachers, days &amp; time</label>
+                  <button onClick={addRow} className="text-xs font-extrabold text-[#5B47D6] hover:underline">+ Add subject</button>
+                </div>
+                {wizRows.map((r, i) => (
+                  <div key={i} className="p-3.5 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] text-[#6B7185] font-bold block mb-1">Subject</label>
+                        <select value={r.subjectId} onChange={(e) => updateRow(i, { subjectId: e.target.value })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-bold">
+                          <option value="">Select subject...</option>
+                          {wizSubjects.map((s) => (<option key={s.id} value={s.id}>{s.name}</option>))}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-[#6B7185] font-bold block mb-1">Teacher</label>
+                        <select value={r.teacherId} onChange={(e) => updateRow(i, { teacherId: e.target.value })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-bold">
+                          <option value="">Select teacher...</option>
+                          {teachers.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#6B7185] font-bold block mb-1">Days (Sat/Sun off by default)</label>
+                      <div className="flex flex-wrap gap-1.5">
+                        {[{ d: 1, l: 'Mon' }, { d: 2, l: 'Tue' }, { d: 3, l: 'Wed' }, { d: 4, l: 'Thu' }, { d: 5, l: 'Fri' }, { d: 6, l: 'Sat' }, { d: 0, l: 'Sun' }].map(({ d, l }) => (
+                          <button
+                            key={d}
+                            onClick={() => toggleWeekday(i, d)}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-bold border transition-all ${r.weekdays.includes(d) ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`}
+                          >
+                            {l}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[11px] text-[#6B7185] font-bold block mb-1">Start (PKT)</label>
+                        <input type="time" value={r.startTime} onChange={(e) => updateRow(i, { startTime: e.target.value })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-bold" />
+                      </div>
+                      <div>
+                        <label className="text-[11px] text-[#6B7185] font-bold block mb-1">End (PKT)</label>
+                        <input type="time" value={r.endTime} onChange={(e) => updateRow(i, { endTime: e.target.value })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-bold" />
+                      </div>
+                    </div>
+                    {wizRows.length > 1 && (
+                      <button onClick={() => removeRow(i)} className="text-xs font-bold text-rose-600 hover:underline">Remove this subject</button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* TYPE + DURATION */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-slate-700 dark:text-slate-300 block mb-1">Student</label>
-                  <select value={newClassData.studentId} onChange={(e) => setNewClassData({ ...newClassData, studentId: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
-                    <option value="">Select a student...</option>
-                    {students.map((s) => (<option key={s.id} value={s.id}>{s.name}</option>))}
+                  <label className="text-slate-700 dark:text-slate-300 font-bold block mb-1">Class type</label>
+                  <select value={wizType} onChange={(e) => setWizType(e.target.value as any)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-bold">
+                    <option value="Class">Regular class</option>
+                    <option value="Makeup">Makeup (free replacement)</option>
+                    <option value="Test">Test / assessment</option>
                   </select>
+                  <p className="text-[11px] text-[#6B7185] mt-1 leading-relaxed">Regular = normal teaching class · Makeup = a free replacement for a missed class · Test = an assessment session.</p>
                 </div>
-
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-slate-700 dark:text-slate-300 block mb-1">Subject</label>
-                    <select value={newClassData.subjectId} onChange={(e) => setNewClassData({ ...newClassData, subjectId: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
-                      <option value="">Select...</option>
-                      {subjects.map((s) => (<option key={s.id} value={s.id}>{s.name} ({s.program})</option>))}
+                    <label className="text-slate-700 dark:text-slate-300 font-bold block mb-1">Start date</label>
+                    <input type="date" value={wizStartDate} min={todayStr} onChange={(e) => setWizStartDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-bold" />
+                  </div>
+                  <div>
+                    <label className="text-slate-700 dark:text-slate-300 font-bold block mb-1">Generate for</label>
+                    <select value={wizWeeks} onChange={(e) => setWizWeeks(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-bold">
+                      <option value={1}>1 week</option>
+                      <option value={2}>2 weeks</option>
+                      <option value={4}>1 month</option>
+                      <option value={8}>2 months</option>
                     </select>
                   </div>
-                  <div>
-                    <label className="text-slate-700 dark:text-slate-300 block mb-1">Teacher</label>
-                    <select value={newClassData.teacherId} onChange={(e) => setNewClassData({ ...newClassData, teacherId: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
-                      <option value="">Select...</option>
-                      {teachers.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
-                    </select>
-                  </div>
                 </div>
-
-                <div className="grid grid-cols-3 gap-2">
-                  <div>
-                    <label className="text-slate-700 dark:text-slate-300 block mb-1">Type</label>
-                    <select value={newClassData.classType} onChange={(e) => setNewClassData({ ...newClassData, classType: e.target.value as any })} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
-                      <option value="Class">Class</option>
-                      <option value="Makeup">Makeup</option>
-                      <option value="Test">Test</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-slate-700 dark:text-slate-300 block mb-1">Start (PKT)</label>
-                    <input type="time" value={newClassData.startTime} onChange={(e) => setNewClassData({ ...newClassData, startTime: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
-                  </div>
-                  <div>
-                    <label className="text-slate-700 dark:text-slate-300 block mb-1">End (PKT)</label>
-                    <input type="time" value={newClassData.endTime} onChange={(e) => setNewClassData({ ...newClassData, endTime: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-slate-700 dark:text-slate-300 block mb-1">Date</label>
-                  <input type="date" value={newClassData.date} onChange={(e) => setNewClassData({ ...newClassData, date: e.target.value })} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
-                </div>
-
-                {(students.length === 0 || subjects.length === 0 || teachers.length === 0) && (
-                  <p className="text-xs text-amber-600 font-medium">Add students, subjects, and teachers first. (Run supabase/seed_subjects.sql for subjects.)</p>
-                )}
-
-                {overlapWarning && (
-                  <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-700 text-xs font-bold leading-relaxed">
-                    {overlapWarning}
-                  </div>
-                )}
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setShowAddClassModal(false)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleCreateNewClass} disabled={scheduling} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">{scheduling ? 'Scheduling...' : 'Confirm & Schedule'}</button>
+              {(subjects.length === 0 || teachers.length === 0) && (
+                <p className="text-xs text-amber-600 font-medium">Add subjects and teachers first. (Run supabase/seed_subjects.sql for subjects.)</p>
+              )}
+              {overlapWarning && (
+                <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-700 text-xs font-bold leading-relaxed">{overlapWarning}</div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-4 border-t">
+                <button onClick={() => setShowAddClassModal(false)} className="px-5 py-2.5 border rounded-xl font-bold">Cancel</button>
+                <button onClick={handleBulkSchedule} disabled={scheduling} className="px-5 py-2.5 bg-[#5B47D6] text-white rounded-xl font-extrabold shadow-md disabled:opacity-50">{scheduling ? 'Scheduling...' : 'Confirm & Schedule'}</button>
               </div>
             </div>
           </div>

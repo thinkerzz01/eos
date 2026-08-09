@@ -8,7 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 
-const CAIE_PROGRAMS = ['O Level', 'A Level', 'IGCSE'];
+const ENROLLABLE_PROGRAMS = ['O Level', 'A Level', 'IGCSE', 'Matric (9th)', 'Matric (10th)', 'Inter (11th)', 'Inter (12th)'];
 const SOURCES = ['google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in'];
 
 export interface CreateStudentInput {
@@ -49,7 +49,7 @@ export async function createStudent(input: CreateStudentInput): Promise<ActionRe
   if (!name || !parent_name || !phone) {
     return { ok: false, error: 'Name, parent name, and phone are required.' };
   }
-  if (!CAIE_PROGRAMS.includes(input.program)) {
+  if (!ENROLLABLE_PROGRAMS.includes(input.program)) {
     return { ok: false, error: 'Program must be a CAIE program (O Level, A Level, or IGCSE).' };
   }
   if (!input.exam_session?.trim()) {
@@ -152,7 +152,7 @@ export async function bulkCreateStudents(
   // students.phone is NOT NULL with a unique index — rows without a phone must be
   // skipped (counted in `skipped`), not force-inserted as 'N/A' (which collides).
   const valid = rows.filter(
-    (r) => r.name?.trim() && r.parentName?.trim() && r.parentPhone?.trim() && CAIE_PROGRAMS.includes(r.program)
+    (r) => r.name?.trim() && r.parentName?.trim() && r.parentPhone?.trim() && ENROLLABLE_PROGRAMS.includes(r.program)
   );
   const skipped = rows.length - valid.length;
   if (valid.length === 0) {
@@ -221,7 +221,7 @@ export async function updateStudent(input: {
   if (input.parentName?.trim()) patch.parent_name = input.parentName.trim();
   if (input.parentPhone?.trim()) patch.phone = input.parentPhone.trim();
   if (input.program) {
-    if (!CAIE_PROGRAMS.includes(input.program)) {
+    if (!ENROLLABLE_PROGRAMS.includes(input.program)) {
       return { ok: false, error: 'Program must be a CAIE program (O Level, A Level, or IGCSE).' };
     }
     patch.program = input.program;

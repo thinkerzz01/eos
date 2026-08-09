@@ -2,21 +2,23 @@
 
 import React, { useState } from 'react';
 import { submitPublicBooking } from './actions';
+import { ALL_PROGRAMS, ALL_SUBJECTS } from '@/lib/syllabiSeed';
 import {
-  Clock,
   CheckCircle2,
   Sparkles,
   ArrowRight,
   AlertCircle,
 } from 'lucide-react';
 
-// Booking window matches the DB routine (get_open_slots: 07:00–22:00 PKT).
-const SLOT_HOURS = Array.from({ length: 15 }, (_, i) => i + 7); // 7..21
+const HOW_FOUND = ['Google', 'Facebook', 'Instagram', 'WhatsApp', 'Referral', 'Walk-in'];
 
-function labelForHour(h: number): string {
+// Format a HH:MM (24h) time as a human 12h label, e.g. "4:30 PM".
+function prettyTime(t: string): string {
+  if (!/^\d{2}:\d{2}$/.test(t)) return '';
+  const [h, m] = t.split(':').map(Number);
   const period = h < 12 ? 'AM' : 'PM';
   const twelve = h % 12 === 0 ? 12 : h % 12;
-  return `${twelve}:00 ${period}`;
+  return `${twelve}:${String(m).padStart(2, '0')} ${period}`;
 }
 
 // Today's date in Pakistan time as YYYY-MM-DD (min selectable date).
@@ -30,8 +32,10 @@ export default function PublicBookingPage() {
   const [parentPhone, setParentPhone] = useState('');
   const [parentEmail, setParentEmail] = useState('');
   const [program, setProgram] = useState('O Level');
+  const [subject, setSubject] = useState('');
+  const [source, setSource] = useState('');
   const [date, setDate] = useState<string>(todayPKT());
-  const [hour, setHour] = useState<number | null>(null);
+  const [time, setTime] = useState<string>('');
 
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string>('');
@@ -45,8 +49,8 @@ export default function PublicBookingPage() {
       setError('Please fill in the student name, parent name, and phone number.');
       return;
     }
-    if (hour === null) {
-      setError('Please pick a demo time slot.');
+    if (!time) {
+      setError('Please choose a demo time.');
       return;
     }
 
@@ -58,8 +62,10 @@ export default function PublicBookingPage() {
         parentPhone,
         parentEmail,
         program,
+        subject,
+        source,
         date,
-        hour,
+        time,
       });
       if (!res.ok) {
         setError(res.error || 'Something went wrong. Please try again.');
@@ -137,41 +143,42 @@ export default function PublicBookingPage() {
                   <span>Select Demo Date & Time</span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
-                  <div className="sm:col-span-1">
-                    <label className="text-slate-700 block mb-1 text-xs font-bold">Preferred Date *</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-bold">
+                  <div>
+                    <label className="text-slate-700 block mb-1">Preferred Date *</label>
                     <input
                       type="date"
                       required
                       value={date}
                       min={todayPKT()}
                       onChange={(e) => setDate(e.target.value)}
-                      className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs font-bold focus:outline-none focus:border-[#5B47D6]"
+                      className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
                     />
                   </div>
+                  <div>
+                    <label className="text-slate-700 block mb-1">Preferred Time (PKT) *</label>
+                    <input
+                      type="time"
+                      required
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-slate-700 block mb-1">Subject *</label>
+                    <select
+                      required
+                      value={subject}
+                      onChange={(e) => setSubject(e.target.value)}
+                      className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
+                    >
+                      <option value="">Select subject...</option>
+                      {ALL_SUBJECTS.map((s) => (<option key={s} value={s}>{s}</option>))}
+                    </select>
+                  </div>
                 </div>
-
-                <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-                  {SLOT_HOURS.map((h) => {
-                    const isSelected = hour === h;
-                    return (
-                      <button
-                        type="button"
-                        key={h}
-                        onClick={() => setHour(h)}
-                        className={`p-2.5 rounded-xl border-2 text-xs font-bold transition-all flex items-center justify-center gap-1 ${
-                          isSelected
-                            ? 'border-[#5B47D6] bg-purple-50/70 text-[#5B47D6] shadow-sm'
-                            : 'border-[#EBEDF3] hover:border-slate-300 bg-white text-slate-700'
-                        }`}
-                      >
-                        <Clock className="w-3 h-3 opacity-70" />
-                        <span>{labelForHour(h)}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <p className="text-xs text-slate-400 font-medium">All times are Pakistan Standard Time (PKT). Slots run for 45 minutes.</p>
+                <p className="text-xs text-slate-400 font-medium">Pick any time (Pakistan Standard Time). The free demo is one 45-minute class.</p>
               </div>
 
               {/* STEP 2: PARENT & STUDENT DETAILS */}
@@ -201,10 +208,7 @@ export default function PublicBookingPage() {
                       onChange={(e) => setProgram(e.target.value)}
                       className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
                     >
-                      <option value="O Level">O Level (CAIE)</option>
-                      <option value="A Level">A Level (CAIE)</option>
-                      <option value="IGCSE">IGCSE</option>
-                      <option value="Matric (10th)">Matric / F.Sc</option>
+                      {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                     </select>
                   </div>
 
@@ -232,7 +236,7 @@ export default function PublicBookingPage() {
                     />
                   </div>
 
-                  <div className="sm:col-span-2">
+                  <div>
                     <label className="text-slate-700 block mb-1">Email (optional)</label>
                     <input
                       type="email"
@@ -241,6 +245,18 @@ export default function PublicBookingPage() {
                       placeholder="parent@example.com"
                       className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
                     />
+                  </div>
+
+                  <div>
+                    <label className="text-slate-700 block mb-1">How did you find us?</label>
+                    <select
+                      value={source}
+                      onChange={(e) => setSource(e.target.value)}
+                      className="w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]"
+                    >
+                      <option value="">Select...</option>
+                      {HOW_FOUND.map((s) => (<option key={s} value={s}>{s}</option>))}
+                    </select>
                   </div>
                 </div>
               </div>
@@ -285,7 +301,7 @@ export default function PublicBookingPage() {
               <div className="text-purple-700 text-xs uppercase tracking-wider">Booking Reference Code</div>
               <div className="font-mono text-2xl text-[#5B47D6] font-extrabold">{bookingRef}</div>
               <div className="text-slate-600 text-xs font-medium pt-1">
-                Requested Slot: <strong>{prettyDate}</strong>{hour !== null && <> at <strong>{labelForHour(hour)} PKT</strong></>}
+                Requested Slot: <strong>{prettyDate}</strong>{time && <> at <strong>{prettyTime(time)} PKT</strong></>}{subject && <> for <strong>{subject}</strong></>}
               </div>
             </div>
 
@@ -300,7 +316,9 @@ export default function PublicBookingPage() {
                 setParentName('');
                 setParentPhone('');
                 setParentEmail('');
-                setHour(null);
+                setTime('');
+                setSubject('');
+                setSource('');
                 setBookingRef('');
               }}
               className="px-6 py-2.5 bg-slate-900 text-white font-extrabold text-xs rounded-xl hover:bg-slate-800 transition-all cursor-pointer"

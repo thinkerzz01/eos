@@ -83,3 +83,43 @@ export async function getMonthlyReports(): Promise<MonthlyReportData[]> {
     } as MonthlyReportData;
   });
 }
+
+export interface FunnelStats {
+  demosBooked: number;
+  studentsEnrolled: number;
+  funnelPct: number; // enrolled / demos booked (Master Plan §11)
+  lostReasons: { reason: string; count: number }[];
+}
+
+export async function getFunnelStats(): Promise<FunnelStats> {
+  const empty: FunnelStats = { demosBooked: 0, studentsEnrolled: 0, funnelPct: 0, lostReasons: [] };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return empty;
+
+  const [demosRes, studentsRes, lostRes] = await Promise.all([
+    supabase.from('demos').select('id', { count: 'exact', head: true }).is('deleted_at', null),
+    supabase.from('students').select('id', { count: 'exact', head: true }).eq('status', 'active').is('deleted_at', null),
+    supabase.from('leads').select('lost_reason').eq('status', 'lost').is('deleted_at', null),
+  ]);
+
+  const demosBooked = demosRes.count ?? 0;
+  const studentsEnrolled = studentsRes.count ?? 0;
+  const lostMap = new Map<string, number>();
+  for (const l of lostRes.data ?? []) {
+    const r = ((l as any).lost_reason as string) || 'Unspecified';
+    lostMap.set(r, (lostMap.get(r) ?? 0) + 1);
+  }
+  const lostReasons = Array.from(lostMap.entries())
+    .map(([reason, count]) => ({ reason, count }))
+    .sort((a, b) => b.count - a.count);
+
+  return {
+    demosBooked,
+    studentsEnrolled,
+    funnelPct: demosBooked > 0 ? Math.round((studentsEnrolled / demosBooked) * 100) : 0,
+    lostReasons,
+  };
+}

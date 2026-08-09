@@ -6,7 +6,8 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { DemoSession } from '@/lib/mockAdmissionsData';
-import { assignTeacher, recordOutcome } from './actions';
+import { createClient } from '@/lib/supabase/client';
+import { assignTeacher, recordOutcome, deleteDemo } from './actions';
 import {
   Calendar,
   Clock,
@@ -45,6 +46,21 @@ export function DemosClient({
   // Keep the table in sync when the server refetches after a write (router.refresh()).
   useEffect(() => { setDemosList(initialDemos); }, [initialDemos]);
 
+  // Realtime: when a new public booking lands (demo/lead insert), refresh the list
+  // automatically - no manual page refresh needed. Requires the tables to be in the
+  // supabase_realtime publication (schema.sql adds them).
+  useEffect(() => {
+    const supabase = createClient();
+    const channel = supabase
+      .channel('demos-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'demos' }, () => router.refresh())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'leads' }, () => router.refresh())
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [router]);
+
   // ASSIGN TEACHER MODAL WITH doAssign TIME OVERLAP RE-CHECK
   const [assignModalDemo, setAssignModalDemo] = useState<DemoSession | null>(null);
   const [selectedTeacherId, setSelectedTeacherId] = useState<string>('');
@@ -56,6 +72,7 @@ export function DemosClient({
   const [outcomeModalDemo, setOutcomeModalDemo] = useState<DemoSession | null>(null);
   const [selectedOutcome, setSelectedOutcome] = useState<'Won' | 'Lost' | 'No-show' | 'Pending'>('Won');
   const [outcomeFeedback, setOutcomeFeedback] = useState<string>('');
+  const [enrollLink, setEnrollLink] = useState<string | null>(null);
 
   const filteredDemos = useMemo(() => {
     return demosList.filter((d) => {
@@ -112,18 +129,60 @@ export function DemosClient({
     setSavingOutcome(false);
 
     if (res.ok) {
+      const leadId = outcomeModalDemo.leadId;
+      const won = selectedOutcome === 'Won';
       setOutcomeModalDemo(null);
       setOutcomeFeedback('');
       router.refresh();
-      alert(`Demo outcome saved: ${selectedOutcome}.`);
+      // On a win, surface the enrollment-form link for the admin to send instead of
+      // a separate "convert" step (the student self-completes their record).
+      if (won && leadId) {
+        setEnrollLink(`${window.location.origin}/enroll/${leadId}`);
+      } else {
+        alert(`Demo outcome saved: ${selectedOutcome}.`);
+      }
     } else {
       alert(res.error ?? 'Failed to save outcome.');
     }
   };
 
+  const handleDeleteDemo = async (d: DemoSession) => {
+    if (!confirm(`Delete the demo for ${d.studentName}? This removes it from the list.`)) return;
+    const res = await deleteDemo(d.id);
+    if (res.ok) router.refresh();
+    else alert(res.error ?? 'Failed to delete demo.');
+  };
+
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
+
+        {/* WON -> ENROLLMENT LINK MODAL */}
+        {enrollLink && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+              <div className="flex items-center gap-2 text-emerald-600 font-heading font-extrabold text-lg">
+                <CheckCircle2 className="w-5 h-5" />
+                <span>Student Won - Send Enrollment Form</span>
+              </div>
+              <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium leading-relaxed">
+                Share this link with the parent on WhatsApp. When they submit it, the student record is created automatically - no separate convert step needed.
+              </p>
+              <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-xs break-all text-slate-800 dark:text-slate-200">
+                {enrollLink}
+              </div>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setEnrollLink(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Close</button>
+                <button
+                  onClick={() => { try { navigator.clipboard?.writeText(enrollLink); } catch {} }}
+                  className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md"
+                >
+                  Copy link
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* TOP HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
@@ -290,6 +349,14 @@ export function DemosClient({
                           >
                             Log Outcome
                           </button>
+                          {role === 'admin' && (
+                            <button
+                              onClick={() => handleDeleteDemo(d)}
+                              className="px-2.5 py-1 bg-rose-50 text-rose-600 font-extrabold text-xs rounded-lg border border-rose-200 hover:bg-rose-100 cursor-pointer"
+                            >
+                              Delete
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>

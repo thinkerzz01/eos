@@ -39,9 +39,10 @@ export async function GET(req: NextRequest) {
   // Drain oldest-first within ascending priority (1 before 2 before 3).
   const { data: queue } = await admin
     .from('notifications')
-    .select('id,type,priority,payload,retry_count,unique_key')
+    .select('id,type,priority,payload,retry_count,unique_key,next_retry_at')
     .eq('status', 'queued')
     .is('deleted_at', null)
+    .or(`next_retry_at.is.null,next_retry_at.lte.${new Date().toISOString()}`)
     .order('priority', { ascending: true })
     .order('created_at', { ascending: true })
     .limit(budget);
@@ -58,11 +59,14 @@ export async function GET(req: NextRequest) {
 
     const markFailed = async (reason: string) => {
       const nextRetry = (row.retry_count ?? 0) + 1;
+      // Exponential backoff (AGENTS §3.5): 1, 2, 4, 8, 16 minutes before re-eligible.
+      const backoffMin = Math.pow(2, row.retry_count ?? 0);
       await admin
         .from('notifications')
         .update({
           status: nextRetry >= MAX_RETRIES ? 'failed' : 'queued',
           retry_count: nextRetry,
+          next_retry_at: new Date(Date.now() + backoffMin * 60 * 1000).toISOString(),
           payload: { ...payload, last_error: reason },
         })
         .eq('id', row.id);
