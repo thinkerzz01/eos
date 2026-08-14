@@ -10,6 +10,7 @@ import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
 import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
 import { bulkCreateStudents, updateStudent, softDeleteStudent } from './actions';
 import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
+import { OnboardStudentModal } from '@/components/students/OnboardStudentModal';
 import {
   Users,
   UserCheck,
@@ -153,6 +154,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
   const [showSaveViewModal, setShowSaveViewModal] = useState<boolean>(false);
   const [newViewName, setNewViewName] = useState<string>('');
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
+  const [showOnboard, setShowOnboard] = useState<boolean>(false);
   const [showAiInsightsModal, setShowAiInsightsModal] = useState<boolean>(false);
   const [activeRowMenuId, setActiveRowMenuId] = useState<string | null>(null);
 
@@ -535,6 +537,15 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
+            {(role === 'admin' || role === 'manager') && (
+              <button
+                onClick={() => setShowOnboard(true)}
+                className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#5B47D6]/20 transition-all cursor-pointer"
+              >
+                <Plus className="w-4 h-4 stroke-[2.5]" />
+                <span>Add Student</span>
+              </button>
+            )}
             <button
               onClick={() => setShowImportModal(true)}
               className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
@@ -1800,6 +1811,12 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
         )}
 
       </div>
+
+      <OnboardStudentModal
+        isOpen={showOnboard}
+        onClose={() => setShowOnboard(false)}
+        onSuccess={() => router.refresh()}
+      />
     </PortalLayout>
   );
 }
