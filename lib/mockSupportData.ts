@@ -1,20 +1,6 @@
-// Central Support & Polish Mock Store for Phase 7 (Tickets, Announcements, Audit Log)
-
-export interface SupportTicket {
-  id: string;
-  ticketNo: string;
-  subject: string;
-  submittedBy: string;
-  userRole: 'Student' | 'Parent' | 'Teacher';
-  category: 'Fee Voucher' | 'Schedule Conflict' | 'Portal Access' | 'Academic Progress';
-  priority: 'Urgent' | 'Medium' | 'Low';
-  status: 'Open' | 'In Progress' | 'Resolved' | 'Closed';
-  createdAt: string; // ISO or PKT time
-  elapsedMinutes: number; // For 1-hour response target SLA check!
-  isPastTarget: boolean; // True if > 60 minutes during 7 AM - 11 PM window
-  messagesCount: number;
-  messages?: { id: string; body: string; at: string }[];
-}
+// Central Support & Polish Mock Store (Announcements, Audit Log).
+// NOTE: the Support Ticket system was removed 2026-08-14 and archived to
+// _archive/tickets/ (SupportTicket + MOCK_TICKETS live there for restore).
 
 export interface AcademyAnnouncement {
   id: string;
@@ -39,6 +25,5 @@ export interface AuditLogEntry {
 
 
 // Dummy data removed. Populate via the app / real database.
-export const MOCK_TICKETS: SupportTicket[] = [];
 export const MOCK_ANNOUNCEMENTS: AcademyAnnouncement[] = [];
 export const MOCK_AUDIT_LOGS: AuditLogEntry[] = [];

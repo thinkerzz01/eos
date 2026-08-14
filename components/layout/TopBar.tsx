@@ -22,7 +22,6 @@ import {
   BookOpen,
   DollarSign,
   FileText,
-  Ticket,
   User,
   Shield,
   LogOut,
@@ -125,7 +124,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
               </button>
               <button
                 onClick={() => {
-                  router.push('/demos');
+                  router.push('/demos?new=1');
                   setShowQuickMenu(false);
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
@@ -155,7 +154,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
               </button>
               <button
                 onClick={() => {
-                  router.push('/payments');
+                  router.push('/vouchers');
                   setShowQuickMenu(false);
                 }}
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
@@ -182,16 +181,6 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
               >
                 <Megaphone className="w-4 h-4 text-[#5B47D6]" />
                 <span>+ Post Announcement</span>
-              </button>
-              <button
-                onClick={() => {
-                  router.push('/tickets');
-                  setShowQuickMenu(false);
-                }}
-                className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5 border-t border-slate-100 dark:border-slate-800 pt-2"
-              >
-                <Ticket className="w-4 h-4 text-rose-500" />
-                <span>+ Open Ticket</span>
               </button>
             </div>
           )}

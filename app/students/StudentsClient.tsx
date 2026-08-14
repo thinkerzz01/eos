@@ -1652,10 +1652,6 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                             <Receipt className="w-4 h-4" />
                             <span>Generate Invoice</span>
                           </button>
-                          <button onClick={() => router.push('/tickets')} className="p-3 bg-amber-50 text-amber-600 rounded-xl font-bold flex items-center gap-2 hover:bg-amber-100 transition-colors cursor-pointer">
-                            <Plus className="w-4 h-4" />
-                            <span>Open Ticket</span>
-                          </button>
                         </div>
                       </div>
                     </div>

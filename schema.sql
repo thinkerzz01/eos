@@ -700,7 +700,7 @@ DO $$
 DECLARE
     t text;
     tables text[] := ARRAY[
-        'profiles', 'teachers', 'teacher_pay_rates', 'teacher_leave',
+        'profiles', 'teachers', 'teacher_pay_rates', 'teacher_payouts', 'teacher_leave',
         'subjects', 'teacher_subjects', 'syllabus_templates', 'syllabus_topics',
         'students', 'student_subjects', 'syllabus_progress', 'leads', 'lead_communications',
         'demos', 'class_sessions', 'attendance', 'class_notes', 'homework', 'tests',
@@ -865,12 +865,16 @@ CREATE POLICY student_access_own_ticket_messages ON public.ticket_messages FOR A
     current_user_role() = 'student' AND ticket_id IN (SELECT id FROM public.tickets WHERE opened_by = auth.uid() AND deleted_at IS NULL)
 );
 
+-- Announcements are org-wide broadcasts (the app has no per-role/per-program
+-- audience targeting UI), so students AND teachers read every announcement in
+-- their org. Without a teacher policy teachers saw nothing; without dropping the
+-- announcement_targets gate students saw nothing (targets are never created).
 CREATE POLICY student_read_announcements ON public.announcements FOR SELECT USING (
-    current_user_role() = 'student' AND id IN (
-        SELECT announcement_id FROM public.announcement_targets 
-        WHERE (student_id = current_student_id() OR program = (SELECT program FROM public.students WHERE id = current_student_id())) 
-        AND deleted_at IS NULL
-    )
+    current_user_role() = 'student' AND org_id = current_user_org_id()
+);
+
+CREATE POLICY teacher_read_announcements ON public.announcements FOR SELECT USING (
+    current_user_role() = 'teacher' AND org_id = current_user_org_id()
 );
 
 

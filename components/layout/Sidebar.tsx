@@ -14,7 +14,6 @@ import {
   Receipt,
   FileText,
   TrendingUp,
-  Ticket,
   Megaphone,
   FolderLock,
   Settings,
@@ -32,7 +31,6 @@ interface SidebarProps {
   counts?: {
     leads?: number;
     demosNeedingTeacher?: number;
-    redTickets?: number;
   };
 }
 
@@ -161,12 +159,6 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
     {
       groupLabel: 'Communication',
       items: [
-        {
-          label: 'Tickets',
-          href: '/tickets',
-          icon: Ticket,
-          allowedRoles: ['admin', 'manager', 'teacher', 'student'],
-        },
         {
           label: 'Announcements',
           href: '/announcements',

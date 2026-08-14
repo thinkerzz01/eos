@@ -43,6 +43,9 @@ export async function submitEnrollment(input: {
   }
 
   const email = input.email?.trim() || '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    return { ok: false, error: 'A valid email is required - class calendar invites are sent to it.' };
+  }
   const supabase = createClient(); // no session -> anon; RPC is granted to anon
   const { data: studentId, error } = await supabase.rpc('submit_enrollment', {
     p_lead_id: input.leadId,

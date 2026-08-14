@@ -27,6 +27,10 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
       setError('Please fill in the student name, parent name, phone, and exam session.');
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('A valid email is required - your class calendar invites are sent to it.');
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await submitEnrollment({
@@ -116,8 +120,9 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
                   <input type="text" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+92 300 0000000" className={input} />
                 </div>
                 <div>
-                  <label className="text-slate-700 block mb-1">Email</label>
-                  <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="parent@example.com" className={input} />
+                  <label className="text-slate-700 block mb-1">Email <span className="text-rose-500">*</span></label>
+                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="parent@gmail.com" className={input} />
+                  <p className="text-[11px] text-slate-400 mt-1">Class calendar invites are sent here.</p>
                 </div>
                 <div>
                   <label className="text-slate-700 block mb-1">City</label>

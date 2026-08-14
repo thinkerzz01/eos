@@ -12,6 +12,14 @@ import { provisionLogin } from '@/lib/auth/provision';
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
 const SOURCES = ['google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in'];
 
+// A student email is REQUIRED at creation: it is the address Google Calendar
+// invites (class + demo events) are sent to, and the portal-login invite. Kept
+// deliberately strict so we never create a student the calendar cannot reach.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+function isValidEmail(raw?: string): boolean {
+  return !!raw && EMAIL_RE.test(raw.trim());
+}
+
 export interface CreateStudentInput {
   name: string;
   parent_name: string;
@@ -52,6 +60,9 @@ export async function createStudent(input: CreateStudentInput): Promise<ActionRe
   if (!name || !parent_name || !phone) {
     return { ok: false, error: 'Name, parent name, and phone are required.' };
   }
+  if (!isValidEmail(input.email)) {
+    return { ok: false, error: 'A valid email is required - class calendar invites are sent to it.' };
+  }
   if (!ENROLLABLE_PROGRAMS.includes(input.program)) {
     return { ok: false, error: 'Program must be a CAIE program (O Level, A Level, or IGCSE).' };
   }
@@ -89,7 +100,7 @@ export async function createStudent(input: CreateStudentInput): Promise<ActionRe
     parent_name,
     phone,
     whatsapp: input.whatsapp?.trim() || null,
-    email: input.email?.trim() || null,
+    email: input.email!.trim(),
     address: input.address?.trim() || null,
     city: input.city?.trim() || null,
     program: input.program,
@@ -174,8 +185,14 @@ export async function bulkCreateStudents(
 
   // students.phone is NOT NULL with a unique index - rows without a phone must be
   // skipped (counted in `skipped`), not force-inserted as 'N/A' (which collides).
+  // Email is likewise required (calendar invites), so email-less rows are skipped.
   const valid = rows.filter(
-    (r) => r.name?.trim() && r.parentName?.trim() && r.parentPhone?.trim() && ENROLLABLE_PROGRAMS.includes(r.program)
+    (r) =>
+      r.name?.trim() &&
+      r.parentName?.trim() &&
+      r.parentPhone?.trim() &&
+      isValidEmail(r.parentEmail) &&
+      ENROLLABLE_PROGRAMS.includes(r.program)
   );
   const skipped = rows.length - valid.length;
   if (valid.length === 0) {
@@ -183,7 +200,7 @@ export async function bulkCreateStudents(
       ok: false,
       inserted: 0,
       skipped,
-      error: 'No valid rows - each needs a name, a parent name, and a CAIE program (O/A Level, IGCSE).',
+      error: 'No valid rows - each needs a name, a parent name, a valid email, a phone, and a CAIE program (O/A Level, IGCSE).',
     };
   }
 
@@ -192,7 +209,7 @@ export async function bulkCreateStudents(
     name: r.name.trim(),
     parent_name: r.parentName.trim(),
     phone: r.parentPhone!.trim(),
-    email: r.parentEmail?.trim() || null,
+    email: r.parentEmail!.trim(),
     program: r.program,
     exam_session: 'To be set',
     monthly_fee: 0,

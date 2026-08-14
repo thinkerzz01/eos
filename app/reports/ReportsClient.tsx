@@ -198,8 +198,8 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                   onClick={() => handleGenerateReportDraft(selectedReport)}
                   className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer"
                 >
-                  <FileText className="w-4 h-4 text-purple-200" />
-                  <span>Generate Report Draft</span>
+                  <Eye className="w-4 h-4 text-purple-200" />
+                  <span>Preview Draft</span>
                 </button>
               </div>
 
@@ -247,11 +247,11 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                   </div>
                 ) : (
                   <div className="p-4 bg-slate-50 border border-dashed border-slate-200 rounded-2xl text-xs font-medium text-slate-400">
-                    Click “Generate Report Draft” to assemble this student’s summary from their live numbers.
+                    Click “Preview Draft” to assemble this student’s summary from their live numbers.
                   </div>
                 )}
                 <p className="text-xs text-slate-400 font-medium no-print">
-                  This draft is assembled by code. The warm, parent-friendly phrasing is generated and emailed automatically by the month-end reporting job.
+                  This is a local preview only - nothing is saved or sent from here. The warm, parent-friendly phrasing is generated and emailed automatically by the month-end reporting job.
                 </p>
               </div>
 

@@ -20,7 +20,7 @@ export interface DashboardMetrics {
   classesToday: number;
   revenueThisMonth: number;
   demosNeedingTeacher: number;
-  urgentTickets: number;
+  newLeadsToday: number;
   collected: number;
   outstanding: number;
   refunds: number;
@@ -33,7 +33,7 @@ export interface DashboardMetrics {
 
 const EMPTY: DashboardMetrics = {
   activeTeachers: 0, activeStudents: 0, classesToday: 0, revenueThisMonth: 0, demosNeedingTeacher: 0,
-  urgentTickets: 0, collected: 0, outstanding: 0, refunds: 0, feeCollectionPct: 0, forecast30: 0,
+  newLeadsToday: 0, collected: 0, outstanding: 0, refunds: 0, feeCollectionPct: 0, forecast30: 0,
   paidToTeachers: 0, todaysClasses: [], teacherCapacity: [],
 };
 
@@ -54,7 +54,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const dayStart = `${todayPKT}T00:00:00+05:00`;
   const dayEnd = `${todayPKT}T23:59:59+05:00`;
 
-  const [teachersRes, classesRes, paymentsRes, vouchersRes, vPaymentsRes, demosRes, ticketsRes, refundsRes, loadRes, studentsRes, payoutsRes] =
+  const [teachersRes, classesRes, paymentsRes, vouchersRes, vPaymentsRes, demosRes, refundsRes, loadRes, studentsRes, payoutsRes, leadsRes] =
     await Promise.all([
       supabase.from('teachers').select('id,name,capacity').is('deleted_at', null),
       supabase.from('class_sessions').select('id,start_at,students(name),subjects(name)').gte('start_at', dayStart).lte('start_at', dayEnd).is('deleted_at', null).order('start_at', { ascending: true }),
@@ -62,11 +62,11 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       supabase.from('vouchers').select('id,amount,status').neq('status', 'paid').is('deleted_at', null),
       supabase.from('payments').select('amount,voucher_id').is('deleted_at', null),
       supabase.from('demos').select('id', { count: 'exact', head: true }).eq('status', 'needs_teacher').is('deleted_at', null),
-      supabase.from('tickets').select('id', { count: 'exact', head: true }).in('status', ['open', 'in_progress']).is('deleted_at', null),
       supabase.from('refunds').select('amount').is('deleted_at', null),
       supabase.from('class_sessions').select('teacher_id').is('deleted_at', null),
       supabase.from('students').select('monthly_fee').eq('status', 'active').is('deleted_at', null),
       supabase.from('teacher_payouts').select('amount').gte('paid_at', monthStart).is('deleted_at', null),
+      supabase.from('leads').select('id', { count: 'exact', head: true }).gte('created_at', dayStart).is('deleted_at', null),
     ]);
 
   const teachers = teachersRes.data ?? [];
@@ -118,7 +118,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     classesToday: todaysClasses.length,
     revenueThisMonth,
     demosNeedingTeacher: demosRes.count ?? 0,
-    urgentTickets: ticketsRes.count ?? 0,
+    newLeadsToday: leadsRes.count ?? 0,
     collected,
     outstanding,
     refunds,

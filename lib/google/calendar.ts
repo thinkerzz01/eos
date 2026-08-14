@@ -61,15 +61,36 @@ export interface MeetEventInput {
   recurrence?: string[]; // e.g. ['RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;COUNT=12']
 }
 
-export interface MeetEventResult {
-  meetLink: string;
-  eventId: string;
+// Why a calendar sync did or did not happen, so callers can tell the admin
+// instead of silently swallowing the failure.
+export type CalendarSyncReason = 'not_configured' | 'auth_failed' | 'no_recipients' | 'api_error';
+
+export type MeetEventResult =
+  | { ok: true; meetLink: string; eventId: string }
+  | { ok: false; reason: CalendarSyncReason };
+
+/** Human-readable explanation for a failed calendar sync (for admin toasts). */
+export function calendarReasonText(reason: CalendarSyncReason): string {
+  switch (reason) {
+    case 'not_configured':
+      return 'Google Calendar is not connected';
+    case 'auth_failed':
+      return 'the Google sign-in has expired - reconnect Google';
+    case 'no_recipients':
+      return 'no email on file for the student or teacher';
+    case 'api_error':
+      return 'Google rejected the request';
+  }
 }
 
-/** Create a Google Calendar event with a Meet link. Returns null on any failure. */
-export async function createMeetEvent(input: MeetEventInput): Promise<MeetEventResult | null> {
+/** Create a Google Calendar event with a Meet link. Never throws; returns a
+ *  structured result so the caller can surface WHY a sync did not happen. */
+export async function createMeetEvent(input: MeetEventInput): Promise<MeetEventResult> {
+  const recipients = input.attendees.filter(Boolean);
+  if (recipients.length === 0) return { ok: false, reason: 'no_recipients' };
+  if (!googleConfigured()) return { ok: false, reason: 'not_configured' };
   const token = await getAccessToken();
-  if (!token) return null;
+  if (!token) return { ok: false, reason: 'auth_failed' };
   const calendarId = process.env.GOOGLE_CALENDAR_ID || 'primary';
 
   const body: any = {
@@ -77,11 +98,20 @@ export async function createMeetEvent(input: MeetEventInput): Promise<MeetEventR
     description: input.description ?? '',
     start: { dateTime: input.startISO, timeZone: 'Asia/Karachi' },
     end: { dateTime: input.endISO, timeZone: 'Asia/Karachi' },
-    attendees: input.attendees.filter(Boolean).map((email) => ({ email })),
+    attendees: recipients.map((email) => ({ email })),
     conferenceData: { createRequest: { requestId: requestId(), conferenceSolutionKey: { type: 'hangoutsMeet' } } },
     // Guests can't invite others or edit; they join only.
     guestsCanInviteOthers: false,
     guestsCanModify: false,
+    // Two popup reminders: the usual 30 minutes, plus 5 minutes to prompt joining
+    // just before the class starts.
+    reminders: {
+      useDefault: false,
+      overrides: [
+        { method: 'popup', minutes: 30 },
+        { method: 'popup', minutes: 5 },
+      ],
+    },
   };
   if (input.recurrence && input.recurrence.length) body.recurrence = input.recurrence;
 
@@ -94,17 +124,56 @@ export async function createMeetEvent(input: MeetEventInput): Promise<MeetEventR
         body: JSON.stringify(body),
       }
     );
-    if (!res.ok) return null;
+    if (!res.ok) return { ok: false, reason: 'api_error' };
     const json: any = await res.json();
-    if (!json.id) return null;
+    if (!json.id) return { ok: false, reason: 'api_error' };
     const meetLink =
       json.hangoutLink ||
       json.conferenceData?.entryPoints?.find((e: any) => e.entryPointType === 'video')?.uri ||
       '';
-    return { meetLink, eventId: json.id as string };
+    return { ok: true, meetLink, eventId: json.id as string };
   } catch {
-    return null;
+    return { ok: false, reason: 'api_error' };
   }
+}
+
+/**
+ * Build a clean, professional calendar title + description for a class or demo
+ * invite. No emojis (reads as unprofessional); plain hyphen bullets. The teacher
+ * and student names are included when known so the student recognises the class.
+ */
+export function buildClassInvite(opts: {
+  subject?: string;
+  teacherName?: string;
+  studentName?: string;
+  isDemo?: boolean;
+}): { summary: string; description: string } {
+  const subject = (opts.subject || '').trim() || 'Class';
+  const label = opts.isDemo ? 'Free Demo Class' : 'Class';
+  const summary = `Thinkerzz ${subject} ${label}${opts.studentName ? ` - ${opts.studentName}` : ''}`;
+
+  const lines: string[] = [`Thinkerzz ${subject} ${label}`, ''];
+  if (opts.teacherName) lines.push(`Teacher: ${opts.teacherName}`);
+  if (opts.studentName) lines.push(`Student: ${opts.studentName}`);
+  lines.push('');
+  lines.push('Join using the Google Meet link attached to this invitation.');
+  lines.push('');
+  lines.push('Please note:');
+  lines.push('- Join at least 5 minutes before the scheduled start time.');
+  lines.push('- Your teacher will start the meeting. Kindly wait if it has not begun yet.');
+  lines.push('- Keep your camera on and have your books and materials ready.');
+  if (opts.isDemo) {
+    lines.push('- If you are unable to attend, please inform the academy in advance.');
+    lines.push('');
+    lines.push('We look forward to seeing you.');
+  } else {
+    lines.push('- If you cannot attend, inform the academy in advance so a makeup class can be arranged.');
+    lines.push('');
+    lines.push('Thank you.');
+  }
+  lines.push('Thinkerzz Academy');
+
+  return { summary, description: lines.join('\n') };
 }
 
 /** Weekly RRULE from JS weekdays (0=Sun..6=Sat) + occurrence count. */

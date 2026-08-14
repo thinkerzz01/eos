@@ -22,20 +22,25 @@ export interface ProvisionResult {
   error?: string;
 }
 
+// The functional set-password redirect uses the deployment's own URL (env-driven,
+// localhost in dev). The URL SHOWN to the user for signing in is the public portal.
 function siteUrl(): string {
   return (process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+}
+function portalUrl(): string {
+  return (process.env.NEXT_PUBLIC_PORTAL_URL ?? 'https://portal.thinkerzz.com').replace(/\/$/, '');
 }
 
 const ROLE_COPY: Record<'teacher' | 'student', { subject: string; intro: string }> = {
   teacher: {
-    subject: 'Your Thinkerzz teacher portal - set your password',
+    subject: 'Welcome to Thinkerzz - Set Your Portal Password',
     intro:
-      'You have been added as a teacher at Thinkerzz. Set your password to access your portal, where you can see your classes and students.',
+      'You have been added as a teacher at Thinkerzz. Set your password to access your portal, where you can view your class schedule, students, and more.',
   },
   student: {
-    subject: 'Welcome to Thinkerzz - set your portal password',
+    subject: 'Welcome to Thinkerzz - Set Your Portal Password',
     intro:
-      'You have been enrolled at Thinkerzz. Set your password to access your student portal, where you can see your schedule, fees, and vouchers.',
+      'You have been enrolled at Thinkerzz. Set your password to access your student portal, where you can view your class schedule, fees, and more.',
   },
 };
 
@@ -124,17 +129,26 @@ export async function provisionLogin(opts: {
     return { ok: false, error: 'Login created but no set-password link was returned.' };
   }
   const copy = ROLE_COPY[opts.role];
+  const waNumber = process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP ?? '';
+  const contactCardUrl = `${siteUrl()}/api/contact-card`;
+  const saveContactNote =
+    'Tip: Save the Thinkerzz contact below so your class invitations are trusted and appear automatically on your Google Calendar.';
+  // Plain-text fallback keeps the single-use link (some text-only clients need it).
   const bodyText =
-    `Hi ${opts.name},\n\n` +
     `${copy.intro}\n\n` +
     `Set your password here (single-use link):\n${actionLink}\n\n` +
-    `After setting it, sign in at ${siteUrl()}/login with this email.\n\n` +
-    `- Thinkerzz`;
+    `After setting it, sign in at ${portalUrl()}/login with this email.\n\n` +
+    `${saveContactNote}\nSave contact: ${contactCardUrl}\n\n` +
+    (waNumber ? `Need help? Contact us on WhatsApp: https://wa.me/${waNumber.replace(/\D/g, '')}\n\n` : '') +
+    `- Thinkerzz Academy`;
   const html = renderEmailHtml({
-    heading: opts.role === 'teacher' ? 'Welcome to Thinkerzz' : 'Welcome to Thinkerzz',
+    heading: `Welcome to Thinkerzz, ${opts.name}`,
     preheader: 'Set your password to access your Thinkerzz portal.',
-    bodyText: `Hi ${opts.name},\n\n${copy.intro}\n\nAfter you set your password, sign in at ${siteUrl()}/login using this email address.`,
-    cta: { label: 'Set your password', url: actionLink },
+    bodyText: `${copy.intro}\n\nAfter you set your password, sign in at ${portalUrl()}/login using this email address.\n\n${saveContactNote}`,
+    cta: { label: 'Set Your Password', url: actionLink },
+    hideCtaLinkFallback: true,
+    secondaryButton: { label: 'Save Thinkerzz Contact', url: contactCardUrl },
+    whatsapp: waNumber ? { number: waNumber, label: 'Need help? Message us on WhatsApp' } : undefined,
   });
 
   const sent = await sendViaResend(email, copy.subject, bodyText, html);

@@ -65,6 +65,10 @@ export function OnboardStudentModal({
       showToast('Please fill in required fields (Name, Parent, Phone, Program).', 'error');
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      showToast('A valid email is required - class calendar invites are sent to it.', 'error');
+      return;
+    }
     if (!formData.exam_session || !formData.monthly_fee || !formData.next_due_date) {
       showToast('Exam session, monthly fee, and next due date are required.', 'error');
       return;
@@ -202,15 +206,17 @@ export function OnboardStudentModal({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
-              Email Address
+              Email Address *
             </label>
             <input
               type="email"
+              required
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="e.g. ahmed@gmail.com"
               className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
             />
+            <p className="text-[10px] text-slate-400 mt-1">Class calendar invites are sent here.</p>
           </div>
 
           <div>

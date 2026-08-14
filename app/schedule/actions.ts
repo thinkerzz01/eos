@@ -6,17 +6,36 @@
 // and return a friendly conflict. Times are entered in PKT (+05:00) and stored
 // as UTC.
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
-import { createMeetEvent, weeklyRecurrence } from '@/lib/google/calendar';
+import { createMeetEvent, weeklyRecurrence, calendarReasonText, buildClassInvite } from '@/lib/google/calendar';
 
 export interface ActionResult {
   ok: boolean;
   error?: string;
   conflict?: boolean;
+  calendarWarning?: string;
 }
 
 const TYPE_DB: Record<string, string> = { Class: 'class', Makeup: 'makeup', Test: 'test' };
 const ATT_DB: Record<string, string> = { Present: 'present', Late: 'late', Absent: 'absent' };
+
+/**
+ * A read-only service-role client used ONLY to look up the student/teacher emails
+ * for a calendar invite. This must NOT depend on the caller's RLS: a teacher may
+ * schedule their own class but cannot SELECT the student's email under RLS
+ * (teacher_read_own_students needs a student_subjects link), which would silently
+ * drop the student's invite. Reading emails with the service role fixes that. The
+ * class_sessions WRITE below still goes through the caller's RLS-scoped client, so
+ * permission is unchanged. Falls back to the session client if the key is absent.
+ */
+function inviteReader(sessionClient: ReturnType<typeof createClient>) {
+  try {
+    return createAdminClient();
+  } catch {
+    return sessionClient;
+  }
+}
 
 async function ctx() {
   const supabase = createClient();
@@ -63,16 +82,20 @@ export async function createClassSession(input: {
   const { supabase, user, orgId } = await ctx();
   if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
 
-  const { error } = await supabase.from('class_sessions').insert({
-    org_id: orgId,
-    student_id: input.studentId,
-    subject_id: input.subjectId,
-    teacher_id: input.teacherId,
-    type: TYPE_DB[input.type] ?? 'class',
-    start_at: startIso,
-    end_at: endIso,
-    status: 'scheduled',
-  });
+  const { data: inserted, error } = await supabase
+    .from('class_sessions')
+    .insert({
+      org_id: orgId,
+      student_id: input.studentId,
+      subject_id: input.subjectId,
+      teacher_id: input.teacherId,
+      type: TYPE_DB[input.type] ?? 'class',
+      start_at: startIso,
+      end_at: endIso,
+      status: 'scheduled',
+    })
+    .select('id')
+    .single();
 
   if (error) {
     // 23P01 = exclusion_violation (teacher already booked in that window).
@@ -86,9 +109,41 @@ export async function createClassSession(input: {
     return { ok: false, error: error.message };
   }
 
+  // Same calendar behavior as the bulk path: create one Meet + invite for this
+  // single class, read emails with the service role, record any failure.
+  let calendarWarning: string | undefined;
+  const reader = inviteReader(supabase);
+  const [{ data: student }, { data: teacher }, { data: subject }] = await Promise.all([
+    reader.from('students').select('name,email').eq('id', input.studentId).eq('org_id', orgId).maybeSingle(),
+    reader.from('teachers').select('name,email').eq('id', input.teacherId).eq('org_id', orgId).maybeSingle(),
+    reader.from('subjects').select('name').eq('id', input.subjectId).eq('org_id', orgId).maybeSingle(),
+  ]);
+  const subjectName = (subject as any)?.name ?? 'Class';
+  const attendees = [(student as any)?.email, (teacher as any)?.email].filter(Boolean) as string[];
+  const invite = buildClassInvite({
+    subject: subjectName,
+    teacherName: (teacher as any)?.name,
+    studentName: (student as any)?.name,
+  });
+  const meet = await createMeetEvent({
+    summary: invite.summary,
+    description: invite.description,
+    startISO: startIso,
+    endISO: endIso,
+    attendees,
+  });
+  if (meet.ok) {
+    await supabase
+      .from('class_sessions')
+      .update({ meeting_link: meet.meetLink, calendar_event_id: meet.eventId })
+      .eq('id', inserted.id);
+  } else {
+    calendarWarning = `Class saved, but the calendar invite could not be sent: ${calendarReasonText(meet.reason)}. Add the Meet link manually or fix the issue and reschedule.`;
+  }
+
   revalidatePath('/schedule');
   revalidatePath('/');
-  return { ok: true };
+  return { ok: true, calendarWarning };
 }
 
 /**
@@ -104,7 +159,7 @@ export async function bulkScheduleClasses(input: {
   weeks: number;
   type: 'Class' | 'Makeup' | 'Test';
   rows: { subjectId: string; teacherId: string; weekdays: number[]; startTime: string; endTime: string }[];
-}): Promise<{ ok: boolean; created: number; conflicts: number; error?: string }> {
+}): Promise<{ ok: boolean; created: number; conflicts: number; error?: string; calendarWarning?: string }> {
   if (!input.studentId) return { ok: false, created: 0, conflicts: 0, error: 'Select a student.' };
   if (!input.startDate) return { ok: false, created: 0, conflicts: 0, error: 'Pick a start date.' };
   const rows = (input.rows ?? []).filter(
@@ -123,12 +178,19 @@ export async function bulkScheduleClasses(input: {
   const totalDays = weeks * 7;
   let created = 0;
   let conflicts = 0;
+  const calendarFails: string[] = []; // "Subject: reason" for any series that did not sync
 
-  // Student (for calendar invites) - best-effort.
-  const { data: student } = await supabase
+  // Emails for the invite are read with the service role so a teacher-scheduled
+  // class still reaches the student (see inviteReader). The write stays RLS-scoped.
+  const reader = inviteReader(supabase);
+
+  // Student (for calendar invites) - best-effort. Scoped to the caller's org so
+  // the service-role read cannot reach another tenant's data.
+  const { data: student } = await reader
     .from('students')
     .select('name,email')
     .eq('id', input.studentId)
+    .eq('org_id', orgId)
     .maybeSingle();
   const studentName = (student as any)?.name ?? 'Student';
   const studentEmail = (student as any)?.email as string | undefined;
@@ -148,29 +210,34 @@ export async function bulkScheduleClasses(input: {
     if (occ.length === 0) continue;
 
     // One recurring Google Meet + calendar series per subject (best-effort). The
-    // same Meet link is shared by every session in the series.
+    // same Meet link is shared by every session in the series. A failure is NOT
+    // fatal (the classes are still created) but IS recorded so the admin is told.
     let meetLink: string | null = null;
     let eventId: string | null = null;
-    try {
-      const [{ data: teacher }, { data: subject }] = await Promise.all([
-        supabase.from('teachers').select('email').eq('id', r.teacherId).maybeSingle(),
-        supabase.from('subjects').select('name').eq('id', r.subjectId).maybeSingle(),
-      ]);
-      const attendees = [studentEmail, (teacher as any)?.email].filter(Boolean) as string[];
-      const meet = await createMeetEvent({
-        summary: `${(subject as any)?.name ?? 'Class'} - ${studentName}`,
-        description: 'Thinkerzz class. The teacher will start the meeting.',
-        startISO: occ[0].startIso,
-        endISO: occ[0].endIso,
-        attendees,
-        recurrence: weeklyRecurrence(r.weekdays, occ.length),
-      });
-      if (meet) {
-        meetLink = meet.meetLink;
-        eventId = meet.eventId;
-      }
-    } catch {
-      /* non-fatal */
+    const [{ data: teacher }, { data: subject }] = await Promise.all([
+      reader.from('teachers').select('name,email').eq('id', r.teacherId).eq('org_id', orgId).maybeSingle(),
+      reader.from('subjects').select('name').eq('id', r.subjectId).eq('org_id', orgId).maybeSingle(),
+    ]);
+    const subjectName = (subject as any)?.name ?? 'Class';
+    const attendees = [studentEmail, (teacher as any)?.email].filter(Boolean) as string[];
+    const invite = buildClassInvite({
+      subject: subjectName,
+      teacherName: (teacher as any)?.name,
+      studentName,
+    });
+    const meet = await createMeetEvent({
+      summary: invite.summary,
+      description: invite.description,
+      startISO: occ[0].startIso,
+      endISO: occ[0].endIso,
+      attendees,
+      recurrence: weeklyRecurrence(r.weekdays, occ.length),
+    });
+    if (meet.ok) {
+      meetLink = meet.meetLink;
+      eventId = meet.eventId;
+    } else {
+      calendarFails.push(`${subjectName} (${calendarReasonText(meet.reason)})`);
     }
 
     // Insert each individual session (for the timetable + attendance), sharing the
@@ -196,7 +263,10 @@ export async function bulkScheduleClasses(input: {
 
   revalidatePath('/schedule');
   revalidatePath('/');
-  return { ok: true, created, conflicts };
+  const calendarWarning = calendarFails.length
+    ? `Classes saved, but calendar invites could NOT be sent for: ${calendarFails.join('; ')}. The classes still appear in the timetable; add the Meet link manually or fix the issue and reschedule.`
+    : undefined;
+  return { ok: true, created, conflicts, calendarWarning };
 }
 
 export async function completeClassWithAttendance(input: {

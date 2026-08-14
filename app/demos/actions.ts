@@ -7,10 +7,25 @@
 // The moment a teacher is assigned we re-check that the teacher has no other
 // session (demo or class) overlapping the demo's time window, and block if so.
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
-import { createMeetEvent } from '@/lib/google/calendar';
+import { createMeetEvent, calendarReasonText, buildClassInvite } from '@/lib/google/calendar';
+
+// Read-only service-role client for looking up invite emails, so the invite
+// never depends on the caller's RLS. Falls back to the session client. See the
+// same helper in app/schedule/actions.ts for the rationale.
+function inviteReader(sessionClient: ReturnType<typeof createClient>) {
+  try {
+    return createAdminClient();
+  } catch {
+    return sessionClient;
+  }
+}
 
 const DEMO_MINUTES = 60; // demos table has no duration; assume a 60-minute slot
+const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
+const SOURCES = ['google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in'];
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 function one<T>(rel: T | T[] | null | undefined): T | null {
   return Array.isArray(rel) ? rel[0] ?? null : rel ?? null;
@@ -20,6 +35,8 @@ export interface ActionResult {
   ok: boolean;
   error?: string;
   conflict?: boolean;
+  // Set when the action succeeded but the calendar invite did not send.
+  warning?: string;
 }
 
 async function ctx() {
@@ -86,35 +103,46 @@ export async function assignTeacher(input: {
   if (error) return { ok: false, error: error.message };
 
   // Best-effort: create a Google Meet + calendar invites for the student & teacher.
+  // The assignment already succeeded; a calendar miss is reported, not fatal.
+  let warning: string | undefined;
   try {
     const lead = one<any>((demo as any).leads);
     const subj = one<any>((demo as any).subjects);
-    const { data: teacher } = await supabase
+    const reader = inviteReader(supabase);
+    const { data: teacher } = await reader
       .from('teachers')
       .select('name,email')
       .eq('id', input.teacherId)
       .maybeSingle();
     const attendees = [lead?.email, (teacher as any)?.email].filter(Boolean) as string[];
+    const invite = buildClassInvite({
+      subject: subj?.name,
+      teacherName: (teacher as any)?.name,
+      studentName: lead?.name,
+      isDemo: true,
+    });
     const meet = await createMeetEvent({
-      summary: `Demo class - ${lead?.name ?? 'Student'}${subj?.name ? ` (${subj.name})` : ''}`,
-      description: 'Thinkerzz free demo class. The teacher will start the meeting.',
+      summary: invite.summary,
+      description: invite.description,
       startISO: start.toISOString(),
       endISO: end.toISOString(),
       attendees,
     });
-    if (meet) {
+    if (meet.ok) {
       await supabase
         .from('demos')
         .update({ meeting_link: meet.meetLink, calendar_event_id: meet.eventId })
         .eq('id', input.demoId);
+    } else {
+      warning = `Teacher assigned, but the calendar invite could not be sent: ${calendarReasonText(meet.reason)}.`;
     }
   } catch {
-    /* non-fatal: assignment still succeeded */
+    warning = 'Teacher assigned, but the calendar invite could not be sent (unexpected error).';
   }
 
   revalidatePath('/demos');
   revalidatePath('/');
-  return { ok: true };
+  return { ok: true, warning };
 }
 
 /** Soft-delete a demo (admin action). RLS enforces admin/manager write. */
@@ -168,4 +196,109 @@ export async function recordOutcome(input: {
   revalidatePath('/demos');
   revalidatePath('/');
   return { ok: true };
+}
+
+/**
+ * Staff-created demo (e.g. a phone booking). Creates the lead (CRM record) + an
+ * unassigned demo (status 'needs_teacher') - the same shape the public /book page
+ * produces - then a teacher is assigned via assignTeacher. RLS: admin + manager
+ * may write leads/demos. Email is required so the demo invite can reach the family.
+ */
+export async function createDemo(input: {
+  studentName: string;
+  parentName: string;
+  phone: string;
+  email: string;
+  program?: string;
+  subjectId?: string;
+  source?: string;
+  date: string; // YYYY-MM-DD (PKT)
+  time: string; // HH:MM (PKT)
+}): Promise<ActionResult & { demoId?: string }> {
+  const studentName = input.studentName?.trim();
+  const parentName = input.parentName?.trim();
+  const phone = input.phone?.trim();
+  const email = input.email?.trim();
+  if (!studentName || !parentName || !phone) {
+    return { ok: false, error: 'Student name, parent name, and phone are required.' };
+  }
+  if (!EMAIL_RE.test(email ?? '')) {
+    return { ok: false, error: 'A valid email is required - the demo invite is sent to it.' };
+  }
+  if (!input.date || !/^\d{2}:\d{2}$/.test(input.time ?? '')) {
+    return { ok: false, error: 'Pick a valid date and time.' };
+  }
+
+  const { supabase, user } = await ctx();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('org_id')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!profile?.org_id) return { ok: false, error: 'No organisation profile found.' };
+  const orgId = profile.org_id as string;
+
+  // Friendly duplicate-phone guard (mirrors the public booking routine).
+  const { data: dup } = await supabase
+    .from('leads')
+    .select('id')
+    .eq('org_id', orgId)
+    .eq('phone', phone)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (dup) return { ok: false, error: 'A lead with this phone number already exists.' };
+
+  const program = ENROLLABLE_PROGRAMS.includes(input.program ?? '') ? input.program! : null;
+  const source = SOURCES.includes((input.source ?? '').toLowerCase()) ? input.source!.toLowerCase() : 'walk_in';
+  const scheduledAt = `${input.date}T${input.time}:00+05:00`;
+
+  // Optional subject: store its name on the lead + link it on the demo (used in the
+  // demo Meet invite title when a teacher is assigned).
+  let subjectName: string | null = null;
+  if (input.subjectId) {
+    const { data: subj } = await supabase.from('subjects').select('name').eq('id', input.subjectId).maybeSingle();
+    subjectName = (subj as any)?.name ?? null;
+  }
+
+  const { data: lead, error: leadErr } = await supabase
+    .from('leads')
+    .insert({
+      org_id: orgId,
+      name: studentName,
+      parent_name: parentName,
+      phone,
+      email,
+      program,
+      subjects: subjectName,
+      source,
+      status: 'new',
+      temperature: 'hot',
+    })
+    .select('id')
+    .single();
+  if (leadErr) return { ok: false, error: leadErr.message };
+
+  const { data: demo, error: demoErr } = await supabase
+    .from('demos')
+    .insert({
+      org_id: orgId,
+      lead_id: lead.id,
+      subject_id: input.subjectId || null,
+      scheduled_at: scheduledAt,
+      status: 'needs_teacher',
+    })
+    .select('id')
+    .single();
+  if (demoErr) {
+    // Roll back the orphan lead (best-effort) so a failed demo does not leave a lead.
+    await supabase.from('leads').update({ deleted_at: new Date().toISOString() }).eq('id', lead.id);
+    return { ok: false, error: demoErr.message };
+  }
+
+  revalidatePath('/demos');
+  revalidatePath('/leads');
+  revalidatePath('/');
+  return { ok: true, demoId: demo.id };
 }

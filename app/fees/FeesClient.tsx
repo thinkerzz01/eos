@@ -1,7 +1,9 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
+import { useRole } from '@/components/ui/RoleContext';
 import { DataTable } from '@/components/ui/DataTable';
 import type { PaymentInfo } from '@/lib/config/paymentInfo';
 
@@ -23,6 +25,8 @@ export function FeesClient({
   initialVouchers: VoucherRow[];
   paymentInfo?: PaymentInfo | null;
 }) {
+  const { role } = useRole();
+  const isAdmin = role === 'admin';
   const columns = [
     { header: 'Voucher No', accessorKey: 'voucher_no' as keyof VoucherRow },
     { header: 'Student', accessorKey: 'student_name' as keyof VoucherRow },
@@ -57,10 +61,24 @@ export function FeesClient({
 
   return (
     <PortalLayout
-      title="Fees & Vouchers Management"
-      subtitle="Issue fee vouchers, record payments/partial payments, handle grace decisions, and view financial ledger."
+      title={isAdmin ? 'Fee Ledger' : 'My Fee Vouchers'}
+      subtitle={
+        isAdmin
+          ? 'Read-only view of all fee vouchers. Issuing vouchers, recording payments, and grace decisions are handled in Vouchers.'
+          : 'Your fee vouchers and how to pay.'
+      }
       allowedRoles={['admin', 'student']} // Manager DENIED per locked policy
     >
+      {isAdmin && (
+        <div className="mb-4 flex justify-end">
+          <Link
+            href="/vouchers"
+            className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl shadow-sm inline-flex items-center gap-1.5"
+          >
+            <span>Manage Vouchers &amp; Payments →</span>
+          </Link>
+        </div>
+      )}
       {paymentInfo && (
         <div className="mb-4 rounded-lg border border-slate-700 bg-slate-800/50 p-4">
           <h3 className="text-sm font-semibold text-slate-200">How to pay your fee</h3>

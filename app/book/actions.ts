@@ -45,6 +45,9 @@ export async function submitPublicBooking(input: {
   if (!studentName || !parentName || !parentPhone) {
     return { ok: false, error: 'Student name, parent name, and phone are required.' };
   }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input.parentEmail?.trim() || '')) {
+    return { ok: false, error: 'A valid email is required - your demo class invite is sent to it.' };
+  }
   if (!input.date || !/^\d{2}:\d{2}$/.test(input.time || '')) {
     return { ok: false, error: 'Please choose a valid date and time.' };
   }
@@ -69,7 +72,7 @@ export async function submitPublicBooking(input: {
     p_name: studentName,
     p_parent_name: parentName,
     p_phone: parentPhone,
-    p_email: input.parentEmail?.trim() || null,
+    p_email: input.parentEmail!.trim(),
     p_program: program,
     p_subjects: input.subject?.trim() || null,
     p_scheduled_at: scheduledAt,

@@ -52,6 +52,7 @@ function mapRow(r: any): ScheduledClass {
     room: '',
     isCharged: r.type !== 'makeup', // Makeups are never charged again
     enrolledStudentsCount: 1,
+    meetingLink: r.meeting_link ?? '',
   };
 }
 

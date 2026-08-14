@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
-import { bulkScheduleClasses, completeClassWithAttendance } from './actions';
+import { bulkScheduleClasses, completeClassWithAttendance, createClassSession } from './actions';
 import {
   Calendar,
   Clock,
@@ -69,6 +69,58 @@ export function ScheduleClient({
   const [wizRows, setWizRows] = useState<WizRow[]>([emptyRow()]);
   const [overlapWarning, setOverlapWarning] = useState<string | null>(null);
   const [scheduling, setScheduling] = useState(false);
+
+  // SINGLE-CLASS quick scheduler (one class at one time - uses createClassSession).
+  const [showSingleModal, setShowSingleModal] = useState(false);
+  const [scStudentId, setScStudentId] = useState('');
+  const [scSubjectId, setScSubjectId] = useState('');
+  const [scTeacherId, setScTeacherId] = useState('');
+  const [scType, setScType] = useState<'Class' | 'Makeup' | 'Test'>('Class');
+  const [scDate, setScDate] = useState(todayStr);
+  const [scStart, setScStart] = useState('');
+  const [scEnd, setScEnd] = useState('');
+  const [scSaving, setScSaving] = useState(false);
+  const [scError, setScError] = useState<string | null>(null);
+
+  const scStudent = students.find((s) => s.id === scStudentId);
+  const scSubjects = scStudent?.program ? subjects.filter((s) => s.program === scStudent.program) : subjects;
+
+  // Classes default to one hour: picking a start auto-fills end = start + 1h.
+  const addOneHour = (hhmm: string): string => {
+    if (!/^\d{2}:\d{2}$/.test(hhmm)) return '';
+    const [h, m] = hhmm.split(':').map(Number);
+    const d = new Date(2000, 0, 1, h, m);
+    d.setHours(d.getHours() + 1);
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+
+  const resetSingle = () => {
+    setScStudentId(''); setScSubjectId(''); setScTeacherId('');
+    setScType('Class'); setScDate(todayStr); setScStart(''); setScEnd('');
+    setScError(null);
+  };
+
+  const handleAddSingleClass = async () => {
+    setScError(null);
+    if (!scStudentId || !scSubjectId || !scTeacherId || !scDate || !scStart || !scEnd) {
+      setScError('Student, subject, teacher, date, start and end time are all required.');
+      return;
+    }
+    setScSaving(true);
+    const res = await createClassSession({
+      studentId: scStudentId, subjectId: scSubjectId, teacherId: scTeacherId,
+      type: scType, date: scDate, startTime: scStart, endTime: scEnd,
+    });
+    setScSaving(false);
+    if (res.ok) {
+      setShowSingleModal(false);
+      resetSingle();
+      router.refresh();
+      alert(res.calendarWarning ? `Class scheduled.\n\n⚠ ${res.calendarWarning}` : 'Class scheduled.');
+    } else {
+      setScError(res.error ?? 'Failed to schedule the class.');
+    }
+  };
 
   const filteredClasses = useMemo(() => {
     return classesList.filter((c) => {
@@ -136,7 +188,8 @@ export function ScheduleClient({
       setShowAddClassModal(false);
       resetWizard();
       router.refresh();
-      alert(`Scheduled ${res.created} class${res.created === 1 ? '' : 'es'}${res.conflicts ? ` · ${res.conflicts} skipped (teacher time conflict)` : ''}.`);
+      const base = `Scheduled ${res.created} class${res.created === 1 ? '' : 'es'}${res.conflicts ? ` · ${res.conflicts} skipped (teacher time conflict)` : ''}.`;
+      alert(res.calendarWarning ? `${base}\n\n⚠ ${res.calendarWarning}` : base);
     } else {
       setOverlapWarning(res.error ?? 'Failed to schedule.');
     }
@@ -201,13 +254,22 @@ export function ScheduleClient({
             </Link>
 
             {role !== 'student' && (
-              <button
-                onClick={() => setShowAddClassModal(true)}
-                className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#5B47D6]/20 transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>+ Schedule Class</span>
-              </button>
+              <>
+                <button
+                  onClick={() => { resetSingle(); setShowSingleModal(true); }}
+                  className="h-[38px] px-4 bg-white dark:bg-slate-900 border border-[#5B47D6] text-[#5B47D6] hover:bg-[#5B47D6]/5 text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
+                  <span>+ Single Class</span>
+                </button>
+                <button
+                  onClick={() => setShowAddClassModal(true)}
+                  className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#5B47D6]/20 transition-all cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
+                  <span>+ Schedule Timetable</span>
+                </button>
+              </>
             )}
           </div>
         </div>
@@ -277,13 +339,30 @@ export function ScheduleClient({
                     filteredClasses.map((cls) => (
                       <tr key={cls.id} className="hover:bg-slate-50 transition-colors">
                         <td className="py-3.5 px-3">
-                          <div className="font-extrabold font-mono text-slate-900 dark:text-slate-100">{cls.startAt} - {cls.endAt}</div>
-                          <div className="text-xs text-[#6B7185]">{cls.room}</div>
+                          <div className="font-extrabold text-slate-900 dark:text-slate-100">{cls.date}</div>
+                          <div className="font-mono text-xs text-[#6B7185]">{cls.startAt} - {cls.endAt}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
                           <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{cls.subject}</div>
                           <div className="text-xs text-[#6B7185] font-mono">{cls.classCode}</div>
+                          {cls.meetingLink ? (
+                            <a
+                              href={cls.meetingLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                            >
+                              📅 Calendar ✓ · Join
+                            </a>
+                          ) : (
+                            <span
+                              title="No Google Calendar invite was sent for this class. Check the student/teacher email or reconnect Google, then reschedule - or add a Meet link manually."
+                              className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200"
+                            >
+                              ⚠ No calendar invite
+                            </span>
+                          )}
                         </td>
 
                         <td className="py-3.5 px-3">
@@ -423,6 +502,131 @@ export function ScheduleClient({
           </div>
         )}
 
+        {/* SINGLE-CLASS MODAL (one class at one date/time) */}
+        {showSingleModal && (
+          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 my-6 text-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Add a Single Class</h3>
+                  <p className="text-xs text-[#6B7185] mt-0.5">One class at one date and time. A Google Meet invite is sent to the student and teacher.</p>
+                </div>
+                <button onClick={() => setShowSingleModal(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Student *</label>
+                  <select
+                    value={scStudentId}
+                    onChange={(e) => { setScStudentId(e.target.value); setScSubjectId(''); }}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                  >
+                    <option value="">Select student...</option>
+                    {students.map((s) => (<option key={s.id} value={s.id}>{s.name}{s.program ? ` - ${s.program}` : ''}</option>))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Subject *</label>
+                    <select
+                      value={scSubjectId}
+                      onChange={(e) => setScSubjectId(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    >
+                      <option value="">{scStudentId ? 'Select subject...' : 'Pick a student first'}</option>
+                      {scSubjects.map((s) => (<option key={s.id} value={s.id}>{s.name}</option>))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Teacher *</label>
+                    <select
+                      value={scTeacherId}
+                      onChange={(e) => setScTeacherId(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    >
+                      <option value="">Select teacher...</option>
+                      {teachers.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Class Type</label>
+                    <select
+                      value={scType}
+                      onChange={(e) => setScType(e.target.value as 'Class' | 'Makeup' | 'Test')}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    >
+                      <option value="Class">Regular</option>
+                      <option value="Makeup">Makeup (free replacement)</option>
+                      <option value="Test">Test</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Date *</label>
+                    <input
+                      type="date"
+                      value={scDate}
+                      onChange={(e) => setScDate(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Start Time *</label>
+                    <input
+                      type="time"
+                      value={scStart}
+                      onChange={(e) => { setScStart(e.target.value); setScEnd(addOneHour(e.target.value)); }}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">End Time * <span className="text-slate-400 font-medium normal-case">(auto +1h)</span></label>
+                    <input
+                      type="time"
+                      value={scEnd}
+                      onChange={(e) => setScEnd(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  </div>
+                </div>
+
+                {scError && (
+                  <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{scError}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  onClick={() => setShowSingleModal(false)}
+                  className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddSingleClass}
+                  disabled={scSaving}
+                  className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2"
+                >
+                  <Calendar className="w-4 h-4" />
+                  <span>{scSaving ? 'Scheduling...' : 'Schedule Class'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* SCHEDULE WIZARD MODAL */}
         {showAddClassModal && (
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
@@ -502,7 +706,7 @@ export function ScheduleClient({
                     <div className="grid grid-cols-2 gap-3">
                       <div>
                         <label className="text-[11px] text-[#6B7185] font-bold block mb-1">Start (PKT)</label>
-                        <input type="time" value={r.startTime} onChange={(e) => updateRow(i, { startTime: e.target.value })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-bold" />
+                        <input type="time" value={r.startTime} onChange={(e) => updateRow(i, { startTime: e.target.value, endTime: addOneHour(e.target.value) })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-bold" />
                       </div>
                       <div>
                         <label className="text-[11px] text-[#6B7185] font-bold block mb-1">End (PKT)</label>

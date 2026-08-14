@@ -7,6 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { Student } from '@/lib/mockStudentsData';
 import type { DashboardMetrics } from '@/lib/data/dashboard';
+import type { TeacherDashboard } from '@/lib/data/teacherDashboard';
 import {
   Calendar,
   AlertTriangle,
@@ -20,7 +21,6 @@ import {
   Plus,
   Sparkles,
   BookOpen,
-  MessageSquare,
   Award,
   Wallet,
   Receipt,
@@ -32,7 +32,15 @@ import {
   Filter,
 } from 'lucide-react';
 
-export function DashboardClient({ initialStudents, metrics }: { initialStudents: Student[]; metrics?: DashboardMetrics }) {
+export function DashboardClient({
+  initialStudents,
+  metrics,
+  teacherStats,
+}: {
+  initialStudents: Student[];
+  metrics?: DashboardMetrics;
+  teacherStats?: TeacherDashboard | null;
+}) {
   const { role } = useRole();
   const fmtPkr = (n: number) => `PKR ${Math.round(n).toLocaleString()}`;
 
@@ -117,24 +125,38 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
     };
   }, [filteredStudents]);
 
-  // 1. STUDENT DYNAMIC PORTAL DASHBOARD VIEW
+  // 1. STUDENT DYNAMIC PORTAL DASHBOARD VIEW - bound to the logged-in student's own
+  //    record (RLS scopes getStudents to just their row for the student role).
   if (role === 'student') {
+    const me = initialStudents[0];
+    const studentTiles = me
+      ? [
+          { label: 'My Attendance Rate', value: `${Math.round(me.attendancePct)}%` },
+          { label: 'Homework On-Time', value: `${Math.round(me.homeworkPct)}%` },
+          { label: 'Health', value: me.healthBand },
+          { label: 'Fee Voucher Status', value: me.feeStatus },
+        ]
+      : [
+          { label: 'My Attendance Rate', value: '-' },
+          { label: 'Homework On-Time', value: '-' },
+          { label: 'Health', value: '-' },
+          { label: 'Fee Voucher Status', value: '-' },
+        ];
     return (
       <PortalLayout title="" subtitle="" allowedRoles={['student']}>
         <div className="space-y-6 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12 text-xs">
           <div className="bg-gradient-to-r from-[#5B47D6] via-[#7C6BF0] to-[#8B7BF0] text-white p-6 rounded-[24px] shadow-lg">
             <span className="px-3 py-1 bg-white/20 text-white font-extrabold text-xs rounded-full">🎓 Student Portal</span>
-            <h1 className="font-heading font-extrabold text-2xl sm:text-3xl mt-2">Welcome to your portal</h1>
-            <p className="text-xs text-purple-100 mt-1 font-medium">Your progress summary appears here once your enrolment is set up.</p>
+            <h1 className="font-heading font-extrabold text-2xl sm:text-3xl mt-2">{me ? `Welcome, ${me.name}` : 'Welcome to your portal'}</h1>
+            <p className="text-xs text-purple-100 mt-1 font-medium">
+              {me?.nextClassSubject
+                ? `Next class: ${me.nextClassSubject}${me.nextClassTime ? ` at ${me.nextClassTime}` : ''}`
+                : 'Your progress summary appears here once your enrolment is set up.'}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 font-bold">
-            {[
-              { label: 'My Attendance Rate', value: '-' },
-              { label: 'Target vs Assessed', value: '-' },
-              { label: 'Pending Homework', value: '0' },
-              { label: 'Fee Voucher Status', value: '-' },
-            ].map((k) => (
+            {studentTiles.map((k) => (
               <div key={k.label} className="bg-white border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
                 <div className="text-xs text-slate-500 uppercase">{k.label}</div>
                 <div className="font-heading font-extrabold text-3xl text-slate-900">{k.value}</div>
@@ -155,16 +177,20 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
             <div>
               <span className="px-3 py-1 bg-white/20 text-white font-extrabold text-xs rounded-full">👨‍🏫 Faculty Portal</span>
               <h1 className="font-heading font-extrabold text-2xl sm:text-3xl mt-2">Welcome to the Faculty Portal</h1>
-              <p className="text-xs text-purple-200 mt-1 font-medium">Your classes and reviews appear here once you are assigned students.</p>
+              <p className="text-xs text-purple-200 mt-1 font-medium">
+                {teacherStats?.nextClass
+                  ? `Next class: ${teacherStats.nextClass.label} (${teacherStats.nextClass.time})`
+                  : 'Your classes and reviews appear here once you are assigned students.'}
+              </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             {[
-              { label: 'Classes Today', value: '0' },
-              { label: 'Pending Homework Reviews', value: '0' },
-              { label: 'Load Capacity', value: '-' },
-              { label: 'Monthly Payout Status', value: '-' },
+              { label: 'Classes Today', value: String(teacherStats?.classesToday ?? 0) },
+              { label: 'Classes This Week', value: String(teacherStats?.classesThisWeek ?? 0) },
+              { label: 'My Students', value: String(teacherStats?.studentsCount ?? 0) },
+              { label: 'Homework To Review', value: String(teacherStats?.pendingReviews ?? 0) },
             ].map((k) => (
               <div key={k.label} className="bg-white border rounded-2xl p-4 shadow-sm space-y-1">
                 <div className="text-xs text-slate-500 uppercase">{k.label}</div>
@@ -186,26 +212,22 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
             <div>
               <span className="px-3 py-1 bg-white/20 text-white font-extrabold text-xs rounded-full">💼 Operations Portal</span>
               <h1 className="font-heading font-extrabold text-2xl sm:text-3xl mt-2">Operational Command Center</h1>
-              <p className="text-xs text-slate-300 mt-1 font-medium">Students, Admissions, Schedule & Support Tickets</p>
+              <p className="text-xs text-slate-300 mt-1 font-medium">Students, Admissions & Schedule</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-white border rounded-2xl p-4 shadow-sm space-y-1">
               <div className="text-xs text-slate-500 uppercase">Active Students</div>
               <div className="font-heading font-extrabold text-3xl text-slate-900">{stats.activeCount}</div>
             </div>
             <div className="bg-white border rounded-2xl p-4 shadow-sm space-y-1">
               <div className="text-xs text-slate-500 uppercase">New Leads Today</div>
-              <div className="font-heading font-extrabold text-3xl text-purple-600">0</div>
+              <div className="font-heading font-extrabold text-3xl text-purple-600">{metrics?.newLeadsToday ?? 0}</div>
             </div>
             <div className="bg-white border rounded-2xl p-4 shadow-sm space-y-1">
               <div className="text-xs text-slate-500 uppercase">Demos Needing Teacher</div>
-              <div className="font-heading font-extrabold text-3xl text-orange-600">0</div>
-            </div>
-            <div className="bg-white border rounded-2xl p-4 shadow-sm space-y-1">
-              <div className="text-xs text-slate-500 uppercase">Urgent Tickets</div>
-              <div className="font-heading font-extrabold text-3xl text-rose-600">0</div>
+              <div className="font-heading font-extrabold text-3xl text-orange-600">{metrics?.demosNeedingTeacher ?? 0}</div>
             </div>
           </div>
         </div>
@@ -341,14 +363,6 @@ export function DashboardClient({ initialStudents, metrics }: { initialStudents:
                 <div className="text-xs font-bold text-orange-700">Assign now</div>
               </Link>
 
-              <Link href="/tickets" className="p-3 bg-rose-50 border border-rose-200 rounded-2xl space-y-1 block hover:bg-rose-100 transition-colors">
-                <div className="flex items-center gap-1.5 text-rose-600 font-heading font-extrabold text-xl">
-                  <MessageSquare className="w-4 h-4 shrink-0" />
-                  <span>{metrics?.urgentTickets ?? 0}</span>
-                </div>
-                <div className="font-extrabold text-xs text-slate-900 leading-tight">Tickets urgent</div>
-                <div className="text-xs font-bold text-rose-600">Response needed</div>
-              </Link>
             </div>
           </div>
 

@@ -18,6 +18,7 @@ export interface ScheduledClass {
   room: string;
   isCharged: boolean; // false for Makeup classes!
   enrolledStudentsCount: number;
+  meetingLink: string; // '' when the class did not sync to Google Calendar
 }
 
 export interface HomeworkAssignment {
