@@ -47,10 +47,31 @@ export async function submitEnrollment(input: {
     return { ok: false, error: 'Exam session is required.' };
   }
 
-  const email = input.email?.trim() || '';
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+  const formEmail = input.email?.trim() || '';
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formEmail)) {
     return { ok: false, error: 'A valid email is required - class calendar invites are sent to it.' };
   }
+
+  // SECURITY (M3): if the lead already has an email on file (from the booking),
+  // that address WINS over the free-text form field. This stops someone who
+  // holds a leaked enrollment link from binding the student's portal login (and
+  // calendar invites) to an email they control. Read with the service role since
+  // the page is anonymous; falls back to the submitted email if the lead has none.
+  let email = formEmail;
+  try {
+    const adminRead = createAdminClient();
+    const { data: lead } = await adminRead
+      .from('leads')
+      .select('email')
+      .eq('id', input.leadId)
+      .is('deleted_at', null)
+      .maybeSingle();
+    const onFile = (lead?.email ?? '').trim();
+    if (onFile && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(onFile)) email = onFile;
+  } catch {
+    /* fall back to the submitted email */
+  }
+
   const supabase = createClient(); // no session -> anon; RPC is granted to anon
   const { data: studentId, error } = await supabase.rpc('submit_enrollment', {
     p_lead_id: input.leadId,

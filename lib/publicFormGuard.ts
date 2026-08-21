@@ -73,6 +73,19 @@ export async function guardPublicSubmit(input: {
   if (!okRate) {
     return { ok: false, error: 'Too many attempts from your connection. Please wait a few minutes and try again.' };
   }
+
+  // SECURITY: in production Turnstile is REQUIRED. The in-memory rate limit is
+  // per-instance (weak on serverless) and Turnstile otherwise fails open, so a
+  // missing key would leave the public forms unprotected. Fail CLOSED instead:
+  // if the secret isn't configured in prod, refuse the submission. (Dev/preview
+  // without the key still works so local development is unaffected.)
+  if (process.env.NODE_ENV === 'production' && !turnstileEnabled()) {
+    return {
+      ok: false,
+      error: 'Verification is temporarily unavailable. Please try again shortly, or contact the academy on WhatsApp.',
+    };
+  }
+
   const human = await verifyTurnstile(input.token, ip);
   if (!human) {
     return { ok: false, error: 'Please complete the verification challenge and try again.' };

@@ -12,6 +12,29 @@ export interface ActionResult {
   warning?: string;
 }
 
+// Staff-only gate for the create/grade/edit/delete actions. Homework grading and
+// authoring is admin/manager/teacher only - never a student (who otherwise could
+// call gradeHomework on their own row). RLS is the real boundary; this is an
+// explicit, friendly-error defense-in-depth check. Returns null when allowed.
+async function requireStaff(
+  supabase: ReturnType<typeof createClient>
+): Promise<{ error: string } | null> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: 'You are not signed in.' };
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!profile || !['admin', 'manager', 'teacher'].includes(profile.role)) {
+    return { error: 'You do not have permission to do that.' };
+  }
+  return null;
+}
+
 export async function createHomework(input: {
   studentId: string;
   subjectId: string;
@@ -27,6 +50,8 @@ export async function createHomework(input: {
   if (!input.deadline) return { ok: false, error: 'Select a deadline.' };
 
   const supabase = createClient();
+  const gate = await requireStaff(supabase);
+  if (gate) return { ok: false, error: gate.error };
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -74,10 +99,8 @@ export async function updateHomework(input: {
 }): Promise<ActionResult> {
   if (!input.homeworkId) return { ok: false, error: 'Missing homework id.' };
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: 'You are not signed in.' };
+  const gate = await requireStaff(supabase);
+  if (gate) return { ok: false, error: gate.error };
 
   const patch: Record<string, any> = {};
   if (input.title?.trim()) patch.title = input.title.trim();
@@ -96,10 +119,8 @@ export async function updateHomework(input: {
 export async function deleteHomework(homeworkId: string): Promise<ActionResult> {
   if (!homeworkId) return { ok: false, error: 'Missing homework id.' };
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: 'You are not signed in.' };
+  const gate = await requireStaff(supabase);
+  if (gate) return { ok: false, error: gate.error };
 
   const { error } = await supabase
     .from('homework')
@@ -126,25 +147,46 @@ export async function submitHomework(input: { homeworkId: string }): Promise<Act
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: 'You are not signed in.' };
 
-  const { data: hw } = await supabase
-    .from('homework')
-    .select('deadline,status')
-    .eq('id', input.homeworkId)
-    .is('deleted_at', null)
-    .maybeSingle();
-  if (!hw) return { ok: false, error: 'Homework not found (or not yours).' };
-  if (hw.status === 'graded') return { ok: false, error: 'This homework has already been graded.' };
+  // Submission goes through the locked SECURITY DEFINER RPC (student_submit_homework):
+  // it flips status to 'submitted'/'late' for the caller's OWN homework only and can
+  // never touch the score or set 'graded'. Students have no direct UPDATE on homework.
+  const { data: newStatus, error } = await supabase.rpc('student_submit_homework', {
+    p_homework_id: input.homeworkId,
+  });
 
-  const late = hw.deadline ? new Date(hw.deadline).getTime() < Date.now() : false;
-  const { error } = await supabase
-    .from('homework')
-    .update({ status: late ? 'late' : 'submitted' })
-    .eq('id', input.homeworkId);
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    // Pre-migration fallback: if the RPC isn't there yet, use the old direct path
+    // (still gated by RLS to the student's own row) so submission keeps working.
+    if (/function .*student_submit_homework.* does not exist/i.test(error.message)) {
+      const { data: hw } = await supabase
+        .from('homework')
+        .select('deadline,status')
+        .eq('id', input.homeworkId)
+        .is('deleted_at', null)
+        .maybeSingle();
+      if (!hw) return { ok: false, error: 'Homework not found (or not yours).' };
+      if (hw.status === 'graded') return { ok: false, error: 'This homework has already been graded.' };
+      const late = hw.deadline ? new Date(hw.deadline).getTime() < Date.now() : false;
+      const { error: updErr } = await supabase
+        .from('homework')
+        .update({ status: late ? 'late' : 'submitted' })
+        .eq('id', input.homeworkId);
+      if (updErr) return { ok: false, error: updErr.message };
+      revalidatePath('/homework');
+      revalidatePath('/');
+      return { ok: true, warning: late ? 'Submitted after the deadline (marked late).' : undefined };
+    }
+    const msg = /already been graded/i.test(error.message)
+      ? 'This homework has already been graded.'
+      : /not found/i.test(error.message)
+      ? 'Homework not found (or not yours).'
+      : 'Could not submit. Please try again.';
+    return { ok: false, error: msg };
+  }
 
   revalidatePath('/homework');
   revalidatePath('/');
-  return { ok: true, warning: late ? 'Submitted after the deadline (marked late).' : undefined } as ActionResult;
+  return { ok: true, warning: newStatus === 'late' ? 'Submitted after the deadline (marked late).' : undefined };
 }
 
 /** Mark a homework graded (counts as on-time completion in the health formula). */
@@ -153,10 +195,8 @@ export async function gradeHomework(input: {
   score?: number;
 }): Promise<ActionResult> {
   const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { ok: false, error: 'You are not signed in.' };
+  const gate = await requireStaff(supabase);
+  if (gate) return { ok: false, error: gate.error };
 
   const patch: Record<string, any> = { status: 'graded' };
   if (input.score != null && !Number.isNaN(input.score)) patch.score = input.score;

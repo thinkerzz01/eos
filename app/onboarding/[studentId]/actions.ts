@@ -70,7 +70,9 @@ export async function submitOnboarding(input: OnboardingInput): Promise<Onboardi
     p_data: input.data ?? {},
   });
   if (error) {
-    const msg = /invalid/i.test(error.message)
+    const msg = /already been completed/i.test(error.message)
+      ? 'This onboarding has already been completed. Please contact the academy if you need to change anything.'
+      : /invalid/i.test(error.message)
       ? 'This onboarding link is invalid or has expired. Please contact the academy.'
       : 'We could not save your details. Please try again or contact the academy.';
     return { ok: false, error: msg };
