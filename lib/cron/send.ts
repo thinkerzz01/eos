@@ -86,7 +86,16 @@ export async function runSend(admin: Admin): Promise<SendResult> {
     const vars = buildVars(payload);
     const subject = renderTemplate(tpl.subject, vars);
     const body = renderTemplate(tpl.body, vars);
-    const html = renderEmailHtml({ bodyText: body, preheader: subject });
+
+    // Direct-action button: a Meet link (from the payload) or a portal page.
+    let cta: { label: string; url: string } | undefined;
+    if (tpl.cta) {
+      const portal = (process.env.NEXT_PUBLIC_PORTAL_URL ?? 'https://portal.thinkerzz.com').replace(/\/$/, '');
+      const meet = (payload.meeting_link as string | undefined) || '';
+      const url = tpl.cta.useMeet && meet ? meet : tpl.cta.path ? `${portal}${tpl.cta.path}` : '';
+      if (url) cta = { label: tpl.cta.label, url };
+    }
+    const html = renderEmailHtml({ bodyText: body, preheader: subject, cta, hideCtaLinkFallback: true });
 
     const result = await sendViaResend(to, subject, body, html);
     if (result.ok) {

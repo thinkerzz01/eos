@@ -6,6 +6,7 @@
 
 export type NotificationType =
   | 'class_reminder'
+  | 'class_rescheduled'
   | 'fee_due'
   | 'grace_ending'
   | 'demo_confirmed'
@@ -59,6 +60,9 @@ export function buildVars(payload: Record<string, any>): Record<string, string> 
 interface Template {
   subject: string;
   body: string;
+  // Optional direct-action button. `path` is appended to the portal URL; `useMeet`
+  // uses the Google Meet link from the payload (falls back to `path` if absent).
+  cta?: { label: string; path?: string; useMeet?: boolean };
 }
 
 export const TEMPLATES: Record<NotificationType, Template> = {
@@ -66,30 +70,42 @@ export const TEMPLATES: Record<NotificationType, Template> = {
     subject: 'Class reminder for {{student_name}}',
     body:
       'Assalam o Alaikum {{parent_name}},\n\nWe hope you are well. This is a friendly reminder that {{student_name}} has a {{class_subject}} class at {{class_time}}. Please make sure {{pronoun}} joins on time.\n\nWarm regards,\nThinkerzz',
+    cta: { label: 'Join Your Class', useMeet: true, path: '/schedule' },
+  },
+  class_rescheduled: {
+    subject: 'Class rescheduled for {{student_name}}',
+    body:
+      'Assalam o Alaikum {{parent_name}},\n\nWe hope you are well. Please note that {{student_name}}’s {{class_subject}} class has been rescheduled to {{class_time}}. Kindly make sure {{pronoun}} joins at the new time. We apologise for any inconvenience.\n\nWarm regards,\nThinkerzz',
+    cta: { label: 'View Your Classes', useMeet: true, path: '/schedule' },
   },
   fee_due: {
     subject: 'Fee reminder for {{student_name}}',
     body:
       'Assalam o Alaikum {{parent_name}},\n\nWe hope you are well. This is a gentle reminder that voucher {{voucher_no}} for {{student_name}} is due on {{due_date}}. Kindly use the voucher number as your payment reference and share the screenshot on WhatsApp or upload it in your portal.\n\nThank you for your continued trust,\nThinkerzz',
+    cta: { label: 'View & Pay Voucher', path: '/fees' },
   },
   grace_ending: {
     subject: 'A quick note about {{student_name}} fee',
     body:
       'Assalam o Alaikum {{parent_name}},\n\nWe hope you are well. We wanted to let you know that the grace period for voucher {{voucher_no}} ends on {{grace_deadline}}. Whenever it is convenient, please complete the payment so {{student_name}} continues without any interruption.\n\nWarm regards,\nThinkerzz',
+    cta: { label: 'Pay Now', path: '/fees' },
   },
   demo_confirmed: {
     subject: 'Demo class confirmed for {{student_name}}',
     body:
       'Assalam o Alaikum {{parent_name}},\n\nWe hope you are well. The demo class for {{student_name}} is confirmed for {{class_time}}. We look forward to meeting {{pronoun_object}}.\n\nWarm regards,\nThinkerzz',
+    cta: { label: 'Join Demo Class', useMeet: true },
   },
   payment_received: {
     subject: 'Payment received for {{student_name}}',
     body:
       'Assalam o Alaikum {{parent_name}},\n\nWe hope you are well. We have received your payment for {{student_name}}. Thank you. Your receipt is available in the portal.\n\nWarm regards,\nThinkerzz',
+    cta: { label: 'View Receipt', path: '/fees' },
   },
   monthly_report: {
     subject: 'Monthly progress report for {{student_name}}',
     body: '{{body}}',
+    cta: { label: 'Open Your Portal', path: '/login' },
   },
   follow_up: {
     subject: 'Following up about {{student_name}}',
@@ -99,6 +115,7 @@ export const TEMPLATES: Record<NotificationType, Template> = {
   announcement: {
     subject: '{{class_subject}}',
     body: '{{body}}',
+    cta: { label: 'View in Portal', path: '/announcements' },
   },
   // Internal, Admin-facing alert (not a parent message) when a grace period has
   // expired unpaid - pushes the Stop/Extend/Mark-Paid decision (Master Plan §7).
@@ -106,5 +123,6 @@ export const TEMPLATES: Record<NotificationType, Template> = {
     subject: 'Fee decision needed for {{student_name}}',
     body:
       'Admin note: the grace period for voucher {{voucher_no}} ({{student_name}}) ended on {{grace_deadline}} and it is still unpaid. Please review and choose Stop, Extend, or Mark Paid on the Fee Vouchers screen.\n\nThinkerzz EOS',
+    cta: { label: 'Open Fee Vouchers', path: '/vouchers' },
   },
 };

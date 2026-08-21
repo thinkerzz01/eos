@@ -4,10 +4,16 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AddTeacherModal } from '@/components/teachers/AddTeacherModal';
 import { SetPayRateModal } from '@/components/teachers/SetPayRateModal';
+import { updateTeacher, softDeleteTeacher, markTeacherLeft } from './actions';
 import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { ALL_SUBJECTS, ALL_PROGRAMS } from '@/lib/syllabiSeed';
+import { KeyRound } from 'lucide-react';
 import {
   Users,
   UserCheck,
@@ -25,7 +31,6 @@ import {
   MessageSquare,
   Mail,
   Phone,
-  MoreHorizontal,
   FileText,
   Download,
   Upload,
@@ -61,7 +66,6 @@ import {
   QrCode,
   HardDrive,
   Check,
-  MoreVertical,
   RotateCcw,
   Save,
   FileSpreadsheet,
@@ -86,7 +90,7 @@ export interface Teacher {
   score: number | null; // null for New Teachers
   rating: number;
   ratingCount: number;
-  status: 'Teaching' | 'At Capacity' | 'Onboarding' | 'On Leave';
+  status: 'Teaching' | 'At Capacity' | 'Onboarding' | 'On Leave' | 'Left';
   experience: string;
   qualification: string;
   todaysClassesCount: number;
@@ -122,6 +126,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
   const [activeTabStatus, setActiveTabStatus] = useState<string>('All Teachers');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedSubject, setSelectedSubject] = useState<string>('All Subjects');
+  const [selectedProgram, setSelectedProgram] = useState<string>('All Programs');
   const [selectedLoadLevel, setSelectedLoadLevel] = useState<string>('All Load Levels');
   const [selectedPayRange, setSelectedPayRange] = useState<string>('All Pay Ranges');
 
@@ -129,31 +134,23 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
   const [selectedDrawerTeacher, setSelectedDrawerTeacher] = useState<Teacher | null>(initialTeachers[0] ?? null);
   const [drawerActiveTab, setDrawerActiveTab] = useState<'Overview' | 'Academics' | 'Classes' | 'Attendance' | 'Payroll' | 'More'>('Overview');
 
-  // SELECTION & MENU STATES
+  // SELECTION STATE
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([]);
-  const [activeRowMenuId, setActiveRowMenuId] = useState<string | null>(null);
-
-  // CLOSE MENU ON CLICK OUTSIDE
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (activeRowMenuId && !(e.target as HTMLElement).closest('.row-menu-container')) {
-        setActiveRowMenuId(null);
-      }
-    };
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, [activeRowMenuId]);
 
   // FULLY FUNCTIONAL FILTERING LOGIC
   const filteredTeachers = useMemo(() => {
     return teachersList.filter((t) => {
       // 1. Status Tab Filter
       if (activeTabStatus === 'Active' && t.status !== 'Teaching' && t.status !== 'At Capacity') return false;
-      if (activeTabStatus === 'Inactive' && t.status !== 'Onboarding' && t.status !== 'On Leave') return false;
+      if (activeTabStatus === 'Inactive' && t.status !== 'Onboarding' && t.status !== 'On Leave' && t.status !== 'Left') return false;
       if (activeTabStatus === 'On Leave' && t.status !== 'On Leave') return false;
+      if (activeTabStatus === 'Left' && t.status !== 'Left') return false;
 
       // 2. Subject Filter
       if (selectedSubject !== 'All Subjects' && !t.subjects.some(s => s.toLowerCase().includes(selectedSubject.toLowerCase()))) return false;
+
+      // 2b. Program Filter
+      if (selectedProgram !== 'All Programs' && !t.programs.some(p => p === selectedProgram)) return false;
 
       // 3. Load Capacity Filter
       const loadPct = (t.currentLoad / t.capacity) * 100;
@@ -177,14 +174,87 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
 
       return true;
     });
-  }, [teachersList, activeTabStatus, selectedSubject, selectedLoadLevel, selectedPayRange, searchQuery]);
+  }, [teachersList, activeTabStatus, selectedSubject, selectedProgram, selectedLoadLevel, selectedPayRange, searchQuery]);
 
   const resetAllFilters = () => {
     setActiveTabStatus('All Teachers');
     setSelectedSubject('All Subjects');
+    setSelectedProgram('All Programs');
     setSelectedLoadLevel('All Load Levels');
     setSelectedPayRange('All Pay Ranges');
     setSearchQuery('');
+  };
+
+  // EDIT / DELETE / LEFT-ACADEMY state + handlers
+  const [editTeacher, setEditTeacher] = useState<Teacher | null>(null);
+  const [resetTeacher, setResetTeacher] = useState<Teacher | null>(null);
+  const [edName, setEdName] = useState('');
+  const [edEmail, setEdEmail] = useState('');
+  const [edPhone, setEdPhone] = useState('');
+  const [edCity, setEdCity] = useState('');
+  const [edCapacity, setEdCapacity] = useState('');
+  const [edJoin, setEdJoin] = useState('');
+  const [edSubjects, setEdSubjects] = useState<string[]>([]);
+  const [edPrograms, setEdPrograms] = useState<string[]>([]);
+  const [edSaving, setEdSaving] = useState(false);
+  const [edError, setEdError] = useState<string | null>(null);
+
+  const openEditTeacher = (t: Teacher) => {
+    setEditTeacher(t);
+    setEdName(t.name); setEdEmail(t.email); setEdPhone(t.phone);
+    setEdCity(''); setEdCapacity(String(t.capacity ?? '')); setEdJoin('');
+    setEdSubjects(Array.isArray(t.subjects) ? [...t.subjects] : []);
+    setEdPrograms(Array.isArray(t.programs) ? [...t.programs] : []);
+    setEdError(null);
+  };
+  const toggleEdSubject = (s: string) =>
+    setEdSubjects((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
+  const toggleEdProgram = (p: string) =>
+    setEdPrograms((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]));
+  const handleUpdateTeacher = async () => {
+    if (!editTeacher) return;
+    setEdError(null);
+    if (!edName.trim() || !edEmail.trim() || !edPhone.trim()) {
+      setEdError('Name, email and phone are required.'); return;
+    }
+    setEdSaving(true);
+    const res = await updateTeacher({
+      id: editTeacher.id, name: edName, email: edEmail, phone: edPhone,
+      city: edCity, capacity: edCapacity, joinDate: edJoin,
+      subjects: edSubjects, programs: edPrograms,
+    });
+    setEdSaving(false);
+    if (res.ok) { setEditTeacher(null); router.refresh(); }
+    else setEdError(res.error ?? 'Failed to update the teacher.');
+  };
+
+  const handleDeleteTeacher = async (t: Teacher) => {
+    if (!confirm(`Delete ${t.name}? This removes them from the teacher list. This action is logged.`)) return;
+    const res = await softDeleteTeacher(t.id);
+    if (!res.ok) { alert(res.error ?? 'Failed to delete the teacher.'); return; }
+    router.refresh();
+  };
+
+  // "Left the academy" modal (5 common reasons + a custom one)
+  const LEAVE_REASONS = ['Resigned', 'Contract ended', 'Relocated', 'Performance', 'Better opportunity'];
+  const [leaveTeacher, setLeaveTeacher] = useState<Teacher | null>(null);
+  const [leaveReason, setLeaveReason] = useState('');
+  const [leaveCustom, setLeaveCustom] = useState('');
+  const [leaveSaving, setLeaveSaving] = useState(false);
+  const [leaveError, setLeaveError] = useState<string | null>(null);
+
+  const openLeaveTeacher = (t: Teacher) => {
+    setLeaveTeacher(t); setLeaveReason(''); setLeaveCustom(''); setLeaveError(null);
+  };
+  const handleMarkLeft = async () => {
+    if (!leaveTeacher) return;
+    const reason = leaveReason === 'Other' ? leaveCustom.trim() : leaveReason;
+    if (!reason) { setLeaveError('Please choose a reason or enter a custom one.'); return; }
+    setLeaveSaving(true);
+    const res = await markTeacherLeft({ id: leaveTeacher.id, reason });
+    setLeaveSaving(false);
+    if (res.ok) { setLeaveTeacher(null); router.refresh(); }
+    else setLeaveError(res.error ?? 'Failed to record. Make sure the leaving-reason columns were added.');
   };
 
   const toggleSelectAll = () => {
@@ -242,13 +312,10 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
             </div>
 
             {role === 'admin' && (
-              <button
-                onClick={() => setShowAddTeacher(true)}
-                className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#5B47D6]/20 transition-all cursor-pointer"
-              >
+              <Button variant="primary" onClick={() => setShowAddTeacher(true)} className="shadow-[#5B47D6]/20">
                 <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>Add Teacher</span>
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -356,8 +423,8 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               {[
                 { name: 'All Teachers', count: teachersList.length },
                 { name: 'Active', count: teachersList.filter(t => t.status === 'Teaching' || t.status === 'At Capacity').length },
-                { name: 'Inactive', count: teachersList.filter(t => t.status === 'Onboarding').length },
                 { name: 'On Leave', count: teachersList.filter(t => t.status === 'On Leave').length },
+                { name: 'Left', count: teachersList.filter(t => t.status === 'Left').length },
               ].map((tab) => (
                 <button
                   key={tab.name}
@@ -404,6 +471,20 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
             </div>
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs">
+              <span className="text-xs text-[#6B7185] block font-medium">Program Filter</span>
+              <select
+                value={selectedProgram}
+                onChange={(e) => setSelectedProgram(e.target.value)}
+                className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
+              >
+                <option value="All Programs">All Programs</option>
+                {Array.from(new Set(teachersList.flatMap((t) => t.programs).filter(Boolean))).map((p) => (
+                  <option key={p} value={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs">
               <span className="text-xs text-[#6B7185] block font-medium">Load Capacity Filter</span>
               <select
                 value={selectedLoadLevel}
@@ -439,23 +520,23 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
           {/* CLEAN TEACHERS DATA TABLE (8 COLS) */}
           <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden flex flex-col justify-between">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[700px]">
+              <table className="w-full text-left text-sm border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
+                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
                     <th className="py-3.5 px-3 w-[36px] text-center">
                       <input type="checkbox" checked={selectedTeacherIds.length === filteredTeachers.length && filteredTeachers.length > 0} onChange={toggleSelectAll} className="rounded accent-[#5B47D6]" />
                     </th>
-                    <th className="py-3.5 px-3 font-extrabold">TEACHER NAME</th>
-                    <th className="py-3.5 px-3 font-extrabold">SUBJECTS & PROGRAMS</th>
-                    <th className="py-3.5 px-3 font-extrabold">JOINED DATE</th>
-                    <th className="py-3.5 px-3 font-extrabold">LOAD / CAPACITY</th>
-                    {role === 'admin' && <th className="py-3.5 px-3 font-extrabold">PER CLASS PAY</th>}
-                    <th className="py-3.5 px-3 font-extrabold">STATUS</th>
-                    <th className="py-3.5 px-3 text-center font-extrabold">ACTIONS</th>
+                    <th className="py-3.5 px-3 font-extrabold">Teacher Name</th>
+                    <th className="py-3.5 px-3 font-extrabold">Subjects & Programs</th>
+                    <th className="py-3.5 px-3 font-extrabold">Joined Date</th>
+                    <th className="py-3.5 px-3 font-extrabold">Load / Capacity</th>
+                    {role === 'admin' && <th className="py-3.5 px-3 font-extrabold">Per Class Pay</th>}
+                    <th className="py-3.5 px-3 font-extrabold">Status</th>
+                    <th className="py-3.5 px-3 text-center font-extrabold">Actions</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-xs">
+                <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px]">
                   {filteredTeachers.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-8 text-center text-[#6B7185]">
@@ -491,17 +572,17 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                               <div className={`w-9 h-9 rounded-full font-extrabold text-xs flex items-center justify-center shrink-0 shadow-sm ${avatarColor}`}>
                                 {getInitials(t.name)}
                               </div>
-                              <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{t.name}</div>
+                              <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{t.name}</div>
                             </div>
                           </td>
 
                           <td className="py-3.5 px-3">
-                            <div className="font-extrabold text-slate-900 dark:text-slate-100">{t.subjects.join(' · ')}</div>
+                            <div className="font-semibold text-slate-900 dark:text-slate-100">{t.subjects.join(' · ')}</div>
                             <div className="text-xs text-[#6B7185] font-medium mt-0.5">{t.programs.join(' · ')}</div>
                           </td>
 
                           <td className="py-3.5 px-3">
-                            <div className="font-extrabold text-slate-900 dark:text-slate-100">{t.joinDate}</div>
+                            <div className="font-semibold text-slate-900 dark:text-slate-100">{t.joinDate}</div>
                             <div className="text-xs text-[#6B7185] font-medium mt-0.5">Emp ID: {t.empId}</div>
                           </td>
 
@@ -536,17 +617,9 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                           )}
 
                           <td className="py-3.5 px-3">
-                            <span
-                              className={`px-3 py-1 rounded-full text-xs font-extrabold ${
-                                t.status === 'Teaching'
-                                  ? 'bg-[#E7F6EC] text-[#12A150]'
-                                  : t.status === 'At Capacity'
-                                  ? 'bg-rose-50 text-rose-600'
-                                  : 'bg-purple-100 text-purple-700'
-                              }`}
-                            >
+                            <Badge tone={t.status === 'Teaching' ? 'success' : t.status === 'At Capacity' ? 'danger' : 'brand'}>
                               {t.status}
-                            </span>
+                            </Badge>
                           </td>
 
                           <td className="py-3.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
@@ -557,11 +630,20 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                               <a href={`mailto:${t.email}`} title="Email Teacher" className="w-7 h-7 rounded-lg bg-[#E9F1FE] text-[#2E7BEE] flex items-center justify-center border border-[#CBE0FE]">
                                 <Mail className="w-3.5 h-3.5" />
                               </a>
-                              <button onClick={() => setSelectedDrawerTeacher(t)} title="View Teacher Profile" className="h-7 px-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-bold text-xs rounded-lg transition-all cursor-pointer">
-                                Profile
+                              <button onClick={() => setSelectedDrawerTeacher(t)} title="View Teacher Profile" className="h-7 px-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-bold text-[13px] rounded-lg transition-all cursor-pointer">
+                                View
                               </button>
+
                               {role === 'admin' && (
-                                <ResetPasswordControl id={t.id} kind="teacher" variant="icon" label="Reset Password" />
+                                <RowActionsMenu
+                                  actions={[
+                                    { label: 'View Profile', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setSelectedDrawerTeacher(t) },
+                                    { label: 'Edit Teacher', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditTeacher(t) },
+                                    { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, onClick: () => setResetTeacher(t) },
+                                    { label: 'Left the Academy', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: t.status === 'Left', onClick: () => openLeaveTeacher(t) },
+                                    { label: 'Delete Teacher', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', onClick: () => handleDeleteTeacher(t) },
+                                  ]}
+                                />
                               )}
                             </div>
                           </td>
@@ -682,7 +764,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                         <div className="font-mono text-xs text-slate-400">{item.time}</div>
                         <div className="text-slate-900 font-extrabold">{item.title}</div>
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full text-xs ${item.tag === 'Live' ? 'bg-emerald-100 text-emerald-700 animate-pulse' : 'bg-blue-100 text-blue-700'}`}>
+                      <span className={`px-2 py-0.5 rounded-full text-xs ${item.tag === 'Live' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'}`}>
                         {item.tag}
                       </span>
                     </div>
@@ -699,6 +781,9 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
       {showAddTeacher && (
         <AddTeacherModal isOpen={showAddTeacher} onClose={() => setShowAddTeacher(false)} />
       )}
+      {resetTeacher && (
+        <ResetPasswordControl id={resetTeacher.id} kind="teacher" autoOpen onClose={() => setResetTeacher(null)} />
+      )}
       {payRateTeacher && (
         <SetPayRateModal
           isOpen={!!payRateTeacher}
@@ -707,6 +792,160 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
           teacherName={payRateTeacher.name}
           currentRate={payRateTeacher.perClassPay}
         />
+      )}
+
+      {/* EDIT TEACHER MODAL */}
+      {editTeacher && (
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 my-6 text-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Edit Teacher</h3>
+                <p className="text-xs text-[#6B7185] mt-0.5">{editTeacher.empId} · edit profile, teaching programs &amp; subjects.</p>
+              </div>
+              <button onClick={() => setEditTeacher(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
+            </div>
+            <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Full Name *</label>
+                  <input value={edName} onChange={(e) => setEdName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Email *</label>
+                  <input type="email" value={edEmail} onChange={(e) => setEdEmail(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Phone *</label>
+                  <input value={edPhone} onChange={(e) => setEdPhone(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">City</label>
+                  <input value={edCity} onChange={(e) => setEdCity(e.target.value)} placeholder="Leave blank to keep unchanged" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Capacity *</label>
+                  <input type="number" value={edCapacity} onChange={(e) => setEdCapacity(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] font-mono font-bold" />
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Join Date <span className="text-slate-400 font-medium normal-case">(blank = keep)</span></label>
+                  <input type="date" value={edJoin} onChange={(e) => setEdJoin(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
+                </div>
+              </div>
+
+              {/* Teaching Programs */}
+              <div>
+                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-2">Teaching Programs</label>
+                <div className="flex flex-wrap gap-2">
+                  {ALL_PROGRAMS.map((prog) => {
+                    const isSel = edPrograms.includes(prog);
+                    return (
+                      <button
+                        type="button"
+                        key={prog}
+                        onClick={() => toggleEdProgram(prog)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                          isSel
+                            ? 'bg-[#5B47D6] text-white border-[#5B47D6] shadow-sm'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                        }`}
+                      >
+                        {prog}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Teaching Subjects */}
+              <div>
+                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-2">Teaching Subjects</label>
+                <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl">
+                  {ALL_SUBJECTS.map((subj) => {
+                    const isSel = edSubjects.includes(subj);
+                    return (
+                      <button
+                        type="button"
+                        key={subj}
+                        onClick={() => toggleEdSubject(subj)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
+                          isSel
+                            ? 'bg-[#5B47D6] text-white border-[#5B47D6] shadow-sm'
+                            : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
+                        }`}
+                      >
+                        {subj}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1.5">Links are matched to subjects that exist for the selected programs.</p>
+              </div>
+
+              {edError && (
+                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><span>{edError}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button onClick={() => setEditTeacher(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+              <button onClick={handleUpdateTeacher} disabled={edSaving} className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2">
+                <Check className="w-4 h-4" /><span>{edSaving ? 'Saving...' : 'Save Changes'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* TEACHER LEFT THE ACADEMY MODAL */}
+      {leaveTeacher && (
+        <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 my-6 text-sm">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Record teacher leaving</h3>
+                <p className="text-xs text-[#6B7185] mt-0.5">{leaveTeacher.name} moves off the active roster. The reason is saved on their record.</p>
+              </div>
+              <button onClick={() => setLeaveTeacher(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
+            </div>
+            <div className="space-y-2">
+              <label className="block font-bold text-xs text-slate-700 dark:text-slate-300">Reason</label>
+              <div className="grid grid-cols-1 gap-1.5">
+                {[...LEAVE_REASONS, 'Other'].map((r) => (
+                  <button
+                    key={r}
+                    onClick={() => setLeaveReason(r)}
+                    className={`w-full text-left px-3 py-2 rounded-xl border text-xs font-semibold transition-colors ${
+                      leaveReason === r ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
+                    }`}
+                  >
+                    {r === 'Other' ? 'Other (write your own)' : r}
+                  </button>
+                ))}
+              </div>
+              {leaveReason === 'Other' && (
+                <input
+                  value={leaveCustom}
+                  onChange={(e) => setLeaveCustom(e.target.value)}
+                  placeholder="Type the reason..."
+                  className="w-full mt-1 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                />
+              )}
+              {leaveError && (
+                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><span>{leaveError}</span>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <button onClick={() => setLeaveTeacher(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+              <button onClick={handleMarkLeft} disabled={leaveSaving} className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2">
+                <Archive className="w-4 h-4" /><span>{leaveSaving ? 'Saving...' : 'Confirm'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </PortalLayout>
   );

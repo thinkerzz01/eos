@@ -37,6 +37,8 @@ export interface CreateStudentInput {
   fee_status?: string;
   next_due_date: string;
   source?: string;
+  // Per-subject teacher assignments -> student_subjects links.
+  enrollments?: { subject: string; teacherId: string }[];
 }
 
 export interface ActionResult {
@@ -49,6 +51,95 @@ export interface ActionResult {
 function normalizeSource(raw?: string): string {
   const s = (raw ?? '').toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
   return SOURCES.includes(s) ? s : 'google';
+}
+
+/**
+ * List active teachers with the subject names they teach, for the admission
+ * form's per-subject teacher picker. RLS lets admin/manager read teachers +
+ * teacher_subjects; anyone else gets []. Best-effort - returns [] on any error.
+ */
+export interface EnrollableTeacher {
+  id: string;
+  name: string;
+  subjects: string[];
+}
+export async function listEnrollableTeachers(): Promise<EnrollableTeacher[]> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.user) return [];
+
+  const { data: teachers, error } = await supabase
+    .from('teachers')
+    .select('id,name,status')
+    .is('deleted_at', null)
+    .neq('status', 'left')
+    .order('name', { ascending: true });
+  if (error || !teachers) return [];
+
+  const { data: links } = await supabase
+    .from('teacher_subjects')
+    .select('teacher_id,subjects(name)')
+    .is('deleted_at', null);
+  const byTeacher = new Map<string, Set<string>>();
+  for (const row of (links as any[]) ?? []) {
+    const tid = row.teacher_id as string;
+    const subj = Array.isArray(row.subjects) ? row.subjects[0] : row.subjects;
+    if (!tid || !subj?.name) continue;
+    if (!byTeacher.has(tid)) byTeacher.set(tid, new Set());
+    byTeacher.get(tid)!.add(subj.name);
+  }
+  return (teachers as any[]).map((t) => ({
+    id: t.id as string,
+    name: t.name as string,
+    subjects: Array.from(byTeacher.get(t.id) ?? []).sort(),
+  }));
+}
+
+/**
+ * Persist a student's subject enrollments (student_subjects). Each enrollment
+ * names a subject + the teacher who takes it; we resolve the subject row for the
+ * student's program and insert the link. syllabus_template_id is left NULL (the
+ * syllabus system is archived - see the 2026-08-21 migration). Best-effort:
+ * failures here never undo the student. This is what powers teacher load, the
+ * teacher roster, the dashboard Teacher filter, and per-subject grades.
+ */
+async function enrollStudentSubjects(
+  supabase: ReturnType<typeof createClient>,
+  orgId: string,
+  studentId: string,
+  program: string,
+  enrollments?: { subject: string; teacherId: string }[]
+): Promise<void> {
+  const clean = (enrollments ?? []).filter((e) => e?.subject?.trim() && e?.teacherId?.trim());
+  if (clean.length === 0) return;
+
+  const names = Array.from(new Set(clean.map((e) => e.subject.trim())));
+  const { data: subs } = await supabase
+    .from('subjects')
+    .select('id,name')
+    .eq('org_id', orgId)
+    .eq('program', program)
+    .is('deleted_at', null)
+    .in('name', names);
+  const idByName = new Map<string, string>();
+  for (const s of (subs as any[]) ?? []) idByName.set(s.name, s.id);
+
+  const rows = clean
+    .map((e) => {
+      const subjectId = idByName.get(e.subject.trim());
+      if (!subjectId) return null;
+      return {
+        org_id: orgId,
+        student_id: studentId,
+        subject_id: subjectId,
+        teacher_id: e.teacherId.trim(),
+        target_grade: 'A*',
+      };
+    })
+    .filter(Boolean) as Record<string, any>[];
+  if (rows.length) await supabase.from('student_subjects').insert(rows);
 }
 
 export async function createStudent(input: CreateStudentInput): Promise<ActionResult> {
@@ -125,6 +216,14 @@ export async function createStudent(input: CreateStudentInput): Promise<ActionRe
     .single();
   if (error) {
     return { ok: false, error: error.message };
+  }
+
+  // Link the enrolled subjects to their teachers (best-effort - never undo the
+  // student). Powers teacher load / roster / dashboard filter.
+  try {
+    await enrollStudentSubjects(supabase, profile.org_id, inserted.id, row.program, input.enrollments);
+  } catch {
+    /* enrollment links are non-critical; the student already exists */
   }
 
   // Auto-provision the student's portal login when an email is on file
@@ -247,6 +346,16 @@ export async function updateStudent(input: {
   parentPhone?: string;
   program?: string;
   feeStatus?: string;
+  // Widened editable set (previously uneditable after admission).
+  email?: string;
+  whatsapp?: string;
+  city?: string;
+  address?: string;
+  gender?: string;
+  examSession?: string;
+  monthlyFee?: string | number;
+  nextDueDate?: string;
+  dob?: string;
 }): Promise<ActionResult> {
   if (!input.id) return { ok: false, error: 'Missing student id.' };
 
@@ -268,9 +377,56 @@ export async function updateStudent(input: {
   }
   if (input.feeStatus && FEE_UI_TO_DB[input.feeStatus]) patch.fee_status = FEE_UI_TO_DB[input.feeStatus];
 
+  // Email is the calendar-invite address, so if it is being changed it must stay
+  // valid (an empty string would blank a required contact channel).
+  if (input.email !== undefined) {
+    const e = input.email.trim();
+    if (!isValidEmail(e)) {
+      return { ok: false, error: 'Enter a valid email - class calendar invites are sent to it.' };
+    }
+    patch.email = e;
+  }
+  if (input.whatsapp !== undefined) patch.whatsapp = input.whatsapp.trim() || null;
+  if (input.city !== undefined) patch.city = input.city.trim() || null;
+  if (input.address !== undefined) patch.address = input.address.trim() || null;
+  if (input.gender && ['male', 'female', 'other'].includes(input.gender)) patch.gender = input.gender;
+  if (input.examSession?.trim()) patch.exam_session = input.examSession.trim();
+  if (input.monthlyFee !== undefined && input.monthlyFee !== '') {
+    const fee = Number(input.monthlyFee);
+    if (Number.isNaN(fee) || fee < 0) return { ok: false, error: 'Enter a valid monthly fee.' };
+    patch.monthly_fee = fee;
+  }
+  if (input.nextDueDate?.trim()) patch.next_due_date = input.nextDueDate.trim();
+  if (input.dob?.trim()) patch.date_of_birth = input.dob.trim();
+
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
   const { error } = await supabase.from('students').update(patch).eq('id', input.id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/students');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/**
+ * Mark a student as passed out / alumni. Sets status = 'stopped' (which the UI
+ * surfaces as "Alumni") so they drop out of the active roster but stay on record.
+ * RLS enforces admin/manager. Reversible by re-activating from the profile editor.
+ */
+export async function markStudentPassout(id: string): Promise<ActionResult> {
+  if (!id) return { ok: false, error: 'Missing student id.' };
+
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('students')
+    .update({ status: 'stopped' })
+    .eq('id', id);
   if (error) return { ok: false, error: error.message };
 
   revalidatePath('/students');

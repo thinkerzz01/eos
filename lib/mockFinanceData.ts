@@ -22,6 +22,7 @@ export interface PaymentTransaction {
   receiptNo: string;
   voucherId: string;
   studentName: string;
+  studentPhone?: string;
   amount: number; // Positive for payment, NEGATIVE for refund!
   paymentDate: string;
   paymentMethod: 'Bank Transfer' | 'Cash' | 'JazzCash' | 'Easypaisa' | 'Cheque';

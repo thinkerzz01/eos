@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { submitEnrollment } from './actions';
+import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 import { ALL_PROGRAMS, EXAM_SESSIONS } from '@/lib/syllabiSeed';
 import { CheckCircle2, GraduationCap, ArrowRight, AlertCircle } from 'lucide-react';
 
@@ -19,6 +20,7 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +46,7 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
         gender,
         city,
         address,
+        turnstileToken,
       });
       if (!res.ok) {
         setError(res.error || 'Something went wrong. Please try again.');
@@ -140,6 +143,8 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
                   <span>{error}</span>
                 </div>
               )}
+
+              <TurnstileWidget onToken={setTurnstileToken} />
 
               <div className="pt-3 border-t border-slate-100">
                 <button type="submit" disabled={submitting} className="w-full py-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-extrabold text-sm shadow-lg shadow-[#5B47D6]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">

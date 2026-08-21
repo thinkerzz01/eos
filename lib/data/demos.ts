@@ -48,6 +48,7 @@ function mapRow(r: any): DemoSession {
     teacherId: r.teacher_id ?? null,
     teacherName: teacher?.name ?? null,
     scheduledTime: fmtPkt(r.scheduled_at),
+    scheduledISO: r.scheduled_at,
     durationMinutes: 60,
     meetingLink: r.meeting_link ?? '',
     status: STATUS_UI[r.status as string] ?? 'Scheduled',
@@ -59,8 +60,9 @@ function mapRow(r: any): DemoSession {
 export async function getDemos(): Promise<DemoSession[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const { data, error } = await supabase

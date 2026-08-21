@@ -43,6 +43,55 @@ async function ctx() {
   return { supabase, user, orgId: (profile?.org_id as string) ?? null };
 }
 
+// ── Lead communications (call / note log) ──────────────────────────────────
+export interface LeadCommunication {
+  id: string;
+  channel: string;
+  note: string;
+  at: string;
+}
+
+/** List a lead's logged calls/notes, newest first. RLS scopes to the org. */
+export async function listLeadCommunications(leadId: string): Promise<LeadCommunication[]> {
+  if (!leadId) return [];
+  const { supabase, user } = await ctx();
+  if (!user) return [];
+  const { data, error } = await supabase
+    .from('lead_communications')
+    .select('id,channel,note,at')
+    .eq('lead_id', leadId)
+    .is('deleted_at', null)
+    .order('at', { ascending: false });
+  if (error || !data) return [];
+  return (data as any[]).map((r) => ({ id: r.id, channel: r.channel, note: r.note, at: r.at }));
+}
+
+/** Log a call / WhatsApp / note against a lead. */
+export async function logLeadCommunication(input: {
+  leadId: string;
+  channel: string;
+  note: string;
+}): Promise<ActionResult> {
+  const note = input.note?.trim();
+  if (!input.leadId) return { ok: false, error: 'Missing lead.' };
+  if (!note) return { ok: false, error: 'Write a note first.' };
+  const channel = (input.channel || 'note').toLowerCase();
+
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase.from('lead_communications').insert({
+    org_id: orgId,
+    lead_id: input.leadId,
+    channel,
+    note,
+  });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/leads');
+  return { ok: true };
+}
+
 // "How did you find us?" label -> DB source enum (same set as the public booking).
 const SOURCE_MAP: Record<string, string> = {
   Google: 'google', Facebook: 'facebook', Instagram: 'instagram',
@@ -227,6 +276,31 @@ const STAGE_DB: Record<string, string> = {
   Lost: 'lost',
 };
 const TEMP_DB: Record<string, string> = { Hot: 'hot', Warm: 'warm', Cold: 'cold' };
+
+/**
+ * Mark a lead as NOT converted (Lost) with a reason (fee issue, timing, etc.).
+ * Stored in leads.lost_reason so the team can see why it did not convert.
+ */
+export async function markLeadNotConverted(input: {
+  leadId: string;
+  reason: string;
+}): Promise<ActionResult> {
+  if (!input.leadId) return { ok: false, error: 'Missing lead id.' };
+  const reason = input.reason?.trim();
+  if (!reason) return { ok: false, error: 'Please choose or enter a reason.' };
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('leads')
+    .update({ status: 'lost', lost_reason: reason })
+    .eq('id', input.leadId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/leads');
+  revalidatePath('/');
+  return { ok: true };
+}
 
 /** Inline-edit a lead's stage and/or temperature. */
 export async function updateLead(input: {

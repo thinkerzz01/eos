@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { AssessmentRecord } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
-import { recordTest } from './actions';
+import { recordTest, updateTest, deleteTest } from './actions';
 import {
   Award,
   Plus,
@@ -18,6 +18,9 @@ import {
   Printer,
   Sparkles,
   TrendingUp,
+  Edit3,
+  Trash2,
+  Check,
 } from 'lucide-react';
 
 // CAIE-style grade band from a percentage (used for the result-slip average).
@@ -41,6 +44,27 @@ export function AssessmentsClient({
   const [showResultSlipModal, setShowResultSlipModal] = useState<boolean>(false);
 
   useEffect(() => { setAssessments(initialAssessments); }, [initialAssessments]);
+
+  // EDIT / DELETE a single recorded score (from the result slip)
+  const canManageTests = role !== 'student';
+  const [editTestId, setEditTestId] = useState<string | null>(null);
+  const [egScore, setEgScore] = useState('');
+  const [egBusy, setEgBusy] = useState(false);
+  const startEditGrade = (testId: string, score: number) => { setEditTestId(testId); setEgScore(String(score)); };
+  const saveEditGrade = async (max?: number) => {
+    if (!editTestId) return;
+    setEgBusy(true);
+    const res = await updateTest({ testId: editTestId, score: Number(egScore), maxScore: max });
+    setEgBusy(false);
+    if (res.ok) { setEditTestId(null); setShowResultSlipModal(false); router.refresh(); }
+    else alert(res.error ?? 'Failed to update the score.');
+  };
+  const deleteGrade = async (testId: string, studentName: string) => {
+    if (!confirm(`Delete ${studentName}'s score for this test? This cannot be undone.`)) return;
+    const res = await deleteTest(testId);
+    if (res.ok) { setShowResultSlipModal(false); router.refresh(); }
+    else alert(res.error ?? 'Failed to delete the score.');
+  };
 
   // RECORD TEST MODAL
   const [showRecordModal, setShowRecordModal] = useState(false);
@@ -80,7 +104,7 @@ export function AssessmentsClient({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
             <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Tests & CAIE Assessed Grades</span>
+              <span>Assessments</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
               Grade monthly tests on the Cambridge/CAIE scale (A*, A, B, C, D, E, U) & generate official Result Slips.
@@ -106,17 +130,17 @@ export function AssessmentsClient({
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[500px]">
+              <table className="w-full text-left text-sm border-collapse min-w-[500px]">
                 <thead>
-                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
-                    <th className="py-3.5 px-3">TEST TITLE & CODE</th>
-                    <th className="py-3.5 px-3">SUBJECT & DATE</th>
-                    <th className="py-3.5 px-3">TOTAL MARKS</th>
-                    <th className="py-3.5 px-3 text-center">RESULT SLIP</th>
+                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                    <th className="py-3.5 px-3">Test Title & Code</th>
+                    <th className="py-3.5 px-3">Subject & Date</th>
+                    <th className="py-3.5 px-3">Total Marks</th>
+                    <th className="py-3.5 px-3 text-center">Result Slip</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-xs font-medium">
+                <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                   {assessments.map((ast) => (
                     <tr key={ast.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-3">
@@ -222,21 +246,51 @@ export function AssessmentsClient({
                 <table className="w-full text-left">
                   <thead className="bg-slate-100 text-slate-700 font-extrabold">
                     <tr>
-                      <th className="p-2.5">STUDENT NAME</th>
-                      <th className="p-2.5">MARKS OBTAINED</th>
-                      <th className="p-2.5">ASSESSED GRADE</th>
+                      <th className="p-2.5">Student Name</th>
+                      <th className="p-2.5">Marks Obtained</th>
+                      <th className="p-2.5">Assessed Grade</th>
+                      {canManageTests && <th className="p-2.5 text-center print:hidden">Edit</th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y font-bold">
                     {selectedAssessmentForSlip.grades.map((g) => (
-                      <tr key={g.studentId}>
+                      <tr key={g.testId ?? g.studentId}>
                         <td className="p-2.5 text-slate-900">{g.studentName}</td>
-                        <td className="p-2.5 font-mono text-slate-900">{g.marksObtained} / {selectedAssessmentForSlip.totalMarks}</td>
+                        <td className="p-2.5 font-mono text-slate-900">
+                          {editTestId && editTestId === g.testId ? (
+                            <span className="flex items-center gap-1">
+                              <input
+                                type="number"
+                                value={egScore}
+                                onChange={(e) => setEgScore(e.target.value)}
+                                className="w-16 bg-white border border-slate-300 rounded-lg px-1.5 py-1 text-slate-900"
+                              />
+                              <span className="text-slate-400">/ {g.maxScore ?? selectedAssessmentForSlip.totalMarks}</span>
+                            </span>
+                          ) : (
+                            <>{g.marksObtained} / {g.maxScore ?? selectedAssessmentForSlip.totalMarks}</>
+                          )}
+                        </td>
                         <td className="p-2.5">
                           <span className="px-2 py-0.5 bg-purple-100 text-[#5B47D6] font-extrabold rounded-md">
                             {g.assessedGrade}
                           </span>
                         </td>
+                        {canManageTests && (
+                          <td className="p-2.5 print:hidden">
+                            {editTestId && editTestId === g.testId ? (
+                              <div className="flex items-center justify-center gap-1">
+                                <button onClick={() => saveEditGrade(g.maxScore)} disabled={egBusy} title="Save" className="w-6 h-6 rounded-lg bg-emerald-600 text-white flex items-center justify-center disabled:opacity-50"><Check className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => setEditTestId(null)} title="Cancel" className="w-6 h-6 rounded-lg border border-slate-200 text-slate-500 flex items-center justify-center"><X className="w-3.5 h-3.5" /></button>
+                              </div>
+                            ) : (
+                              <div className="flex items-center justify-center gap-1">
+                                <button onClick={() => g.testId && startEditGrade(g.testId, g.marksObtained)} disabled={!g.testId} title="Edit score" className="w-6 h-6 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center disabled:opacity-40"><Edit3 className="w-3.5 h-3.5" /></button>
+                                <button onClick={() => g.testId && deleteGrade(g.testId, g.studentName)} disabled={!g.testId} title="Delete score" className="w-6 h-6 rounded-lg border border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center disabled:opacity-40"><Trash2 className="w-3.5 h-3.5" /></button>
+                              </div>
+                            )}
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>

@@ -8,6 +8,6 @@ export const dynamic = 'force-dynamic';
 
 export default async function FeesPage() {
   const vouchers = await getFeeVouchers();
-  const paymentInfo = getPaymentInfo();
+  const paymentInfo = await getPaymentInfo();
   return <FeesClient initialVouchers={vouchers} paymentInfo={paymentInfo} />;
 }

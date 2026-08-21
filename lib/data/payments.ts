@@ -24,6 +24,7 @@ function mapRow(r: any): PaymentTransaction {
     receiptNo: r.code ?? `RCP-${String(r.id).split('-')[0].toUpperCase()}`,
     voucherId: r.voucher_id,
     studentName: student?.name ?? '',
+    studentPhone: student?.phone ?? '',
     amount,
     paymentDate: r.at,
     paymentMethod: METHOD_UI[r.method as string] ?? 'Bank Transfer',
@@ -36,13 +37,14 @@ function mapRow(r: any): PaymentTransaction {
 export async function getPayments(): Promise<PaymentTransaction[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const { data, error } = await supabase
     .from('payments')
-    .select('id,code,voucher_id,amount,method,reference,reconciled_by,at,vouchers(voucher_no,students(name))')
+    .select('id,code,voucher_id,amount,method,reference,reconciled_by,at,vouchers(voucher_no,students(name,phone))')
     .is('deleted_at', null)
     .order('at', { ascending: false });
 

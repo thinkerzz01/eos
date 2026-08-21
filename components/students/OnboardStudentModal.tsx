@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { UserPlus } from 'lucide-react';
-import { createStudent } from '@/app/students/actions';
+import { createStudent, listEnrollableTeachers, type EnrollableTeacher } from '@/app/students/actions';
+import { listSubjects, type SubjectPick } from '@/app/subjects/actions';
 import {
   ALL_PROGRAMS,
   ALL_SUBJECTS,
@@ -50,6 +51,33 @@ export function OnboardStudentModal({
     selectedSubjects: [] as string[],
   });
 
+  // Teachers (for the per-subject teacher picker) + the chosen teacher per subject.
+  const [teachers, setTeachers] = useState<EnrollableTeacher[]>([]);
+  const [subjectTeacher, setSubjectTeacher] = useState<Record<string, string>>({});
+  const [dbSubjects, setDbSubjects] = useState<SubjectPick[]>([]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    let alive = true;
+    listEnrollableTeachers()
+      .then((t) => { if (alive) setTeachers(t); })
+      .catch(() => { if (alive) setTeachers([]); });
+    listSubjects()
+      .then((s) => { if (alive) setDbSubjects(s); })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [isOpen]);
+
+  // Subjects the student can enroll in: live DB subjects for the chosen program.
+  // Falls back to the built-in list only when the DB has no subjects yet.
+  const subjectChoices = useMemo(() => {
+    if (dbSubjects.length === 0) return [...ALL_SUBJECTS] as string[];
+    const forProgram = formData.program
+      ? dbSubjects.filter((s) => s.program === formData.program)
+      : dbSubjects;
+    return Array.from(new Set(forProgram.map((s) => s.name))).sort();
+  }, [dbSubjects, formData.program]);
+
   const toggleSubject = (subj: string) => {
     setFormData((prev) => ({
       ...prev,
@@ -57,6 +85,13 @@ export function OnboardStudentModal({
         ? prev.selectedSubjects.filter((s) => s !== subj)
         : [...prev.selectedSubjects, subj],
     }));
+    // Drop the teacher assignment when a subject is unselected.
+    setSubjectTeacher((prev) => {
+      if (!prev[subj]) return prev;
+      const next = { ...prev };
+      delete next[subj];
+      return next;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -94,13 +129,16 @@ export function OnboardStudentModal({
         fee_status: formData.fee_status,
         next_due_date: formData.next_due_date,
         source: formData.source,
+        enrollments: formData.selectedSubjects
+          .filter((s) => subjectTeacher[s])
+          .map((s) => ({ subject: s, teacherId: subjectTeacher[s] })),
       });
 
       if (res.ok) {
         if (res.warning) {
           showToast(res.warning, 'error');
         } else {
-          showToast(`Student ${formData.name} onboarded successfully!`, 'success');
+          showToast(`Student ${formData.name} admitted successfully!`, 'success');
         }
         onSuccess?.();
         router.refresh(); // re-fetch the server component so the new row appears
@@ -119,8 +157,8 @@ export function OnboardStudentModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Onboard New Student"
-      subtitle="Complete student profile. Fields have clear placeholders and spacious layout."
+      title="Student Admission Form"
+      subtitle="Complete the student's admission. Same form whether they walk in or fill it themselves."
       maxWidth="2xl"
       footerButtons={
         <>
@@ -135,10 +173,10 @@ export function OnboardStudentModal({
             type="submit"
             form="onboardForm"
             disabled={loading}
-            className="px-6 py-2.5 bg-[#5A31F4] hover:bg-[#3B1CCF] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
+            className="px-6 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
           >
             <UserPlus className="w-4 h-4" />
-            <span>{loading ? 'Onboarding...' : 'Onboard Student'}</span>
+            <span>{loading ? 'Admitting...' : 'Admit Student'}</span>
           </button>
         </>
       }
@@ -156,7 +194,7 @@ export function OnboardStudentModal({
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g. Ahmed Raza"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -170,7 +208,7 @@ export function OnboardStudentModal({
               value={formData.parent_name}
               onChange={(e) => setFormData({ ...formData, parent_name: e.target.value })}
               placeholder="e.g. Mr. Raza Khan"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -184,7 +222,7 @@ export function OnboardStudentModal({
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="e.g. +92 300 1234567"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -197,7 +235,7 @@ export function OnboardStudentModal({
               value={formData.whatsapp}
               onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value })}
               placeholder="e.g. +92 300 1234567"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
         </div>
@@ -214,7 +252,7 @@ export function OnboardStudentModal({
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="e.g. ahmed@gmail.com"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
             <p className="text-[10px] text-slate-400 mt-1">Class calendar invites are sent here.</p>
           </div>
@@ -228,7 +266,7 @@ export function OnboardStudentModal({
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               placeholder="e.g. Karachi"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -241,7 +279,7 @@ export function OnboardStudentModal({
               value={formData.address}
               onChange={(e) => setFormData({ ...formData, address: e.target.value })}
               placeholder="e.g. Block 5, Gulshan"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -252,7 +290,7 @@ export function OnboardStudentModal({
             <select
               value={formData.gender}
               onChange={(e) => setFormData({ ...formData, gender: e.target.value as any })}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             >
               <option value="">Select Gender...</option>
               <option value="female">Female (she/her)</option>
@@ -272,7 +310,7 @@ export function OnboardStudentModal({
               required
               value={formData.program}
               onChange={(e) => setFormData({ ...formData, program: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             >
               <option value="">Select Program...</option>
               {ALL_PROGRAMS.map((prog) => (
@@ -288,7 +326,7 @@ export function OnboardStudentModal({
             <select
               value={formData.exam_session}
               onChange={(e) => setFormData({ ...formData, exam_session: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             >
               <option value="">Select Exam Session...</option>
               {EXAM_SESSIONS.map((ses) => (
@@ -305,7 +343,7 @@ export function OnboardStudentModal({
               type="date"
               value={formData.enrolled_at}
               onChange={(e) => setFormData({ ...formData, enrolled_at: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -318,7 +356,7 @@ export function OnboardStudentModal({
               value={formData.months_committed}
               onChange={(e) => setFormData({ ...formData, months_committed: e.target.value })}
               placeholder="e.g. 6"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4] font-mono font-bold"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] font-mono font-bold"
             />
           </div>
         </div>
@@ -334,7 +372,7 @@ export function OnboardStudentModal({
               value={formData.monthly_fee}
               onChange={(e) => setFormData({ ...formData, monthly_fee: e.target.value })}
               placeholder="e.g. 20000"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4] font-mono font-bold"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] font-mono font-bold"
             />
           </div>
 
@@ -345,7 +383,7 @@ export function OnboardStudentModal({
             <select
               value={formData.fee_status}
               onChange={(e) => setFormData({ ...formData, fee_status: e.target.value as any })}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             >
               <option value="">Select Fee Status...</option>
               <option value="paid">Paid</option>
@@ -363,7 +401,7 @@ export function OnboardStudentModal({
               type="date"
               value={formData.next_due_date}
               onChange={(e) => setFormData({ ...formData, next_due_date: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -374,7 +412,7 @@ export function OnboardStudentModal({
             <select
               value={formData.source}
               onChange={(e) => setFormData({ ...formData, source: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             >
               <option value="">Select Lead Source...</option>
               {LEAD_SOURCES.map((src) => (
@@ -390,7 +428,10 @@ export function OnboardStudentModal({
             Select Enrolled Subjects (CAIE, Matric & Inter)
           </label>
           <div className="flex flex-wrap gap-2.5 max-h-44 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl">
-            {ALL_SUBJECTS.map((subj) => {
+            {subjectChoices.length === 0 && (
+              <span className="text-xs text-slate-400">No subjects for this program yet — add them on the Subjects screen.</span>
+            )}
+            {subjectChoices.map((subj) => {
               const isSel = formData.selectedSubjects.includes(subj);
               return (
                 <button
@@ -399,7 +440,7 @@ export function OnboardStudentModal({
                   onClick={() => toggleSubject(subj)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
                     isSel
-                      ? 'bg-[#5A31F4] text-white border-[#5A31F4] shadow-sm'
+                      ? 'bg-[#5B47D6] text-white border-[#5B47D6] shadow-sm'
                       : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
                   }`}
                 >
@@ -409,6 +450,43 @@ export function OnboardStudentModal({
             })}
           </div>
         </div>
+
+        {/* Assign a teacher per selected subject (creates the enrollment link) */}
+        {formData.selectedSubjects.length > 0 && (
+          <div>
+            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-2">
+              Assign Teacher per Subject
+            </label>
+            <div className="space-y-2">
+              {formData.selectedSubjects.map((subj) => {
+                const eligible = teachers.filter((t) => t.subjects.includes(subj));
+                const options = eligible.length > 0 ? eligible : teachers;
+                return (
+                  <div key={subj} className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{subj}</span>
+                    <select
+                      value={subjectTeacher[subj] || ''}
+                      onChange={(e) => setSubjectTeacher((prev) => ({ ...prev, [subj]: e.target.value }))}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    >
+                      <option value="">
+                        {teachers.length === 0 ? 'No teachers available' : 'Assign later…'}
+                      </option>
+                      {options.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}{eligible.length === 0 ? ' (any)' : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1.5">
+              Pick the teacher who takes each subject. Subjects left unassigned can be linked later.
+            </p>
+          </div>
+        )}
       </form>
     </Modal>
   );

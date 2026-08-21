@@ -9,7 +9,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
-import { createMeetEvent, calendarReasonText, buildClassInvite } from '@/lib/google/calendar';
+import { createMeetEvent, calendarReasonText, buildClassInvite, updateCalendarEvent } from '@/lib/google/calendar';
 
 // Read-only service-role client for looking up invite emails, so the invite
 // never depends on the caller's RLS. Falls back to the session client. See the
@@ -138,6 +138,46 @@ export async function assignTeacher(input: {
     }
   } catch {
     warning = 'Teacher assigned, but the calendar invite could not be sent (unexpected error).';
+  }
+
+  revalidatePath('/demos');
+  revalidatePath('/');
+  return { ok: true, warning };
+}
+
+/**
+ * Edit (reschedule) a demo's date/time. If it already has a Google Calendar event
+ * (teacher assigned), the invite is moved to the new time (best-effort). RLS
+ * enforces admin/manager write.
+ */
+export async function updateDemo(input: {
+  demoId: string;
+  date: string; // YYYY-MM-DD (PKT)
+  time: string; // HH:MM (PKT)
+}): Promise<ActionResult> {
+  if (!input.demoId) return { ok: false, error: 'Missing demo id.' };
+  if (!input.date || !/^\d{2}:\d{2}$/.test(input.time ?? '')) {
+    return { ok: false, error: 'Pick a valid date and time.' };
+  }
+  const { supabase, user } = await ctx();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const startISO = new Date(`${input.date}T${input.time}:00+05:00`).toISOString();
+  const endISO = new Date(new Date(startISO).getTime() + DEMO_MINUTES * 60000).toISOString();
+
+  const { data: updated, error } = await supabase
+    .from('demos')
+    .update({ scheduled_at: startISO })
+    .eq('id', input.demoId)
+    .select('id,calendar_event_id')
+    .single();
+  if (error) return { ok: false, error: error.message };
+
+  let warning: string | undefined;
+  const eventId = (updated as any)?.calendar_event_id as string | undefined;
+  if (eventId) {
+    const upd = await updateCalendarEvent(eventId, { startISO, endISO });
+    if (!upd.ok) warning = `Demo rescheduled, but the calendar invite could not be moved: ${calendarReasonText(upd.reason ?? 'api_error')}.`;
   }
 
   revalidatePath('/demos');

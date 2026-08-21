@@ -15,7 +15,7 @@ export default async function VouchersPage() {
   ]);
   // Lightweight list for the "Create Voucher" student picker.
   const studentOptions = students.map((s) => ({ id: s.id, name: s.name }));
-  const paymentInfo = getPaymentInfo();
+  const paymentInfo = await getPaymentInfo();
   return (
     <VouchersClient
       initialVouchers={vouchers}

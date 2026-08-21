@@ -7,9 +7,13 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { useToast } from '@/components/ui/Toast';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
-import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
-import { bulkCreateStudents, updateStudent, softDeleteStudent } from './actions';
+import { ALL_PROGRAMS, EXAM_SESSIONS } from '@/lib/syllabiSeed';
+import { bulkCreateStudents, updateStudent, softDeleteStudent, markStudentPassout } from './actions';
 import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { KeyRound } from 'lucide-react';
 import { OnboardStudentModal } from '@/components/students/OnboardStudentModal';
 import {
   Users,
@@ -28,7 +32,6 @@ import {
   MessageSquare,
   Mail,
   Phone,
-  MoreHorizontal,
   FileText,
   Download,
   Upload,
@@ -65,7 +68,6 @@ import {
   QrCode,
   HardDrive,
   Check,
-  MoreVertical,
   RotateCcw,
   Save,
   FileSpreadsheet,
@@ -123,7 +125,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
     const url = `${window.location.origin}/onboarding/${studentId}`;
     try {
       await navigator.clipboard.writeText(url);
-      showToast('Onboarding form link copied - send it to the student.', 'success');
+      showToast('Admission form link copied - send it to the student.', 'success');
     } catch {
       showToast(url, 'success');
     }
@@ -156,7 +158,6 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
   const [showImportModal, setShowImportModal] = useState<boolean>(false);
   const [showOnboard, setShowOnboard] = useState<boolean>(false);
   const [showAiInsightsModal, setShowAiInsightsModal] = useState<boolean>(false);
-  const [activeRowMenuId, setActiveRowMenuId] = useState<string | null>(null);
 
   // IMPORT FILE & PREVIEW STATE
   const [importedFileName, setImportedFileName] = useState<string | null>(null);
@@ -167,11 +168,11 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
   // SAVED VIEWS LIST STATE
   const [savedViews, setSavedViews] = useState<SavedView[]>([
-    { id: 'v1', name: '⚡ All Active Students', status: 'Active', program: 'All Programs', subject: 'All Subjects', risk: 'All Tiers', minAttendance: 0 },
-    { id: 'v2', name: '🔴 At-Risk Critical Students', status: 'All Students', program: 'All Programs', subject: 'All Subjects', risk: 'Red (Critical)', minAttendance: 0 },
-    { id: 'v3', name: '💰 Fees Overdue & Grace', status: 'All Students', program: 'All Programs', subject: 'All Subjects', risk: 'All Tiers', minAttendance: 0 },
-    { id: 'v4', name: '🎓 Alumni / Passout', status: 'Passout / Alumni', program: 'All Programs', subject: 'All Subjects', risk: 'All Tiers', minAttendance: 0 },
-    { id: 'v5', name: '🟣 Demo Trial Students', status: 'Demo', program: 'All Programs', subject: 'All Subjects', risk: 'All Tiers', minAttendance: 0 },
+    { id: 'v1', name: 'All Active Students', status: 'Active', program: 'All Programs', subject: 'All Subjects', risk: 'All Tiers', minAttendance: 0 },
+    { id: 'v2', name: 'At-Risk Critical Students', status: 'All Students', program: 'All Programs', subject: 'All Subjects', risk: 'Red (Critical)', minAttendance: 0 },
+    { id: 'v3', name: 'Fees Overdue & Grace', status: 'All Students', program: 'All Programs', subject: 'All Subjects', risk: 'All Tiers', minAttendance: 0 },
+    { id: 'v4', name: 'Alumni / Passout', status: 'Passout / Alumni', program: 'All Programs', subject: 'All Subjects', risk: 'All Tiers', minAttendance: 0 },
+    { id: 'v5', name: 'Demo Trial Students', status: 'Demo', program: 'All Programs', subject: 'All Subjects', risk: 'All Tiers', minAttendance: 0 },
   ]);
 
   // RICH ADVANCED FILTERS STATE
@@ -190,6 +191,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
   // CENTER POP-UP MODAL STATE FOR STUDENT PROFILE
   const [profileModalStudent, setProfileModalStudent] = useState<Student | null>(null);
+  const [resetStudent, setResetStudent] = useState<Student | null>(null);
   const [modalActiveTab, setModalActiveTab] = useState<
     'Overview' | 'Academics' | 'Attendance' | 'Finance' | 'Timeline'
   >('Overview');
@@ -209,17 +211,6 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
       document.body.style.overflow = 'unset';
     };
   }, [profileModalStudent, showAiInsightsModal, showImportModal, showSaveViewModal]);
-
-  // CLOSE ROW MENU WHEN CLICKING OUTSIDE
-  useEffect(() => {
-    const handleOutsideClick = (e: MouseEvent) => {
-      if (activeRowMenuId && !(e.target as HTMLElement).closest('.row-menu-container')) {
-        setActiveRowMenuId(null);
-      }
-    };
-    document.addEventListener('click', handleOutsideClick);
-    return () => document.removeEventListener('click', handleOutsideClick);
-  }, [activeRowMenuId]);
 
   const resetAllFilters = () => {
     setActiveTabStatus('All Students');
@@ -271,6 +262,15 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
       parentPhone: editFormData.parentPhone,
       program: editFormData.program,
       feeStatus: editFormData.feeStatus as string | undefined,
+      email: editFormData.parentEmail,
+      whatsapp: editFormData.whatsapp,
+      city: editFormData.city,
+      address: editFormData.address,
+      gender: editFormData.gender,
+      examSession: editFormData.examSession,
+      monthlyFee: editFormData.monthlyFee,
+      nextDueDate: editFormData.nextDueDate,
+      dob: editFormData.dob,
     });
     if (!res.ok) {
       alert(res.error ?? 'Failed to save changes.');
@@ -289,8 +289,18 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
       alert(res.error ?? 'Failed to delete student.');
       return;
     }
-    setActiveRowMenuId(null);
     if (profileModalStudent?.id === id) setProfileModalStudent(null);
+    router.refresh();
+  };
+
+  // MARK A STUDENT AS PASSED OUT (alumni) - keeps the record, drops them from active.
+  const handlePassoutStudent = async (s: Student) => {
+    if (!confirm(`Mark ${s.name} as passed out?\n\nThey move to Alumni / Passout and leave the active roster. You can reactivate them later from Edit Profile.`)) return;
+    const res = await markStudentPassout(s.id);
+    if (!res.ok) {
+      alert(res.error ?? 'Failed to mark the student as passed out.');
+      return;
+    }
     router.refresh();
   };
 
@@ -538,29 +548,20 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
           <div className="flex items-center gap-2.5 flex-wrap">
             {(role === 'admin' || role === 'manager') && (
-              <button
-                onClick={() => setShowOnboard(true)}
-                className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-extrabold rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#5B47D6]/20 transition-all cursor-pointer"
-              >
+              <Button variant="primary" onClick={() => setShowOnboard(true)} className="shadow-[#5B47D6]/20">
                 <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>Add Student</span>
-              </button>
+              </Button>
             )}
-            <button
-              onClick={() => setShowImportModal(true)}
-              className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
-            >
+            <Button variant="secondary" onClick={() => setShowImportModal(true)}>
               <Upload className="w-3.5 h-3.5 text-[#5B47D6]" />
               <span>Import CSV</span>
-            </button>
+            </Button>
 
-            <button
-              onClick={handleExportCsv}
-              className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
-            >
+            <Button variant="secondary" onClick={handleExportCsv}>
               <Download className="w-3.5 h-3.5 text-[#5B47D6]" />
               <span>Export CSV</span>
-            </button>
+            </Button>
 
           </div>
         </div>
@@ -576,7 +577,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
             <div className="my-2">
               <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{studentsData.length}</div>
-              <div className="text-xs font-bold text-[#12A150] mt-1">▲ System database</div>
+              <div className="text-xs font-medium text-[#6B7185] mt-1">In the system</div>
             </div>
             <span className="text-xs font-bold text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">
               View all →
@@ -670,7 +671,6 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   <Sparkles className="w-4 h-4 text-purple-400" />
                   <span>Student Summary</span>
                 </div>
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
               </div>
               <p className="text-xs text-purple-100 font-medium leading-tight">
                 {counts.atRisk > 0
@@ -920,9 +920,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
         {/* 100% MATCHING MAIN STUDENTS TABLE */}
         <div className="w-full bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse min-w-[900px]">
+            <table className="w-full text-left text-sm border-collapse min-w-[900px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-[12px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
                   <th className="py-3.5 px-3 w-[40px] text-center">
                     <input
                       type="checkbox"
@@ -931,18 +931,18 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       className="rounded accent-[#5B47D6] cursor-pointer"
                     />
                   </th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">STUDENT</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">PARENT / GUARDIAN</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">PROGRAM / GRADE</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">ENROLLED SUBJECTS & TEACHERS</th>
-                  <th className="py-3.5 px-3 text-center font-extrabold text-slate-900 dark:text-white">PERFORMANCE SCORE</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">FEE STATUS</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">NEXT CLASS</th>
-                  <th className="py-3.5 px-3 text-center font-extrabold text-slate-900 dark:text-white">ACTIONS</th>
+                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Student</th>
+                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Parent / Guardian</th>
+                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Program / Grade</th>
+                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Enrolled Subjects & Teachers</th>
+                  <th className="py-3.5 px-3 text-center font-extrabold text-slate-900 dark:text-white">Performance Score</th>
+                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Fee Status</th>
+                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Next Class</th>
+                  <th className="py-3.5 px-3 text-center font-extrabold text-slate-900 dark:text-white">Actions</th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-xs">
+              <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px]">
                 {paginatedStudents.length === 0 ? (
                   <tr>
                     <td colSpan={9} className="py-10 text-center text-[#6B7185]">
@@ -952,7 +952,6 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                 ) : (
                   paginatedStudents.map((s, idx) => {
                     const isSelected = selectedStudentIds.includes(s.id);
-                    const isMenuOpen = activeRowMenuId === s.id;
                     const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
 
                     return (
@@ -967,19 +966,19 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                               {getInitials(s.name)}
                             </div>
                             <div>
-                              <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{s.name}</div>
+                              <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{s.name}</div>
                               <div className="text-xs text-[#6B7185] font-mono mt-0.5">{s.stuId}</div>
                             </div>
                           </div>
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <div className="font-extrabold text-xs text-slate-900 dark:text-slate-100">{s.parentName}</div>
+                          <div className="font-semibold text-xs text-slate-900 dark:text-slate-100">{s.parentName}</div>
                           <div className="text-xs text-[#6B7185] mt-0.5">{s.parentRelation}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <div className="font-extrabold text-xs text-slate-900 dark:text-slate-100">{s.program}</div>
+                          <div className="font-semibold text-xs text-slate-900 dark:text-slate-100">{s.program}</div>
                           <div className="text-xs text-[#6B7185] mt-0.5">{s.grade}</div>
                         </td>
 
@@ -987,7 +986,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           <div className="space-y-1">
                             {s.enrolledSubjects.map((sub, sIdx) => (
                               <div key={sIdx} className="text-[12px] leading-tight">
-                                <span className="font-extrabold text-slate-900 dark:text-slate-100">{sub.subject}</span>
+                                <span className="font-semibold text-slate-900 dark:text-slate-100">{sub.subject}</span>
                                 <span className="text-[#6B7185] font-medium"> ({sub.teacherName})</span>
                               </div>
                             ))}
@@ -1009,15 +1008,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <span
-                            className={`inline-block text-xs font-extrabold px-3 py-1 rounded-full ${
-                              s.feeStatus === 'Paid'
-                                ? 'bg-[#E7F6EC] text-[#12A150]'
-                                : 'bg-[#FDECEC] text-[#E5484D]'
-                            }`}
-                          >
+                          <Badge tone={s.feeStatus === 'Paid' ? 'success' : 'danger'}>
                             {s.feeStatus}
-                          </span>
+                          </Badge>
                         </td>
 
                         <td className="py-3.5 px-3">
@@ -1026,7 +1019,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                               <Calendar className="w-3.5 h-3.5" />
                             </div>
                             <div>
-                              <div className="font-extrabold text-xs text-slate-900 dark:text-slate-100">{s.nextClassTime}</div>
+                              <div className="font-semibold text-xs text-slate-900 dark:text-slate-100">{s.nextClassTime}</div>
                               <div className="text-xs text-[#6B7185] font-medium mt-0.5">{s.nextClassSubject}</div>
                             </div>
                           </div>
@@ -1060,67 +1053,18 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                               <span>Profile</span>
                             </button>
 
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveRowMenuId(isMenuOpen ? null : s.id);
-                              }}
-                              title="More Options"
-                              className="w-8 h-8 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-500 flex items-center justify-center transition-colors cursor-pointer"
-                            >
-                              <MoreVertical className="w-4 h-4" />
-                            </button>
+                            <RowActionsMenu
+                              width={200}
+                              actions={[
+                                { label: 'Edit Profile', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => { setProfileModalStudent(s); setEditFormData(s); setIsEditMode(true); } },
+                                { label: 'View Profile', icon: <UserCog className="w-3.5 h-3.5" />, onClick: () => setProfileModalStudent(s) },
+                                { label: 'Admission Form', icon: <GraduationCap className="w-3.5 h-3.5" />, tone: 'success', hidden: !(role === 'admin' || role === 'manager'), onClick: () => copyOnboardingLink(s.id) },
+                                { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, hidden: !(role === 'admin' || role === 'manager'), onClick: () => setResetStudent(s) },
+                                { label: 'Pass Out', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: !((role === 'admin' || role === 'manager') && s.status !== 'alumni'), onClick: () => handlePassoutStudent(s) },
+                                { label: 'Delete Student', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', onClick: () => handleDeleteStudent(s.id) },
+                              ]}
+                            />
                           </div>
-
-                          {isMenuOpen && (
-                            <div className="absolute right-2 mt-1 w-48 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-xl shadow-2xl p-1.5 z-50 text-xs font-semibold text-left space-y-1 animate-in fade-in">
-                              <button
-                                onClick={() => {
-                                  setProfileModalStudent(s);
-                                  setEditFormData(s);
-                                  setIsEditMode(true);
-                                  setActiveRowMenuId(null);
-                                }}
-                                className="w-full px-2.5 py-1.5 rounded-lg hover:bg-purple-50 text-[#5B47D6] flex items-center gap-2 cursor-pointer"
-                              >
-                                <Edit3 className="w-3.5 h-3.5" />
-                                <span>Edit Profile</span>
-                              </button>
-
-                              <button
-                                onClick={() => {
-                                  setProfileModalStudent(s);
-                                  setActiveRowMenuId(null);
-                                }}
-                                className="w-full px-2.5 py-1.5 rounded-lg hover:bg-slate-50 text-slate-700 flex items-center gap-2 cursor-pointer"
-                              >
-                                <UserCog className="w-3.5 h-3.5" />
-                                <span>View Profile</span>
-                              </button>
-
-                              {(role === 'admin' || role === 'manager') && (
-                                <button
-                                  onClick={() => { copyOnboardingLink(s.id); setActiveRowMenuId(null); }}
-                                  className="w-full px-2.5 py-1.5 rounded-lg hover:bg-emerald-50 text-emerald-700 flex items-center gap-2 cursor-pointer"
-                                >
-                                  <GraduationCap className="w-3.5 h-3.5" />
-                                  <span>Onboarding Form</span>
-                                </button>
-                              )}
-
-                              {(role === 'admin' || role === 'manager') && (
-                                <ResetPasswordControl id={s.id} kind="student" label="Reset Password" />
-                              )}
-
-                              <button
-                                onClick={() => handleDeleteStudent(s.id)}
-                                className="w-full px-2.5 py-1.5 rounded-lg hover:bg-rose-50 text-rose-600 flex items-center gap-2 cursor-pointer"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>Delete Student</span>
-                              </button>
-                            </div>
-                          )}
                         </td>
                       </tr>
                     );
@@ -1132,7 +1076,19 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
           {/* PAGINATION */}
           <div className="p-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold text-slate-600">
-            <div>Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredStudents.length)} of {filteredStudents.length} students</div>
+            <div className="flex items-center gap-3">
+              <div>Showing {filteredStudents.length === 0 ? 0 : ((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredStudents.length)} of {filteredStudents.length} students</div>
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium text-slate-500">Per page</span>
+                <select
+                  value={pageSize}
+                  onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
+                  className="bg-white border rounded-lg px-2 py-1 font-bold text-slate-700 focus:outline-none focus:border-[#5B47D6] cursor-pointer"
+                >
+                  {[10, 20, 50, 100, 500].map((n) => (<option key={n} value={n}>{n}</option>))}
+                </select>
+              </div>
+            </div>
             <div className="flex items-center gap-2">
               <button disabled={currentPage === 1} onClick={() => setCurrentPage(c => c - 1)} className="px-3 py-1 bg-white border rounded-lg disabled:opacity-50">Previous</button>
               <span>Page {currentPage} of {totalPages}</span>
@@ -1433,6 +1389,102 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       </div>
 
                       <div>
+                        <label className="font-bold text-slate-700 block mb-1">Email <span className="text-slate-400 font-medium">(calendar invites)</span></label>
+                        <input
+                          type="email"
+                          value={editFormData.parentEmail || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, parentEmail: e.target.value })}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">WhatsApp</label>
+                        <input
+                          type="text"
+                          value={editFormData.whatsapp || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, whatsapp: e.target.value })}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Gender</label>
+                        <select
+                          value={editFormData.gender || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value })}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                        >
+                          <option value="">Select…</option>
+                          <option value="female">Female (she/her)</option>
+                          <option value="male">Male (he/him)</option>
+                          <option value="other">Other (they/them)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Date of Birth</label>
+                        <input
+                          type="date"
+                          value={editFormData.dob || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, dob: e.target.value })}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">City</label>
+                        <input
+                          type="text"
+                          value={editFormData.city || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                        />
+                      </div>
+
+                      <div className="sm:col-span-2 md:col-span-3">
+                        <label className="font-bold text-slate-700 block mb-1">Address</label>
+                        <input
+                          type="text"
+                          value={editFormData.address || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Exam Session</label>
+                        <select
+                          value={editFormData.examSession || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, examSession: e.target.value })}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                        >
+                          <option value="">Select…</option>
+                          {EXAM_SESSIONS.map((s) => (<option key={s} value={s}>{s}</option>))}
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Monthly Fee (PKR)</label>
+                        <input
+                          type="number"
+                          value={editFormData.monthlyFee ?? ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, monthlyFee: e.target.value === '' ? undefined : Number(e.target.value) })}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold font-mono focus:outline-none focus:border-[#5B47D6]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="font-bold text-slate-700 block mb-1">Next Due Date</label>
+                        <input
+                          type="date"
+                          value={editFormData.nextDueDate || ''}
+                          onChange={(e) => setEditFormData({ ...editFormData, nextDueDate: e.target.value })}
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                        />
+                      </div>
+
+                      <div>
                         <label className="font-bold text-slate-700 block mb-1">Performance Score (/100) <span className="text-slate-400 font-medium">(auto)</span></label>
                         <input
                           type="number"
@@ -1529,6 +1581,23 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                             <span className="text-[#6B7185] font-medium">Last Contact</span>
                             <span className="font-extrabold text-slate-900">{profileModalStudent.lastContact}</span>
                           </div>
+                        </div>
+                      </div>
+
+                      {/* ADMISSION & ONBOARDING — details collected on the public onboarding form */}
+                      <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Admission &amp; Onboarding</h3>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${profileModalStudent.onboardingDone ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
+                            {profileModalStudent.onboardingDone ? 'Completed' : 'Pending'}
+                          </span>
+                        </div>
+                        <div className="space-y-2.5 text-xs sm:text-sm">
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">School</span><span className="font-bold text-slate-900 text-right">{profileModalStudent.schoolName || '—'}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Emergency Contact</span><span className="font-bold text-slate-900 text-right">{profileModalStudent.emergencyContact || '—'}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Exam Session</span><span className="font-bold text-slate-900 text-right">{profileModalStudent.examSession || '—'}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">City</span><span className="font-bold text-slate-900 text-right">{profileModalStudent.city || '—'}</span></div>
+                          <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium">Address</span><span className="font-bold text-slate-900 text-right max-w-[60%] truncate" title={profileModalStudent.address || ''}>{profileModalStudent.address || '—'}</span></div>
                         </div>
                       </div>
                     </div>
@@ -1813,6 +1882,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
         onClose={() => setShowOnboard(false)}
         onSuccess={() => router.refresh()}
       />
+      {resetStudent && (
+        <ResetPasswordControl id={resetStudent.id} kind="student" autoOpen onClose={() => setResetStudent(null)} />
+      )}
     </PortalLayout>
   );
 }

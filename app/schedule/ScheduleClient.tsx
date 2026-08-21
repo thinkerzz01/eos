@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
-import { bulkScheduleClasses, completeClassWithAttendance, createClassSession } from './actions';
+import { bulkScheduleClasses, completeClassWithAttendance, createClassSession, updateClassSession, deleteClassSession, rescheduleClass, saveClassNote } from './actions';
 import {
   Calendar,
   Clock,
@@ -26,6 +26,8 @@ import {
   SlidersHorizontal,
   DollarSign,
   Check,
+  Pencil,
+  Trash2,
 } from 'lucide-react';
 
 export function ScheduleClient({
@@ -54,6 +56,7 @@ export function ScheduleClient({
   // MOBILE CLASS COMPLETION DRAWER
   const [selectedClassForCompletion, setSelectedClassForCompletion] = useState<ScheduledClass | null>(null);
   const [attendanceChoice, setAttendanceChoice] = useState<'Present' | 'Late' | 'Absent'>('Present');
+  const [classNoteText, setClassNoteText] = useState('');
   const [savingCompletion, setSavingCompletion] = useState(false);
 
   // SCHEDULE WIZARD (set up a qualified student's whole timetable at once)
@@ -119,6 +122,104 @@ export function ScheduleClient({
       alert(res.calendarWarning ? `Class scheduled.\n\n⚠ ${res.calendarWarning}` : 'Class scheduled.');
     } else {
       setScError(res.error ?? 'Failed to schedule the class.');
+    }
+  };
+
+  // EDIT one existing class (subject / teacher / type / date / time).
+  const canManage = role === 'admin' || role === 'manager';
+  const [editClass, setEditClass] = useState<ScheduledClass | null>(null);
+  const [edSubjectId, setEdSubjectId] = useState('');
+  const [edTeacherId, setEdTeacherId] = useState('');
+  const [edType, setEdType] = useState<'Class' | 'Makeup' | 'Test'>('Class');
+  const [edDate, setEdDate] = useState('');
+  const [edStart, setEdStart] = useState('');
+  const [edEnd, setEdEnd] = useState('');
+  const [edSaving, setEdSaving] = useState(false);
+  const [edError, setEdError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Raw UTC ISO -> PKT date (YYYY-MM-DD) / time (HH:MM) for prefilling the inputs.
+  const isoToPktDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }) : todayStr);
+  const isoToPktTime = (iso?: string) => (iso ? new Date(iso).toLocaleTimeString('en-GB', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hour12: false }) : '');
+
+  const edStudent = editClass ? students.find((s) => s.id === editClass.studentId) : undefined;
+  const edSubjects = edStudent?.program ? subjects.filter((s) => s.program === edStudent.program) : subjects;
+
+  const openEdit = (cls: ScheduledClass) => {
+    setEditClass(cls);
+    setEdSubjectId(cls.subjectId ?? '');
+    setEdTeacherId(cls.teacherId ?? '');
+    setEdType(cls.classType);
+    setEdDate(isoToPktDate(cls.startAtISO));
+    setEdStart(isoToPktTime(cls.startAtISO));
+    setEdEnd(isoToPktTime(cls.endAtISO));
+    setEdError(null);
+  };
+
+  const handleUpdateClass = async () => {
+    if (!editClass) return;
+    setEdError(null);
+    if (!edSubjectId || !edTeacherId || !edDate || !edStart || !edEnd) {
+      setEdError('Subject, teacher, date, start and end time are all required.');
+      return;
+    }
+    setEdSaving(true);
+    const res = await updateClassSession({
+      sessionId: editClass.id, subjectId: edSubjectId, teacherId: edTeacherId,
+      type: edType, date: edDate, startTime: edStart, endTime: edEnd,
+    });
+    setEdSaving(false);
+    if (res.ok) {
+      setEditClass(null);
+      router.refresh();
+      alert(res.calendarWarning ? `Class updated.\n\n⚠ ${res.calendarWarning}` : 'Class updated.');
+    } else {
+      setEdError(res.error ?? 'Failed to update the class.');
+    }
+  };
+
+  const handleDeleteClass = async (cls: ScheduledClass) => {
+    const when = `${cls.date}, ${cls.startAt}`;
+    if (!window.confirm(`Delete this class?\n\n${cls.subject} - ${cls.studentName || 'student'}\n${when}\n\nThis cancels the class and its calendar invite. This cannot be undone.`)) return;
+    setDeletingId(cls.id);
+    const res = await deleteClassSession({ sessionId: cls.id });
+    setDeletingId(null);
+    if (res.ok) {
+      router.refresh();
+      if (res.calendarWarning) alert(`Class deleted.\n\n⚠ ${res.calendarWarning}`);
+    } else {
+      alert(res.error ?? 'Failed to delete the class.');
+    }
+  };
+
+  // TEACHER RESCHEDULE (moves the class time + auto-notifies the student).
+  const [rsClass, setRsClass] = useState<ScheduledClass | null>(null);
+  const [rsDate, setRsDate] = useState('');
+  const [rsStart, setRsStart] = useState('');
+  const [rsEnd, setRsEnd] = useState('');
+  const [rsSaving, setRsSaving] = useState(false);
+  const [rsError, setRsError] = useState<string | null>(null);
+
+  const openReschedule = (cls: ScheduledClass) => {
+    setRsClass(cls);
+    setRsDate(isoToPktDate(cls.startAtISO));
+    setRsStart(isoToPktTime(cls.startAtISO));
+    setRsEnd(isoToPktTime(cls.endAtISO));
+    setRsError(null);
+  };
+  const handleReschedule = async () => {
+    if (!rsClass) return;
+    setRsError(null);
+    if (!rsDate || !rsStart || !rsEnd) { setRsError('Date, start and end time are all required.'); return; }
+    setRsSaving(true);
+    const res = await rescheduleClass({ sessionId: rsClass.id, date: rsDate, startTime: rsStart, endTime: rsEnd });
+    setRsSaving(false);
+    if (res.ok) {
+      setRsClass(null);
+      router.refresh();
+      alert(res.calendarWarning ? `Class rescheduled. The student has been notified.\n\n⚠ ${res.calendarWarning}` : 'Class rescheduled. The student has been notified.');
+    } else {
+      setRsError(res.error ?? 'Failed to reschedule the class.');
     }
   };
 
@@ -197,11 +298,8 @@ export function ScheduleClient({
 
   const handleSaveClassCompletion = async () => {
     if (!selectedClassForCompletion) return;
-    if (selectedClassForCompletion.status === 'Completed') {
-      alert('This class is already completed - attendance was already recorded.');
-      return;
-    }
     if (!selectedClassForCompletion.studentId) { alert('This session has no linked student.'); return; }
+    const wasCompleted = selectedClassForCompletion.status === 'Completed';
 
     setSavingCompletion(true);
     const res = await completeClassWithAttendance({
@@ -209,13 +307,18 @@ export function ScheduleClient({
       studentId: selectedClassForCompletion.studentId,
       attendance: attendanceChoice,
     });
+    // Save the class note too (best-effort - don't fail completion on a note error).
+    if (res.ok && (classNoteText.trim() !== (selectedClassForCompletion.classNote ?? '').trim())) {
+      await saveClassNote({ sessionId: selectedClassForCompletion.id, note: classNoteText });
+    }
     setSavingCompletion(false);
 
     if (res.ok) {
       setSelectedClassForCompletion(null);
       setAttendanceChoice('Present');
+      setClassNoteText('');
       router.refresh();
-      alert('Class completed and attendance recorded.');
+      alert(wasCompleted ? 'Attendance updated.' : 'Class completed and attendance recorded.');
     } else {
       alert(res.error ?? 'Failed to save.');
     }
@@ -315,20 +418,20 @@ export function ScheduleClient({
           {/* CLASSES TIMETABLE LIST (8 COLS) */}
           <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden flex flex-col justify-between">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[700px]">
+              <table className="w-full text-left text-sm border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
-                    <th className="py-3.5 px-3">TIME & ROOM</th>
-                    <th className="py-3.5 px-3">CLASS CODE & SUBJECT</th>
-                    <th className="py-3.5 px-3">PROGRAM & GRADE</th>
-                    <th className="py-3.5 px-3">TEACHER</th>
-                    <th className="py-3.5 px-3">TYPE</th>
-                    <th className="py-3.5 px-3">STATUS</th>
-                    <th className="py-3.5 px-3 text-center">ACTION</th>
+                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                    <th className="py-3.5 px-3">Time & Room</th>
+                    <th className="py-3.5 px-3">Class Code & Subject</th>
+                    <th className="py-3.5 px-3">Program & Grade</th>
+                    <th className="py-3.5 px-3">Teacher</th>
+                    <th className="py-3.5 px-3">Type</th>
+                    <th className="py-3.5 px-3">Status</th>
+                    <th className="py-3.5 px-3 text-center">Action</th>
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-xs font-medium">
+                <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                   {filteredClasses.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="py-8 text-center text-[#6B7185]">
@@ -394,7 +497,7 @@ export function ScheduleClient({
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
                               cls.status === 'Live'
-                                ? 'bg-emerald-100 text-emerald-700 animate-pulse'
+                                ? 'bg-emerald-100 text-emerald-700'
                                 : cls.status === 'Completed'
                                 ? 'bg-slate-200 text-slate-700'
                                 : 'bg-blue-50 text-blue-600'
@@ -404,14 +507,51 @@ export function ScheduleClient({
                           </span>
                         </td>
 
-                        <td className="py-3.5 px-3 text-center">
+                        <td className="py-3.5 px-3">
                           {role !== 'student' ? (
-                            <button
-                              onClick={() => setSelectedClassForCompletion(cls)}
-                              className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
-                            >
-                              {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class →'}
-                            </button>
+                            <div className="flex items-center justify-center gap-1.5">
+                              <button
+                                onClick={() => {
+                                  const mark = cls.attendanceStatus;
+                                  setAttendanceChoice(mark === 'late' ? 'Late' : mark === 'absent' ? 'Absent' : 'Present');
+                                  setClassNoteText(cls.classNote ?? '');
+                                  setSelectedClassForCompletion(cls);
+                                }}
+                                className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-bold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                              >
+                                {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class →'}
+                              </button>
+                              {/* Teacher / manager / admin can reschedule a missed or upcoming class - the student is auto-notified */}
+                              {cls.status !== 'Completed' && cls.status !== 'Cancelled' && (
+                                <button
+                                  onClick={() => openReschedule(cls)}
+                                  className="px-2.5 py-1.5 bg-amber-50 text-amber-700 font-bold text-xs rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer"
+                                >
+                                  Reschedule
+                                </button>
+                              )}
+                              {canManage && (
+                                <>
+                                  <button
+                                    onClick={() => openEdit(cls)}
+                                    title="Edit class"
+                                    aria-label="Edit class"
+                                    className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-[#5B47D6] transition-colors"
+                                  >
+                                    <Pencil className="w-4 h-4" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteClass(cls)}
+                                    disabled={deletingId === cls.id}
+                                    title="Delete class"
+                                    aria-label="Delete class"
+                                    className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors disabled:opacity-50"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
                           ) : (
                             <span className="text-slate-400 text-xs font-semibold">-</span>
                           )}
@@ -485,18 +625,34 @@ export function ScheduleClient({
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 font-medium">Saving marks the class Completed and records this attendance (feeds the health score).</p>
+                <p className="text-xs text-slate-500 font-medium">
+                  {selectedClassForCompletion.status === 'Completed'
+                    ? 'This class is already completed. Change the mark below to correct the recorded attendance.'
+                    : 'Saving marks the class Completed and records this attendance (feeds the health score).'}
+                </p>
+
+                {/* Class note - what was covered / homework set */}
+                <div className="pt-1">
+                  <div className="font-extrabold text-slate-900 uppercase mb-1">Class Note <span className="text-slate-400 font-medium normal-case">(optional)</span></div>
+                  <textarea
+                    value={classNoteText}
+                    onChange={(e) => setClassNoteText(e.target.value)}
+                    rows={3}
+                    placeholder="What was covered, homework set, how the student did…"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs text-slate-800 focus:outline-none focus:border-[#5B47D6]"
+                  />
+                </div>
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button onClick={() => setSelectedClassForCompletion(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Close</button>
-                {selectedClassForCompletion.status === 'Completed' ? (
-                  <span className="px-4 py-2 text-emerald-600 font-extrabold text-xs">Already completed - attendance recorded</span>
-                ) : (
-                  <button onClick={handleSaveClassCompletion} disabled={savingCompletion} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
-                    {savingCompletion ? 'Saving...' : 'Complete & Save Attendance'}
-                  </button>
-                )}
+                <button onClick={handleSaveClassCompletion} disabled={savingCompletion} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
+                  {savingCompletion
+                    ? 'Saving...'
+                    : selectedClassForCompletion.status === 'Completed'
+                    ? 'Update Attendance'
+                    : 'Complete & Save Attendance'}
+                </button>
               </div>
             </div>
           </div>
@@ -621,6 +777,175 @@ export function ScheduleClient({
                 >
                   <Calendar className="w-4 h-4" />
                   <span>{scSaving ? 'Scheduling...' : 'Schedule Class'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* EDIT SINGLE CLASS MODAL */}
+        {editClass && (
+          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 my-6 text-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Edit Class</h3>
+                  <p className="text-xs text-[#6B7185] mt-0.5">{editClass.studentName || 'Student'} · {editClass.classCode}. Moving the time also updates the calendar invite.</p>
+                </div>
+                <button onClick={() => setEditClass(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
+                  <X className="w-5 h-5 text-slate-500" />
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Subject *</label>
+                    <select
+                      value={edSubjectId}
+                      onChange={(e) => setEdSubjectId(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    >
+                      <option value="">Select subject...</option>
+                      {edSubjects.map((s) => (<option key={s.id} value={s.id}>{s.name}</option>))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Teacher *</label>
+                    <select
+                      value={edTeacherId}
+                      onChange={(e) => setEdTeacherId(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    >
+                      <option value="">Select teacher...</option>
+                      {teachers.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Class Type</label>
+                    <select
+                      value={edType}
+                      onChange={(e) => setEdType(e.target.value as 'Class' | 'Makeup' | 'Test')}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    >
+                      <option value="Class">Regular</option>
+                      <option value="Makeup">Makeup (free replacement)</option>
+                      <option value="Test">Test</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Date *</label>
+                    <input
+                      type="date"
+                      value={edDate}
+                      onChange={(e) => setEdDate(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Start Time *</label>
+                    <input
+                      type="time"
+                      value={edStart}
+                      onChange={(e) => { setEdStart(e.target.value); setEdEnd(addOneHour(e.target.value)); }}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">End Time * <span className="text-slate-400 font-medium normal-case">(auto +1h)</span></label>
+                    <input
+                      type="time"
+                      value={edEnd}
+                      onChange={(e) => setEdEnd(e.target.value)}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  </div>
+                </div>
+
+                {edError && (
+                  <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+                    <span>{edError}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-1">
+                <button
+                  onClick={() => setEditClass(null)}
+                  className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUpdateClass}
+                  disabled={edSaving}
+                  className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2"
+                >
+                  <Check className="w-4 h-4" />
+                  <span>{edSaving ? 'Saving...' : 'Save Changes'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TEACHER RESCHEDULE MODAL */}
+        {rsClass && (
+          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 my-6 text-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Reschedule Class</h3>
+                  <p className="text-xs text-[#6B7185] mt-0.5">{rsClass.subject} · {rsClass.studentName || 'student'}. Pick a new time — the student is notified automatically.</p>
+                </div>
+                <button onClick={() => setRsClass(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
+              </div>
+              <div>
+                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">New Date *</label>
+                <input
+                  type="date"
+                  value={rsDate}
+                  min={todayStr}
+                  onChange={(e) => setRsDate(e.target.value)}
+                  className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Start Time *</label>
+                  <input
+                    type="time"
+                    value={rsStart}
+                    onChange={(e) => { setRsStart(e.target.value); setRsEnd(addOneHour(e.target.value)); }}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                  />
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">End Time * <span className="text-slate-400 font-medium normal-case">(auto +1h)</span></label>
+                  <input
+                    type="time"
+                    value={rsEnd}
+                    onChange={(e) => setRsEnd(e.target.value)}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                  />
+                </div>
+              </div>
+              {rsError && (
+                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><span>{rsError}</span>
+                </div>
+              )}
+              <div className="flex justify-end gap-2 pt-1">
+                <button onClick={() => setRsClass(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+                <button onClick={handleReschedule} disabled={rsSaving} className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2">
+                  <Check className="w-4 h-4" /><span>{rsSaving ? 'Saving...' : 'Reschedule & Notify'}</span>
                 </button>
               </div>
             </div>

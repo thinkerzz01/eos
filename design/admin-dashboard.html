@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Thinkerzz — Admin Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7fb;--card:#fff;--ink:#0f1729;--ink2:#3b4258;--muted:#6b7391;--faint:#98a0bd;
+  --line:#eaecf3;--line2:#e0e3ee;--brand:#5b47d6;--brand2:#7a67ef;--brandsoft:#efedfe;--brandtint:#f6f4ff;
+  --green:#11a256;--greensoft:#e6f7ee;--amber:#d9820a;--ambersoft:#fdf3e2;--red:#e0435a;--redsoft:#fdecef;--blue:#2f6df6;--bluesoft:#eaf1ff;--teal:#0d9488;--tealsoft:#e3f6f4;
+  --r:12px;--r2:16px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8f0;color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;font-size:13.5px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.page{max-width:1280px;margin:0 auto;padding:22px 16px 56px}
+.intro{margin:2px 0 14px}.intro .k{color:var(--brand);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:11px}.intro h1{margin:6px 0 2px;font-size:22px;font-weight:700;letter-spacing:-.02em}.intro p{color:var(--ink2);margin:0}
+.num{font-variant-numeric:tabular-nums}
+svg.i{stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.win{background:var(--bg);border:1px solid #d4d7e6;border-radius:18px;overflow:hidden;box-shadow:0 18px 50px -22px rgba(23,28,60,.4)}
+.chrome{background:#fff;border-bottom:1px solid var(--line);padding:9px 14px;display:flex;align-items:center;gap:7px}.chrome .d{width:11px;height:11px;border-radius:50%}.chrome .url{margin-left:9px;font-size:12px;color:var(--faint);background:#f4f5fa;border:1px solid var(--line);border-radius:8px;padding:4px 13px}
+.app{display:flex;min-height:730px}
+.side{width:206px;flex:none;background:#fff;border-right:1px solid var(--line);padding:13px 11px;display:flex;flex-direction:column;gap:1px}
+.brand{display:flex;align-items:center;gap:9px;padding:5px 8px 12px}.brand .mark{width:27px;height:27px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center}.brand b{font-weight:700;font-size:15px;letter-spacing:-.02em}.brand b .z{color:var(--brand)}
+.side .cap{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);padding:11px 10px 3px}
+.nav{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:9px;color:var(--ink2);font-weight:500;font-size:13px;cursor:pointer;transition:background .15s}.nav:hover{background:#f6f7fb}.nav.on{background:var(--brandtint);color:var(--brand);font-weight:600}.nav.on svg{stroke:var(--brand)}.nav svg{stroke:var(--muted);width:17px;height:17px}
+.side .me{margin-top:auto;display:flex;align-items:center;gap:9px;padding:9px 8px;border-top:1px solid var(--line)}.side .me .av{width:29px;height:29px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
+.main{flex:1;min-width:0;background:var(--bg);display:flex;flex-direction:column}
+.top{background:#fff;border-bottom:1px solid var(--line);padding:10px 18px;display:flex;align-items:center;justify-content:space-between}
+.search{display:flex;align-items:center;gap:9px;background:#f4f5fa;border:1px solid var(--line);border-radius:10px;padding:8px 12px;width:300px;color:var(--faint);font-size:12.5px}.search .kbd{margin-left:auto;font-size:10px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-weight:600}
+.top .r{display:flex;align-items:center;gap:10px}
+.ico-btn{width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--muted);position:relative;cursor:pointer}.ico-btn svg{width:17px;height:17px}.ico-btn .badge{position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid #fff}
+.cta{display:flex;align-items:center;gap:6px;background:var(--brand);color:#fff;font-weight:600;font-size:12.5px;padding:8px 14px;border-radius:10px;cursor:pointer}.cta svg{width:15px;height:15px;stroke:#fff}
+.avm{width:32px;height:32px;border-radius:50%;background:var(--brand2);color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
+.content{padding:16px 20px;overflow:auto}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.head h2{margin:0;font-size:21px;font-weight:700;letter-spacing:-.02em}.head .sub{color:var(--muted);font-size:12.5px;margin-top:1px}
+/* alert strip */
+.alert{display:flex;align-items:center;gap:14px;background:linear-gradient(0deg,#fff,#fff) padding-box,#fff;border:1px solid #f4cdd4;border-radius:14px;padding:11px 15px;margin-bottom:14px;position:relative;overflow:hidden}
+.alert:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--red);animation:pulseBar 1.8s ease-in-out infinite}
+.alert .ico{width:34px;height:34px;border-radius:10px;background:var(--redsoft);color:var(--red);display:flex;align-items:center;justify-content:center;flex:none;animation:pulseGlow 1.8s ease-in-out infinite}.alert .ico svg{width:18px;height:18px}
+.alert .msg b{font-weight:700}.alert .msg{font-size:13px}.alert .msg .mut{color:var(--muted)}
+.alert .acts{margin-left:auto;display:flex;gap:8px}
+.abtn{font-size:12px;font-weight:600;padding:7px 13px;border-radius:9px;cursor:pointer}.abtn.p{background:var(--red);color:#fff}.abtn.o{border:1px solid var(--line2);color:var(--ink2);background:#fff}
+/* toolbar */
+.toolbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:14px;padding:9px 11px;margin-bottom:14px}
+.dr{display:inline-flex;background:#f2f3f8;border-radius:9px;padding:3px}.dr s{font-style:normal;font-size:12px;font-weight:600;padding:5px 11px;border-radius:7px;color:var(--muted);cursor:pointer}.dr s.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(23,28,60,.08)}
+.filt{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line2);background:#fff;border-radius:9px;padding:7px 11px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer}.filt svg{width:14px;height:14px;stroke:var(--muted)}.filt .ct{background:var(--brandsoft);color:var(--brand);border-radius:5px;padding:0 6px;font-size:11px}
+.tb-sp{flex:1}.tb-gh{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;color:var(--muted);border:1px solid var(--line2);border-radius:9px;padding:7px 11px;background:#fff;cursor:pointer}.tb-gh svg{width:14px;height:14px}
+/* grid */
+.grid{display:grid;gap:13px}.k5{grid-template-columns:repeat(5,1fr)}.b12{grid-template-columns:repeat(12,1fr)}
+@media(max-width:980px){.k5{grid-template-columns:repeat(2,1fr)}.b12{grid-template-columns:1fr}.side{display:none}}
+.sp7{grid-column:span 7}.sp5{grid-column:span 5}.sp4{grid-column:span 4}.sp3{grid-column:span 3}
+@media(max-width:980px){.sp7,.sp5,.sp4,.sp3{grid-column:auto}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r2);padding:15px;animation:rise .5s ease both;transition:transform .15s,box-shadow .15s}
+.card:hover{transform:translateY(-2px);box-shadow:0 10px 24px -14px rgba(23,28,60,.28)}
+.kpi{position:relative;padding:14px;cursor:pointer}
+.kpi .ic{width:30px;height:30px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}.kpi .ic svg{width:16px;height:16px}
+.kpi .l{font-size:11.5px;color:var(--muted);font-weight:500}.kpi .v{font-size:23px;font-weight:700;letter-spacing:-.03em;margin-top:1px}
+.kpi .t{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:600;margin-top:5px;padding:2px 7px;border-radius:999px}.kpi .t svg{width:11px;height:11px;stroke-width:2.5}
+.t.gp{color:var(--green);background:var(--greensoft)}.t.rd{color:var(--red);background:var(--redsoft)}.t.nt{color:var(--muted);background:#f2f3f8}
+.i-br{background:var(--brandsoft);color:var(--brand)}.i-gr{background:var(--greensoft);color:var(--green)}.i-rd{background:var(--redsoft);color:var(--red)}.i-am{background:var(--ambersoft);color:var(--amber)}.i-bl{background:var(--bluesoft);color:var(--blue)}.i-tl{background:var(--tealsoft);color:var(--teal)}
+.kpi.hot{border-color:#f3cdd4}.kpi.hot .v{color:var(--red)}
+.sc-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px;gap:8px}
+.sc-h h3{margin:0;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px}
+.mini{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line2);border-radius:8px;padding:4px 9px;font-size:11.5px;font-weight:600;color:var(--muted);cursor:pointer}.mini svg{width:12px;height:12px}
+.mseg{display:inline-flex;background:#f2f3f8;border-radius:7px;padding:2px}.mseg s{font-style:normal;font-size:11px;font-weight:600;padding:3px 8px;border-radius:5px;color:var(--muted);cursor:pointer}.mseg s.on{background:#fff;color:var(--ink)}
+/* rows */
+.list .row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line)}.list .row:last-child{border-bottom:0}
+.rico{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex:none}.rico svg{width:16px;height:16px}
+.row .tt{font-weight:600;font-size:13px}.row .ss{font-size:11.5px;color:var(--muted)}
+.tap{font-size:11.5px;font-weight:600;color:var(--brand);background:var(--brandtint);padding:5px 10px;border-radius:8px;cursor:pointer;margin-left:auto}
+.join{font-size:12px;font-weight:700;color:#fff;background:var(--brand);padding:6px 12px;border-radius:8px;cursor:pointer;margin-left:auto;display:inline-flex;align-items:center;gap:5px}.join svg{width:13px;height:13px;stroke:#fff}
+.pill{font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}.pg{background:var(--greensoft);color:var(--green)}.pa{background:var(--ambersoft);color:var(--amber)}.pr{background:var(--redsoft);color:var(--red)}.pb{background:var(--bluesoft);color:var(--blue)}
+/* live class row */
+.cls{display:flex;align-items:center;gap:12px;padding:11px;border-radius:12px;border:1px solid var(--line);margin-bottom:9px}
+.cls.live{border-color:#bfe6d0;background:linear-gradient(90deg,#f2fbf6,#fff)}
+.cls .time{font-weight:700;font-size:14px;width:58px;text-align:center}.cls.live .time{color:var(--green)}
+.cls .who .tt{font-weight:600}.cls .who .ss{font-size:11.5px;color:var(--muted)}
+.livebadge{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:800;color:var(--green);background:var(--greensoft);padding:2px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:.04em}
+.livedot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.5s ease-in-out infinite}
+/* attention urgent */
+.att{display:flex;align-items:center;gap:11px;padding:10px;border-radius:12px;border:1px solid var(--line);margin-bottom:8px}
+.att.urgent{border-color:#f3cdd4;animation:attnGlow 2s ease-in-out infinite}
+.att .rico{width:30px;height:30px}
+.cap-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}.cap-row:last-child{border:0}
+.cap-row .av{width:28px;height:28px;border-radius:8px;background:var(--brandsoft);color:var(--brand);font-weight:700;font-size:10.5px;display:flex;align-items:center;justify-content:center}
+.meter{width:56px;height:6px;border-radius:6px;background:#eef0f6;overflow:hidden}.meter i{display:block;height:100%;border-radius:6px}
+.fn{display:flex;flex-direction:column;gap:7px}.fn .s{display:flex;align-items:center;gap:9px}.fn .fb{height:28px;border-radius:7px;display:flex;align-items:center;padding:0 10px;color:#fff;font-weight:600;font-size:11.5px}.fn .meta{font-size:11px;color:var(--muted);white-space:nowrap}.fn .meta b{color:var(--ink)}
+.fin{display:grid;grid-template-columns:1fr 1fr;gap:9px}.fin .cell{background:#f8f9fc;border-radius:11px;padding:10px}.fin .cell .l{font-size:11px;color:var(--muted)}.fin .cell .v{font-size:16px;font-weight:700;margin-top:1px}
+/* animations */
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.5);opacity:.55}}
+@keyframes pulseBar{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(224,67,90,.35)}50%{box-shadow:0 0 0 6px rgba(224,67,90,0)}}
+@keyframes attnGlow{0%,100%{box-shadow:0 0 0 0 rgba(224,67,90,0);border-color:#f3cdd4}50%{box-shadow:0 0 0 3px rgba(224,67,90,.12);border-color:#ed9aa8}}
+.card:nth-child(1){animation-delay:.02s}.card:nth-child(2){animation-delay:.06s}.card:nth-child(3){animation-delay:.1s}.card:nth-child(4){animation-delay:.14s}.card:nth-child(5){animation-delay:.18s}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head>
+<body><div class="page">
+<div class="intro"><div class="k">Thinkerzz EOS · Admin dashboard</div><h1>Built for a busy admin — act in one glance</h1><p>Urgent actions surfaced up top, ongoing classes one click to join, every block filterable, time-aware greeting, and motion that pulls the eye to what needs attention.</p></div>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="ic-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+<symbol id="ic-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="ic-cap" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></symbol>
+<symbol id="ic-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="ic-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+<symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></symbol>
+<symbol id="ic-clip" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="ic-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></symbol>
+<symbol id="ic-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1V2l-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M8 7h8M8 11h8M8 15h5"/></symbol>
+<symbol id="ic-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+<symbol id="ic-wallet" viewBox="0 0 24 24"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></symbol>
+<symbol id="ic-mega" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol>
+<symbol id="ic-set" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></symbol>
+<symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="ic-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+<symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="ic-up" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+<symbol id="ic-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+<symbol id="ic-chev" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+<symbol id="ic-filter" viewBox="0 0 24 24"><path d="M22 3H2l8 9.5V19l4 2v-8.5L22 3Z"/></symbol>
+<symbol id="ic-dl" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></symbol>
+<symbol id="ic-ref" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></symbol>
+<symbol id="ic-heart" viewBox="0 0 24 24"><path d="M19 14c1.5-1.5 3-3.3 3-5.5A4.5 4.5 0 0 0 12 5 4.5 4.5 0 0 0 2 8.5c0 2.2 1.5 4 3 5.5l7 7 7-7Z"/></symbol>
+<symbol id="ic-video" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3Z"/></symbol>
+<symbol id="ic-uplus" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></symbol>
+</defs></svg>
+
+<div class="win">
+  <div class="chrome"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="url">portal.thinkerzz.com</span></div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><span class="mark"><svg class="i" style="width:15px;height:15px;stroke:#fff"><use href="#ic-cap"/></svg></span><b>thinker<span class="z">zz</span></b></div>
+      <div class="cap">Overview</div><div class="nav on"><svg class="i"><use href="#ic-dash"/></svg>Dashboard</div>
+      <div class="cap">People</div><div class="nav"><svg class="i"><use href="#ic-users"/></svg>Students</div><div class="nav"><svg class="i"><use href="#ic-cap"/></svg>Teachers</div><div class="nav"><svg class="i"><use href="#ic-target"/></svg>Leads &amp; Demos</div>
+      <div class="cap">Academics</div><div class="nav"><svg class="i"><use href="#ic-cal"/></svg>Classes</div><div class="nav"><svg class="i"><use href="#ic-book"/></svg>Homework</div><div class="nav"><svg class="i"><use href="#ic-clip"/></svg>Assessments</div><div class="nav"><svg class="i"><use href="#ic-chart"/></svg>Reports</div>
+      <div class="cap">Finance</div><div class="nav"><svg class="i"><use href="#ic-receipt"/></svg>Fee Vouchers</div><div class="nav"><svg class="i"><use href="#ic-card"/></svg>Payments</div><div class="nav"><svg class="i"><use href="#ic-wallet"/></svg>Payouts</div>
+      <div class="cap">Comms · System</div><div class="nav"><svg class="i"><use href="#ic-mega"/></svg>Announcements</div><div class="nav"><svg class="i"><use href="#ic-set"/></svg>Settings</div>
+      <div class="me"><span class="av">AD</span><div><div style="font-weight:600;font-size:12.5px">Admin</div><div style="font-size:11px;color:var(--muted)">Thinkerzz</div></div></div>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div class="search"><svg class="i" style="width:16px;height:16px"><use href="#ic-search"/></svg>Search students, vouchers, leads…<span class="kbd">⌘K</span></div>
+        <div class="r"><span class="cta"><svg class="i"><use href="#ic-plus"/></svg>Quick action</span><span class="ico-btn"><svg class="i"><use href="#ic-bell"/></svg><span class="badge"></span></span><span class="avm">AD</span></div>
+      </div>
+      <div class="content">
+        <div class="head"><div><h2 id="greet">Good morning, Admin</h2><div class="sub" id="today">Monday, 18 August · here's what needs you today.</div></div></div>
+
+        <!-- URGENT ACTION STRIP (top priority) -->
+        <div class="alert">
+          <span class="ico"><svg class="i"><use href="#ic-alert"/></svg></span>
+          <div class="msg"><b>3 demos need a teacher</b> <span class="mut">· 4 fees overdue · 6 classes need attendance</span></div>
+          <div class="acts"><span class="abtn p">Assign demos</span><span class="abtn o">Review fees</span></div>
+        </div>
+
+        <!-- FILTER BAR -->
+        <div class="toolbar">
+          <div class="dr"><s>Today</s><s class="on">Week</s><s>Month</s><s>Term</s></div>
+          <span class="filt"><svg class="i"><use href="#ic-cal"/></svg>Custom</span>
+          <span class="filt">Program <span class="ct">All</span><svg class="i"><use href="#ic-chev"/></svg></span>
+          <span class="filt">Teacher<svg class="i"><use href="#ic-chev"/></svg></span>
+          <span class="filt">Subject<svg class="i"><use href="#ic-chev"/></svg></span>
+          <span class="filt">Lead source<svg class="i"><use href="#ic-chev"/></svg></span>
+          <span class="filt"><svg class="i"><use href="#ic-filter"/></svg>More<span class="ct">2</span></span>
+          <span class="tb-sp"></span>
+          <span class="tb-gh"><svg class="i"><use href="#ic-ref"/></svg>Refresh</span><span class="tb-gh"><svg class="i"><use href="#ic-dl"/></svg>Export</span>
+        </div>
+
+        <!-- KPI ROW (action-oriented; no vanity metrics) -->
+        <div class="grid k5">
+          <div class="card kpi"><div class="ic i-br"><svg class="i"><use href="#ic-cal"/></svg></div><div class="l">Classes today</div><div class="v num" data-count="11">11</div><div class="t gp">3 done</div></div>
+          <div class="card kpi hot"><div class="ic i-am"><svg class="i"><use href="#ic-uplus"/></svg></div><div class="l">Demos to assign</div><div class="v num" data-count="3">3</div><div class="t rd">action</div></div>
+          <div class="card kpi"><div class="ic i-bl"><svg class="i"><use href="#ic-target"/></svg></div><div class="l">New leads</div><div class="v num" data-count="7">7</div><div class="t gp"><svg class="i"><use href="#ic-up"/></svg>today</div></div>
+          <div class="card kpi hot"><div class="ic i-rd"><svg class="i"><use href="#ic-heart"/></svg></div><div class="l">Students at risk</div><div class="v num" data-count="7">7</div><div class="t rd">attention</div></div>
+          <div class="card kpi hot"><div class="ic i-rd"><svg class="i"><use href="#ic-alert"/></svg></div><div class="l">Overdue fees</div><div class="v num">Rs 88k</div><div class="t rd">4 late</div></div>
+        </div>
+
+        <!-- HERO: ongoing classes (join) + needs attention (merged) -->
+        <div class="grid b12" style="margin-top:13px">
+          <div class="card sp7">
+            <div class="sc-h"><h3><svg class="i" style="width:17px;height:17px;stroke:var(--brand)"><use href="#ic-cal"/></svg>Today's classes</h3><span class="mseg"><s class="on">Live</s><s>Upcoming</s><s>All</s></span></div>
+            <div class="cls live">
+              <div class="time">Now</div>
+              <div class="who" style="flex:1"><div class="tt">Mathematics · Ahmed Raza</div><div class="ss">M. Muzammal · started 09:12</div></div>
+              <span class="livebadge"><span class="livedot"></span>Live</span>
+              <span class="join"><svg class="i"><use href="#ic-video"/></svg>Join</span>
+            </div>
+            <div class="cls">
+              <div class="time">16:00</div>
+              <div class="who" style="flex:1"><div class="tt">Physics · Salman Khan</div><div class="ss">S. Aisha · synced</div></div>
+              <span class="join" style="background:var(--brandtint);color:var(--brand)"><svg class="i" style="stroke:var(--brand)"><use href="#ic-video"/></svg>Join</span>
+            </div>
+            <div class="cls">
+              <div class="time">18:00</div>
+              <div class="who" style="flex:1"><div class="tt">Chemistry · Hira Nadeem</div><div class="ss">no calendar invite</div></div>
+              <span class="pill pa" style="margin-left:auto">Check invite</span>
+            </div>
+          </div>
+          <div class="card sp5">
+            <div class="sc-h"><h3><svg class="i" style="width:17px;height:17px;stroke:var(--red)"><use href="#ic-alert"/></svg>Needs attention</h3><span class="mini">Urgent first<svg class="i"><use href="#ic-chev"/></svg></span></div>
+            <div class="att urgent"><span class="rico i-am"><svg class="i"><use href="#ic-uplus"/></svg></span><div style="flex:1"><div class="tt">3 demos need a teacher</div><div class="ss">oldest booked 2 days ago</div></div><span class="tap">Assign</span></div>
+            <div class="att urgent"><span class="rico i-rd"><svg class="i"><use href="#ic-alert"/></svg></span><div style="flex:1"><div class="tt">4 vouchers overdue · Rs 88k</div><div class="ss">grace expired — decide</div></div><span class="tap">Review</span></div>
+            <div class="att"><span class="rico i-rd"><svg class="i"><use href="#ic-heart"/></svg></span><div style="flex:1"><div class="tt">Hira Nadeem at risk</div><div class="ss">54% attendance · overdue fee</div></div><span class="tap">Open</span></div>
+            <div class="att"><span class="rico i-br"><svg class="i"><use href="#ic-clip"/></svg></span><div style="flex:1"><div class="tt">6 classes unmarked</div><div class="ss">attendance pending</div></div><span class="tap">Open</span></div>
+          </div>
+        </div>
+
+        <!-- SECONDARY: leads funnel + teacher availability + finance (one, compact) -->
+        <div class="grid b12" style="margin-top:13px">
+          <div class="card sp5">
+            <div class="sc-h"><h3>New leads &amp; funnel</h3><span class="mini">Source: all<svg class="i"><use href="#ic-chev"/></svg></span></div>
+            <div class="fn">
+              <div class="s"><div class="fb" style="width:100%;background:var(--brand)">Leads</div><span class="meta"><b>210</b></span></div>
+              <div class="s"><div class="fb" style="width:78%;background:#6f5fe0">Contacted</div><span class="meta"><b>168</b> · 80%</span></div>
+              <div class="s"><div class="fb" style="width:60%;background:#8878ea">Demos</div><span class="meta"><b>130</b> · 77%</span></div>
+              <div class="s"><div class="fb" style="width:34%;background:var(--green)">Won</div><span class="meta"><b>72</b></span></div>
+            </div>
+          </div>
+          <div class="card sp4">
+            <div class="sc-h"><h3>Teacher availability</h3><span class="mini">Available<svg class="i"><use href="#ic-chev"/></svg></span></div>
+            <div class="cap-row"><span class="av">MM</span><div style="flex:1"><div class="tt" style="font-size:12.5px">M. Muzammal</div></div><div class="meter"><i style="width:40%;background:var(--green)"></i></div><span class="num" style="font-size:11.5px;color:var(--muted);width:26px">2/5</span></div>
+            <div class="cap-row"><span class="av">MZ</span><div style="flex:1"><div class="tt" style="font-size:12.5px">Teacher MZ</div></div><div class="meter"><i style="width:6%;background:var(--green)"></i></div><span class="num" style="font-size:11.5px;color:var(--muted);width:26px">0/20</span></div>
+            <div class="cap-row"><span class="av">SA</span><div style="flex:1"><div class="tt" style="font-size:12.5px">S. Aisha</div></div><div class="meter"><i style="width:88%;background:var(--amber)"></i></div><span class="num" style="font-size:11.5px;color:var(--muted);width:30px">22/25</span></div>
+          </div>
+          <div class="card sp3">
+            <div class="sc-h"><h3>Fees</h3><span class="mini">Month<svg class="i"><use href="#ic-chev"/></svg></span></div>
+            <div class="fin">
+              <div class="cell"><div class="l">Overdue</div><div class="v" style="color:var(--red)">Rs 88k</div></div>
+              <div class="cell"><div class="l">Outstanding</div><div class="v" style="color:var(--amber)">Rs 102k</div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:9px;font-size:11.5px"><span style="color:var(--muted)">Collection</span><div class="meter" style="flex:1;width:auto"><i style="width:79%;background:var(--green)"></i></div><b class="num">79%</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var h=new Date().getHours(),g='Good evening';
+  if(h<12)g='Good morning'; else if(h<17)g='Good afternoon'; else if(h<21)g='Good evening'; else g='Good night';
+  var el=document.getElementById('greet'); if(el)el.textContent=g+', Admin';
+  var d=new Date(), days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'], mon=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  var t=document.getElementById('today'); if(t)t.textContent=days[d.getDay()]+', '+d.getDate()+' '+mon[d.getMonth()]+" · here's what needs you today.";
+  document.querySelectorAll('[data-count]').forEach(function(n){var to=+n.getAttribute('data-count'),s=0,step=Math.max(1,Math.round(to/24));var iv=setInterval(function(){s+=step;if(s>=to){s=to;clearInterval(iv);}n.textContent=s;},22);});
+})();
+</script>
+</div></body></html>

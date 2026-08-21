@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
@@ -16,6 +16,10 @@ import {
   Eye,
   RefreshCw,
   SlidersHorizontal,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  CalendarCheck,
 } from 'lucide-react';
 
 export function ReportsClient({ initialReports, initialFunnel }: { initialReports: MonthlyReportData[]; initialFunnel?: FunnelStats }) {
@@ -28,6 +32,29 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
       prev ? initialReports.find((r) => r.studentId === prev.studentId) ?? initialReports[0] ?? null : initialReports[0] ?? null
     );
   }, [initialReports]);
+
+  // FILTERS + PAGINATION for the reports list
+  const [search, setSearch] = useState('');
+  const [programFilter, setProgramFilter] = useState('All Programs');
+  const [monthFilter, setMonthFilter] = useState('All Months');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const months = useMemo(() => Array.from(new Set(reports.map((r) => r.month).filter(Boolean))), [reports]);
+  const programs = useMemo(() => Array.from(new Set(reports.map((r) => r.program).filter(Boolean))), [reports]);
+
+  const filteredReports = useMemo(() => {
+    return reports.filter((r) => {
+      if (programFilter !== 'All Programs' && r.program !== programFilter) return false;
+      if (monthFilter !== 'All Months' && r.month !== monthFilter) return false;
+      if (search.trim() && !r.firstName.toLowerCase().includes(search.toLowerCase())) return false;
+      return true;
+    });
+  }, [reports, programFilter, monthFilter, search]);
+
+  const totalPages = Math.ceil(filteredReports.length / pageSize) || 1;
+  const pagedReports = useMemo(() => filteredReports.slice((page - 1) * pageSize, page * pageSize), [filteredReports, page, pageSize]);
+  useEffect(() => { setPage(1); }, [search, programFilter, monthFilter, pageSize]);
 
   // Deterministic report DRAFT, assembled from the student's real numbers - no
   // invented facts, no raw test scores, first name only. This is the same shape
@@ -72,7 +99,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
             className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
           >
             <Send className="w-3.5 h-3.5 text-[#5B47D6]" />
-            <span>Notification Queue & Cron →</span>
+            <span>Email Queue →</span>
           </Link>
         </div>
 
@@ -80,7 +107,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
         <div className="p-4 bg-gradient-to-r from-[#0B0E23] to-[#1D2145] text-white rounded-[20px] shadow-md space-y-2">
           <div className="flex items-center gap-2 font-heading font-extrabold text-xs text-purple-300 uppercase tracking-wider">
             <Lock className="w-4 h-4 text-purple-400" />
-            <span>AI Usage & Privacy Rules (AGENTS.md §3.6)</span>
+            <span>Privacy &amp; Data Integrity</span>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs text-purple-100 font-medium pt-1">
             <div className="p-2.5 bg-white/10 rounded-xl border border-white/15">
@@ -131,12 +158,33 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
           
           {/* STUDENT LIST (5 COLS) */}
           <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-4 space-y-3">
-            <div className="font-heading font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider border-b pb-2">
-              Monthly Reports Queue{reports[0]?.month ? ` (${reports[0].month})` : ''}
+            <div className="font-heading font-extrabold text-sm text-slate-900 dark:text-white tracking-wider border-b pb-2">
+              Monthly Reports Queue
+            </div>
+
+            {/* FILTER BAR */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="relative flex-1 min-w-[140px]">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search student..." className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-[13px] font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#5B47D6]" />
+              </div>
+              <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-2 text-[13px] font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
+                <option>All Programs</option>
+                {programs.map((p) => (<option key={p} value={p}>{p}</option>))}
+              </select>
+              {months.length > 1 && (
+                <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-2 text-[13px] font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
+                  <option>All Months</option>
+                  {months.map((m) => (<option key={m} value={m}>{m}</option>))}
+                </select>
+              )}
             </div>
 
             <div className="space-y-2">
-              {reports.map((rpt) => (
+              {pagedReports.length === 0 && (
+                <div className="text-[13px] text-slate-400 font-medium py-8 text-center">No reports match these filters.</div>
+              )}
+              {pagedReports.map((rpt) => (
                 <div
                   key={rpt.studentId}
                   onClick={() => setSelectedReport(rpt)}
@@ -163,29 +211,60 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                 </div>
               ))}
             </div>
+
+            {/* PAGINATION */}
+            <div className="flex items-center justify-between gap-2 pt-2 border-t text-[13px] font-bold text-slate-600">
+              <div className="flex items-center gap-1.5">
+                <span className="font-medium text-slate-500">Per page</span>
+                <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} className="bg-white border rounded-lg px-2 py-1 font-bold text-slate-700 focus:outline-none cursor-pointer">
+                  {[10, 20, 50, 100].map((n) => (<option key={n} value={n}>{n}</option>))}
+                </select>
+              </div>
+              <div className="flex items-center gap-2">
+                <button disabled={page === 1} onClick={() => setPage((p) => p - 1)} className="w-7 h-7 flex items-center justify-center bg-white border rounded-lg disabled:opacity-50"><ChevronLeft className="w-4 h-4" /></button>
+                <span>Page {page} of {totalPages}</span>
+                <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)} className="w-7 h-7 flex items-center justify-center bg-white border rounded-lg disabled:opacity-50"><ChevronRight className="w-4 h-4" /></button>
+              </div>
+            </div>
           </div>
 
-          {/* Print isolation: only the report card prints, on clean white, no buttons. */}
+          {/* Print isolation: only the report card prints, colorful, no browser chrome. */}
           <style>{`
             @media print {
+              @page { margin: 0; }
+              html, body { background: #ffffff !important; }
               body * { visibility: hidden !important; }
-              #report-print-area, #report-print-area * { visibility: visible !important; }
+              #report-print-area, #report-print-area * {
+                visibility: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
               #report-print-area {
                 position: absolute; left: 0; top: 0; width: 100%;
-                border: none !important; box-shadow: none !important; padding: 24px !important;
+                border: none !important; box-shadow: none !important; padding: 32px !important;
               }
               #report-print-area button, #report-print-area .no-print { display: none !important; }
-              @page { margin: 16mm; }
             }
           `}</style>
 
           {/* REPORT PREVIEW & LLM PHRASING CARD (7 COLS) */}
           {selectedReport && (
             <div id="report-print-area" className="lg:col-span-7 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-6 space-y-5">
-              {/* Print-only branded header */}
-              <div className="hidden print:block text-center border-b pb-4 mb-2">
-                <div className="text-xl font-extrabold text-slate-900">Thinkerzz</div>
-                <div className="text-xs font-semibold uppercase tracking-widest text-slate-500">Monthly Progress Report</div>
+              {/* Print-only branded header - colorful, with logo + name */}
+              <div className="hidden print:block mb-4">
+                <div className="rounded-2xl bg-[#5B47D6] text-white px-6 py-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <img src="/logo-light.png" alt="Thinkerzz" className="h-9 w-auto object-contain brightness-0 invert" />
+                    <div>
+                      <div className="text-2xl font-extrabold leading-none">Thinkerzz</div>
+                      <div className="text-[11px] font-semibold uppercase tracking-widest text-purple-200 mt-1">Monthly Progress Report</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-lg font-extrabold leading-tight">{selectedReport.firstName}</div>
+                    <div className="text-[11px] font-semibold text-purple-200">{selectedReport.program} · {selectedReport.month}</div>
+                  </div>
+                </div>
               </div>
               <div className="flex justify-between items-center border-b pb-4">
                 <div>
@@ -204,21 +283,37 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
               </div>
 
               {/* ASSEMBLED FACTS (PRESERVED MATH) */}
-              <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+                <div className="p-3 bg-blue-50 rounded-2xl border border-blue-200">
+                  <div className="text-xs font-bold text-blue-700 uppercase">Attendance</div>
+                  <div className="font-heading font-extrabold text-xl text-blue-700 mt-1">{selectedReport.attendancePct}%</div>
+                </div>
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200">
                   <div className="text-xs font-bold text-slate-500 uppercase">Topics Covered</div>
                   <div className="font-heading font-extrabold text-xl text-slate-900 mt-1">{selectedReport.topicsCovered.length}</div>
                 </div>
-
                 <div className="p-3 bg-purple-50 rounded-2xl border border-purple-200">
                   <div className="text-xs font-bold text-[#5B47D6] uppercase">Tests Conducted</div>
                   <div className="font-heading font-extrabold text-xl text-[#5B47D6] mt-1">{selectedReport.testsConductedCount}</div>
                 </div>
-
                 <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200">
                   <div className="text-xs font-bold text-emerald-700 uppercase">Grade Trend</div>
                   <div className="font-heading font-extrabold text-xl text-emerald-600 mt-1">{selectedReport.gradeTrend.toUpperCase()}</div>
                 </div>
+              </div>
+
+              {/* THIS MONTH AT A GLANCE (quick summary of what we did) */}
+              <div className="rounded-2xl border border-[#5B47D6]/20 bg-[#5B47D6]/5 p-4">
+                <div className="flex items-center gap-2 font-extrabold text-xs text-[#5B47D6] uppercase tracking-wider mb-1.5">
+                  <CalendarCheck className="w-4 h-4" />
+                  <span>This Month at a Glance</span>
+                </div>
+                <p className="text-[13px] font-medium text-slate-700 dark:text-slate-200 leading-relaxed">
+                  In {selectedReport.month}, {selectedReport.firstName} attended <strong>{selectedReport.attendancePct}%</strong> of classes,
+                  covered <strong>{selectedReport.topicsCovered.length}</strong> syllabus topic{selectedReport.topicsCovered.length === 1 ? '' : 's'},
+                  and sat <strong>{selectedReport.testsConductedCount}</strong> assessment{selectedReport.testsConductedCount === 1 ? '' : 's'}.
+                  The assessed-grade trend is <strong>{selectedReport.gradeTrend.toUpperCase()}</strong>.
+                </p>
               </div>
 
               {/* TOPICS COVERED LIST */}

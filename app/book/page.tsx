@@ -2,10 +2,12 @@
 
 import React, { useState } from 'react';
 import { submitPublicBooking } from './actions';
+import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 import { ALL_PROGRAMS, ALL_SUBJECTS } from '@/lib/syllabiSeed';
 import {
   CheckCircle2, ArrowRight, AlertCircle, CalendarDays, BookOpen, Clock,
   User, GraduationCap, Phone, Mail, Search, MessageCircle, Video, ShieldCheck, Star,
+  MapPin, School,
 } from 'lucide-react';
 
 const HELP_WA = (process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP || '923262324477').replace(/\D/g, '');
@@ -38,6 +40,9 @@ export default function PublicBookingPage() {
   const [program, setProgram] = useState('O Level');
   const [subject, setSubject] = useState('');
   const [source, setSource] = useState('');
+  const [school, setSchool] = useState('');
+  const [city, setCity] = useState('');
+  const [turnstileToken, setTurnstileToken] = useState('');
   const [date, setDate] = useState<string>(todayPKT());
   const [hour12, setHour12] = useState<string>('');
   const [minute, setMinute] = useState<string>('00');
@@ -56,11 +61,15 @@ export default function PublicBookingPage() {
       setError('Please fill in the student name, parent name, and phone number.');
       return;
     }
+    if (!subject) { setError('Please select a subject.'); return; }
+    if (!source) { setError('Please tell us how you found us.'); return; }
+    if (!school.trim()) { setError('Please enter the school name.'); return; }
+    if (!city.trim()) { setError('Please enter the city / hometown.'); return; }
     if (!time) { setError('Please choose a demo time.'); return; }
 
     setSubmitting(true);
     try {
-      const res = await submitPublicBooking({ studentName, parentName, parentPhone, parentEmail, program, subject, source, date, time });
+      const res = await submitPublicBooking({ studentName, parentName, parentPhone, parentEmail, program, subject, source, school, city, date, time, turnstileToken });
       if (!res.ok) { setError(res.error || 'Something went wrong. Please try again.'); return; }
       setBookingRef(res.ref || 'THM-BOOKING');
       setIsSubmitted(true);
@@ -221,12 +230,22 @@ export default function PublicBookingPage() {
                       <p className="text-[11px] text-slate-400 mt-1">Your demo class invite is sent here.</p>
                     </div>
                     <div>
-                      <label className={lbl}>How Did You Find Us?</label>
+                      <label className={lbl}>How Did You Find Us? <span className="text-rose-500">*</span></label>
                       <div className="relative"><Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <select value={source} onChange={(e) => setSource(e.target.value)} className={field}>
+                        <select required value={source} onChange={(e) => setSource(e.target.value)} className={field}>
                           <option value="">Select An Option</option>
                           {HOW_FOUND.map((s) => (<option key={s} value={s}>{s}</option>))}
                         </select></div>
+                    </div>
+                    <div>
+                      <label className={lbl}>School Name <span className="text-rose-500">*</span></label>
+                      <div className="relative"><School className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input type="text" required value={school} onChange={(e) => setSchool(e.target.value)} placeholder="e.g. Beaconhouse School System" className={field} /></div>
+                    </div>
+                    <div>
+                      <label className={lbl}>City / Hometown <span className="text-rose-500">*</span></label>
+                      <div className="relative"><MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input type="text" required value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Lahore" className={field} /></div>
                     </div>
                   </div>
                 </div>
@@ -236,6 +255,8 @@ export default function PublicBookingPage() {
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /><span>{error}</span>
                   </div>
                 )}
+
+                <TurnstileWidget onToken={setTurnstileToken} />
 
                 <button type="submit" disabled={submitting}
                   className="w-full py-4 bg-gradient-to-r from-[#5B47D6] to-[#7C6BF0] hover:from-[#4F3DC7] hover:to-[#6B5AE0] text-white rounded-xl font-extrabold text-sm shadow-lg shadow-[#5B47D6]/25 transition flex items-center justify-center gap-2 disabled:opacity-50">
@@ -272,7 +293,7 @@ export default function PublicBookingPage() {
             <button
               onClick={() => {
                 setIsSubmitted(false); setStudentName(''); setParentName(''); setParentPhone('');
-                setParentEmail(''); setHour12(''); setMinute('00'); setAmpm('PM'); setSubject(''); setSource(''); setBookingRef('');
+                setParentEmail(''); setHour12(''); setMinute('00'); setAmpm('PM'); setSubject(''); setSource(''); setSchool(''); setCity(''); setBookingRef('');
               }}
               className="px-6 py-2.5 bg-slate-900 text-white font-extrabold text-xs rounded-xl hover:bg-slate-800 transition">
               Book Another Demo

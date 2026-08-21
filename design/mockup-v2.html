@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Thinkerzz EOS — Mockups v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f7fb;--card:#fff;--ink:#0f1729;--ink2:#3b4258;--muted:#6b7391;--faint:#98a0bd;
+  --line:#eaecf3;--line2:#e0e3ee;--brand:#5b47d6;--brand2:#7a67ef;--brandsoft:#efedfe;--brandtint:#f6f4ff;
+  --green:#11a256;--greensoft:#e6f7ee;--amber:#d9820a;--ambersoft:#fdf3e2;--red:#e0435a;--redsoft:#fdecef;--blue:#2f6df6;--bluesoft:#eaf1ff;
+  --r:12px;--r2:16px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#e6e8f0;color:var(--ink);font-family:"DM Sans",system-ui,sans-serif;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+.page{max-width:1200px;margin:0 auto;padding:28px 18px 70px}
+.intro{margin:6px 0 20px}
+.intro .k{color:var(--brand);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:11px}
+.intro h1{margin:8px 0 4px;font-size:28px;font-weight:700;letter-spacing:-.02em}
+.intro p{color:var(--ink2);margin:0;max-width:720px}
+.lab{font-size:12px;color:var(--muted);margin:26px 0 10px;font-weight:600;display:flex;align-items:center;gap:8px}
+.lab:before{content:"";width:22px;height:2px;background:var(--brand);border-radius:2px}
+.num{font-variant-numeric:tabular-nums}
+svg.i{width:18px;height:18px;stroke:currentColor;stroke-width:1.9;fill:none;stroke-linecap:round;stroke-linejoin:round;flex:none}
+/* window */
+.win{background:var(--bg);border:1px solid #d4d7e6;border-radius:18px;overflow:hidden;box-shadow:0 18px 50px -20px rgba(23,28,60,.35)}
+.chrome{background:#fff;border-bottom:1px solid var(--line);padding:10px 15px;display:flex;align-items:center;gap:8px}
+.chrome .d{width:11px;height:11px;border-radius:50%}
+.chrome .url{margin-left:10px;font-size:12px;color:var(--faint);background:#f4f5fa;border:1px solid var(--line);border-radius:8px;padding:4px 14px}
+.app{display:flex;min-height:560px}
+/* sidebar */
+.side{width:216px;flex:none;background:#fff;border-right:1px solid var(--line);padding:14px 12px;display:flex;flex-direction:column;gap:2px}
+.brand{display:flex;align-items:center;gap:9px;padding:6px 8px 14px}
+.brand .mark{width:28px;height:28px;border-radius:8px;background:var(--brand);display:flex;align-items:center;justify-content:center;color:#fff}
+.brand b{font-weight:700;font-size:15px;letter-spacing:-.02em}.brand b .z{color:var(--brand)}
+.side .cap{font-size:10px;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--faint);padding:12px 10px 4px}
+.nav{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:9px;color:var(--ink2);font-weight:500;font-size:13.5px;cursor:pointer}
+.nav:hover{background:#f6f7fb}
+.nav.on{background:var(--brandtint);color:var(--brand);font-weight:600}
+.nav.on svg{stroke:var(--brand)}
+.nav svg{stroke:var(--muted)}
+.side .me{margin-top:auto;display:flex;align-items:center;gap:9px;padding:9px 8px;border-top:1px solid var(--line)}
+.side .me .av{width:30px;height:30px;border-radius:50%;background:var(--brand);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+/* main */
+.main{flex:1;min-width:0;background:var(--bg);display:flex;flex-direction:column}
+.top{background:rgba(255,255,255,.8);backdrop-filter:blur(6px);border-bottom:1px solid var(--line);padding:11px 20px;display:flex;align-items:center;justify-content:space-between}
+.search{display:flex;align-items:center;gap:9px;background:#f4f5fa;border:1px solid var(--line);border-radius:10px;padding:8px 12px;width:320px;color:var(--faint);font-size:13px}
+.search .kbd{margin-left:auto;font-size:10px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-weight:600}
+.top .r{display:flex;align-items:center;gap:12px}
+.ico-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;color:var(--muted);position:relative}
+.ico-btn .badge{position:absolute;top:-3px;right:-3px;width:8px;height:8px;border-radius:50%;background:var(--red);border:2px solid #fff}
+.cta{display:flex;align-items:center;gap:7px;background:var(--brand);color:#fff;font-weight:600;font-size:13px;padding:9px 15px;border-radius:10px}
+.avm{width:34px;height:34px;border-radius:50%;background:var(--brand2);color:#fff;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center}
+.content{padding:22px 24px;overflow:auto}
+.head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+.head h2{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em}
+.head .sub{color:var(--muted);font-size:13px;margin-top:2px}
+.chip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line2);background:#fff;border-radius:9px;padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--ink2)}
+/* grid */
+.grid{display:grid;gap:16px}
+.c2{grid-template-columns:1fr 1fr}.c3{grid-template-columns:1fr 1fr 1fr}.c4{grid-template-columns:repeat(4,1fr)}.c5{grid-template-columns:repeat(5,1fr)}
+@media(max-width:900px){.c3,.c4,.c5{grid-template-columns:1fr 1fr}.side{display:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r2);padding:18px}
+/* kpi */
+.kpi{position:relative}
+.kpi .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.kpi .l{font-size:12.5px;color:var(--muted);font-weight:500}
+.kpi .v{font-size:26px;font-weight:700;letter-spacing:-.03em;margin-top:2px}
+.kpi .t{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;margin-top:6px;padding:2px 8px;border-radius:999px}
+.t.gp{color:var(--green);background:var(--greensoft)}.t.rd{color:var(--red);background:var(--redsoft)}.t.nt{color:var(--muted);background:#f2f3f8}
+.i-br{background:var(--brandsoft);color:var(--brand)}.i-gr{background:var(--greensoft);color:var(--green)}.i-rd{background:var(--redsoft);color:var(--red)}.i-am{background:var(--ambersoft);color:var(--amber)}.i-bl{background:var(--bluesoft);color:var(--blue)}
+.spark{position:absolute;right:16px;bottom:16px;opacity:.9}
+/* section card */
+.sc-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.sc-h h3{margin:0;font-size:15px;font-weight:700}
+.sc-h .mo{font-size:12.5px;color:var(--brand);font-weight:600;display:inline-flex;align-items:center;gap:3px}
+.seg{display:inline-flex;background:#f2f3f8;border-radius:9px;padding:3px}
+.seg s{font-style:normal;font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:7px;color:var(--muted)}
+.seg s.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(23,28,60,.08)}
+/* list rows */
+.list .row{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}
+.list .row:last-child{border-bottom:0}
+.rico{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
+.row .tt{font-weight:600;font-size:13.5px}.row .ss{font-size:12px;color:var(--muted)}
+.row .rt{margin-left:auto;text-align:right}
+.tap{font-size:12px;font-weight:600;color:var(--brand);background:var(--brandtint);padding:5px 10px;border-radius:8px}
+/* funnel */
+.fn{display:flex;flex-direction:column;gap:9px}
+.fn .s{display:flex;align-items:center;gap:12px}
+.fn .fb{height:34px;border-radius:8px;display:flex;align-items:center;padding:0 12px;color:#fff;font-weight:600;font-size:12.5px}
+.fn .meta{font-size:12px;color:var(--muted);white-space:nowrap}
+.fn .meta b{color:var(--ink)}
+/* mini capacity */
+.cap-row{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line)}
+.cap-row:last-child{border:0}
+.cap-row .av{width:30px;height:30px;border-radius:9px;background:var(--brandsoft);color:var(--brand);font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
+.meter{width:66px;height:6px;border-radius:6px;background:#eef0f6;overflow:hidden}
+.meter i{display:block;height:100%;border-radius:6px}
+.dotc{width:7px;height:7px;border-radius:50%;flex:none}
+.pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px}
+.pg{background:var(--greensoft);color:var(--green)}.pa{background:var(--ambersoft);color:var(--amber)}.pr{background:var(--redsoft);color:var(--red)}.pb{background:var(--bluesoft);color:var(--blue)}
+</style></head>
+<body><div class="page">
+<div class="intro">
+  <div class="k">Thinkerzz EOS · Mockups v2 · flat &amp; premium</div>
+  <h1>New visual direction</h1>
+  <p>Flat design · DM Sans · real Lucide icons · charts only where they earn their place (a trend line + a funnel here — nothing else). Grounded in the ui-ux-pro-max design system. Concept for approval.</p>
+</div>
+
+<svg width="0" height="0" style="position:absolute"><defs>
+<symbol id="ic-dash" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></symbol>
+<symbol id="ic-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+<symbol id="ic-cap" viewBox="0 0 24 24"><path d="M22 10 12 5 2 10l10 5 10-5Z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></symbol>
+<symbol id="ic-cal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></symbol>
+<symbol id="ic-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></symbol>
+<symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></symbol>
+<symbol id="ic-clip" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12l2 2 4-4"/></symbol>
+<symbol id="ic-chart" viewBox="0 0 24 24"><path d="M3 3v18h18"/><rect x="7" y="12" width="3" height="6"/><rect x="12" y="8" width="3" height="10"/><rect x="17" y="5" width="3" height="13"/></symbol>
+<symbol id="ic-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1V2l-2 1-2-1-2 1-2-1-2 1-2-1Z"/><path d="M8 7h8M8 11h8M8 15h5"/></symbol>
+<symbol id="ic-card" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+<symbol id="ic-wallet" viewBox="0 0 24 24"><path d="M20 12V8H6a2 2 0 0 1 0-4h12v4"/><path d="M4 6v12a2 2 0 0 0 2 2h14v-4"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></symbol>
+<symbol id="ic-mega" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3Z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol>
+<symbol id="ic-set" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-2.82 1.17V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></symbol>
+<symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+<symbol id="ic-bell" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></symbol>
+<symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+<symbol id="ic-up" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+<symbol id="ic-dn" viewBox="0 0 24 24"><path d="M7 7 17 17M17 7v10H7"/></symbol>
+<symbol id="ic-alert" viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/><path d="M12 9v4M12 17h.01"/></symbol>
+<symbol id="ic-dollar" viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+<symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+<symbol id="ic-video" viewBox="0 0 24 24"><rect x="2" y="6" width="14" height="12" rx="2"/><path d="m16 10 6-3v10l-6-3Z"/></symbol>
+<symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+</defs></svg>
+
+<div class="lab">Admin · Dashboard</div>
+<div class="win">
+  <div class="chrome"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="url">portal.thinkerzz.com</span></div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><span class="mark"><svg class="i" style="width:16px;height:16px;stroke:#fff"><use href="#ic-cap"/></svg></span><b>thinker<span class="z">zz</span></b></div>
+      <div class="cap">Overview</div>
+      <div class="nav on"><svg class="i"><use href="#ic-dash"/></svg>Dashboard</div>
+      <div class="cap">People</div>
+      <div class="nav"><svg class="i"><use href="#ic-users"/></svg>Students</div>
+      <div class="nav"><svg class="i"><use href="#ic-cap"/></svg>Teachers</div>
+      <div class="nav"><svg class="i"><use href="#ic-target"/></svg>Leads &amp; Demos</div>
+      <div class="cap">Academics</div>
+      <div class="nav"><svg class="i"><use href="#ic-cal"/></svg>Classes</div>
+      <div class="nav"><svg class="i"><use href="#ic-book"/></svg>Homework</div>
+      <div class="nav"><svg class="i"><use href="#ic-clip"/></svg>Assessments</div>
+      <div class="cap">Finance</div>
+      <div class="nav"><svg class="i"><use href="#ic-receipt"/></svg>Fee Vouchers</div>
+      <div class="nav"><svg class="i"><use href="#ic-card"/></svg>Payments</div>
+      <div class="me"><span class="av">AD</span><div><div style="font-weight:600;font-size:13px">Admin</div><div style="font-size:11px;color:var(--muted)">Thinkerzz</div></div></div>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div class="search"><svg class="i" style="width:16px;height:16px"><use href="#ic-search"/></svg>Search students, vouchers…<span class="kbd">⌘K</span></div>
+        <div class="r"><span class="cta"><svg class="i" style="width:16px;height:16px;stroke:#fff"><use href="#ic-plus"/></svg>Quick action</span><span class="ico-btn"><svg class="i"><use href="#ic-bell"/></svg><span class="badge"></span></span><span class="avm">AD</span></div>
+      </div>
+      <div class="content">
+        <div class="head"><div><h2>Good morning, Admin</h2><div class="sub">Here's what needs you at Thinkerzz today.</div></div><span class="chip"><svg class="i" style="width:15px;height:15px"><use href="#ic-cal"/></svg>This month</span></div>
+
+        <div class="grid c5">
+          <div class="card kpi"><div class="ic i-gr"><svg class="i" style="width:18px;height:18px"><use href="#ic-dollar"/></svg></div><div class="l">Collected</div><div class="v num">Rs 842k</div><div class="t gp"><svg class="i" style="width:12px;height:12px;stroke-width:2.4"><use href="#ic-up"/></svg>12%</div>
+            <svg class="spark" width="64" height="26" viewBox="0 0 64 26"><polyline fill="none" stroke="var(--green)" stroke-width="2" points="0,20 13,17 26,18 39,10 52,12 64,5"/></svg></div>
+          <div class="card kpi"><div class="ic i-rd"><svg class="i" style="width:18px;height:18px"><use href="#ic-alert"/></svg></div><div class="l">Overdue</div><div class="v num">Rs 190k</div><div class="t rd">4 late</div></div>
+          <div class="card kpi"><div class="ic i-br"><svg class="i" style="width:18px;height:18px"><use href="#ic-users"/></svg></div><div class="l">Active students</div><div class="v num">128</div><div class="t gp"><svg class="i" style="width:12px;height:12px;stroke-width:2.4"><use href="#ic-up"/></svg>6 new</div></div>
+          <div class="card kpi"><div class="ic i-am"><svg class="i" style="width:18px;height:18px"><use href="#ic-target"/></svg></div><div class="l">New leads</div><div class="v num">7</div><div class="t nt">today</div></div>
+          <div class="card kpi"><div class="ic i-bl"><svg class="i" style="width:18px;height:18px"><use href="#ic-chart"/></svg></div><div class="l">Conversion</div><div class="v num">34%</div><div class="t gp"><svg class="i" style="width:12px;height:12px;stroke-width:2.4"><use href="#ic-up"/></svg>3 pts</div></div>
+        </div>
+
+        <div class="grid c3" style="margin-top:16px">
+          <div class="card" style="grid-column:span 2">
+            <div class="sc-h"><h3>Fee collection</h3><span class="seg"><s>7d</s><s class="on">30d</s><s>12mo</s></span></div>
+            <svg width="100%" height="176" viewBox="0 0 540 176" preserveAspectRatio="none">
+              <line x1="0" y1="48" x2="540" y2="48" stroke="#e6e8f2" stroke-dasharray="5 5"/>
+              <path d="M0,140 C70,132 100,116 150,110 C210,102 240,80 300,74 C360,68 392,50 440,42 C486,35 512,30 540,26 L540,176 L0,176Z" fill="var(--brand)" fill-opacity="0.07"/>
+              <path d="M0,140 C70,132 100,116 150,110 C210,102 240,80 300,74 C360,68 392,50 440,42 C486,35 512,30 540,26" fill="none" stroke="var(--brand)" stroke-width="2.5"/>
+              <circle cx="540" cy="26" r="4" fill="var(--brand)"/><circle cx="540" cy="26" r="8" fill="var(--brand)" fill-opacity=".18"/>
+            </svg>
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--faint);margin-top:4px"><span>Aug 1</span><span>Aug 10</span><span>Aug 20</span><span>Today</span></div>
+          </div>
+          <div class="card">
+            <div class="sc-h"><h3>Admissions funnel</h3></div>
+            <div class="fn">
+              <div class="s"><div class="fb" style="width:100%;background:var(--brand)">Leads</div><span class="meta"><b>210</b></span></div>
+              <div class="s"><div class="fb" style="width:78%;background:#6f5fe0">Contacted</div><span class="meta"><b>168</b> · 80%</span></div>
+              <div class="s"><div class="fb" style="width:60%;background:#8878ea">Demos</div><span class="meta"><b>130</b> · 77%</span></div>
+              <div class="s"><div class="fb" style="width:36%;background:var(--green)">Won</div><span class="meta"><b>72</b> · 55%</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid c3" style="margin-top:16px">
+          <div class="card"><div class="sc-h"><h3>Needs attention</h3><span class="mo">View all<svg class="i" style="width:14px;height:14px"><use href="#ic-arrow"/></svg></span></div>
+            <div class="list">
+              <div class="row"><span class="rico i-rd"><svg class="i" style="width:17px;height:17px"><use href="#ic-alert"/></svg></span><div><div class="tt">4 vouchers overdue</div><div class="ss">Rs 88k · grace expired</div></div><span class="tap" style="margin-left:auto">Review</span></div>
+              <div class="row"><span class="rico i-am"><svg class="i" style="width:17px;height:17px"><use href="#ic-target"/></svg></span><div><div class="tt">3 demos need a teacher</div><div class="ss">oldest 2 days ago</div></div><span class="tap" style="margin-left:auto">Assign</span></div>
+              <div class="row"><span class="rico i-br"><svg class="i" style="width:17px;height:17px"><use href="#ic-clip"/></svg></span><div><div class="tt">6 classes unmarked</div><div class="ss">attendance not recorded</div></div><span class="tap" style="margin-left:auto">Open</span></div>
+            </div>
+          </div>
+          <div class="card"><div class="sc-h"><h3>Today's classes</h3></div>
+            <div class="list">
+              <div class="row"><span class="rico i-br"><svg class="i" style="width:17px;height:17px"><use href="#ic-clock"/></svg></span><div><div class="tt">Maths · Ahmed Raza</div><div class="ss">09:00 · M. Muzammal</div></div><span class="pill pg" style="margin-left:auto">Synced</span></div>
+              <div class="row"><span class="rico i-br"><svg class="i" style="width:17px;height:17px"><use href="#ic-clock"/></svg></span><div><div class="tt">Physics · Salman</div><div class="ss">16:00 · S. Aisha</div></div><span class="pill pg" style="margin-left:auto">Synced</span></div>
+              <div class="row"><span class="rico i-am"><svg class="i" style="width:17px;height:17px"><use href="#ic-clock"/></svg></span><div><div class="tt">Chemistry · Hira</div><div class="ss">18:00 · no invite</div></div><span class="pill pa" style="margin-left:auto">Check</span></div>
+            </div>
+          </div>
+          <div class="card"><div class="sc-h"><h3>Teacher availability</h3></div>
+            <div class="cap-row"><span class="av">MM</span><div style="flex:1"><div class="tt" style="font-size:13px">M. Muzammal</div></div><div class="meter"><i style="width:40%;background:var(--green)"></i></div><span class="num" style="font-size:12px;color:var(--muted);width:26px">2/5</span></div>
+            <div class="cap-row"><span class="av">MZ</span><div style="flex:1"><div class="tt" style="font-size:13px">Teacher MZ</div></div><div class="meter"><i style="width:6%;background:var(--green)"></i></div><span class="num" style="font-size:12px;color:var(--muted);width:26px">0/20</span></div>
+            <div class="cap-row"><span class="av">SA</span><div style="flex:1"><div class="tt" style="font-size:13px">S. Aisha</div></div><div class="meter"><i style="width:88%;background:var(--amber)"></i></div><span class="num" style="font-size:12px;color:var(--muted);width:30px">22/25</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lab">Admin · Students — a data screen with no charts (clean table, status, actions)</div>
+<div class="win">
+  <div class="chrome"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="url">portal.thinkerzz.com/students</span></div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><span class="mark"><svg class="i" style="width:16px;height:16px;stroke:#fff"><use href="#ic-cap"/></svg></span><b>thinker<span class="z">zz</span></b></div>
+      <div class="cap">Overview</div>
+      <div class="nav"><svg class="i"><use href="#ic-dash"/></svg>Dashboard</div>
+      <div class="cap">People</div>
+      <div class="nav on"><svg class="i"><use href="#ic-users"/></svg>Students</div>
+      <div class="nav"><svg class="i"><use href="#ic-cap"/></svg>Teachers</div>
+      <div class="nav"><svg class="i"><use href="#ic-target"/></svg>Leads &amp; Demos</div>
+      <div class="cap">Academics</div>
+      <div class="nav"><svg class="i"><use href="#ic-cal"/></svg>Classes</div>
+      <div class="nav"><svg class="i"><use href="#ic-book"/></svg>Homework</div>
+      <div class="nav"><svg class="i"><use href="#ic-clip"/></svg>Assessments</div>
+      <div class="cap">Finance</div>
+      <div class="nav"><svg class="i"><use href="#ic-receipt"/></svg>Fee Vouchers</div>
+      <div class="nav"><svg class="i"><use href="#ic-card"/></svg>Payments</div>
+      <div class="me"><span class="av">AD</span><div><div style="font-weight:600;font-size:13px">Admin</div><div style="font-size:11px;color:var(--muted)">Thinkerzz</div></div></div>
+    </aside>
+    <div class="main">
+      <div class="top">
+        <div class="search"><svg class="i" style="width:16px;height:16px"><use href="#ic-search"/></svg>Search students…<span class="kbd">⌘K</span></div>
+        <div class="r"><span class="cta"><svg class="i" style="width:16px;height:16px;stroke:#fff"><use href="#ic-plus"/></svg>Add student</span><span class="ico-btn"><svg class="i"><use href="#ic-bell"/></svg></span><span class="avm">AD</span></div>
+      </div>
+      <div class="content">
+        <div class="head"><div><h2>Students</h2><div class="sub">128 active · profiles, health &amp; fees</div></div>
+          <span class="seg"><s class="on">All</s><s>At risk</s><s>Paused</s></span></div>
+
+        <div class="grid c4" style="margin-bottom:16px">
+          <div class="card kpi" style="padding:15px"><div class="l">Total active</div><div class="v num" style="font-size:22px">128</div></div>
+          <div class="card kpi" style="padding:15px"><div class="l">At risk</div><div class="v num" style="font-size:22px;color:var(--red)">7</div></div>
+          <div class="card kpi" style="padding:15px"><div class="l">Avg attendance</div><div class="v num" style="font-size:22px">86%</div></div>
+          <div class="card kpi" style="padding:15px"><div class="l">Fees due</div><div class="v num" style="font-size:22px;color:var(--amber)">19</div></div>
+        </div>
+
+        <div class="card" style="padding:0;overflow:hidden">
+          <div style="display:flex;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line)">
+            <span class="chip">Program <svg class="i" style="width:14px;height:14px"><use href="#ic-arrow"/></svg></span>
+            <span class="chip">Fee status</span><span class="chip">Health</span>
+          </div>
+          <table style="width:100%;border-collapse:collapse">
+            <thead><tr style="text-align:left">
+              <th style="padding:11px 16px;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--faint);font-weight:700">Student</th>
+              <th style="padding:11px 10px;font-size:10.5px;text-transform:uppercase;color:var(--faint);font-weight:700">Program</th>
+              <th style="padding:11px 10px;font-size:10.5px;text-transform:uppercase;color:var(--faint);font-weight:700">Health</th>
+              <th style="padding:11px 10px;font-size:10.5px;text-transform:uppercase;color:var(--faint);font-weight:700">Attendance</th>
+              <th style="padding:11px 10px;font-size:10.5px;text-transform:uppercase;color:var(--faint);font-weight:700">Fee</th>
+              <th style="padding:11px 16px;text-align:right;font-size:10.5px;text-transform:uppercase;color:var(--faint);font-weight:700"></th></tr></thead>
+            <tbody style="font-size:13.5px">
+              <tr style="border-top:1px solid var(--line)"><td style="padding:12px 16px"><div style="display:flex;align-items:center;gap:10px"><span class="av" style="width:32px;height:32px;border-radius:9px">AR</span><div><div style="font-weight:600">Ahmed Raza</div><div style="font-size:11.5px;color:var(--muted)">O1 · mz29fv5@gmail.com</div></div></div></td><td style="padding:12px 10px;color:var(--ink2)">O Level (O1)</td><td style="padding:12px 10px"><span class="pill pg">Healthy</span></td><td style="padding:12px 10px"><span style="display:inline-flex;align-items:center;gap:7px"><span class="meter" style="width:50px"><i style="width:92%;background:var(--green)"></i></span><b class="num" style="font-size:12.5px">92%</b></span></td><td style="padding:12px 10px"><span class="pill pg">Paid</span></td><td style="padding:12px 16px;text-align:right"><span class="ico-btn" style="width:30px;height:30px;display:inline-flex"><svg class="i" style="width:15px;height:15px"><use href="#ic-cal"/></svg></span> <span class="ico-btn" style="width:30px;height:30px;display:inline-flex"><svg class="i" style="width:15px;height:15px"><use href="#ic-receipt"/></svg></span></td></tr>
+              <tr style="border-top:1px solid var(--line)"><td style="padding:12px 16px"><div style="display:flex;align-items:center;gap:10px"><span class="av" style="width:32px;height:32px;border-radius:9px">SK</span><div><div style="font-weight:600">Salman Khan</div><div style="font-size:11.5px;color:var(--muted)">A2 · salman@gmail.com</div></div></div></td><td style="padding:12px 10px;color:var(--ink2)">A Level (A2)</td><td style="padding:12px 10px"><span class="pill pa">Watch</span></td><td style="padding:12px 10px"><span style="display:inline-flex;align-items:center;gap:7px"><span class="meter" style="width:50px"><i style="width:71%;background:var(--amber)"></i></span><b class="num" style="font-size:12.5px">71%</b></span></td><td style="padding:12px 10px"><span class="pill pa">Due</span></td><td style="padding:12px 16px;text-align:right"><span class="ico-btn" style="width:30px;height:30px;display:inline-flex"><svg class="i" style="width:15px;height:15px"><use href="#ic-mega"/></svg></span> <span class="ico-btn" style="width:30px;height:30px;display:inline-flex"><svg class="i" style="width:15px;height:15px"><use href="#ic-receipt"/></svg></span></td></tr>
+              <tr style="border-top:1px solid var(--line)"><td style="padding:12px 16px"><div style="display:flex;align-items:center;gap:10px"><span class="av" style="width:32px;height:32px;border-radius:9px;background:var(--redsoft);color:var(--red)">HN</span><div><div style="font-weight:600">Hira Nadeem</div><div style="font-size:11.5px;color:var(--muted)">IGCSE · hira@gmail.com</div></div></div></td><td style="padding:12px 10px;color:var(--ink2)">IGCSE</td><td style="padding:12px 10px"><span class="pill pr">At risk</span></td><td style="padding:12px 10px"><span style="display:inline-flex;align-items:center;gap:7px"><span class="meter" style="width:50px"><i style="width:54%;background:var(--red)"></i></span><b class="num" style="font-size:12.5px">54%</b></span></td><td style="padding:12px 10px"><span class="pill pr">Overdue</span></td><td style="padding:12px 16px;text-align:right"><span class="ico-btn" style="width:30px;height:30px;display:inline-flex"><svg class="i" style="width:15px;height:15px"><use href="#ic-mega"/></svg></span> <span class="ico-btn" style="width:30px;height:30px;display:inline-flex"><svg class="i" style="width:15px;height:15px"><use href="#ic-receipt"/></svg></span></td></tr>
+              <tr style="border-top:1px solid var(--line)"><td style="padding:12px 16px"><div style="display:flex;align-items:center;gap:10px"><span class="av" style="width:32px;height:32px;border-radius:9px">FM</span><div><div style="font-weight:600">Fatima Malik</div><div style="font-size:11.5px;color:var(--muted)">O2 · fatima@gmail.com</div></div></div></td><td style="padding:12px 10px;color:var(--ink2)">O Level (O2)</td><td style="padding:12px 10px"><span class="pill pg">Healthy</span></td><td style="padding:12px 10px"><span style="display:inline-flex;align-items:center;gap:7px"><span class="meter" style="width:50px"><i style="width:95%;background:var(--green)"></i></span><b class="num" style="font-size:12.5px">95%</b></span></td><td style="padding:12px 10px"><span class="pill pg">Paid</span></td><td style="padding:12px 16px;text-align:right"><span class="ico-btn" style="width:30px;height:30px;display:inline-flex"><svg class="i" style="width:15px;height:15px"><use href="#ic-cal"/></svg></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="font-size:11.5px;color:var(--faint);margin-top:10px">No charts here — a data screen stays a clean table. Row hover reveals actions · click a row → profile drawer.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="lab">Student portal · Dashboard — softer, progress-first (one small trend line, nothing more)</div>
+<div class="win">
+  <div class="chrome"><span class="d" style="background:#ff5f57"></span><span class="d" style="background:#febc2e"></span><span class="d" style="background:#28c840"></span><span class="url">portal.thinkerzz.com · student</span></div>
+  <div class="app">
+    <aside class="side">
+      <div class="brand"><span class="mark"><svg class="i" style="width:16px;height:16px;stroke:#fff"><use href="#ic-cap"/></svg></span><b>thinker<span class="z">zz</span></b></div>
+      <div class="cap">My portal</div>
+      <div class="nav on"><svg class="i"><use href="#ic-dash"/></svg>Overview</div>
+      <div class="nav"><svg class="i"><use href="#ic-cal"/></svg>My classes</div>
+      <div class="nav"><svg class="i"><use href="#ic-book"/></svg>Homework</div>
+      <div class="nav"><svg class="i"><use href="#ic-clip"/></svg>Assessments</div>
+      <div class="nav"><svg class="i"><use href="#ic-receipt"/></svg>My fees</div>
+      <div class="nav"><svg class="i"><use href="#ic-mega"/></svg>Announcements</div>
+      <div class="me"><span class="av">AR</span><div><div style="font-weight:600;font-size:13px">Ahmed Raza</div><div style="font-size:11px;color:var(--muted)">O Level (O1)</div></div></div>
+    </aside>
+    <div class="main">
+      <div class="top"><div class="search" style="width:220px"><svg class="i" style="width:16px;height:16px"><use href="#ic-search"/></svg>Search</div><div class="r"><span class="ico-btn"><svg class="i"><use href="#ic-bell"/></svg><span class="badge"></span></span><span class="avm">AR</span></div></div>
+      <div class="content">
+        <div class="head"><div><h2>Welcome back, Ahmed</h2><div class="sub">Next class: Friday 15 Aug · 4:00 PM — Mathematics</div></div></div>
+        <div class="grid c4">
+          <div class="card kpi"><div class="ic i-gr"><svg class="i" style="width:18px;height:18px"><use href="#ic-users"/></svg></div><div class="l">Attendance</div><div class="v num">92%</div></div>
+          <div class="card kpi"><div class="ic i-br"><svg class="i" style="width:18px;height:18px"><use href="#ic-book"/></svg></div><div class="l">Homework on-time</div><div class="v num">88%</div></div>
+          <div class="card kpi"><div class="ic i-bl"><svg class="i" style="width:18px;height:18px"><use href="#ic-up"/></svg></div><div class="l">Grade trend</div><div class="v" style="font-size:20px;color:var(--green)">Improving</div></div>
+          <div class="card kpi"><div class="ic i-am"><svg class="i" style="width:18px;height:18px"><use href="#ic-receipt"/></svg></div><div class="l">Fee status</div><div class="v" style="font-size:20px;color:var(--amber)">Due</div></div>
+        </div>
+        <div class="grid c3" style="margin-top:16px">
+          <div class="card" style="grid-column:span 2">
+            <div class="sc-h"><h3>Grade trend</h3><span class="seg"><s>Term</s><s class="on">Year</s></span></div>
+            <svg width="100%" height="140" viewBox="0 0 540 140" preserveAspectRatio="none"><line x1="0" y1="24" x2="540" y2="24" stroke="#e6e8f2" stroke-dasharray="5 5"/><text x="4" y="18" fill="var(--faint)" font-size="10" font-family="DM Sans">target A*</text>
+              <path d="M0,104 C90,98 130,88 230,78 C330,68 388,50 540,36" fill="none" stroke="var(--green)" stroke-width="2.5"/><circle cx="540" cy="36" r="4" fill="var(--green)"/></svg>
+          </div>
+          <div class="card">
+            <div class="sc-h"><h3>Next class</h3></div>
+            <div class="list"><div class="row" style="border:0"><span class="rico i-br"><svg class="i" style="width:17px;height:17px"><use href="#ic-clock"/></svg></span><div><div class="tt">Friday · 4:00 PM</div><div class="ss">Maths · Teacher MZ</div></div></div></div>
+            <span class="cta" style="width:100%;justify-content:center;margin-top:6px"><svg class="i" style="width:16px;height:16px;stroke:#fff"><use href="#ic-video"/></svg>Join Google Meet</span>
+            <div class="card" style="background:var(--ambersoft);border:0;margin-top:12px;padding:13px"><div style="font-weight:700;color:var(--amber);font-size:13px">Fee due 13 Sep · Rs 20,000</div><span class="tap" style="background:#fff;margin-top:8px;display:inline-block">View &amp; pay</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></body></html>

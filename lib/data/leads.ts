@@ -58,8 +58,9 @@ function mapRow(r: LeadRow): Lead {
 export async function getLeads(): Promise<Lead[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const { data, error } = await supabase

@@ -9,7 +9,10 @@ import { DemoSession } from '@/lib/mockAdmissionsData';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { ALL_PROGRAMS, LEAD_SOURCES } from '@/lib/syllabiSeed';
 import { createClient } from '@/lib/supabase/client';
-import { assignTeacher, recordOutcome, deleteDemo, createDemo } from './actions';
+import { assignTeacher, recordOutcome, deleteDemo, createDemo, updateDemo } from './actions';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import {
   Calendar,
   Clock,
@@ -28,6 +31,10 @@ import {
   UserPlus,
   RefreshCw,
   Sparkles,
+  Eye,
+  Edit3,
+  Trash2,
+  Check,
 } from 'lucide-react';
 
 export function DemosClient({
@@ -48,6 +55,9 @@ export function DemosClient({
   const [demosList, setDemosList] = useState<DemoSession[]>(initialDemos);
   const [selectedStatusTab, setSelectedStatusTab] = useState<string>('All Demos');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [dateRange, setDateRange] = useState<'all' | '7' | '30' | 'custom'>('all');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
 
   // Keep the table in sync when the server refetches after a write (router.refresh()).
   useEffect(() => { setDemosList(initialDemos); }, [initialDemos]);
@@ -141,6 +151,20 @@ export function DemosClient({
       if (selectedStatusTab === 'Scheduled' && d.status !== 'Scheduled') return false;
       if (selectedStatusTab === 'Completed' && d.status !== 'Completed') return false;
 
+      // Date range (by demo scheduled date)
+      if (dateRange !== 'all' && d.scheduledISO) {
+        const t = new Date(d.scheduledISO).getTime();
+        if (!Number.isNaN(t)) {
+          const now = Date.now();
+          if (dateRange === '7' && t < now - 7 * 864e5) return false;
+          if (dateRange === '30' && t < now - 30 * 864e5) return false;
+          if (dateRange === 'custom') {
+            if (fromDate && t < new Date(`${fromDate}T00:00:00`).getTime()) return false;
+            if (toDate && t > new Date(`${toDate}T23:59:59`).getTime()) return false;
+          }
+        }
+      }
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesStudent = d.studentName.toLowerCase().includes(q);
@@ -151,7 +175,7 @@ export function DemosClient({
 
       return true;
     });
-  }, [demosList, selectedStatusTab, searchQuery]);
+  }, [demosList, selectedStatusTab, searchQuery, dateRange, fromDate, toDate]);
 
   // APPLICATION-LEVEL TIME OVERLAP RE-CHECK AT ASSIGNMENT TIME (doAssign)
   // The real overlap check runs server-side against the teacher's other demos
@@ -218,6 +242,38 @@ export function DemosClient({
     else alert(res.error ?? 'Failed to delete demo.');
   };
 
+  // View / Edit(reschedule)
+  const [viewDemo, setViewDemo] = useState<DemoSession | null>(null);
+
+  const isoToPktDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }) : todayStr);
+  const isoToPktTime = (iso?: string) => (iso ? new Date(iso).toLocaleTimeString('en-GB', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hour12: false }) : '');
+
+  const [editDemo, setEditDemo] = useState<DemoSession | null>(null);
+  const [edDate, setEdDate] = useState('');
+  const [edTime, setEdTime] = useState('');
+  const [edSaving, setEdSaving] = useState(false);
+  const [edError, setEdError] = useState<string | null>(null);
+
+  const openEditDemo = (d: DemoSession) => {
+    setEditDemo(d);
+    setEdDate(isoToPktDate(d.scheduledISO));
+    setEdTime(isoToPktTime(d.scheduledISO));
+    setEdError(null);
+  };
+  const handleUpdateDemo = async () => {
+    if (!editDemo) return;
+    setEdError(null);
+    if (!edDate || !edTime) { setEdError('Pick a date and time.'); return; }
+    setEdSaving(true);
+    const res = await updateDemo({ demoId: editDemo.id, date: edDate, time: edTime });
+    setEdSaving(false);
+    if (res.ok) {
+      setEditDemo(null);
+      router.refresh();
+      if (res.warning) alert(`Demo rescheduled.\n\n⚠ ${res.warning}`);
+    } else setEdError(res.error ?? 'Failed to reschedule the demo.');
+  };
+
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
@@ -253,7 +309,7 @@ export function DemosClient({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
             <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Demos Management & Teacher Assignment</span>
+              <span>Demos &amp; Schedule</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
               Schedule demos, assign teachers with overlap re-checks, and track conversion outcomes.
@@ -267,16 +323,13 @@ export function DemosClient({
               className="h-[38px] px-3.5 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 text-xs font-extrabold text-[#5B47D6] rounded-xl flex items-center gap-1.5 hover:bg-purple-100 transition-all shadow-sm cursor-pointer"
             >
               <ExternalLink className="w-3.5 h-3.5" />
-              <span>Preview Public 24/7 Booking Page ↗</span>
+              <span>Preview Booking Page ↗</span>
             </Link>
             {canManage && (
-              <button
-                onClick={() => { resetNewDemo(); setShowNewDemo(true); }}
-                className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm shadow-[#5B47D6]/20 transition-all cursor-pointer"
-              >
+              <Button variant="primary" onClick={() => { resetNewDemo(); setShowNewDemo(true); }} className="shadow-[#5B47D6]/20">
                 <Plus className="w-4 h-4 stroke-[2.5]" />
                 <span>+ New Demo</span>
-              </button>
+              </Button>
             )}
           </div>
         </div>
@@ -310,15 +363,33 @@ export function DemosClient({
               ))}
             </div>
 
-            <div className="relative w-full sm:w-[240px]">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search demo student or subject..."
-                className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#5B47D6]"
-              />
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
+                <span className="text-xs text-[#6B7185] block font-medium">Date</span>
+                <select value={dateRange} onChange={(e) => setDateRange(e.target.value as any)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
+                  <option value="all">All Time</option>
+                  <option value="7">Last 7 Days</option>
+                  <option value="30">Last 30 Days</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+              {dateRange === 'custom' && (
+                <div className="flex items-center gap-1.5 text-xs">
+                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                  <span className="text-[#6B7185]">to</span>
+                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                </div>
+              )}
+              <div className="relative w-full sm:w-[240px]">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search demo student or subject..."
+                  className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#5B47D6]"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -326,21 +397,21 @@ export function DemosClient({
         {/* DEMOS DATA TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+            <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
-                  <th className="py-3.5 px-3">DEMO ID & STUDENT</th>
-                  <th className="py-3.5 px-3">PARENT CONTACT</th>
-                  <th className="py-3.5 px-3">PROGRAM & SUBJECT</th>
-                  <th className="py-3.5 px-3">ASSIGNED TEACHER</th>
-                  <th className="py-3.5 px-3">SCHEDULED TIME</th>
-                  <th className="py-3.5 px-3">MEETING LINK</th>
-                  <th className="py-3.5 px-3">OUTCOME</th>
-                  <th className="py-3.5 px-3 text-center">ACTIONS</th>
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                  <th className="py-3.5 px-3">Demo ID & Student</th>
+                  <th className="py-3.5 px-3">Parent Contact</th>
+                  <th className="py-3.5 px-3">Program & Subject</th>
+                  <th className="py-3.5 px-3">Assigned Teacher</th>
+                  <th className="py-3.5 px-3">Scheduled Time</th>
+                  <th className="py-3.5 px-3">Meeting Link</th>
+                  <th className="py-3.5 px-3">Outcome</th>
+                  <th className="py-3.5 px-3 text-center">Actions</th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-xs font-medium">
+              <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                 {filteredDemos.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-[#6B7185]">
@@ -351,24 +422,24 @@ export function DemosClient({
                   filteredDemos.map((d) => (
                     <tr key={d.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{d.studentName}</div>
+                        <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{d.studentName}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{d.demoId}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-slate-900 dark:text-slate-100">{d.parentName}</div>
+                        <div className="font-semibold text-slate-900 dark:text-slate-100">{d.parentName}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{d.parentPhone}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-slate-900 dark:text-slate-100">{d.subject}</div>
+                        <div className="font-semibold text-slate-900 dark:text-slate-100">{d.subject}</div>
                         <div className="text-xs text-[#6B7185]">{d.program}</div>
                       </td>
 
                       {/* ASSIGNED TEACHER COLUMN */}
                       <td className="py-3.5 px-3">
                         {d.teacherName ? (
-                          <span className="font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-1">
+                          <span className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-1">
                             <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
                             <span>{d.teacherName}</span>
                           </span>
@@ -409,36 +480,27 @@ export function DemosClient({
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <span
-                          className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
-                            d.outcome === 'Won'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : d.outcome === 'Lost'
-                              ? 'bg-rose-100 text-rose-700'
-                              : d.outcome === 'No-show'
-                              ? 'bg-amber-100 text-amber-700'
-                              : 'bg-slate-100 text-slate-700'
-                          }`}
-                        >
+                        <Badge tone={d.outcome === 'Won' ? 'success' : d.outcome === 'Lost' ? 'danger' : d.outcome === 'No-show' ? 'warning' : 'neutral'}>
                           {d.outcome || 'Pending'}
-                        </span>
+                        </Badge>
                       </td>
 
                       <td className="py-3.5 px-3 text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => setOutcomeModalDemo(d)}
-                            className="px-2.5 py-1 bg-purple-50 text-[#5B47D6] font-extrabold text-xs rounded-lg border border-purple-200 hover:bg-purple-100 cursor-pointer"
+                            className="px-2.5 py-1 bg-purple-50 text-[#5B47D6] font-bold text-[13px] rounded-lg border border-purple-200 hover:bg-purple-100 cursor-pointer"
                           >
                             Log Outcome
                           </button>
-                          {role === 'admin' && (
-                            <button
-                              onClick={() => handleDeleteDemo(d)}
-                              className="px-2.5 py-1 bg-rose-50 text-rose-600 font-extrabold text-xs rounded-lg border border-rose-200 hover:bg-rose-100 cursor-pointer"
-                            >
-                              Delete
-                            </button>
+                          {canManage && (
+                            <RowActionsMenu
+                              actions={[
+                                { label: 'View Demo', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setViewDemo(d) },
+                                { label: 'Edit / Reschedule', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditDemo(d) },
+                                { label: 'Delete Demo', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', onClick: () => handleDeleteDemo(d) },
+                              ]}
+                            />
                           )}
                         </div>
                       </td>
@@ -633,6 +695,84 @@ export function DemosClient({
                   {savingOutcome ? 'Saving...' : 'Save Demo Outcome'}
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* EDIT / RESCHEDULE DEMO MODAL */}
+        {editDemo && (
+          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 my-6 text-sm">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Reschedule Demo</h3>
+                  <p className="text-xs text-[#6B7185] mt-0.5">{editDemo.studentName} · {editDemo.demoId}. If a teacher is assigned, the calendar invite moves too.</p>
+                </div>
+                <button onClick={() => setEditDemo(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Date *</label>
+                  <input type="date" value={edDate} onChange={(e) => setEdDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Time *</label>
+                  <input type="time" value={edTime} onChange={(e) => setEdTime(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
+                </div>
+              </div>
+              {edError && (
+                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                  <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><span>{edError}</span>
+                </div>
+              )}
+              <div className="flex justify-end gap-2 pt-1">
+                <button onClick={() => setEditDemo(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+                <button onClick={handleUpdateDemo} disabled={edSaving} className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2">
+                  <Check className="w-4 h-4" /><span>{edSaving ? 'Saving...' : 'Save'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIEW DEMO MODAL */}
+        {viewDemo && (
+          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-3 my-6 text-sm">
+              <div className="flex items-center justify-between">
+                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Demo Details</h3>
+                <button onClick={() => setViewDemo(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
+              </div>
+              <div className="grid grid-cols-2 gap-3 text-[13px]">
+                {[
+                  ['Student', viewDemo.studentName],
+                  ['Parent', viewDemo.parentName],
+                  ['Phone', viewDemo.parentPhone],
+                  ['Program', viewDemo.program || '-'],
+                  ['Subject', viewDemo.subject || '-'],
+                  ['Teacher', viewDemo.teacherName || 'Unassigned'],
+                  ['Scheduled', viewDemo.scheduledTime],
+                  ['Status', viewDemo.status],
+                  ['Outcome', viewDemo.outcome || 'Pending'],
+                  ['Demo ID', viewDemo.demoId],
+                ].map(([k, v]) => (
+                  <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
+                    <div className="text-[11px] font-bold uppercase tracking-wide text-[#6B7185]">{k}</div>
+                    <div className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
+                  </div>
+                ))}
+              </div>
+              {viewDemo.feedback && (
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5 text-[13px]">
+                  <div className="text-[11px] font-bold uppercase tracking-wide text-[#6B7185]">Notes / Reason</div>
+                  <div className="font-medium text-slate-800 dark:text-slate-200 mt-0.5">{viewDemo.feedback}</div>
+                </div>
+              )}
+              {viewDemo.meetingLink && (
+                <a href={viewDemo.meetingLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 px-3 py-2 text-xs font-bold hover:bg-blue-100">
+                  <Video className="w-4 h-4" /> Join Meet Link
+                </a>
+              )}
             </div>
           </div>
         )}

@@ -4,6 +4,7 @@
 // so it uses SECURITY DEFINER RPCs (schema.sql): get_student_public to pre-fill the
 // known name/program, and submit_onboarding to save the fuller details.
 import { createClient } from '@/lib/supabase/server';
+import { guardPublicSubmit } from '@/lib/publicFormGuard';
 
 export interface OnboardingContext {
   ok: boolean;
@@ -43,8 +44,9 @@ export interface OnboardingInput {
   address?: string;
   gender?: string;
   dob?: string; // YYYY-MM-DD
-  // Extra answers stored as JSON (school, CNIC, subjects, emergency contact, etc.)
+  // Extra answers stored as JSON (school, subjects, emergency contact, etc.)
   data: Record<string, string>;
+  turnstileToken?: string;
 }
 
 export interface OnboardingResult {
@@ -54,6 +56,8 @@ export interface OnboardingResult {
 
 export async function submitOnboarding(input: OnboardingInput): Promise<OnboardingResult> {
   if (!input.studentId) return { ok: false, error: 'This onboarding link is invalid.' };
+  const guard = await guardPublicSubmit({ action: 'onboarding', token: input.turnstileToken });
+  if (!guard.ok) return { ok: false, error: guard.error };
   const supabase = createClient();
   const { error } = await supabase.rpc('submit_onboarding', {
     p_student_id: input.studentId,

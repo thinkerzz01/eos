@@ -23,11 +23,57 @@ export interface SourceStat {
   costPerStudent: number | null; // null = blank until ads (no spend recorded)
 }
 
+export const MARKETING_SOURCE_ORDER = SOURCE_ORDER;
+export const MARKETING_SOURCE_LABEL = SOURCE_LABEL;
+
+export interface MarketingRawLead {
+  source: string; // normalized key (google, facebook, ...)
+  status: string; // lead status (won = converted)
+  createdISO: string;
+}
+export interface MarketingData {
+  leads: MarketingRawLead[];
+  spend: { key: string; amount: number }[];
+}
+
+/**
+ * Raw marketing rows for CLIENT-side filtering (date range / source / conversion).
+ * The Marketing tab recomputes the source table from these so the filters are live.
+ */
+export async function getMarketingData(): Promise<MarketingData> {
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.user) return { leads: [], spend: [] };
+
+  const [leadsRes, spendRes] = await Promise.all([
+    supabase.from('leads').select('source,status,created_at').is('deleted_at', null),
+    supabase.from('ad_spend').select('channel,amount').is('deleted_at', null),
+  ]);
+
+  const leads: MarketingRawLead[] = (leadsRes.data ?? []).map((l: any) => ({
+    source: (l.source as string) ?? 'google',
+    status: (l.status as string) ?? 'new',
+    createdISO: l.created_at as string,
+  }));
+
+  const spendMap = new Map<string, number>();
+  for (const s of spendRes.data ?? []) {
+    const k = String((s as any).channel ?? '').toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
+    spendMap.set(k, (spendMap.get(k) ?? 0) + Number((s as any).amount || 0));
+  }
+  const spend = Array.from(spendMap.entries()).map(([key, amount]) => ({ key, amount }));
+
+  return { leads, spend };
+}
+
 export async function getMarketingStats(): Promise<SourceStat[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const [leadsRes, spendRes] = await Promise.all([

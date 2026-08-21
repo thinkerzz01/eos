@@ -31,7 +31,23 @@ export default function SettingsPage() {
   const [academyName, setAcademyName] = useState('Thinkerzz');
   const [academicYear, setAcademicYear] = useState('Academic Year 2026');
   const [gracePeriodDays, setGracePeriodDays] = useState(3);
+  const [bankTitle, setBankTitle] = useState('');
+  const [bankAccountNo, setBankAccountNo] = useState('');
+  const [bankIban, setBankIban] = useState('');
+  const [walletInfo, setWalletInfo] = useState('');
   const [saving, setSaving] = useState(false);
+
+  // Global text size (root font scale) - reflects on every tab. Persisted locally.
+  const [uiScale, setUiScale] = useState<number>(100);
+  useEffect(() => {
+    const saved = Number(localStorage.getItem('tz-ui-scale')) || 100;
+    setUiScale(saved);
+  }, []);
+  const applyScale = (pct: number) => {
+    setUiScale(pct);
+    localStorage.setItem('tz-ui-scale', String(pct));
+    document.documentElement.style.fontSize = `${pct}%`;
+  };
 
   // Test-email tool (verify Resend delivery after domain verification)
   const [testEmail, setTestEmail] = useState('');
@@ -63,8 +79,14 @@ export default function SettingsPage() {
       const { data: org } = await supabase.from('orgs').select('name,academic_year').limit(1).maybeSingle();
       if (org?.name) setAcademyName(org.name);
       if (org?.academic_year) setAcademicYear(org.academic_year);
-      const { data: st } = await supabase.from('settings').select('grace_days').limit(1).maybeSingle();
+      // select('*') returns whatever columns exist, so the bank_* fields simply
+      // come back undefined (no 400) until the settings_bank_info migration runs.
+      const { data: st } = await supabase.from('settings').select('*').limit(1).maybeSingle();
       if (st?.grace_days != null) setGracePeriodDays(st.grace_days);
+      if (st?.bank_title) setBankTitle(st.bank_title);
+      if (st?.bank_account_no) setBankAccountNo(st.bank_account_no);
+      if (st?.bank_iban) setBankIban(st.bank_iban);
+      if (st?.wallet_info) setWalletInfo(st.wallet_info);
     })();
   }, []);
 
@@ -76,9 +98,9 @@ export default function SettingsPage() {
           <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
             <Lock className="w-7 h-7" />
           </div>
-          <h2 className="font-heading font-extrabold text-xl text-slate-900">Access Denied (RLS Level Security)</h2>
+          <h2 className="font-heading font-extrabold text-xl text-slate-900">Access restricted</h2>
           <p className="text-xs text-[#6B7185] leading-relaxed">
-            Per <strong>AGENTS.md §3.3</strong>, Manager tokens are strictly denied access at the database level to <code className="bg-slate-100 px-1 py-0.5 rounded">settings</code> and <code className="bg-slate-100 px-1 py-0.5 rounded">audit_log</code>.
+            Settings are visible to the Admin only. Please contact the academy owner if you need access.
           </p>
         </div>
       </PortalLayout>
@@ -87,7 +109,7 @@ export default function SettingsPage() {
 
   const handleSaveSettings = async () => {
     setSaving(true);
-    const res = await saveSettings({ academyName, academicYear, gracePeriodDays });
+    const res = await saveSettings({ academyName, academicYear, gracePeriodDays, bankTitle, bankAccountNo, bankIban, walletInfo });
     setSaving(false);
     if (res.ok) {
       alert('Settings saved (academy name, academic year, grace-period days persisted).');
@@ -166,13 +188,33 @@ export default function SettingsPage() {
                   <input type="text" value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />
                 </div>
                 <div>
-                  <label className="text-slate-700 block mb-1">Timezone (AGENTS.md §3.2)</label>
+                  <label className="text-slate-700 block mb-1">Timezone</label>
                   <input type="text" disabled value={timezone} className="w-full bg-slate-100 border rounded-xl p-2.5 text-slate-700 cursor-not-allowed" />
                 </div>
                 <div>
                   <label className="text-slate-700 block mb-1">Currency</label>
                   <input type="text" disabled value={currency} className="w-full bg-slate-100 border rounded-xl p-2.5 text-slate-700 cursor-not-allowed" />
                 </div>
+              </div>
+
+              {/* GLOBAL TEXT SIZE - applies to every tab, saved on this device */}
+              <div className="pt-4 border-t space-y-2">
+                <div className="flex items-center gap-2 text-slate-800 font-extrabold text-sm normal-case">
+                  <Sliders className="w-4 h-4 text-[#5B47D6]" />
+                  <span>Text Size (applies to the whole portal)</span>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {[{ p: 100, l: 'Default' }, { p: 110, l: 'Large' }, { p: 120, l: 'Larger' }, { p: 130, l: 'Largest' }].map((o) => (
+                    <button
+                      key={o.p}
+                      onClick={() => applyScale(o.p)}
+                      className={`px-4 py-2 rounded-xl border text-xs font-bold transition-colors normal-case ${uiScale === o.p ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+                    >
+                      {o.l} <span className="opacity-70">({o.p}%)</span>
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-slate-500 font-medium normal-case">Saved on this device and applied instantly across every tab.</p>
               </div>
             </div>
           )}
@@ -199,6 +241,33 @@ export default function SettingsPage() {
                   <input type="text" disabled value={defaultTargetGrade} className="w-full bg-slate-100 border rounded-xl p-2.5 text-slate-700 cursor-not-allowed" />
                 </div>
               </div>
+
+              {/* BANK / PAYMENT DETAILS (shown on fee vouchers) */}
+              <div className="pt-4 border-t space-y-3">
+                <div className="flex items-center gap-2 text-slate-800 font-extrabold text-sm normal-case">
+                  <Building className="w-4 h-4 text-[#5B47D6]" />
+                  <span>Bank & Payment Details</span>
+                </div>
+                <p className="text-xs text-slate-500 font-medium normal-case">These appear on every fee voucher under "How to pay". Leave blank to hide a line.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-slate-700 block mb-1 normal-case">Bank Title (Account Holder + Bank)</label>
+                    <input type="text" value={bankTitle} onChange={(e) => setBankTitle(e.target.value)} placeholder="e.g. Muhammad Owais - UBL" className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900 font-medium" />
+                  </div>
+                  <div>
+                    <label className="text-slate-700 block mb-1 normal-case">Bank Account Number</label>
+                    <input type="text" value={bankAccountNo} onChange={(e) => setBankAccountNo(e.target.value)} placeholder="e.g. 0975299145109" className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900 font-mono font-medium" />
+                  </div>
+                  <div>
+                    <label className="text-slate-700 block mb-1 normal-case">IBAN</label>
+                    <input type="text" value={bankIban} onChange={(e) => setBankIban(e.target.value)} placeholder="e.g. PK32UNIL0109000299145109" className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900 font-mono font-medium" />
+                  </div>
+                  <div>
+                    <label className="text-slate-700 block mb-1 normal-case">JazzCash / Mobile Wallet</label>
+                    <input type="text" value={walletInfo} onChange={(e) => setWalletInfo(e.target.value)} placeholder="e.g. JazzCash: 03216698189 (Title: ...)" className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900 font-medium" />
+                  </div>
+                </div>
+              </div>
             </div>
           )}
 
@@ -207,11 +276,11 @@ export default function SettingsPage() {
             <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
               <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2">
                 <div className="flex justify-between items-center text-xs font-extrabold text-emerald-400">
-                  <span>Postgres RLS Security Status</span>
-                  <span>🟢 ENABLED (Deny-by-Default)</span>
+                  <span>Data Security</span>
+                  <span>🟢 Protected</span>
                 </div>
                 <div className="text-xs text-slate-300 font-medium">
-                  Every table carries `org_id` multi-tenancy and deny-by-default policies. Managers are denied on all finance, pay rates, settings, and audit logs.
+                  Every record is scoped to your academy, and finance, pay, settings and audit data are limited to the Admin. Access is enforced by the database, not just the screen.
                 </div>
               </div>
             </div>

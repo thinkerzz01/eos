@@ -27,8 +27,9 @@ function one<T>(rel: T | T[] | null | undefined): T | null {
 export async function getAssessments(): Promise<AssessmentRecord[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const { data, error } = await supabase
@@ -61,9 +62,11 @@ export async function getAssessments(): Promise<AssessmentRecord[]> {
       groups.set(key, rec);
     }
     rec.grades.push({
+      testId: r.id,
       studentId: r.student_id,
       studentName,
       marksObtained: Number(r.score || 0),
+      maxScore: Number(r.max_score || 100),
       assessedGrade: internalGrade(Number(r.score || 0), Number(r.max_score || 100)),
     });
   }

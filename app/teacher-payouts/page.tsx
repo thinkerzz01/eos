@@ -4,7 +4,14 @@ import { TeacherPayoutsClient } from './TeacherPayoutsClient';
 
 export const dynamic = 'force-dynamic';
 
-export default async function TeacherPayoutsPage() {
-  const payouts = await getTeacherPayouts();
-  return <TeacherPayoutsClient initialPayouts={payouts} />;
+export default async function TeacherPayoutsPage({
+  searchParams,
+}: {
+  searchParams: { period?: string };
+}) {
+  const now = new Date();
+  const current = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
+  const period = /^\d{4}-\d{2}$/.test(searchParams.period ?? '') ? searchParams.period! : current;
+  const payouts = await getTeacherPayouts(period);
+  return <TeacherPayoutsClient initialPayouts={payouts} selectedPeriod={period} />;
 }

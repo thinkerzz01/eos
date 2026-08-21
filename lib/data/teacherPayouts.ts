@@ -1,5 +1,10 @@
 // Teacher payouts data-access - RLS-enforced, server-only. Admin-only
 // (teacher_pay_rates is the isolated pay table; Managers are DENIED at the DB).
+//
+// Payroll math (Master Plan §): a teacher's EARNED amount this month is
+//   perClassPay × completed classes this month.
+// We also sum what has already been paid this month (teacher_payouts) so the
+// admin sees the remaining balance and a Pending / Partial / Paid status.
 import { createClient } from '@/lib/supabase/server';
 import type { TeacherPayout } from '@/app/teacher-payouts/TeacherPayoutsClient';
 
@@ -7,55 +12,83 @@ function one<T>(rel: T | T[] | null | undefined): T | null {
   return Array.isArray(rel) ? rel[0] ?? null : rel ?? null;
 }
 
-function mapRow(r: any): TeacherPayout {
-  const teacher = one<any>(r.teachers);
-  return {
-    id: r.id,
-    teacherId: r.teacher_id,
-    teacherName: teacher?.name ?? '',
-    subjects: [],
-    perClassPay: Number(r.rate_per_class || 0),
-    completedClassesCount: 0, // from class_sessions (Phase 4)
-    grossAmount: 0,
-    status: 'Pending',
-    paymentMethod: '',
-    bankAccount: '',
-  };
-}
+const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
-export async function getTeacherPayouts(): Promise<TeacherPayout[]> {
+export async function getTeacherPayouts(periodYYYYMM?: string): Promise<TeacherPayout[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
-  const { data, error } = await supabase
+  // Payroll is per FACULTY MEMBER: list every active teacher (not just those with
+  // a rate set), so the admin can see everyone and set rates / record payouts here.
+  const { data: teachers, error } = await supabase
+    .from('teachers')
+    .select('id,name,phone,status')
+    .is('deleted_at', null)
+    .neq('status', 'left')
+    .order('name', { ascending: true });
+  if (error || !teachers) return [];
+
+  // Latest per-class rate per teacher (teacher_pay_rates is versioned history).
+  const { data: rateRows } = await supabase
     .from('teacher_pay_rates')
-    .select('id,teacher_id,rate_per_class,currency,effective_from,teachers(name)')
+    .select('teacher_id,rate_per_class,effective_from')
     .is('deleted_at', null)
     .order('effective_from', { ascending: false });
+  const rateByTeacher = new Map<string, number>();
+  for (const r of (rateRows as any[]) ?? []) {
+    if (!rateByTeacher.has(r.teacher_id)) rateByTeacher.set(r.teacher_id, Number(r.rate_per_class || 0));
+  }
 
-  if (error || !data) return [];
-
-  // teacher_pay_rates is versioned history (one row per rate change). Ordered by
-  // effective_from DESC above, so the FIRST row per teacher is their latest rate.
-  // Keep only that one to avoid duplicating a teacher / inflating headcount.
-  const seen = new Set<string>();
-  const latestPerTeacher = (data as any[]).filter((r) => {
-    if (seen.has(r.teacher_id)) return false;
-    seen.add(r.teacher_id);
-    return true;
-  });
-
-  // Mark a teacher Paid if there is a payout recorded for the current month.
-  const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  // Target month - defaults to the current month, or a 'YYYY-MM' passed in.
   const now = new Date();
-  const period = `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
-  const paidByTeacher = new Map<string, { amount: number; at: string }>();
+  let year = now.getUTCFullYear();
+  let month = now.getUTCMonth(); // 0-indexed
+  if (periodYYYYMM && /^\d{4}-\d{2}$/.test(periodYYYYMM)) {
+    const [y, m] = periodYYYYMM.split('-').map(Number);
+    year = y;
+    month = Math.min(11, Math.max(0, m - 1));
+  }
+  const period = `${MONTHS[month]} ${year}`;
+  const monthStart = new Date(Date.UTC(year, month, 1)).toISOString();
+  const monthEnd = new Date(Date.UTC(year, month + 1, 1)).toISOString();
+
+  // Completed classes THIS MONTH per teacher (drives the earned amount).
+  const completedByTeacher = new Map<string, number>();
+  const { data: classRows } = await supabase
+    .from('class_sessions')
+    .select('teacher_id')
+    .eq('status', 'completed')
+    .gte('start_at', monthStart)
+    .lt('start_at', monthEnd)
+    .is('deleted_at', null);
+  for (const c of (classRows as any[]) ?? []) {
+    const t = c.teacher_id as string;
+    if (t) completedByTeacher.set(t, (completedByTeacher.get(t) ?? 0) + 1);
+  }
+
+  // Subjects per teacher (from teacher_subjects) - best-effort labels.
+  const subjectsByTeacher = new Map<string, Set<string>>();
+  const { data: tsRows } = await supabase
+    .from('teacher_subjects')
+    .select('teacher_id,subjects(name)')
+    .is('deleted_at', null);
+  for (const row of (tsRows as any[]) ?? []) {
+    const t = row.teacher_id as string;
+    const subj = one<any>(row.subjects);
+    if (!t || !subj?.name) continue;
+    if (!subjectsByTeacher.has(t)) subjectsByTeacher.set(t, new Set());
+    subjectsByTeacher.get(t)!.add(subj.name);
+  }
+
+  // Already-paid this month per teacher.
+  const paidByTeacher = new Map<string, { amount: number; at: string; method: string }>();
   const { data: payoutRows } = await supabase
     .from('teacher_payouts')
-    .select('teacher_id,amount,paid_at,period')
+    .select('teacher_id,amount,paid_at,period,method')
     .eq('period', period)
     .is('deleted_at', null);
   for (const p of (payoutRows as any[]) ?? []) {
@@ -63,17 +96,34 @@ export async function getTeacherPayouts(): Promise<TeacherPayout[]> {
     paidByTeacher.set(p.teacher_id, {
       amount: (prev?.amount ?? 0) + Number(p.amount || 0),
       at: p.paid_at,
+      method: p.method === 'jazzcash' ? 'JazzCash' : 'Bank Transfer',
     });
   }
 
-  return latestPerTeacher.map((r) => {
-    const row = mapRow(r);
-    const paid = paidByTeacher.get(r.teacher_id);
-    if (paid) {
-      row.status = 'Paid';
-      row.grossAmount = paid.amount;
-      row.payoutDate = String(paid.at).slice(0, 10);
-    }
-    return row;
+  return (teachers as any[]).map((t) => {
+    const perClassPay = rateByTeacher.get(t.id) ?? 0;
+    const completedClassesCount = completedByTeacher.get(t.id) ?? 0;
+    const grossAmount = perClassPay * completedClassesCount;
+    const paid = paidByTeacher.get(t.id);
+    const paidAmount = paid?.amount ?? 0;
+    const status: TeacherPayout['status'] =
+      paidAmount > 0 && paidAmount >= grossAmount && grossAmount > 0 ? 'Paid'
+      : paidAmount > 0 ? 'Partial'
+      : 'Pending';
+    return {
+      id: t.id,
+      teacherId: t.id,
+      teacherName: t.name ?? '',
+      teacherPhone: t.phone ?? '',
+      subjects: Array.from(subjectsByTeacher.get(t.id) ?? []).sort(),
+      perClassPay,
+      completedClassesCount,
+      grossAmount,
+      paidAmount,
+      status,
+      payoutDate: paid ? String(paid.at).slice(0, 10) : undefined,
+      paymentMethod: paid?.method ?? '',
+      bankAccount: '',
+    };
   });
 }

@@ -118,7 +118,7 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
   // 3) Classes starting within the reminder window (priority 1)
   const { data: soonClasses } = await admin
     .from('class_sessions')
-    .select('id,org_id,start_at,status,students(name,parent_name,email,gender),subjects(name)')
+    .select('id,org_id,start_at,status,meeting_link,students(name,parent_name,email,gender),subjects(name)')
     .eq('status', 'scheduled')
     .gte('start_at', now.toISOString())
     .lte('start_at', windowEnd.toISOString())
@@ -139,6 +139,7 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
           gender: s?.gender ?? '',
           class_subject: subj?.name ?? 'class',
           class_time: new Date((c as any).start_at).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' }),
+          meeting_link: (c as any).meeting_link ?? '',
         },
       })
     );

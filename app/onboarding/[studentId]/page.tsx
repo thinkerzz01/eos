@@ -6,6 +6,7 @@
 // "invalid / expired" state; a finished form shows "already completed".
 import React, { useEffect, useMemo, useState } from 'react';
 import { getOnboardingContext, submitOnboarding } from './actions';
+import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 import {
   CheckCircle2, ArrowRight, ArrowLeft, AlertCircle, User, Users,
   ShieldCheck, MessageCircle, GraduationCap, CalendarClock,
@@ -61,6 +62,7 @@ export default function OnboardingPage({ params }: { params: { studentId: string
   const [preferredTime, setPreferredTime] = useState('');
   const [notes, setNotes] = useState('');
   const [agreed, setAgreed] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -126,6 +128,7 @@ export default function OnboardingPage({ params }: { params: { studentId: string
           subjects, previousResult, timeOfDay, preferredTime, notes,
           agreedToPolicy: 'yes',
         },
+        turnstileToken,
       });
       if (!res.ok) { setError(res.error || 'Something went wrong. Please try again.'); return; }
       setDone(true);
@@ -161,14 +164,14 @@ export default function OnboardingPage({ params }: { params: { studentId: string
     return (
       <Shell>
         <div className="bg-white border border-slate-200 rounded-3xl p-10 shadow-lg text-center space-y-4 max-w-xl mx-auto mt-8 animate-in zoom-in-95">
-          <div className="w-20 h-20 bg-gradient-to-tr from-emerald-400 to-emerald-600 text-white rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/25">
+          <div className="w-20 h-20 bg-emerald-600 text-white rounded-full flex items-center justify-center mx-auto">
             <CheckCircle2 className="w-11 h-11 stroke-[2.5]" />
           </div>
           <h2 className="font-heading font-extrabold text-3xl text-slate-900">
-            {alreadyDone && !done ? 'Onboarding Already Completed' : `You're All Set${name ? ', ' + name : ''}!`}
+            {alreadyDone && !done ? 'Admission Already Completed' : `You're All Set${name ? ', ' + name : ''}!`}
           </h2>
           <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
-            Thank you for completing your onboarding. Our team will review your details and set up your
+            Thank you for completing your admission. Our team will review your details and set up your
             classes and portal access. We will reach out to you on WhatsApp shortly with the next steps.
           </p>
           <a href={`https://wa.me/${HELP_WA}`} target="_blank" rel="noreferrer"
@@ -184,11 +187,11 @@ export default function OnboardingPage({ params }: { params: { studentId: string
       {/* Progress bar */}
       <div className="max-w-4xl mx-auto mb-6">
         <div className="flex items-center justify-between text-xs font-bold text-slate-500 mb-1.5">
-          <span>Onboarding Progress</span>
+          <span>Admission Progress</span>
           <span>Step {step} of {STEPS.length} · {progress}%</span>
         </div>
         <div className="h-2 rounded-full bg-slate-200 overflow-hidden">
-          <div className="h-full rounded-full bg-gradient-to-r from-[#5B47D6] to-[#8B7BF0] transition-all duration-300" style={{ width: `${progress}%` }} />
+          <div className="h-full rounded-full bg-[#5B47D6] transition-all duration-300" style={{ width: `${progress}%` }} />
         </div>
       </div>
 
@@ -196,7 +199,7 @@ export default function OnboardingPage({ params }: { params: { studentId: string
         {/* Sidebar */}
         <aside className="bg-white border border-slate-200 rounded-3xl p-5 shadow-sm h-fit lg:sticky lg:top-24">
           <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-extrabold">
+            <div className="w-11 h-11 rounded-full bg-[#5B47D6] text-white flex items-center justify-center font-extrabold">
               {(name || 'S').slice(0, 1).toUpperCase()}
             </div>
             <div>
@@ -360,6 +363,10 @@ export default function OnboardingPage({ params }: { params: { studentId: string
             </div>
           )}
 
+          {step === STEPS.length && (
+            <div className="mt-4"><TurnstileWidget onToken={setTurnstileToken} /></div>
+          )}
+
           <div className="mt-6 flex items-center justify-between pt-5 border-t border-slate-100">
             <button type="button" onClick={goBack} disabled={step === 1}
               className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed">
@@ -367,12 +374,12 @@ export default function OnboardingPage({ params }: { params: { studentId: string
             </button>
             {step < STEPS.length ? (
               <button type="button" onClick={goNext}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-extrabold text-white bg-gradient-to-r from-[#5B47D6] to-[#7C6BF0] hover:from-[#4F3DC7] hover:to-[#6B5AE0] shadow-lg shadow-[#5B47D6]/25 transition">
+                className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white bg-[#5B47D6] hover:bg-[#4F3DC7] transition">
                 Next Step <ArrowRight className="w-4 h-4" />
               </button>
             ) : (
               <button type="button" onClick={handleSubmit} disabled={submitting}
-                className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-extrabold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 shadow-lg shadow-emerald-500/25 transition disabled:opacity-60">
+                className="flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 transition disabled:opacity-60">
                 {submitting ? 'Submitting...' : 'Submit Onboarding'} {!submitting && <CheckCircle2 className="w-4 h-4" />}
               </button>
             )}
@@ -409,7 +416,7 @@ function Shell({ children }: { children: React.ReactNode }) {
         <div className="max-w-6xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <img src="/logo-light.png" alt="Thinkerzz" className="h-8 w-auto object-contain" />
-            <span className="hidden sm:inline text-xs font-extrabold tracking-wider uppercase text-[#5B47D6] border-l border-slate-200 pl-3">Student Onboarding</span>
+            <span className="hidden sm:inline text-xs font-extrabold tracking-wider uppercase text-[#5B47D6] border-l border-slate-200 pl-3">Student Admission</span>
           </div>
           <a href={`https://wa.me/${HELP_WA}`} target="_blank" rel="noreferrer"
             className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-emerald-700 hover:bg-emerald-100 transition">

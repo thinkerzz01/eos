@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { DataTable } from '@/components/ui/DataTable';
+import { Badge } from '@/components/ui/Badge';
 import type { PaymentInfo } from '@/lib/config/paymentInfo';
 
 export interface VoucherRow {
@@ -44,17 +45,9 @@ export function FeesClient({
     {
       header: 'Status',
       cell: (row: VoucherRow) => (
-        <span
-          className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
-            row.status === 'paid'
-              ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
-              : row.status === 'in_grace'
-              ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-              : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
-          }`}
-        >
+        <Badge tone={row.status === 'paid' ? 'success' : row.status === 'in_grace' ? 'warning' : 'danger'}>
           {row.status.replace('_', ' ')}
-        </span>
+        </Badge>
       ),
     },
   ];

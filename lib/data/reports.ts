@@ -19,8 +19,9 @@ function gradeFromPct(pct: number): MonthlyReportData['assessedGrade'] {
 export async function getMonthlyReports(): Promise<MonthlyReportData[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const { data: students } = await supabase
@@ -95,8 +96,9 @@ export async function getFunnelStats(): Promise<FunnelStats> {
   const empty: FunnelStats = { demosBooked: 0, studentsEnrolled: 0, funnelPct: 0, lostReasons: [] };
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return empty;
 
   const [demosRes, studentsRes, lostRes] = await Promise.all([

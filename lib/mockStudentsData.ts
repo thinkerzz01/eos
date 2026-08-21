@@ -70,6 +70,19 @@ export interface Student {
   status: 'active' | 'paused' | 'demo' | 'alumni';
   timeline: TimelineItem[];
   documents: StudentDoc[];
+  // Raw editable identity/fee fields (carried straight from the DB row so the
+  // profile editor can prefill + save them, not just derived display strings).
+  whatsapp?: string;
+  city?: string;
+  address?: string;
+  examSession?: string;
+  monthlyFee?: number;
+  nextDueDate?: string;
+  // Onboarding / admission payload (from students.onboarding_data JSON + columns).
+  onboardingDone?: boolean;
+  schoolName?: string;
+  emergencyContact?: string;
+  onboardingExtra?: Record<string, string>;
 }
 
 

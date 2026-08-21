@@ -49,6 +49,32 @@ function revalidateFinance() {
   revalidatePath('/');
 }
 
+/** Modify a voucher's amount and/or due date (grace = due + 3 days). Admin only. */
+export async function updateVoucher(input: {
+  voucherId: string;
+  amount?: number;
+  dueDate?: string; // YYYY-MM-DD (PKT)
+}): Promise<ActionResult> {
+  if (!input.voucherId) return { ok: false, error: 'Missing voucher id.' };
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
+
+  const patch: Record<string, any> = {};
+  if (input.amount != null && input.amount > 0) patch.amount = input.amount;
+  if (input.dueDate) {
+    patch.due_date = input.dueDate;
+    const g = new Date(`${input.dueDate}T00:00:00+05:00`);
+    g.setDate(g.getDate() + 3);
+    patch.grace_deadline = g.toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+  }
+  if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
+
+  const { error } = await supabase.from('vouchers').update(patch).eq('id', input.voucherId);
+  if (error) return { ok: false, error: error.message };
+  revalidateFinance();
+  return { ok: true };
+}
+
 /** Record a (possibly partial) payment against a voucher. */
 export async function recordPayment(input: {
   voucherId: string;
@@ -213,6 +239,58 @@ export async function adminFeeDecision(input: {
   revalidatePath('/vouchers');
   revalidatePath('/');
   return { ok: true };
+}
+
+/**
+ * Bulk-generate this month's vouchers: one per ACTIVE student who has a monthly
+ * fee and does NOT already have a voucher for the given period. Skips students
+ * already invoiced for the period (so it is safe to run more than once) and
+ * those with no fee set. grace_deadline = due_date + 3 days. Admin only (RLS).
+ */
+export async function generateMonthlyVouchers(input: {
+  period: string; // e.g. "September 2026"
+  dueDate: string; // YYYY-MM-DD
+}): Promise<{ ok: boolean; created: number; skipped: number; error?: string }> {
+  const period = input.period?.trim();
+  if (!period) return { ok: false, created: 0, skipped: 0, error: 'Pick the fee month.' };
+  if (!input.dueDate) return { ok: false, created: 0, skipped: 0, error: 'Select a due date.' };
+
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, created: 0, skipped: 0, error: 'You are not signed in.' };
+
+  const [{ data: students }, { data: existing }] = await Promise.all([
+    supabase.from('students').select('id,monthly_fee').eq('status', 'active').is('deleted_at', null),
+    supabase.from('vouchers').select('student_id').eq('period', period).is('deleted_at', null),
+  ]);
+  const invoiced = new Set(((existing as any[]) ?? []).map((e) => e.student_id as string));
+
+  const grace = new Date(`${input.dueDate}T00:00:00+05:00`);
+  grace.setDate(grace.getDate() + 3);
+  const graceStr = grace.toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+
+  const eligible = ((students as any[]) ?? []).filter(
+    (s) => !invoiced.has(s.id) && Number(s.monthly_fee) > 0
+  );
+  const skipped = (((students as any[]) ?? []).length) - eligible.length;
+  if (eligible.length === 0) {
+    return { ok: true, created: 0, skipped, error: undefined };
+  }
+
+  const rows = eligible.map((s) => ({
+    org_id: orgId,
+    student_id: s.id,
+    period,
+    amount: Number(s.monthly_fee),
+    due_date: input.dueDate,
+    grace_deadline: graceStr,
+    status: 'due',
+  }));
+
+  const { data: inserted, error } = await supabase.from('vouchers').insert(rows).select('id');
+  if (error) return { ok: false, created: 0, skipped, error: error.message };
+
+  revalidateFinance();
+  return { ok: true, created: inserted?.length ?? rows.length, skipped };
 }
 
 /** Create a new fee voucher for a student. grace_deadline = due_date + 3 days. */

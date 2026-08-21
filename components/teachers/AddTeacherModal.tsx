@@ -1,12 +1,13 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/Toast';
 import { UserCheck, ShieldAlert } from 'lucide-react';
 import { createTeacher } from '@/app/teachers/actions';
 import { ALL_PROGRAMS, ALL_SUBJECTS } from '@/lib/syllabiSeed';
+import { listSubjects, type SubjectPick } from '@/app/subjects/actions';
 
 interface AddTeacherModalProps {
   isOpen: boolean;
@@ -22,6 +23,24 @@ export function AddTeacherModal({
   const { showToast } = useToast();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+
+  // Live DB subjects (managed on the Subjects screen). Fall back to the built-in
+  // list only when the DB has none yet, so the form always shows something.
+  const [dbSubjects, setDbSubjects] = useState<SubjectPick[]>([]);
+  useEffect(() => {
+    if (!isOpen) return;
+    let alive = true;
+    listSubjects().then((s) => { if (alive) setDbSubjects(s); }).catch(() => {});
+    return () => { alive = false; };
+  }, [isOpen]);
+  const subjectNames = useMemo(() => {
+    const names = Array.from(new Set(dbSubjects.map((s) => s.name)));
+    return names.length ? names.sort() : ([...ALL_SUBJECTS] as string[]);
+  }, [dbSubjects]);
+  const programList = useMemo(() => {
+    const progs = Array.from(new Set(dbSubjects.map((s) => s.program)));
+    return progs.length ? progs.sort() : ([...ALL_PROGRAMS] as string[]);
+  }, [dbSubjects]);
 
   // NO PRE-FILLED DEFAULT VALUES - ONLY PLACEHOLDERS
   const [formData, setFormData] = useState({
@@ -70,6 +89,8 @@ export function AddTeacherModal({
         city: formData.city,
         capacity: formData.capacity,
         joinDate: formData.join_date,
+        subjects: formData.selectedSubjects,
+        programs: formData.selectedPrograms,
       });
 
       if (res.ok) {
@@ -95,7 +116,7 @@ export function AddTeacherModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title="Add New Teaching Staff (Admin Only)"
+      title="Add New Teacher"
       subtitle="Fill in teacher profile. Fields have clear placeholders and spacious layout."
       maxWidth="xl"
       footerButtons={
@@ -111,7 +132,7 @@ export function AddTeacherModal({
             type="submit"
             form="addTeacherForm"
             disabled={loading}
-            className="px-6 py-2.5 bg-[#5A31F4] hover:bg-[#3B1CCF] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
+            className="px-6 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
           >
             <UserCheck className="w-4 h-4" />
             <span>{loading ? 'Adding...' : 'Add Teacher'}</span>
@@ -131,7 +152,7 @@ export function AddTeacherModal({
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="e.g. Sir Usman Farooq"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -145,7 +166,7 @@ export function AddTeacherModal({
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               placeholder="e.g. usman@thinkerzz.com"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -159,7 +180,7 @@ export function AddTeacherModal({
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
               placeholder="e.g. +92 302 5556667"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -172,7 +193,7 @@ export function AddTeacherModal({
               value={formData.city}
               onChange={(e) => setFormData({ ...formData, city: e.target.value })}
               placeholder="e.g. Karachi"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
 
@@ -186,7 +207,7 @@ export function AddTeacherModal({
               value={formData.capacity}
               onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
               placeholder="e.g. 20 (Typed per teacher)"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4] font-mono font-bold"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] font-mono font-bold"
             />
           </div>
 
@@ -198,7 +219,7 @@ export function AddTeacherModal({
               type="date"
               value={formData.join_date}
               onChange={(e) => setFormData({ ...formData, join_date: e.target.value })}
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4]"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
             />
           </div>
         </div>
@@ -209,7 +230,7 @@ export function AddTeacherModal({
             Teaching Programs (All 7 Programs)
           </label>
           <div className="flex flex-wrap gap-2">
-            {ALL_PROGRAMS.map((prog) => {
+            {programList.map((prog) => {
               const isSel = formData.selectedPrograms.includes(prog);
               return (
                 <button
@@ -218,7 +239,7 @@ export function AddTeacherModal({
                   onClick={() => toggleProgram(prog)}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
                     isSel
-                      ? 'bg-[#5A31F4] text-white border-[#5A31F4] shadow-sm'
+                      ? 'bg-[#5B47D6] text-white border-[#5B47D6] shadow-sm'
                       : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                   }`}
                 >
@@ -235,7 +256,7 @@ export function AddTeacherModal({
             Teaching Subjects (CAIE, Matric & Inter)
           </label>
           <div className="flex flex-wrap gap-2 max-h-40 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl">
-            {ALL_SUBJECTS.map((subj) => {
+            {subjectNames.map((subj) => {
               const isSel = formData.selectedSubjects.includes(subj);
               return (
                 <button
@@ -244,7 +265,7 @@ export function AddTeacherModal({
                   onClick={() => toggleSubject(subj)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all border ${
                     isSel
-                      ? 'bg-[#5A31F4] text-white border-[#5A31F4] shadow-sm'
+                      ? 'bg-[#5B47D6] text-white border-[#5B47D6] shadow-sm'
                       : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
                   }`}
                 >
@@ -255,7 +276,7 @@ export function AddTeacherModal({
           </div>
         </div>
 
-        <div className="p-3.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl flex items-center gap-2 text-xs text-[#5A31F4] dark:text-purple-300">
+        <div className="p-3.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl flex items-center gap-2 text-xs text-[#5B47D6] dark:text-purple-300">
           <ShieldAlert className="w-4 h-4 shrink-0" />
           <span>New teacher track record metrics (Rating, Demos, Reliability) initialize to 0 and render as <strong>"New"</strong> until earned.</span>
         </div>

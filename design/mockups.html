@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Thinkerzz EOS — Visual Mockups</title>
+<style>
+:root{
+  --bg:#eef0f7;--card:#fff;--ink:#191c30;--muted:#6b7185;--dim:#9aa0bd;--line:#e9ebf4;--line2:#dfe2ef;
+  --brand:#5b47d6;--brand2:#7c6bf0;--brandsoft:#f0edfe;--ink2:#3a3f5c;
+  --green:#12a150;--greensoft:#e7f8ee;--amber:#c47d12;--ambersoft:#fdf2df;--rose:#e14b62;--rosesoft:#fdeaee;--blue:#2f6df6;--bluesoft:#e9f0ff;
+  --r:14px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:#dfe2ee;color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif}
+.page{max-width:1180px;margin:0 auto;padding:26px 18px 60px}
+.hd{padding:18px 0 6px}
+.hd .k{color:var(--brand);font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:11px}
+.hd h1{margin:8px 0 4px;font-size:30px;font-weight:800}
+.hd p{color:#4a4f6b;margin:0}
+.sec{margin:34px 0 8px;font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#565b7a;display:flex;align-items:center;gap:10px}
+.sec:before{content:"";height:1px;width:26px;background:var(--brand)}
+.cap{font-size:12.5px;color:#5a5f7c;margin:2px 0 12px}
+.num{font-variant-numeric:tabular-nums}
+/* browser window frame */
+.win{background:var(--bg);border:1px solid #cfd3e6;border-radius:16px;overflow:hidden;box-shadow:0 12px 34px rgba(30,34,70,.14);margin:10px 0 26px}
+.win .bar{background:#fff;border-bottom:1px solid var(--line);padding:9px 14px;display:flex;align-items:center;gap:8px}
+.win .bar .dots{display:flex;gap:6px}.win .bar .dots i{width:10px;height:10px;border-radius:50%;display:block}
+.win .bar .u{margin-left:8px;font-size:12px;color:var(--dim);background:#f3f4fa;border:1px solid var(--line);border-radius:7px;padding:3px 12px}
+.win .body{display:flex;min-height:200px}
+/* sidebar */
+.sb{width:212px;background:#fff;border-right:1px solid var(--line);padding:14px 10px;flex:none}
+.sb .logo{display:flex;align-items:center;gap:8px;padding:4px 8px 12px}
+.sb .logo b{font-weight:800;font-size:15px;letter-spacing:-.01em}.sb .logo .z{color:var(--brand)}
+.sb .grp{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);padding:12px 10px 5px}
+.sb a{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:9px;color:#4a4f6b;font-size:13px;font-weight:600;text-decoration:none;margin:1px 0}
+.sb a .ic{width:15px;height:15px;border-radius:4px;background:#d8dcec;flex:none}
+.sb a.on{background:var(--brandsoft);color:var(--brand)}.sb a.on .ic{background:var(--brand)}
+/* main */
+.mn{flex:1;min-width:0;background:var(--bg)}
+.tb{background:#fff;border-bottom:1px solid var(--line);padding:11px 18px;display:flex;align-items:center;justify-content:space-between}
+.tb .s{background:#f3f4fa;border:1px solid var(--line);border-radius:9px;padding:7px 12px;font-size:12.5px;color:var(--dim);width:300px;max-width:40%}
+.tb .r{display:flex;align-items:center;gap:10px}
+.tb .qa{background:var(--brand);color:#fff;font-size:12px;font-weight:700;padding:7px 13px;border-radius:9px}
+.tb .avt{width:28px;height:28px;border-radius:50%;background:var(--brand2)}
+.tb .bell{width:18px;height:18px;border-radius:5px;background:#e2e5f1}
+.ct{padding:18px}
+.h{font-size:19px;font-weight:800;margin:0}.sub{color:var(--muted);font-size:12.5px;margin:2px 0 0}
+.rowh{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+/* grid + cards */
+.g{display:grid;gap:14px}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:1fr 1fr 1fr}.g4{grid-template-columns:repeat(4,1fr)}.g6{grid-template-columns:repeat(6,1fr)}
+@media(max-width:760px){.g2,.g3,.g4,.g6{grid-template-columns:1fr 1fr}.sb{display:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:15px}
+.kpi .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);font-weight:700}
+.kpi .v{font-size:23px;font-weight:800;letter-spacing:-.02em;margin-top:3px}
+.kpi .c{font-size:11.5px;font-weight:700;margin-top:1px}
+.up{color:var(--green)}.dn{color:var(--rose)}.mut{color:var(--muted)}
+.spk{display:block;margin-top:7px}
+.pnl .t{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:var(--ink2);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}.seg s{font-size:10.5px;padding:3px 8px;color:var(--dim);font-style:normal}.seg s.on{background:var(--brand);color:#fff}
+/* table */
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px}
+.tbl th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);font-weight:800;padding:8px 10px;border-bottom:1px solid var(--line)}
+.tbl td{padding:9px 10px;border-bottom:1px solid var(--line);color:#33384f}
+.tbl tr:last-child td{border-bottom:0}
+.av{width:24px;height:24px;border-radius:50%;background:var(--brandsoft);color:var(--brand);font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-right:7px;vertical-align:-6px}
+.pill{font-size:10.5px;font-weight:800;padding:2px 9px;border-radius:999px;display:inline-block}
+.p-g{background:var(--greensoft);color:var(--green)}.p-a{background:var(--ambersoft);color:var(--amber)}.p-r{background:var(--rosesoft);color:var(--rose)}.p-b{background:var(--bluesoft);color:var(--blue)}.p-n{background:#eef0f7;color:var(--muted)}
+.qbtn{font-size:11px;font-weight:700;color:var(--brand);background:var(--brandsoft);border-radius:7px;padding:4px 9px;display:inline-block}
+/* bars / funnel / rings */
+.br{display:flex;align-items:center;gap:9px;margin:7px 0;font-size:12px}
+.trk{flex:1;height:8px;border-radius:6px;background:#eceef7;position:relative}
+.fil{height:8px;border-radius:6px;background:linear-gradient(90deg,var(--brand2),var(--brand))}
+.mk{position:absolute;top:-3px;height:14px;width:2px;background:var(--rose)}
+.feed{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid var(--line)}.feed:last-child{border:0}
+.dot{width:8px;height:8px;border-radius:50%;margin-top:5px;flex:none}
+.ring{--p:75;width:78px;height:78px;border-radius:50%;background:conic-gradient(var(--brand) calc(var(--p)*1%),#eceef7 0);display:flex;align-items:center;justify-content:center}
+.ring i{width:58px;height:58px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-style:normal;font-size:15px}
+/* calendar */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;font-size:11px}
+.cal .d{background:#f6f7fc;border:1px solid var(--line);border-radius:8px;min-height:52px;padding:5px}
+.cal .d b{color:var(--dim);font-weight:700;font-size:10px}
+.ev{font-size:9.5px;font-weight:700;border-radius:5px;padding:2px 5px;margin-top:3px}
+.ev-b{background:var(--bluesoft);color:var(--blue)}.ev-p{background:var(--brandsoft);color:var(--brand)}.ev-a{background:var(--ambersoft);color:var(--amber)}
+.chip{font-size:11px;font-weight:700;border:1px solid var(--line2);border-radius:8px;padding:4px 10px;color:#4a4f6b;background:#fff;display:inline-flex;gap:5px;align-items:center}
+.btn{font-size:12px;font-weight:800;border-radius:9px;padding:8px 14px;display:inline-block}
+.btn-p{background:var(--brand);color:#fff}.btn-o{border:1px solid var(--brand);color:var(--brand);background:#fff}.btn-g{background:var(--green);color:#fff}
+.note{font-size:11px;color:var(--dim);margin-top:6px}
+</style></head>
+<body><div class="page">
+<div class="hd">
+  <div class="k">Thinkerzz EOS · Visual Mockups</div>
+  <h1>Real screen designs — every tab, every role</h1>
+  <p>High-fidelity mockups in the product's light theme. Sample data is realistic. Concept only — for approval before build.</p>
+</div>
+
+<div class="sec">Admin</div>
+
+<div class="cap">1 · Admin dashboard — command centre (full app shell shown once to establish the layout)</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">portal.thinkerzz.com/dashboard</div></div>
+<div class="body">
+  <div class="sb">
+    <div class="logo"><b>thinker<span class="z">zz</span></b></div>
+    <div class="grp">Academy</div>
+    <a class="on"><span class="ic"></span>Dashboard</a><a><span class="ic"></span>Students</a><a><span class="ic"></span>Teachers</a><a><span class="ic"></span>Classes</a>
+    <div class="grp">People</div>
+    <a><span class="ic"></span>Leads &amp; Demos</a><a><span class="ic"></span>Booking</a><a><span class="ic"></span>Marketing</a>
+    <div class="grp">Academics</div>
+    <a><span class="ic"></span>Homework</a><a><span class="ic"></span>Assessments</a><a><span class="ic"></span>Reports</a>
+    <div class="grp">Finance</div>
+    <a><span class="ic"></span>Fee Vouchers</a><a><span class="ic"></span>Payments</a><a><span class="ic"></span>Payouts</a>
+    <div class="grp">Comms · System</div>
+    <a><span class="ic"></span>Announcements</a><a><span class="ic"></span>Settings</a>
+  </div>
+  <div class="mn">
+    <div class="tb"><div class="s">Search students, vouchers…  ⌘K</div><div class="r"><span class="qa">+ Quick Action</span><span class="bell"></span><span class="avt"></span></div></div>
+    <div class="ct">
+      <div class="rowh"><div><div class="h">Welcome back, Admin 👋</div><div class="sub">Here's what needs you at Thinkerzz today.</div></div><span class="chip">This month ▾</span></div>
+      <div class="g g6">
+        <div class="card kpi"><div class="l">Collected</div><div class="v num">Rs 842k</div><div class="c up">▲ 12%</div><svg class="spk" width="100%" height="22" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline fill="none" stroke="var(--green)" stroke-width="2" points="0,17 18,15 36,16 54,10 72,11 100,4"/></svg></div>
+        <div class="card kpi"><div class="l">Overdue</div><div class="v num">Rs 190k</div><div class="c dn">▲ 4 late</div><svg class="spk" width="100%" height="22" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline fill="none" stroke="var(--rose)" stroke-width="2" points="0,9 18,11 36,8 54,12 72,10 100,13"/></svg></div>
+        <div class="card kpi"><div class="l">Students</div><div class="v num">128</div><div class="c up">▲ 6</div><svg class="spk" width="100%" height="22" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline fill="none" stroke="var(--brand)" stroke-width="2" points="0,16 18,15 36,13 54,12 72,9 100,6"/></svg></div>
+        <div class="card kpi"><div class="l">Teachers</div><div class="v num">9</div><div class="c mut">2 free</div></div>
+        <div class="card kpi"><div class="l">New leads</div><div class="v num">7</div><div class="c up">today</div></div>
+        <div class="card kpi"><div class="l">Conversion</div><div class="v num">34%</div><div class="c up">▲ 3 pts</div></div>
+      </div>
+      <div class="g g3" style="margin-top:14px">
+        <div class="card pnl" style="grid-column:span 2"><div class="t">Fee collection vs target<span class="seg"><s>7d</s><s class="on">30d</s><s>12mo</s></span></div>
+          <svg width="100%" height="150" viewBox="0 0 500 150" preserveAspectRatio="none"><defs><linearGradient id="a1" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#7c6bf0" stop-opacity=".38"/><stop offset="1" stop-color="#7c6bf0" stop-opacity="0"/></linearGradient></defs>
+          <line x1="0" y1="42" x2="500" y2="42" stroke="#d7dbea" stroke-dasharray="5 5"/><text x="4" y="36" fill="#9aa0bd" font-size="10">target Rs 900k</text>
+          <path d="M0,120 C60,112 90,98 130,92 C185,84 210,66 270,60 C330,54 360,40 410,34 C450,29 480,24 500,20 L500,150 L0,150Z" fill="url(#a1)"/>
+          <path d="M0,120 C60,112 90,98 130,92 C185,84 210,66 270,60 C330,54 360,40 410,34 C450,29 480,24 500,20" fill="none" stroke="var(--brand)" stroke-width="2.5"/><circle cx="500" cy="20" r="4" fill="var(--brand)"/></svg></div>
+        <div class="card pnl"><div class="t">Admissions funnel</div>
+          <div class="br"><span class="mut" style="width:48px">Leads</span><div class="trk"><div class="fil" style="width:100%"></div></div><b class="num">210</b></div>
+          <div class="br"><span class="mut" style="width:48px">Demos</span><div class="trk"><div class="fil" style="width:62%"></div></div><b class="num">130</b></div>
+          <div class="br"><span class="mut" style="width:48px">Won</span><div class="trk"><div class="fil" style="width:34%;background:linear-gradient(90deg,#3ccf7a,#12a150)"></div></div><b class="num">72</b></div>
+          <div class="note">62% → 55% stage conversion · click a stage to drill in</div></div>
+      </div>
+      <div class="g g3" style="margin-top:14px">
+        <div class="card pnl"><div class="t">⚠ Needs attention</div>
+          <div class="feed"><span class="dot" style="background:var(--rose)"></span><div><b>4 vouchers overdue</b><div class="note">Rs 88k · grace expired — decide</div></div></div>
+          <div class="feed"><span class="dot" style="background:var(--amber)"></span><div><b>3 demos need a teacher</b><div class="note">oldest 2 days ago</div></div></div>
+          <div class="feed"><span class="dot" style="background:var(--brand)"></span><div><b>6 classes unmarked</b><div class="note">attendance not recorded</div></div></div></div>
+        <div class="card pnl"><div class="t">Teacher capacity</div>
+          <div class="br"><span class="mut" style="width:96px">M. Muzammal</span><div class="trk"><div class="fil" style="width:40%"></div><div class="mk" style="left:100%"></div></div><b class="num">2/5</b></div>
+          <div class="br"><span class="mut" style="width:96px">Teacher MZ</span><div class="trk"><div class="fil" style="width:5%"></div></div><b class="num">0/20</b></div>
+          <div class="br"><span class="mut" style="width:96px">S. Aisha</span><div class="trk"><div class="fil" style="width:88%;background:linear-gradient(90deg,#f0b34a,#e2603b)"></div></div><b class="num">22/25</b></div>
+          <div class="note">red = capacity · sorted by load</div></div>
+        <div class="card pnl"><div class="t">Today's classes</div>
+          <div class="feed"><span class="dot" style="background:var(--brand)"></span><div><b>09:00 · Maths — Ahmed</b><div class="note">M. Muzammal · ✓ synced</div></div></div>
+          <div class="feed"><span class="dot" style="background:var(--brand)"></span><div><b>16:00 · Physics — Salman</b><div class="note">S. Aisha · ✓ synced</div></div></div>
+          <div class="feed"><span class="dot" style="background:var(--amber)"></span><div><b>18:00 · Chem — Hira</b><div class="note">⚠ no calendar invite</div></div></div></div>
+      </div>
+    </div>
+  </div>
+</div></div>
+
+<div class="cap">2 · Admin · Students — list with health chips, attendance sparkline &amp; row quick-actions (list / kanban / at-risk toggle)</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/students</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Students</div><div class="sub">128 active · manage profiles, health &amp; fees</div></div>
+    <div style="display:flex;gap:8px;align-items:center"><span class="seg"><s class="on">List</s><s>Kanban</s><s>At-risk</s></span><span class="btn btn-p">+ Add Student</span></div></div>
+  <div class="g g4" style="margin-bottom:14px">
+    <div class="card kpi"><div class="l">Total active</div><div class="v num">128</div></div>
+    <div class="card kpi"><div class="l">At risk</div><div class="v num dn">7</div><div class="c mut">&lt;60% attendance</div></div>
+    <div class="card kpi"><div class="l">Avg attendance</div><div class="v num">86%</div></div>
+    <div class="card kpi"><div class="l">Fees due</div><div class="v num" style="color:var(--amber)">19</div></div></div>
+  <div class="card" style="padding:0">
+    <table class="tbl"><thead><tr><th>Student</th><th>Program</th><th>Health</th><th>Attendance</th><th>Fee</th><th style="text-align:right">Actions</th></tr></thead><tbody>
+      <tr><td><span class="av">AR</span>Ahmed Raza</td><td>O Level (O1)</td><td><span class="pill p-g">Green</span></td><td><svg width="70" height="18" viewBox="0 0 70 18"><polyline fill="none" stroke="var(--green)" stroke-width="2" points="0,12 14,10 28,11 42,7 56,8 70,5"/></svg> 92%</td><td><span class="pill p-g">Paid</span></td><td style="text-align:right"><span class="qbtn">Schedule</span> <span class="qbtn">Voucher</span></td></tr>
+      <tr><td><span class="av">SK</span>Salman Khan</td><td>A Level (A2)</td><td><span class="pill p-a">Amber</span></td><td><svg width="70" height="18" viewBox="0 0 70 18"><polyline fill="none" stroke="var(--amber)" stroke-width="2" points="0,8 14,10 28,9 42,11 56,10 70,12"/></svg> 71%</td><td><span class="pill p-a">Due</span></td><td style="text-align:right"><span class="qbtn">Message</span> <span class="qbtn">Voucher</span></td></tr>
+      <tr><td><span class="av">HN</span>Hira Nadeem</td><td>IGCSE</td><td><span class="pill p-r">Red</span></td><td><svg width="70" height="18" viewBox="0 0 70 18"><polyline fill="none" stroke="var(--rose)" stroke-width="2" points="0,6 14,9 28,8 42,12 56,13 70,14"/></svg> 54%</td><td><span class="pill p-r">Overdue</span></td><td style="text-align:right"><span class="qbtn">Message</span> <span class="qbtn">Fee decision</span></td></tr>
+      <tr><td><span class="av">FM</span>Fatima Malik</td><td>O Level (O2)</td><td><span class="pill p-g">Green</span></td><td><svg width="70" height="18" viewBox="0 0 70 18"><polyline fill="none" stroke="var(--green)" stroke-width="2" points="0,11 14,9 28,10 42,7 56,6 70,5"/></svg> 95%</td><td><span class="pill p-g">Paid</span></td><td style="text-align:right"><span class="qbtn">Schedule</span></td></tr>
+    </tbody></table></div>
+  <div class="note">Row hover reveals quick-actions · click a row → profile drawer opens in place · click “At-risk” toggle → filters to Red/Amber</div>
+</div></div></div>
+
+<div class="cap">3 · Admin · Teachers — capacity load, pay rate &amp; availability</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/teachers</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Teachers</div><div class="sub">9 faculty · load, subjects &amp; per-class pay</div></div><span class="btn btn-p">+ Add Teacher</span></div>
+  <div class="g g4" style="margin-bottom:14px">
+    <div class="card kpi"><div class="l">Total</div><div class="v num">9</div></div>
+    <div class="card kpi"><div class="l">Available</div><div class="v num up">2</div><div class="c mut">can take more</div></div>
+    <div class="card kpi"><div class="l">At capacity</div><div class="v num" style="color:var(--amber)">1</div></div>
+    <div class="card kpi"><div class="l">Avg pay / class</div><div class="v num">Rs 2,900</div></div></div>
+  <div class="g g3">
+    <div class="card"><div style="display:flex;justify-content:space-between"><b>M. Muzammal</b><span class="pill p-b">Teaching</span></div><div class="note">Maths · O/A Level</div><div class="br" style="margin-top:10px"><div class="trk"><div class="fil" style="width:40%"></div><div class="mk" style="left:100%"></div></div><b class="num">2/5</b></div><div class="note">Rs 3,000/class · <span style="color:var(--brand)">Set rate</span></div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between"><b>S. Aisha</b><span class="pill p-a">Near full</span></div><div class="note">Physics · Chemistry</div><div class="br" style="margin-top:10px"><div class="trk"><div class="fil" style="width:88%;background:linear-gradient(90deg,#f0b34a,#e2603b)"></div></div><b class="num">22/25</b></div><div class="note">Rs 3,200/class</div></div>
+    <div class="card"><div style="display:flex;justify-content:space-between"><b>Teacher MZ</b><span class="pill p-g">Available</span></div><div class="note">Maths</div><div class="br" style="margin-top:10px"><div class="trk"><div class="fil" style="width:5%"></div></div><b class="num">0/20</b></div><div class="note">Rs 2,500/class</div></div></div>
+</div></div></div>
+
+<div class="cap">4 · Admin · Leads &amp; Demos — admissions funnel + drag-between-stages pipeline</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/leads</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Leads &amp; Demos</div><div class="sub">Pipeline &amp; conversion · filter by source</div></div><div style="display:flex;gap:8px"><span class="chip">Source: All ▾</span><span class="btn btn-p">+ New Lead</span></div></div>
+  <div class="g g2" style="margin-bottom:14px">
+    <div class="card pnl"><div class="t">Conversion funnel</div>
+      <div class="br"><span class="mut" style="width:70px">Leads</span><div class="trk"><div class="fil" style="width:100%"></div></div><b class="num">210</b></div>
+      <div class="br"><span class="mut" style="width:70px">Contacted</span><div class="trk"><div class="fil" style="width:80%"></div></div><b class="num">168</b></div>
+      <div class="br"><span class="mut" style="width:70px">Demo booked</span><div class="trk"><div class="fil" style="width:62%"></div></div><b class="num">130</b></div>
+      <div class="br"><span class="mut" style="width:70px">Won</span><div class="trk"><div class="fil" style="width:34%;background:linear-gradient(90deg,#3ccf7a,#12a150)"></div></div><b class="num">72</b></div></div>
+    <div class="card pnl"><div class="t">Lost reasons</div>
+      <div class="br"><span class="mut" style="width:96px">Price</span><div class="trk"><div class="fil" style="width:70%;background:#e2603b"></div></div><b class="num">14</b></div>
+      <div class="br"><span class="mut" style="width:96px">Timing</span><div class="trk"><div class="fil" style="width:45%;background:#e2603b"></div></div><b class="num">9</b></div>
+      <div class="br"><span class="mut" style="width:96px">No-show</span><div class="trk"><div class="fil" style="width:30%;background:#e2603b"></div></div><b class="num">6</b></div></div></div>
+  <div class="g g4">
+    <div class="card" style="background:#f6f7fc"><div class="t" style="margin-bottom:8px">New · 42</div><div class="card" style="padding:9px;margin-bottom:7px"><b style="font-size:12px">Bilal Ahmed</b><div class="note">O Level · Google</div></div><div class="card" style="padding:9px"><b style="font-size:12px">Zara Sheikh</b><div class="note">IGCSE · Referral</div></div></div>
+    <div class="card" style="background:#f6f7fc"><div class="t" style="margin-bottom:8px">Contacted · 38</div><div class="card" style="padding:9px"><b style="font-size:12px">Usman Tariq</b><div class="note">A Level · FB</div></div></div>
+    <div class="card" style="background:#f6f7fc"><div class="t" style="margin-bottom:8px">Demo booked · 58</div><div class="card" style="padding:9px"><b style="font-size:12px">Ali Hamza</b><div class="note">Fri 4 PM · needs teacher</div></div></div>
+    <div class="card" style="background:#f6f7fc"><div class="t" style="margin-bottom:8px">Won · 72</div><div class="card" style="padding:9px"><b style="font-size:12px">Ahmed Raza</b><div class="note">Enrolled ✓</div></div></div></div>
+  <div class="note">Drag a card between columns to advance the stage · click a funnel bar to filter the board</div>
+</div></div></div>
+
+<div class="cap">5 · Admin · Booking &amp; Schedule (Demos) — calendar + conflict detector + one-click assign</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/demos</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Booking &amp; Schedule</div><div class="sub">Demo classes · assign teachers</div></div><div style="display:flex;gap:8px"><span class="seg"><s class="on">Calendar</s><s>List</s></span><span class="btn btn-p">+ New Demo</span></div></div>
+  <div class="card" style="background:var(--rosesoft);border-color:#f3c6cf;margin-bottom:12px;padding:11px 15px"><b style="color:var(--rose)">⚠ Conflict:</b> <span style="color:#7a2333;font-size:12.5px">S. Aisha has two demos at Fri 4:00 PM — reassign one.</span></div>
+  <div class="g g2">
+    <div class="card pnl"><div class="t">Needs a teacher · 3</div>
+      <div class="feed"><span class="dot" style="background:var(--amber)"></span><div><b>Ali Hamza · Maths</b><div class="note">Fri 4:00 PM</div></div><span class="qbtn" style="margin-left:auto">Assign ▾</span></div>
+      <div class="feed"><span class="dot" style="background:var(--amber)"></span><div><b>Sana Iqbal · Physics</b><div class="note">Sat 11:00 AM</div></div><span class="qbtn" style="margin-left:auto">Assign ▾</span></div></div>
+    <div class="card pnl"><div class="t">This week</div>
+      <div class="cal"><div class="d"><b>Mon</b></div><div class="d"><b>Tue</b><div class="ev ev-p">Demo 3pm</div></div><div class="d"><b>Wed</b></div><div class="d"><b>Thu</b><div class="ev ev-b">Demo 5pm</div></div><div class="d"><b>Fri</b><div class="ev ev-a">2 @ 4pm</div></div><div class="d"><b>Sat</b><div class="ev ev-p">Demo 11am</div></div><div class="d"><b>Sun</b></div></div></div></div>
+</div></div></div>
+
+<div class="cap">6 · Admin · Classes / Schedule — week calendar coloured by subject, sync chips, inline attendance</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/schedule</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Classes</div><div class="sub">Week of 11–17 Aug · colour by subject</div></div><div style="display:flex;gap:8px"><span class="seg"><s class="on">Week</s><s>List</s></span><span class="btn btn-o">+ Single Class</span><span class="btn btn-p">+ Timetable</span></div></div>
+  <div class="card"><div class="cal">
+    <div class="d"><b>Mon 11</b><div class="ev ev-p">9a Maths</div><div class="ev ev-b">4p Physics</div></div>
+    <div class="d"><b>Tue 12</b><div class="ev ev-p">9a Maths</div></div>
+    <div class="d"><b>Wed 13</b><div class="ev ev-a">6p Chem ⚠</div></div>
+    <div class="d"><b>Thu 14</b><div class="ev ev-p">9a Maths ✓</div><div class="ev ev-b">4p Physics ✓</div></div>
+    <div class="d"><b>Fri 15</b><div class="ev ev-p">4p Maths</div></div>
+    <div class="d"><b>Sat 16</b><div class="ev ev-b">11a Physics</div></div>
+    <div class="d"><b>Sun 17</b></div>
+  </div><div class="note">✓ synced to Google Calendar · ⚠ no invite · click a class → mark attendance / join Meet inline</div></div>
+</div></div></div>
+
+<div class="cap">7 · Admin · Homework — completion-rate line + assignments with inline grading</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/homework</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Homework</div><div class="sub">Assignments &amp; completion</div></div><span class="btn btn-p">+ Assign</span></div>
+  <div class="g g2" style="margin-bottom:14px">
+    <div class="card pnl"><div class="t">Completion rate · last 6 weeks<span class="seg"><s>4w</s><s class="on">6w</s></span></div><svg width="100%" height="120" viewBox="0 0 460 120" preserveAspectRatio="none"><line x1="0" y1="30" x2="460" y2="30" stroke="#e3e6f1" stroke-dasharray="4 4"/><text x="4" y="24" fill="#9aa0bd" font-size="9">90% goal</text><path d="M0,80 C60,72 90,60 150,64 C210,68 240,44 300,40 C360,36 400,28 460,24" fill="none" stroke="var(--brand)" stroke-width="2.5"/><circle cx="460" cy="24" r="4" fill="var(--brand)"/></svg></div>
+    <div class="card g" style="grid-template-columns:1fr 1fr"><div class="card kpi" style="background:#f6f7fc"><div class="l">Active</div><div class="v num">14</div></div><div class="card kpi" style="background:#f6f7fc"><div class="l">Overdue</div><div class="v num dn">3</div></div><div class="card kpi" style="background:#f6f7fc"><div class="l">To grade</div><div class="v num" style="color:var(--amber)">21</div></div><div class="card kpi" style="background:#f6f7fc"><div class="l">Avg score</div><div class="v num">78%</div></div></div></div>
+  <div class="card" style="padding:0"><table class="tbl"><thead><tr><th>Assignment</th><th>Class</th><th>Due</th><th>Submitted</th><th>Status</th></tr></thead><tbody>
+    <tr><td>Vectors &amp; Calculus Worksheet</td><td>A Level Maths</td><td>16 Aug</td><td>18 / 24</td><td><span class="pill p-a">Grading</span></td></tr>
+    <tr><td>Organic Chemistry Set 2</td><td>O Level Chem</td><td>14 Aug</td><td>20 / 20</td><td><span class="pill p-g">Graded</span></td></tr>
+    <tr><td>Trigonometry Practice</td><td>O Level Maths</td><td>12 Aug</td><td>11 / 18</td><td><span class="pill p-r">Overdue</span></td></tr>
+  </tbody></table></div><div class="note">Click a row → submissions grid with inline grade + comment</div>
+</div></div></div>
+
+<div class="cap">8 · Admin · Assessments — grade-trend multi-line + topic drill-down to find weak areas</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/assessments</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Assessments</div><div class="sub">Grade trends &amp; topic mastery</div></div><span class="btn btn-p">+ Record Test</span></div>
+  <div class="g g2">
+    <div class="card pnl"><div class="t">Grade trend — assessed vs target<span style="font-weight:600;color:var(--dim)"><span style="color:var(--brand)">● Class avg</span> <span style="color:var(--green)">● Ahmed</span></span></div>
+      <svg width="100%" height="130" viewBox="0 0 460 130" preserveAspectRatio="none"><line x1="0" y1="24" x2="460" y2="24" stroke="#e3e6f1" stroke-dasharray="4 4"/><text x="4" y="18" fill="#9aa0bd" font-size="9">target A*</text>
+      <path d="M0,90 C80,86 120,78 200,74 C280,70 320,64 460,58" fill="none" stroke="var(--brand)" stroke-width="2.5"/>
+      <path d="M0,80 C80,70 120,66 200,52 C280,40 320,36 460,30" fill="none" stroke="var(--green)" stroke-width="2.5"/></svg></div>
+    <div class="card pnl"><div class="t">Topic mastery — weakest first</div>
+      <div class="br"><span class="mut" style="width:120px">Differentiation</span><div class="trk"><div class="fil" style="width:48%;background:#e2603b"></div></div><b class="num">48%</b></div>
+      <div class="br"><span class="mut" style="width:120px">Vectors</span><div class="trk"><div class="fil" style="width:63%;background:#f0b34a"></div></div><b class="num">63%</b></div>
+      <div class="br"><span class="mut" style="width:120px">Algebra</span><div class="trk"><div class="fil" style="width:88%;background:#12a150"></div></div><b class="num">88%</b></div>
+      <div class="note">Click a topic → students who struggled → assign targeted homework</div></div></div>
+</div></div></div>
+
+<div class="cap">9 · Admin · Reports — a categorised report library (not one page)</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/reports</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Reports</div><div class="sub">Open a focused view · month-end parent reports</div></div></div>
+  <div class="g g4">
+    <div class="card"><div class="ic" style="width:26px;height:26px;border-radius:8px;background:var(--brandsoft)"></div><b style="display:block;margin-top:10px">Fees</b><div class="note">Collection, outstanding, forecast, method split</div></div>
+    <div class="card"><div class="ic" style="width:26px;height:26px;border-radius:8px;background:var(--greensoft)"></div><b style="display:block;margin-top:10px">Admissions</b><div class="note">Funnel, source ROI, lost reasons</div></div>
+    <div class="card"><div class="ic" style="width:26px;height:26px;border-radius:8px;background:var(--ambersoft)"></div><b style="display:block;margin-top:10px">Attendance</b><div class="note">Trends, at-risk, per-class heatmap</div></div>
+    <div class="card"><div class="ic" style="width:26px;height:26px;border-radius:8px;background:var(--bluesoft)"></div><b style="display:block;margin-top:10px">Academics</b><div class="note">Grade trends, topic mastery, parent reports</div></div></div>
+  <div class="card pnl" style="margin-top:14px"><div class="t">Monthly parent report — preview <span class="chip">Ahmed · Aug 2026</span></div><div class="card" style="background:#f6f7fc;font-style:italic;color:#4a4f6b">“Progress summary for Ahmed — August 2026. Attendance 92%. Covered 6 topics, sat 2 assessments; assessed-grade trend UP. No raw scores shared. — Thinkerzz”</div><div class="note">Warm phrasing + email dispatch runs automatically at month-end (cron)</div></div>
+</div></div></div>
+
+<div class="cap">10 · Admin · Fee Vouchers — collected / pending / overdue + status table with quick-actions</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/vouchers</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Fee Vouchers</div><div class="sub">Issue, record payments, grace decisions</div></div><span class="btn btn-p">+ Create Voucher</span></div>
+  <div class="g g3" style="margin-bottom:14px">
+    <div class="card kpi"><div class="l">Collected</div><div class="v num up">Rs 842k</div></div>
+    <div class="card kpi"><div class="l">Pending</div><div class="v num" style="color:var(--amber)">Rs 102k</div></div>
+    <div class="card kpi"><div class="l">Overdue</div><div class="v num dn">Rs 88k</div></div></div>
+  <div class="card" style="padding:12px;margin-bottom:12px"><div class="br"><span class="mut" style="width:70px">Paid</span><div class="trk"><div class="fil" style="width:79%;background:#12a150"></div></div><b class="num">79%</b></div><div class="br"><span class="mut" style="width:70px">Pending</span><div class="trk"><div class="fil" style="width:13%;background:#f0b34a"></div></div><b class="num">13%</b></div><div class="br"><span class="mut" style="width:70px">Overdue</span><div class="trk"><div class="fil" style="width:8%;background:#e14b62"></div></div><b class="num">8%</b></div></div>
+  <div class="card" style="padding:0"><table class="tbl"><thead><tr><th>Voucher</th><th>Student</th><th>Amount</th><th>Due</th><th>Status</th><th style="text-align:right">Actions</th></tr></thead><tbody>
+    <tr><td>TZ-VCH-0001</td><td>Ahmed Raza</td><td class="num">Rs 20,000</td><td>13 Sep</td><td><span class="pill p-g">Paid</span></td><td style="text-align:right"><span class="qbtn">Receipt</span></td></tr>
+    <tr><td>TZ-VCH-0002</td><td>Salman Khan</td><td class="num">Rs 22,000</td><td>10 Sep</td><td><span class="pill p-a">Due</span></td><td style="text-align:right"><span class="qbtn">+ Payment</span></td></tr>
+    <tr><td>TZ-VCH-0003</td><td>Hira Nadeem</td><td class="num">Rs 18,000</td><td>02 Sep</td><td><span class="pill p-r">Overdue</span></td><td style="text-align:right"><span class="qbtn">Fee decision</span></td></tr>
+  </tbody></table></div>
+</div></div></div>
+
+<div class="cap">11 · Admin · Payments Ledger — collection-over-time line + method split (read-only)</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/payments</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Payments Ledger</div><div class="sub">All recorded payments</div></div><div style="display:flex;gap:8px"><span class="chip">Aug 2026 ▾</span><span class="btn btn-o">Export CSV</span></div></div>
+  <div class="g g3" style="margin-bottom:14px">
+    <div class="card pnl" style="grid-column:span 2"><div class="t">Collection over time</div><svg width="100%" height="110" viewBox="0 0 460 110" preserveAspectRatio="none"><defs><linearGradient id="a2" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#12a150" stop-opacity=".28"/><stop offset="1" stop-color="#12a150" stop-opacity="0"/></linearGradient></defs><path d="M0,90 C70,84 100,70 160,66 C230,60 260,44 330,38 C390,33 420,26 460,22 L460,110 L0,110Z" fill="url(#a2)"/><path d="M0,90 C70,84 100,70 160,66 C230,60 260,44 330,38 C390,33 420,26 460,22" fill="none" stroke="var(--green)" stroke-width="2.5"/></svg></div>
+    <div class="card pnl"><div class="t">By method</div><div class="br"><span class="mut" style="width:70px">Bank</span><div class="trk"><div class="fil" style="width:64%"></div></div><b class="num">64%</b></div><div class="br"><span class="mut" style="width:70px">JazzCash</span><div class="trk"><div class="fil" style="width:22%"></div></div><b class="num">22%</b></div><div class="br"><span class="mut" style="width:70px">Cash</span><div class="trk"><div class="fil" style="width:14%"></div></div><b class="num">14%</b></div></div></div>
+</div></div></div>
+
+<div class="cap">12 · Admin · Teacher Payouts — earned vs paid, one-click pay</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/teacher-payouts</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Teacher Payouts</div><div class="sub">This month · earned vs paid</div></div><div class="card kpi" style="padding:8px 14px"><div class="l">To pay</div><div class="v num" style="color:var(--amber);font-size:18px">Rs 74,000</div></div></div>
+  <div class="card" style="padding:0"><table class="tbl"><thead><tr><th>Teacher</th><th>Classes</th><th>Earned</th><th>Paid</th><th style="text-align:right">Action</th></tr></thead><tbody>
+    <tr><td><span class="av">MM</span>M. Muzammal</td><td>24</td><td class="num">Rs 72,000</td><td><span class="pill p-g">Paid</span></td><td style="text-align:right"><span class="qbtn">History</span></td></tr>
+    <tr><td><span class="av">SA</span>S. Aisha</td><td>22</td><td class="num">Rs 70,400</td><td><span class="pill p-a">Rs 44k paid</span></td><td style="text-align:right"><span class="btn btn-g" style="padding:5px 12px">Pay Rs 26k</span></td></tr>
+    <tr><td><span class="av">MZ</span>Teacher MZ</td><td>16</td><td class="num">Rs 40,000</td><td><span class="pill p-r">Unpaid</span></td><td style="text-align:right"><span class="btn btn-g" style="padding:5px 12px">Pay</span></td></tr>
+  </tbody></table></div>
+</div></div></div>
+
+<div class="cap">13 · Admin · Announcements — composer with role targeting + reach feed</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/announcements</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Announcements</div><div class="sub">Post to the whole academy or a role</div></div></div>
+  <div class="g g2">
+    <div class="card pnl"><div class="t">New announcement</div>
+      <div class="card" style="background:#f6f7fc;padding:10px;margin-bottom:8px">Title: <b>Eid Holidays Notice</b></div>
+      <div class="card" style="background:#f6f7fc;padding:10px;min-height:64px;color:#4a4f6b">Academy closed 10–13 for Eid. Regular classes resume the 14th.</div>
+      <div style="display:flex;gap:8px;margin-top:10px;align-items:center"><span class="mut" style="font-size:12px">Audience:</span><span class="chip">All ▾</span><span class="btn btn-p" style="margin-left:auto">Publish</span></div></div>
+    <div class="card pnl"><div class="t">Posted</div>
+      <div class="feed"><span class="dot" style="background:var(--brand)"></span><div><b>Fee due dates for September</b><div class="note">2 days ago · All · reached 128</div></div></div>
+      <div class="feed"><span class="dot" style="background:var(--green)"></span><div><b>Auto: 4 overdue reminders</b><div class="note">rule-based · sent to parents</div></div></div>
+      <div class="feed"><span class="dot" style="background:var(--brand)"></span><div><b>Parent-teacher meeting</b><div class="note">5 days ago · All</div></div></div></div></div>
+</div></div></div>
+
+<div class="cap">14 · Admin · Email Queue — queue health + sent-over-time (cron-driven)</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/email-queue</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Email Queue</div><div class="sub">Automated notifications</div></div><span class="btn btn-o">↻ Refresh</span></div>
+  <div class="g g4" style="margin-bottom:14px">
+    <div class="card kpi"><div class="l">Queued</div><div class="v num">12</div></div>
+    <div class="card kpi"><div class="l">Sent today</div><div class="v num up">47</div></div>
+    <div class="card kpi"><div class="l">Failed</div><div class="v num dn">1</div></div>
+    <div class="card kpi"><div class="l">Cap left</div><div class="v num">53 / 100</div></div></div>
+  <div class="card" style="padding:0"><table class="tbl"><thead><tr><th>Type</th><th>To</th><th>Status</th><th>Retries</th></tr></thead><tbody>
+    <tr><td>Fee reminder</td><td>parent@gmail.com</td><td><span class="pill p-g">Sent</span></td><td>0</td></tr>
+    <tr><td>Class reminder</td><td>ahmed@gmail.com</td><td><span class="pill p-b">Queued</span></td><td>0</td></tr>
+    <tr><td>Monthly report</td><td>hira@gmail.com</td><td><span class="pill p-r">Failed (retrying)</span></td><td>2</td></tr>
+  </tbody></table></div>
+</div></div></div>
+
+<div class="cap">15 · Admin · Marketing — source ROI &amp; cost-per-enrolment</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/marketing</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Marketing</div><div class="sub">Where enrolments come from</div></div></div>
+  <div class="g g3">
+    <div class="card pnl"><div class="t">Lead source</div><div style="display:flex;justify-content:center;padding:6px"><div class="ring" style="--p:64"><i>64%<br><span style="font-size:9px;color:var(--dim)">digital</span></i></div></div><div class="note" style="text-align:center">Google 38% · FB 26% · Referral 22% · Walk-in 14%</div></div>
+    <div class="card pnl" style="grid-column:span 2"><div class="t">Cost per enrolment</div><svg width="100%" height="110" viewBox="0 0 460 110" preserveAspectRatio="none"><path d="M0,40 C70,44 100,52 160,50 C230,48 260,66 330,72 C390,77 420,84 460,88" fill="none" stroke="var(--brand)" stroke-width="2.5"/><circle cx="460" cy="88" r="4" fill="var(--brand)"/></svg><div class="note">Trending down — Rs 4,200 → Rs 2,900 per enrolment</div></div></div>
+</div></div></div>
+
+<div class="cap">16 · Admin · Settings — grouped sections + integration health</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/settings</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Settings</div><div class="sub">Academy configuration</div></div><span class="btn btn-p">Save</span></div>
+  <div class="g g2">
+    <div class="card"><b>Academy · Branding</b><div class="note">Name, academic year, logo, tagline</div><div class="card" style="background:#f6f7fc;margin-top:8px;padding:9px">Academy name: <b>Thinkerzz</b></div></div>
+    <div class="card"><b>Fees &amp; Grace</b><div class="note">Grace days, default target grade, currency</div><div class="card" style="background:#f6f7fc;margin-top:8px;padding:9px">Grace period: <b>3 days</b></div></div>
+    <div class="card"><b>Integrations — health</b><div class="note" style="margin-top:6px">Google Calendar <span class="pill p-g">Connected</span> · Resend <span class="pill p-g">OK</span> · Cron <span class="pill p-a">last run 12m ago</span></div></div>
+    <div class="card"><b>Automation</b><div class="note">Reminder cadence, daily email cap, month-end reports</div></div></div>
+  <div class="note">Remove/wire the disabled “reference only” fields before launch.</div>
+</div></div></div>
+
+<div class="cap">17 · Admin · Audit Log — activity timeline, filterable</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/audit-log</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Audit Log</div><div class="sub">Every change, who &amp; when</div></div><div style="display:flex;gap:8px"><span class="chip">Table: All ▾</span><span class="chip">Actor: All ▾</span></div></div>
+  <div class="card">
+    <div class="feed"><span class="av">AD</span><div><b>Admin</b> recorded a payment · <span class="pill p-g">payments</span><div class="note">TZ-RCP-0001 · Rs 20,000 · 2m ago</div></div></div>
+    <div class="feed"><span class="av">AD</span><div><b>Admin</b> created a voucher · <span class="pill p-b">vouchers</span><div class="note">TZ-VCH-0003 · 14m ago</div></div></div>
+    <div class="feed"><span class="av">MM</span><div><b>M. Muzammal</b> marked attendance · <span class="pill p-n">attendance</span><div class="note">Maths 9 AM · 1h ago</div></div></div></div>
+</div></div></div>
+
+<div class="sec">Manager</div>
+<div class="cap">18 · Manager dashboard — operational view (people · admissions · schedule; no rupee internals). Every other manager tab reuses the admin screens above.</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/dashboard · manager</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Operations Command Center</div><div class="sub">Students, admissions &amp; schedule</div></div></div>
+  <div class="g g6" style="margin-bottom:14px">
+    <div class="card kpi"><div class="l">Active students</div><div class="v num">128</div></div>
+    <div class="card kpi"><div class="l">New leads</div><div class="v num up">7</div></div>
+    <div class="card kpi"><div class="l">Demos need teacher</div><div class="v num" style="color:var(--amber)">3</div></div>
+    <div class="card kpi"><div class="l">Conversion</div><div class="v num">34%</div></div>
+    <div class="card kpi"><div class="l">Classes today</div><div class="v num">11</div></div>
+    <div class="card kpi"><div class="l">At risk</div><div class="v num dn">7</div></div></div>
+  <div class="g g2">
+    <div class="card pnl"><div class="t">Admissions funnel</div><div class="br"><span class="mut" style="width:70px">Leads</span><div class="trk"><div class="fil" style="width:100%"></div></div><b class="num">210</b></div><div class="br"><span class="mut" style="width:70px">Demos</span><div class="trk"><div class="fil" style="width:62%"></div></div><b class="num">130</b></div><div class="br"><span class="mut" style="width:70px">Won</span><div class="trk"><div class="fil" style="width:34%;background:linear-gradient(90deg,#3ccf7a,#12a150)"></div></div><b class="num">72</b></div></div>
+    <div class="card pnl"><div class="t">⚠ Needs attention</div><div class="feed"><span class="dot" style="background:var(--amber)"></span><div><b>3 demos need a teacher</b></div></div><div class="feed"><span class="dot" style="background:var(--brand)"></span><div><b>6 classes unmarked</b></div></div><div class="feed"><span class="dot" style="background:var(--green)"></span><div><b>2 students at risk</b></div></div></div></div>
+  <div class="note">Fee figures collapse to a status count for managers — no rupee amounts, payouts, settings or audit.</div>
+</div></div></div>
+
+<div class="sec">Teacher — "my today", built for action</div>
+<div class="cap">19 · Teacher dashboard — today's classes with inline Join / Mark attendance / Note</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/dashboard · teacher</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Welcome, Teacher MZ 👋</div><div class="sub">Your day at a glance</div></div></div>
+  <div class="g g4" style="margin-bottom:14px">
+    <div class="card kpi"><div class="l">Classes today</div><div class="v num">3</div><div class="c mut">next 4:00 PM</div></div>
+    <div class="card kpi"><div class="l">To grade</div><div class="v num" style="color:var(--amber)">7</div><div class="c dn">2 overdue</div></div>
+    <div class="card kpi"><div class="l">My students</div><div class="v num">24</div><div class="c up">▲ 1</div></div>
+    <div class="card kpi"><div class="l">Attendance to mark</div><div class="v num">1</div><div class="c mut">yesterday</div></div></div>
+  <div class="g g3">
+    <div class="card pnl" style="grid-column:span 2"><div class="t">Today's schedule</div>
+      <div class="feed"><span class="dot" style="background:var(--brand)"></span><div style="flex:1"><b>09:00 · Mathematics — Ahmed Raza</b><div style="margin-top:6px;display:flex;gap:7px"><span class="chip" style="color:var(--brand);border-color:var(--brand)">▶ Join Meet</span><span class="chip">Mark attendance</span><span class="chip">Class note</span></div></div></div>
+      <div class="feed"><span class="dot" style="background:var(--brand)"></span><div style="flex:1"><b>16:00 · Mathematics — Salman Khan</b><div style="margin-top:6px;display:flex;gap:7px"><span class="chip" style="color:var(--brand);border-color:var(--brand)">▶ Join Meet</span><span class="chip">Mark attendance</span></div></div></div></div>
+    <div class="card pnl"><div class="t">This week</div><svg width="100%" height="70" viewBox="0 0 200 70" preserveAspectRatio="none"><path d="M0,50 C40,46 60,40 100,38 C140,36 160,28 200,24" fill="none" stroke="var(--brand)" stroke-width="2.5"/></svg><div class="note">8 classes · 2 pending grades</div></div></div>
+</div></div></div>
+
+<div class="cap">20 · Teacher · Classes — mark attendance inline (Present / Late / Absent)</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/schedule · teacher</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Mathematics · 09:00, Thu 14 Aug</div><div class="sub">Mark attendance to complete the class</div></div><span class="btn btn-p">Complete class</span></div>
+  <div class="card" style="padding:0"><table class="tbl"><thead><tr><th>Student</th><th style="text-align:right">Attendance</th></tr></thead><tbody>
+    <tr><td><span class="av">AR</span>Ahmed Raza</td><td style="text-align:right"><span class="pill p-g">Present</span> <span class="pill p-n">Late</span> <span class="pill p-n">Absent</span></td></tr>
+    <tr><td><span class="av">SK</span>Salman Khan</td><td style="text-align:right"><span class="pill p-n">Present</span> <span class="pill p-a">Late</span> <span class="pill p-n">Absent</span></td></tr>
+    <tr><td><span class="av">FM</span>Fatima Malik</td><td style="text-align:right"><span class="pill p-g">Present</span> <span class="pill p-n">Late</span> <span class="pill p-n">Absent</span></td></tr>
+  </tbody></table></div>
+  <div class="card" style="margin-top:12px;background:#f6f7fc"><b style="font-size:12px">Class note</b><div class="note">Covered differentiation basics; assign vectors worksheet next.</div></div>
+</div></div></div>
+
+<div class="cap">21 · Teacher · My Students &amp; Homework grading — scoped to their roster</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/students &amp; /homework · teacher</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="g g2">
+    <div class="card pnl"><div class="t">My students · 24</div>
+      <table class="tbl"><tbody>
+        <tr><td><span class="av">AR</span>Ahmed Raza</td><td>92% att</td><td><span class="pill p-g">Green</span></td><td style="text-align:right"><span class="qbtn">Message</span></td></tr>
+        <tr><td><span class="av">SK</span>Salman Khan</td><td>71% att</td><td><span class="pill p-a">Amber</span></td><td style="text-align:right"><span class="qbtn">Message</span></td></tr>
+        <tr><td><span class="av">FM</span>Fatima Malik</td><td>95% att</td><td><span class="pill p-g">Green</span></td><td style="text-align:right"><span class="qbtn">Message</span></td></tr>
+      </tbody></table></div>
+    <div class="card pnl"><div class="t">Grade: Vectors Worksheet</div>
+      <div class="feed"><span class="av">AR</span><div style="flex:1"><b>Ahmed Raza</b><div class="note">submitted 2 days ago</div></div><span class="chip" style="border-color:var(--brand);color:var(--brand)">A ▾</span></div>
+      <div class="feed"><span class="av">SK</span><div style="flex:1"><b>Salman Khan</b><div class="note">submitted 1 day ago</div></div><span class="chip">Grade ▾</span></div>
+      <div class="note">Inline grade + comment · optimistic save</div></div></div>
+</div></div></div>
+
+<div class="sec">Student — progress first</div>
+<div class="cap">22 · Student dashboard — progress, next class &amp; fees at a glance</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/dashboard · student</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="rowh"><div><div class="h">Welcome, Ahmed 🎓</div><div class="sub">Next class: Fri 15 Aug · 4:00 PM — Mathematics</div></div></div>
+  <div class="g g4" style="margin-bottom:14px">
+    <div class="card kpi"><div class="l">Attendance</div><div class="v num up">92%</div><svg class="spk" width="100%" height="22" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline fill="none" stroke="var(--green)" stroke-width="2" points="0,14 20,12 40,13 60,8 80,9 100,5"/></svg></div>
+    <div class="card kpi"><div class="l">Homework on-time</div><div class="v num">88%</div><svg class="spk" width="100%" height="22" viewBox="0 0 100 22" preserveAspectRatio="none"><polyline fill="none" stroke="var(--brand)" stroke-width="2" points="0,12 20,14 40,11 60,12 80,9 100,8"/></svg></div>
+    <div class="card kpi"><div class="l">Grade trend</div><div class="v num up">▲ Up</div><div class="c mut">vs target A*</div></div>
+    <div class="card kpi"><div class="l">Fee status</div><div class="v num" style="color:var(--amber)">Due</div><div class="c mut">Rs 20k · 13 Sep</div></div></div>
+  <div class="g g3">
+    <div class="card pnl" style="grid-column:span 2"><div class="t">Next class</div><div class="feed" style="border:0"><span class="dot" style="background:var(--brand)"></span><div style="flex:1"><b>Fri 15 Aug · 4:00 PM — Mathematics</b><div class="note">with Teacher MZ</div></div><span class="chip" style="border-color:var(--brand);color:var(--brand)">▶ Join Google Meet</span></div>
+      <div class="t" style="margin-top:12px">Grade trend</div><svg width="100%" height="80" viewBox="0 0 460 80" preserveAspectRatio="none"><line x1="0" y1="16" x2="460" y2="16" stroke="#e3e6f1" stroke-dasharray="4 4"/><path d="M0,60 C90,54 130,48 230,40 C330,32 380,26 460,20" fill="none" stroke="var(--green)" stroke-width="2.5"/></svg></div>
+    <div class="card pnl"><div class="t">This month</div><div class="br"><span class="mut" style="width:80px">Topics</span><div class="trk"><div class="fil" style="width:75%"></div></div><b class="num">6</b></div><div class="br"><span class="mut" style="width:80px">Tests</span><div class="trk"><div class="fil" style="width:40%"></div></div><b class="num">2</b></div><div class="card" style="background:var(--ambersoft);margin-top:10px;padding:9px"><b style="font-size:12px;color:var(--amber)">Fee due 13 Sep</b><div style="margin-top:6px"><span class="btn btn-p" style="padding:6px 12px">View &amp; pay</span></div></div></div></div>
+</div></div></div>
+
+<div class="cap">23 · Student · Classes, Homework &amp; My Fee Vouchers</div>
+<div class="win"><div class="bar"><div class="dots"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i></div><div class="u">…/classes · /homework · /fees · student</div></div>
+<div class="mn" style="width:100%"><div class="ct">
+  <div class="g g3">
+    <div class="card pnl"><div class="t">My classes</div>
+      <div class="feed"><span class="dot" style="background:var(--brand)"></span><div style="flex:1"><b>Fri · Maths 4 PM</b><div class="note">Teacher MZ</div></div><span class="qbtn">Join</span></div>
+      <div class="feed"><span class="dot" style="background:var(--dim)"></span><div><b>Thu · Maths 9 AM</b><div class="note">completed · present</div></div></div></div>
+    <div class="card pnl"><div class="t">Homework</div>
+      <div style="display:flex;justify-content:center;padding:4px"><div class="ring" style="--p:88"><i>88%</i></div></div>
+      <div class="feed"><div style="flex:1"><b>Vectors Worksheet</b><div class="note">due 16 Aug</div></div><span class="pill p-a">To do</span></div>
+      <div class="feed" style="border:0"><div style="flex:1"><b>Trigonometry</b><div class="note">graded</div></div><span class="pill p-g">A</span></div></div>
+    <div class="card pnl"><div class="t">My fee vouchers</div>
+      <div class="feed"><div style="flex:1"><b>TZ-VCH-0001</b><div class="note">Rs 20,000 · due 13 Sep</div></div><span class="pill p-a">Due</span></div>
+      <div class="card" style="background:#f6f7fc;margin-top:8px;padding:9px"><b style="font-size:11px">How to pay</b><div class="note">Bank / JazzCash · upload receipt</div><div style="margin-top:6px"><span class="btn btn-p" style="padding:6px 12px">Upload receipt</span></div></div></div></div>
+</div></div></div>
+
+<div style="text-align:center;color:#5a5f7c;font-size:12.5px;margin:26px 0 10px">End of mockups · 23 screens across Admin · Manager · Teacher · Student — concept only, for approval.</div>
+
+</div></body></html>

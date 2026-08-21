@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { provisionLogin } from '@/lib/auth/provision';
+import { guardPublicSubmit } from '@/lib/publicFormGuard';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
 
@@ -26,7 +27,11 @@ export async function submitEnrollment(input: {
   gender?: string;
   city?: string;
   address?: string;
+  turnstileToken?: string;
 }): Promise<EnrollResult> {
+  const guard = await guardPublicSubmit({ action: 'enroll', token: input.turnstileToken });
+  if (!guard.ok) return { ok: false, error: guard.error };
+
   const studentName = input.studentName?.trim();
   const parentName = input.parentName?.trim();
   const phone = input.phone?.trim();

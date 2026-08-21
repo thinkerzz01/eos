@@ -29,6 +29,8 @@ interface StudentRow {
   phone: string;
   whatsapp: string | null;
   email: string | null;
+  address?: string | null;
+  city?: string | null;
   gender: string;
   program: string;
   exam_session: string;
@@ -38,6 +40,9 @@ interface StudentRow {
   monthly_fee: number;
   fee_status: 'paid' | 'due' | 'in_grace' | 'stopped';
   next_due_date: string;
+  date_of_birth?: string | null;
+  onboarding_data?: Record<string, any> | null;
+  onboarding_completed_at?: string | null;
 }
 
 const FEE_STATUS_UI: Record<StudentRow['fee_status'], FeeStatus> = {
@@ -76,11 +81,22 @@ function mapRow(r: StudentRow, acad?: StudentAcademics): Student {
 
   const enrolledSubjects: EnrolledSubject[] = [];
 
+  // Onboarding payload (school, emergency contact, extra answers) collected
+  // by the public /onboarding form and stored on students.onboarding_data.
+  const ob = (r.onboarding_data ?? {}) as Record<string, any>;
+  const obStr = (k: string): string => {
+    const v = ob[k];
+    return typeof v === 'string' ? v : v == null ? '' : String(v);
+  };
+  const schoolName = obStr('school') || obStr('schoolName') || obStr('school_name');
+  const emergencyContact =
+    obStr('emergencyContact') || obStr('emergency_contact') || obStr('emergency');
+
   return {
     id: r.id,
     stuId: r.code ?? `THM-${shortId(r.id)}`,
     name: r.name,
-    dob: '',
+    dob: r.date_of_birth ?? '',
     gender: r.gender,
     rollNo: shortId(r.id),
     admissionDate: r.enrolled_at,
@@ -118,6 +134,18 @@ function mapRow(r: StudentRow, acad?: StudentAcademics): Student {
     status: STATUS_UI[r.status] ?? 'active',
     timeline: [],
     documents: [],
+    // Raw editable fields for the profile editor.
+    whatsapp: r.whatsapp ?? '',
+    city: r.city ?? '',
+    address: r.address ?? '',
+    examSession: r.exam_session ?? '',
+    monthlyFee: Number(r.monthly_fee ?? 0),
+    nextDueDate: r.next_due_date ?? '',
+    // Onboarding payload for the profile Overview.
+    onboardingDone: !!r.onboarding_completed_at,
+    schoolName,
+    emergencyContact,
+    onboardingExtra: ob as Record<string, string>,
   };
 }
 
@@ -171,17 +199,33 @@ export async function getStudents(): Promise<Student[]> {
   const supabase = createClient();
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
-  const { data, error } = await supabase
+  const baseCols =
+    'id,code,name,parent_name,phone,whatsapp,email,address,city,gender,program,exam_session,enrolled_at,months_committed,status,monthly_fee,fee_status,next_due_date';
+  // Try to read the onboarding columns too; fall back gracefully if the
+  // onboarding migration has not been applied yet (so the page never breaks).
+  let data: any = null;
+  let error: any = null;
+  const rich = await supabase
     .from('students')
-    .select(
-      'id,code,name,parent_name,phone,whatsapp,email,gender,program,exam_session,enrolled_at,months_committed,status,monthly_fee,fee_status,next_due_date'
-    )
+    .select(`${baseCols},date_of_birth,onboarding_data,onboarding_completed_at`)
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
+  if (rich.error) {
+    const basic = await supabase
+      .from('students')
+      .select(baseCols)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    data = basic.data;
+    error = basic.error;
+  } else {
+    data = rich.data;
+  }
 
   if (error || !data) return [];
 

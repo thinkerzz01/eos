@@ -44,8 +44,9 @@ function one(rel: any): any {
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return EMPTY;
 
   const now = new Date();
@@ -54,7 +55,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
   const dayStart = `${todayPKT}T00:00:00+05:00`;
   const dayEnd = `${todayPKT}T23:59:59+05:00`;
 
-  const [teachersRes, classesRes, paymentsRes, vouchersRes, vPaymentsRes, demosRes, refundsRes, loadRes, studentsRes, payoutsRes, leadsRes] =
+  const [teachersRes, classesRes, paymentsRes, vouchersRes, vPaymentsRes, demosRes, loadRes, studentsRes, payoutsRes, leadsRes] =
     await Promise.all([
       supabase.from('teachers').select('id,name,capacity').is('deleted_at', null),
       supabase.from('class_sessions').select('id,start_at,students(name),subjects(name)').gte('start_at', dayStart).lte('start_at', dayEnd).is('deleted_at', null).order('start_at', { ascending: true }),
@@ -62,7 +63,6 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       supabase.from('vouchers').select('id,amount,status').neq('status', 'paid').is('deleted_at', null),
       supabase.from('payments').select('amount,voucher_id').is('deleted_at', null),
       supabase.from('demos').select('id', { count: 'exact', head: true }).eq('status', 'needs_teacher').is('deleted_at', null),
-      supabase.from('refunds').select('amount').is('deleted_at', null),
       supabase.from('class_sessions').select('teacher_id').is('deleted_at', null),
       supabase.from('students').select('monthly_fee').eq('status', 'active').is('deleted_at', null),
       supabase.from('teacher_payouts').select('amount').gte('paid_at', monthStart).is('deleted_at', null),
@@ -83,7 +83,11 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     student: one(c.students)?.name ?? '',
   }));
 
-  const revenueThisMonth = (paymentsRes.data ?? []).reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
+  // Refunds are stored as NEGATIVE rows in `payments` (see issueRefund), not the
+  // dead `refunds` table - so derive both net revenue and the refund total from
+  // this month's payments.
+  const monthPayments = (paymentsRes.data ?? []) as any[];
+  const revenueThisMonth = monthPayments.reduce((s: number, p: any) => s + Number(p.amount || 0), 0);
 
   const paidByVoucher = new Map<string, number>();
   for (const p of vPaymentsRes.data ?? []) {
@@ -95,7 +99,9 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     outstanding += Math.max(0, Number((v as any).amount || 0) - (paidByVoucher.get((v as any).id) ?? 0));
   }
 
-  const refunds = (refundsRes.data ?? []).reduce((s: number, r: any) => s + Math.abs(Number(r.amount || 0)), 0);
+  const refunds = monthPayments
+    .filter((p) => Number(p.amount || 0) < 0)
+    .reduce((s: number, p: any) => s + Math.abs(Number(p.amount || 0)), 0);
 
   const loadByTeacher = new Map<string, number>();
   for (const c of loadRes.data ?? []) {

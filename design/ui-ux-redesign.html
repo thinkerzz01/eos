@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Thinkerzz EOS — UI/UX Redesign Blueprint</title>
+<style>
+  :root{
+    --bg:#0e0f1a; --panel:#171a2b; --panel2:#1e2136; --line:#2a2e49; --line2:#363b5c;
+    --ink:#eef0fb; --muted:#a6abce; --dim:#7b81a8; --brand:#8b7bf0; --brand2:#5b47d6;
+    --teal:#1d9e75; --amber:#ef9f27; --coral:#e2603b; --rose:#e24b6a; --green:#63c07a;
+    --radius:14px; --maxw:1080px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:linear-gradient(180deg,#0b0c16,#0e0f1a);color:var(--ink);
+    font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,sans-serif;}
+  a{color:var(--brand)}
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 22px}
+  header.hero{padding:56px 0 30px;border-bottom:1px solid var(--line)}
+  .kick{color:var(--brand);font-weight:700;letter-spacing:.14em;text-transform:uppercase;font-size:12px}
+  h1{font-size:38px;line-height:1.1;margin:12px 0 10px;font-weight:800}
+  h2{font-size:26px;margin:44px 0 6px;font-weight:800;scroll-margin-top:20px}
+  h3{font-size:18px;margin:26px 0 6px;font-weight:700;color:#dfe2fb}
+  h4{font-size:14px;margin:18px 0 4px;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.08em}
+  p{color:#d4d7ee;margin:8px 0}
+  .lead{font-size:18px;color:var(--muted);max-width:760px}
+  .muted{color:var(--muted)} .dim{color:var(--dim)}
+  section{padding:6px 0 10px}
+  .divider{height:1px;background:var(--line);margin:40px 0}
+  code{background:#0c0d18;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cfd3ff}
+  ul{margin:8px 0;padding-left:20px} li{margin:4px 0;color:#d4d7ee}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:1fr 1fr} .g3{grid-template-columns:1fr 1fr 1fr} .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+  .card.soft{background:var(--panel2)}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid var(--line2)}
+  .tag.win{color:#8fe3c0;border-color:#1d5e48;background:#0f2b22}
+  .tag.med{color:#f2c98a;border-color:#6b4b16;background:#2a2011}
+  .tag.big{color:#f0a0b3;border-color:#5e2333;background:#2a1219}
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--brand);font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+  td.metric{color:#fff;font-weight:600;white-space:nowrap}
+  .toc{position:sticky;top:0;background:rgba(14,15,26,.86);backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line);z-index:5;padding:10px 0}
+  .toc .wrap{display:flex;gap:16px;flex-wrap:wrap;font-size:13px}
+  .toc a{color:var(--muted);text-decoration:none;font-weight:600}
+  .toc a:hover{color:var(--ink)}
+  .callout{border-left:3px solid var(--brand);background:#15162a;padding:12px 16px;border-radius:0 10px 10px 0;margin:14px 0}
+  .pill-row{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+  /* ---- mockup primitives ---- */
+  .mock{background:#0b0c17;border:1px solid var(--line2);border-radius:16px;padding:16px;overflow:hidden}
+  .mock .row{display:flex;gap:12px;flex-wrap:wrap}
+  .kpi{flex:1;min-width:150px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .kpi .lbl{font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.06em}
+  .kpi .val{font-size:26px;font-weight:800;margin-top:4px;letter-spacing:-.02em}
+  .kpi .chg{font-size:12px;font-weight:700;margin-top:2px}
+  .up{color:#63c07a} .down{color:#e24b6a}
+  .spark{display:block;margin-top:8px}
+  .panelbox{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+  .panelbox .ttl{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center}
+  .seg{display:inline-flex;border:1px solid var(--line2);border-radius:8px;overflow:hidden}
+  .seg span{font-size:11px;padding:3px 9px;color:var(--dim)} .seg span.on{background:var(--brand2);color:#fff}
+  .feeditem{display:flex;gap:10px;align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line)}
+  .dot{width:8px;height:8px;border-radius:50%;margin-top:6px;flex:none}
+  .barrow{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:12px}
+  .bar{height:8px;border-radius:6px;background:linear-gradient(90deg,var(--brand),var(--brand2))}
+  .track{flex:1;height:8px;border-radius:6px;background:#22263f;position:relative}
+  .footer{color:var(--dim);font-size:13px;padding:40px 0;border-top:1px solid var(--line);margin-top:30px}
+  .num{font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<div class="toc"><div class="wrap">
+  <a href="#summary">Summary</a>
+  <a href="#research">Research</a>
+  <a href="#foundations">Foundations</a>
+  <a href="#admin">Admin</a>
+  <a href="#manager">Manager</a>
+  <a href="#teacher">Teacher</a>
+  <a href="#student">Student</a>
+  <a href="#rollout">Rollout</a>
+</div></div>
+
+<header class="hero"><div class="wrap">
+  <div class="kick">Thinkerzz EOS · Design Blueprint</div>
+  <h1>A modern, interactive UI for every role</h1>
+  <p class="lead">A research-backed redesign plan — layout, data-visualisation, motion and interaction — for each tab of Admin, Manager, Teacher and Student. Nothing here is built yet; this is the spec to approve, then implement in phases.</p>
+  <div class="pill-row" style="margin-top:16px">
+    <span class="tag win">🟢 cheap win</span>
+    <span class="tag med">🟡 medium</span>
+    <span class="tag big">🔴 investment</span>
+    <span class="tag" style="color:var(--muted)">Stack: Next.js + Tailwind + Recharts + Motion</span>
+  </div>
+</div></header>
+
+<div class="wrap">
+
+<section id="summary">
+  <h2>1 · The idea in one screen</h2>
+  <p>“Modern” here is not new colours — it is <strong>hierarchy, live data, motion and the ability to act in one click</strong>. Three things separate a product people say <em>wow</em> to from one they tolerate:</p>
+  <div class="grid g3" style="margin-top:14px">
+    <div class="card"><h4>Glance</h4><p class="muted">The first screen answers “is anything wrong?” in 10 seconds — a row of KPI tiles with trend, then the one chart that matters, then an attention feed. No scrolling to see status.</p></div>
+    <div class="card"><h4>Motion</h4><p class="muted">Count-up numbers, a staggered card entrance, hover lift, skeleton loaders, and charts that draw in on load. Subtle and fast reads as premium; bouncy and slow reads as a toy.</p></div>
+    <div class="card"><h4>Act</h4><p class="muted">Click a KPI or a funnel stage to drill into the underlying list. A Cmd-K palette to jump anywhere. Quick-actions on row hover. The dashboard becomes a tool, not a poster.</p></div>
+  </div>
+  <div class="callout"><strong>The honest gap today:</strong> the backend is strong and the current UI is clean, but it is mostly static cards and read-only tables. It informs; it does not yet <em>feel alive</em> or let you act from the overview. That is exactly what this plan fixes — and most of it is cheap wins.</div>
+</section>
+
+<section id="research">
+  <h2>2 · What the best systems actually do</h2>
+  <p class="muted">Synthesised from TeachWorks, Fedena, Classe365, Gradelink, Edmingle, Teachmint, Skolaro, OpenEduCat/Odoo, Toddle, and admissions CRMs (Digistorm, LeadSquared).</p>
+  <ul>
+    <li><strong>Left sidebar wins</strong> — near-universal in this category, grouped into <em>People / Academics / Finance / Comms / System</em>, with a slim top bar for search + notifications + account.</li>
+    <li><strong>Dashboard = widget grid, not one chart</strong> — a top row of KPI stat tiles, then charts, then lists/feeds. TeachWorks &amp; Fedena make widgets toggleable; Classe365 &amp; Skolaro make the dashboard customisable per role.</li>
+    <li><strong>Each role’s landing leads with that role’s #1 metric</strong> — Admin: revenue/collection + pipeline + alerts; Teacher: “my today” (classes, grading, attendance to mark); Student/Parent: grades/progress first, then schedule, attendance, fees (Gradelink, Classe365).</li>
+    <li><strong>Fees canon</strong> (Teachmint): <em>collected / pending / trend-over-time</em>. <strong>Admissions canon</strong> (Digistorm): a <em>funnel with per-stage conversion %</em>, filterable by source.</li>
+    <li><strong>Alerts + rules sit on top of passive dashboards</strong> — poor-grade emails, absentee push, scheduling-conflict detection, auto-dunning. “At a glance” includes proactive attention items, not just charts.</li>
+    <li><strong>One dataset, several lenses</strong> (Odoo) — list ↔ calendar ↔ kanban ↔ graph toggle on the same data; a great pattern for Students, Leads and Schedule.</li>
+  </ul>
+</section>
+
+<div class="divider"></div>
+
+<section id="foundations">
+  <h2>3 · Foundations — the shared design system</h2>
+  <p class="muted">Build these once; every role and tab inherits them. This is where 80% of the “premium” feeling comes from.</p>
+
+  <h3>3.1 · Information architecture (sidebar regroup)</h3>
+  <p>Regroup the 13 flat tabs into 5 clusters — matches how every ERP in the category organises its rail, and makes the product feel considered rather than a list.</p>
+  <div class="grid g3">
+    <div class="card soft"><h4>People</h4><p class="muted">Students · Teachers · Leads &amp; Demos</p></div>
+    <div class="card soft"><h4>Academics</h4><p class="muted">Classes · Homework · Assessments · Reports</p></div>
+    <div class="card soft"><h4>Finance</h4><p class="muted">Fee Vouchers · Payments · Teacher Payouts</p></div>
+    <div class="card soft"><h4>Comms</h4><p class="muted">Announcements · Email Queue · Marketing</p></div>
+    <div class="card soft"><h4>System</h4><p class="muted">Settings · Audit Log</p></div>
+  </div>
+  <p class="muted" style="margin-top:8px">Collapsible to a 64px icon rail; active item is a filled pill, not just bold text. A slim top bar carries a global <strong>Cmd-K search</strong>, notifications, theme, account.</p>
+
+  <h3>3.2 · The bento dashboard grid</h3>
+  <p>A strict 12-column grid where tile <em>size encodes importance</em> — the biggest tile is the single most important thing. Not loose masonry; geometric and scannable. <span class="tag win">🟢</span></p>
+  <div class="mock" style="margin-top:10px">
+    <div class="row">
+      <div class="kpi"><div class="lbl">Collected · this month</div><div class="val num">Rs 842k</div><div class="chg up">▲ 12% vs last</div>
+        <svg class="spark" width="100%" height="26" viewBox="0 0 120 26" preserveAspectRatio="none"><polyline fill="none" stroke="#63c07a" stroke-width="2" points="0,20 20,18 40,19 60,12 80,14 100,7 120,5"/></svg></div>
+      <div class="kpi"><div class="lbl">Pending / overdue</div><div class="val num">Rs 190k</div><div class="chg down">▲ 4 overdue</div>
+        <svg class="spark" width="100%" height="26" viewBox="0 0 120 26" preserveAspectRatio="none"><polyline fill="none" stroke="#e24b6a" stroke-width="2" points="0,10 20,12 40,9 60,13 80,11 100,15 120,14"/></svg></div>
+      <div class="kpi"><div class="lbl">Active students</div><div class="val num">128</div><div class="chg up">▲ 6 new</div>
+        <svg class="spark" width="100%" height="26" viewBox="0 0 120 26" preserveAspectRatio="none"><polyline fill="none" stroke="#8b7bf0" stroke-width="2" points="0,18 20,17 40,15 60,14 80,12 100,10 120,8"/></svg></div>
+      <div class="kpi"><div class="lbl">Lead → enrol %</div><div class="val num">34%</div><div class="chg up">▲ 3 pts</div>
+        <svg class="spark" width="100%" height="26" viewBox="0 0 120 26" preserveAspectRatio="none"><polyline fill="none" stroke="#ef9f27" stroke-width="2" points="0,16 20,15 40,16 60,12 80,13 100,9 120,10"/></svg></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="panelbox" style="flex:2;min-width:280px">
+        <div class="ttl">Fee collection vs target<span class="seg"><span>7d</span><span class="on">30d</span><span>12mo</span></span></div>
+        <svg width="100%" height="140" viewBox="0 0 360 140" preserveAspectRatio="none">
+          <defs><linearGradient id="ar" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#8b7bf0" stop-opacity=".45"/><stop offset="1" stop-color="#8b7bf0" stop-opacity="0"/></linearGradient></defs>
+          <line x1="0" y1="40" x2="360" y2="40" stroke="#2a2e49" stroke-width="1" stroke-dasharray="4 4"/>
+          <text x="4" y="34" fill="#7b81a8" font-size="9">target</text>
+          <path d="M0,110 C40,100 60,90 90,86 C130,80 150,60 190,58 C230,56 250,40 290,34 C320,30 340,26 360,22 L360,140 L0,140 Z" fill="url(#ar)"/>
+          <path d="M0,110 C40,100 60,90 90,86 C130,80 150,60 190,58 C230,56 250,40 290,34 C320,30 340,26 360,22" fill="none" stroke="#8b7bf0" stroke-width="2.5"/>
+          <circle cx="360" cy="22" r="3.5" fill="#8b7bf0"/>
+        </svg>
+      </div>
+      <div class="panelbox" style="flex:1;min-width:200px">
+        <div class="ttl">Admissions funnel</div>
+        <div class="barrow"><span class="dim" style="width:56px">Leads</span><div class="track"><div class="bar" style="width:100%"></div></div><span class="num">210</span></div>
+        <div class="barrow"><span class="dim" style="width:56px">Demos</span><div class="track"><div class="bar" style="width:62%"></div></div><span class="num">130</span></div>
+        <div class="barrow"><span class="dim" style="width:56px">Won</span><div class="track"><div class="bar" style="width:34%;background:linear-gradient(90deg,#1d9e75,#63c07a)"></div></div><span class="num">72</span></div>
+        <p class="dim" style="font-size:11px;margin-top:8px">62% → 55% stage conversion</p>
+      </div>
+    </div>
+  </div>
+  <p class="dim" style="font-size:12.5px">Above: KPI row (number + trend + consistent-scale sparkline) → the one chart that matters (area line with dashed target + 7d/30d/12mo toggle) → funnel with per-stage %. Same pattern, re-skinned per role.</p>
+
+  <h3>3.3 · KPI stat-tile anatomy</h3>
+  <p>The highest-ROI element. Each tile = <strong>headline number</strong> + <strong>one</strong> of {trend arrow %, period delta, sparkline} — never all three. <code>tabular-nums</code> on every figure. Colour by <em>sentiment</em>: green-up is good for revenue/attendance, but invert for “at-risk” or “overdue” (up = bad). <span class="tag win">🟢</span></p>
+
+  <h3>3.4 · Chart house-style</h3>
+  <p><strong>Default chart = smoothed area-line with a dashed target line</strong>, gradient fill for single series, hover crosshair + formatted tooltip, and a 7d/30d/12mo toggle. This satisfies the line-graph preference for attendance, fees, revenue, homework rate and grades. Engine: <strong>Recharts via the shadcn Chart wrapper</strong> (themeable via CSS vars → instant dark mode). <span class="tag med">🟡</span></p>
+  <table>
+    <tr><th>Metric</th><th>Chart</th><th>Why</th></tr>
+    <tr><td class="metric">Fee collection / revenue</td><td>Area-line + dashed target</td><td>Time trend; same currency unit = single axis, no dual-axis trap.</td></tr>
+    <tr><td class="metric">Attendance / homework rate</td><td>Line (7-day rolling avg), 0–100% axis</td><td>Smooth the daily noise; overlay an 85% goal line.</td></tr>
+    <tr><td class="metric">Leads → Demos → Enrolled</td><td>Funnel + per-stage %</td><td>Purpose-built for sequential drop-off; pie hides conversion.</td></tr>
+    <tr><td class="metric">Teacher load / capacity</td><td>Sorted horizontal bars + capacity marker</td><td>Comparison across named people, not a time series.</td></tr>
+    <tr><td class="metric">Performance distribution</td><td>Histogram / stacked status bar</td><td>Shows the shape — where the at-risk cluster sits.</td></tr>
+    <tr><td class="metric">Single completion metric</td><td>Radial progress ring</td><td>Glanceable; % in the centre. Never several rings side by side.</td></tr>
+  </table>
+  <p class="muted">Interaction budget per chart: tooltip · crosshair · period toggle · legend toggle · click-to-drill-down · a fast (~400ms) draw-in that respects <code>prefers-reduced-motion</code>. Nothing more.</p>
+
+  <h3>3.5 · Motion system</h3>
+  <div class="grid g2">
+    <div class="card"><h4>Premium (do)</h4><ul>
+      <li>Hover lift: ~2% scale / 1–2px + stronger shadow, <code>150ms</code></li>
+      <li>Count-up KPI numbers on first paint (~0.8s ease-out)</li>
+      <li>Staggered card entrance (40–60ms) — once on load</li>
+      <li>Skeleton loaders that mirror the real layout (loads &gt;0.5s)</li>
+      <li>Chart draw-in on mount; a barely-perceptible “live” pulse dot</li>
+    </ul></div>
+    <div class="card"><h4>Gimmicky (avoid)</h4><ul>
+      <li>Bouncy spring overshoot on everything, &gt;200ms</li>
+      <li>Re-animating numbers/cards on every data refresh</li>
+      <li>Animation for sub-300ms actions</li>
+      <li>Motion with no informational purpose</li>
+      <li>Multiple 3D assets competing with the data</li>
+    </ul></div>
+  </div>
+
+  <h3>3.6 · Interactive elements (ranked by quality-per-hour)</h3>
+  <table>
+    <tr><th>Element</th><th>Effort</th><th>What it does</th></tr>
+    <tr><td class="metric">Segmented toggles + quick-actions</td><td><span class="tag win">🟢</span></td><td>Time range / view mode; row-hover icon actions (message, view, mark present).</td></tr>
+    <tr><td class="metric">Cmd-K command palette</td><td><span class="tag med">🟡</span></td><td>Jump to any student/class/report; run actions. The single strongest “serious SaaS” signal.</td></tr>
+    <tr><td class="metric">Click-to-drill-down (URL-param filters)</td><td><span class="tag med">🟡</span></td><td>At-risk tile → filtered student list; shareable, back-button-safe.</td></tr>
+    <tr><td class="metric">Inline editing (optimistic)</td><td><span class="tag med">🟡</span></td><td>Edit a status/field in place; toast confirm. Removes modal friction.</td></tr>
+    <tr><td class="metric">Multi-view toggle (list/calendar/kanban)</td><td><span class="tag big">🔴</span></td><td>One dataset, several lenses — Students, Leads, Schedule.</td></tr>
+  </table>
+
+  <h3>3.7 · Empty states &amp; the “wow on first login”</h3>
+  <p>A brand-new admin logs into a dashboard with no data — the highest-stakes screen. Every empty state = <strong>what will appear here + why it matters + one obvious CTA</strong>, with an illustrated preview of the populated state (beats “No data yet”). The “wow” stack, all cheap/medium: populated bento grid + count-up KPIs + staggered entrance + a warm empty-state illustration on still-blank sections + a Cmd-K hint. <span class="tag med">🟡</span></p>
+  <div class="callout"><strong>3D / illustration:</strong> use sparingly — one spot per page, at empty states, onboarding, and the login/welcome card. Lightweight SVG, lazy-loaded. It must never push the primary CTA below the fold (fails at 375px).</div>
+</section>
+
+<div class="divider"></div>
+<section id="admin">
+  <h2>4 · Admin — the command centre</h2>
+  <p class="lead">The admin sees everything, so the dashboard must triage, not dump. Lead with money and pipeline, surface what needs attention, and let every number drill into its list.</p>
+
+  <h3>4.1 · Admin dashboard</h3>
+  <p><strong>Row 1 — KPI tiles:</strong> Collected (this month) · Pending/Overdue · Active Students · Active Teachers · New Leads Today · Lead→Enrol %. Each with trend + sparkline; “Overdue” inverts colour (up = bad).</p>
+  <p><strong>Row 2 — the two charts that matter:</strong> Fee-collection area-line vs dashed target (wide), and the Leads→Demos→Enrolled funnel with per-stage % (narrow).</p>
+  <p><strong>Row 3 — act, don’t admire:</strong> an <em>Attention feed</em> (rules layer) beside a <em>Teacher capacity</em> panel and <em>Today’s classes</em>.</p>
+  <div class="mock">
+    <div class="row">
+      <div class="panelbox" style="flex:1;min-width:240px">
+        <div class="ttl">⚠ Needs attention</div>
+        <div class="feeditem"><span class="dot" style="background:#e24b6a"></span><div><strong>4 vouchers overdue</strong><div class="dim" style="font-size:12px">Rs 88k · grace expired — decide Stop / Extend / Mark paid</div></div></div>
+        <div class="feeditem"><span class="dot" style="background:#ef9f27"></span><div><strong>3 demos need a teacher</strong><div class="dim" style="font-size:12px">oldest booked 2 days ago</div></div></div>
+        <div class="feeditem"><span class="dot" style="background:#8b7bf0"></span><div><strong>6 classes unmarked</strong><div class="dim" style="font-size:12px">attendance not recorded yesterday</div></div></div>
+        <div class="feeditem" style="border:0"><span class="dot" style="background:#1d9e75"></span><div><strong>2 students at risk</strong><div class="dim" style="font-size:12px">attendance &lt; 60% this month</div></div></div>
+      </div>
+      <div class="panelbox" style="flex:1;min-width:220px">
+        <div class="ttl">Teacher capacity</div>
+        <div class="barrow"><span style="width:120px" class="muted">M. Muzammal</span><div class="track"><div class="bar" style="width:40%"></div><div style="position:absolute;left:100%;top:-3px;height:14px;width:2px;background:#e24b6a"></div></div><span class="num">2/5</span></div>
+        <div class="barrow"><span style="width:120px" class="muted">Teacher MZ</span><div class="track"><div class="bar" style="width:0%"></div></div><span class="num">0/20</span></div>
+        <div class="barrow"><span style="width:120px" class="muted">S. Aisha</span><div class="track"><div class="bar" style="width:88%;background:linear-gradient(90deg,#ef9f27,#e2603b)"></div></div><span class="num">22/25</span></div>
+        <p class="dim" style="font-size:11px;margin-top:8px">red marker = capacity · sort by load, click a bar to see that teacher’s roster</p>
+      </div>
+    </div>
+  </div>
+  <p class="muted" style="margin-top:8px"><strong>Interactions:</strong> click any KPI → filtered list (Overdue → vouchers filtered to overdue). Cmd-K to jump to a student/voucher. The whole grid can be a toggleable widget set later (Fedena/TeachWorks pattern).</p>
+
+  <h3>4.2 · Admin tabs</h3>
+  <div class="grid g2">
+    <div class="card"><h4>Students <span class="tag win">🟢</span></h4><p class="muted">Add a <strong>list / kanban-by-status / at-risk</strong> view toggle over the same data. Row hover reveals quick-actions (schedule, message, voucher). Each row shows a health chip (Green/Amber/Red) + a tiny attendance sparkline. Detail drawer opens in place (no full page). Top strip: total / active / at-risk / avg attendance KPI tiles.</p></div>
+    <div class="card"><h4>Teachers <span class="tag win">🟢</span></h4><p class="muted">Cards or table with a <strong>capacity bar + load %</strong> per teacher, sortable by load / pay-rate / subjects. Click → profile with today’s schedule and a small “classes taught / students” trend. Surface “available to take another class”.</p></div>
+    <div class="card"><h4>Leads &amp; Demos <span class="tag med">🟡</span></h4><p class="muted">Lead with the <strong>admissions funnel + per-stage conversion %</strong>, filterable by source. Below, a <strong>pipeline kanban</strong> (New → Contacted → Demo booked → Won/Lost) with drag between stages. Lost-reason mini-bar. Rep activity metrics.</p></div>
+    <div class="card"><h4>Booking &amp; Schedule (Demos) <span class="tag win">🟢</span></h4><p class="muted">A <strong>calendar + list toggle</strong>. A <strong>conflict detector</strong> banner when a teacher/room double-books (TeachWorks pattern). “Needs teacher” demos pinned to the top with a one-click assign.</p></div>
+    <div class="card"><h4>Classes / Schedule <span class="tag med">🟡</span></h4><p class="muted">Default to a <strong>week calendar</strong> (colour by subject), with a list fallback. Each class shows the calendar-sync chip (✓ synced / ⚠ no invite). Inline “mark attendance” from the calendar cell. Filter by teacher / subject / student.</p></div>
+    <div class="card"><h4>Homework <span class="tag win">🟢</span></h4><p class="muted">Split: <strong>completion-rate line</strong> (per class over weeks) + a table of assignments with a status pill. Row → submissions with inline grade + comment. Overdue count as a KPI.</p></div>
+    <div class="card"><h4>Assessments <span class="tag med">🟡</span></h4><p class="muted">Grade-trend <strong>multi-line</strong> (per subject vs class average) + <strong>topic/section drill-down</strong> to find weak areas (Edmingle). Optional percentile/cohort benchmark. Result-slip preview keeps the 3 labelled items.</p></div>
+    <div class="card"><h4>Reports <span class="tag med">🟡</span></h4><p class="muted">Turn into a <strong>categorised report library</strong> (Fees · Admissions · Attendance · Academics), each a card that opens a focused view — not one page. Keep the month-end parent-report preview here. Admissions-funnel + lost-reasons live here too.</p></div>
+    <div class="card"><h4>Fee Vouchers <span class="tag win">🟢</span></h4><p class="muted">KPI trio <strong>Collected / Pending / Overdue</strong> + a paid-vs-pending-vs-overdue stacked bar. Table with status pills; row quick-actions: + Payment, Refund, Fee-decision. Instalment tracking; overdue rows flagged red.</p></div>
+    <div class="card"><h4>Payments Ledger <span class="tag win">🟢</span></h4><p class="muted">Keep read-only, but add a <strong>collection-over-time area line</strong> at the top and a method breakdown (bank / cash / wallet). Export + date-range filter. Receipt drawer in place.</p></div>
+    <div class="card"><h4>Teacher Payouts <span class="tag win">🟢</span></h4><p class="muted">Per-teacher <strong>earned vs paid</strong> this month (horizontal bars), a “to pay” total KPI, and a one-click Pay with method. Payout history drawer.</p></div>
+    <div class="card"><h4>Announcements <span class="tag win">🟢</span></h4><p class="muted">Composer + a <strong>role-target selector</strong> (All / Students / Teachers) once targeting is wired. Feed of posted notices with read reach. Support rule-based pushes (overdue, absentee) as “automated” items.</p></div>
+    <div class="card"><h4>Email Queue <span class="tag win">🟢</span></h4><p class="muted">KPIs: queued / sent today / failed / daily-cap remaining. A <strong>sent-over-time line</strong>, status pills, and a manual “run now” (already cron-driven). Failed rows show last error + retry.</p></div>
+    <div class="card"><h4>Marketing <span class="tag med">🟡</span></h4><p class="muted">Source-attribution donut + <strong>cost-per-lead / cost-per-enrol</strong> trend, spend vs enrolments. Channel table sorted by ROI.</p></div>
+    <div class="card"><h4>Settings <span class="tag win">🟢</span></h4><p class="muted">Group into sections (Academy · Branding · Fees &amp; Grace · Integrations · Automation). <strong>Remove or wire the disabled “reference only” fields</strong> before launch. Show integration health (Google, Resend, cron last-run).</p></div>
+    <div class="card"><h4>Audit Log <span class="tag win">🟢</span></h4><p class="muted">Timeline view with actor avatars, action colour-coding, and a search + filter by table/actor/date. Keep it read-only.</p></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="manager">
+  <h2>5 · Manager — the operations view</h2>
+  <p class="lead">The manager gets the <strong>same components as admin, minus the money internals</strong> (payouts, ledger, settings, audit). Their dashboard is operational: people, admissions and schedule — the things they run day to day.</p>
+  <div class="grid g2">
+    <div class="card"><h4>Manager dashboard</h4><p class="muted">KPI row: <strong>Active Students · New Leads Today · Demos Needing Teacher · Conversion % · Classes Today · At-risk</strong>. Then the <strong>admissions funnel</strong> + <strong>today’s schedule</strong> + the same <em>attention feed</em> (minus finance items). Fee amounts collapse to a status count, not rupee figures.</p></div>
+    <div class="card"><h4>What differs from admin</h4><p class="muted">Same Students / Teachers / Leads &amp; Demos / Booking / Classes / Homework / Assessments / Reports / Announcements — identical UI. <strong>Hidden:</strong> Payments, Vouchers, Teacher Payouts, Settings, Audit, Email Queue. Reports show operational + admissions categories, not the finance category.</p></div>
+  </div>
+  <div class="callout">Because the manager reuses admin’s components, this role is essentially free once admin is built — just role-gated visibility. Build admin well and the manager inherits it.</div>
+</section>
+
+<div class="divider"></div>
+
+<section id="teacher">
+  <h2>6 · Teacher — “my today”, built for action</h2>
+  <p class="lead">Teachers need a bit more than a read-only view — they <em>do</em> things: mark attendance, grade, leave class notes, message a parent. Default their landing to today’s work, scoped to themselves.</p>
+  <div class="mock" style="margin:10px 0">
+    <div class="row">
+      <div class="kpi"><div class="lbl">Classes today</div><div class="val num">3</div><div class="chg muted">next 4:00 PM · Maths</div></div>
+      <div class="kpi"><div class="lbl">To grade</div><div class="val num">7</div><div class="chg down">2 overdue</div></div>
+      <div class="kpi"><div class="lbl">My students</div><div class="val num">24</div><div class="chg up">▲ 1 new</div></div>
+      <div class="kpi"><div class="lbl">Attendance to mark</div><div class="val num">1</div><div class="chg muted">yesterday’s class</div></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="panelbox" style="flex:2;min-width:260px"><div class="ttl">Today’s schedule</div>
+        <div class="feeditem"><span class="dot" style="background:#8b7bf0"></span><div><strong>09:00 · Mathematics — Ahmed</strong><div class="dim" style="font-size:12px">Join Meet · Mark attendance · Class note</div></div></div>
+        <div class="feeditem" style="border:0"><span class="dot" style="background:#8b7bf0"></span><div><strong>16:00 · Mathematics — Salman</strong><div class="dim" style="font-size:12px">Join Meet · Mark attendance</div></div></div>
+      </div>
+      <div class="panelbox" style="flex:1;min-width:190px"><div class="ttl">Needs grading</div>
+        <div class="barrow"><span class="muted" style="width:110px">Vectors HW</span><div class="track"><div class="bar" style="width:70%"></div></div><span class="num">7</span></div>
+        <p class="dim" style="font-size:11px;margin-top:8px">click → inline grade + comment</p>
+      </div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h4>Dashboard</h4><p class="muted">“My today”: classes today (with <strong>Join Meet / Mark attendance / Class note</strong> inline), to-grade count, my-students, attendance-to-mark. A small “my classes this week” line. Everything scoped to <code>current_teacher_id()</code>.</p></div>
+    <div class="card"><h4>Classes <span class="tag med">🟡</span></h4><p class="muted">Their week calendar; click a class to <strong>mark attendance inline</strong> (Present/Late/Absent chips), add a class note (can be required before “complete”), and see the Meet link. Past/upcoming split.</p></div>
+    <div class="card"><h4>Students (theirs) <span class="tag win">🟢</span></h4><p class="muted">Only students linked to them. Each with attendance % + homework % + a health chip; quick “message parent” (WhatsApp) and “assign homework”. No fee data.</p></div>
+    <div class="card"><h4>Homework <span class="tag win">🟢</span></h4><p class="muted">Assign (subject/class/due) + a <strong>submissions grid</strong> with inline grading and comments (Toddle-style feedback). Completion-rate line per class.</p></div>
+    <div class="card"><h4>Assessments <span class="tag med">🟡</span></h4><p class="muted">Record tests; see the student’s <strong>grade trend</strong> and topic-level weak spots for their subject. Result-slip preview.</p></div>
+    <div class="card"><h4>Announcements <span class="tag win">🟢</span></h4><p class="muted">Read academy notices (now that teacher read-access is fixed). Optionally post to their own class later.</p></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="student">
+  <h2>7 · Student — progress first, then schedule &amp; fees</h2>
+  <p class="lead">Students/parents want one thing on login: <em>how am I doing?</em> Lead with progress, then what’s next (schedule), then obligations (fees). Everything read-mostly, warm and simple.</p>
+  <div class="mock" style="margin:10px 0">
+    <div class="row">
+      <div class="kpi"><div class="lbl">Attendance</div><div class="val num">92%</div>
+        <svg class="spark" width="100%" height="26" viewBox="0 0 120 26" preserveAspectRatio="none"><polyline fill="none" stroke="#63c07a" stroke-width="2" points="0,14 20,12 40,13 60,9 80,10 100,7 120,6"/></svg></div>
+      <div class="kpi"><div class="lbl">Homework on-time</div><div class="val num">88%</div>
+        <svg class="spark" width="100%" height="26" viewBox="0 0 120 26" preserveAspectRatio="none"><polyline fill="none" stroke="#8b7bf0" stroke-width="2" points="0,12 20,14 40,11 60,12 80,9 100,11 120,8"/></svg></div>
+      <div class="kpi"><div class="lbl">Grade trend</div><div class="val num up">▲ Up</div><div class="chg muted">assessed vs target A*</div></div>
+      <div class="kpi"><div class="lbl">Fee status</div><div class="val num" style="color:#ef9f27">Due</div><div class="chg muted">Rs 20k · by 13 Sep</div></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="panelbox" style="flex:2;min-width:260px"><div class="ttl">Next class</div>
+        <div class="feeditem" style="border:0"><span class="dot" style="background:#8b7bf0"></span><div><strong>Fri 15 Aug · 4:00 PM — Mathematics</strong><div class="dim" style="font-size:12px">with Teacher MZ · Join Google Meet</div></div></div>
+      </div>
+      <div class="panelbox" style="flex:1;min-width:190px"><div class="ttl">This month</div>
+        <div class="barrow"><span class="muted" style="width:90px">Topics done</span><div class="track"><div class="bar" style="width:75%"></div></div><span class="num">6</span></div>
+        <div class="barrow"><span class="muted" style="width:90px">Tests</span><div class="track"><div class="bar" style="width:40%"></div></div><span class="num">2</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="grid g2">
+    <div class="card"><h4>Dashboard</h4><p class="muted">Greet by name. Progress tiles (attendance, homework, grade trend, fee status) + <strong>next class with a Join button</strong> + this-month summary. A gentle “pay fee” nudge if due.</p></div>
+    <div class="card"><h4>Classes <span class="tag win">🟢</span></h4><p class="muted">Their schedule as a clean list <em>and</em> an optional month calendar. Each class: subject, time, teacher, status, <strong>Join Meet</strong>. Past vs upcoming.</p></div>
+    <div class="card"><h4>Homework <span class="tag win">🟢</span></h4><p class="muted">Assigned / submitted / graded with due dates and a completion ring. Grade + teacher comment when marked.</p></div>
+    <div class="card"><h4>Assessments <span class="tag med">🟡</span></h4><p class="muted">Their <strong>grade trend line</strong> per subject (assessed vs target A*), and result slips — no raw scores beyond policy.</p></div>
+    <div class="card"><h4>My Fee Vouchers <span class="tag win">🟢</span></h4><p class="muted">Vouchers with status, amount, due/grace dates, and <strong>how to pay</strong> (bank / wallet) + upload receipt. Optional self-record payment (schema already allows it).</p></div>
+    <div class="card"><h4>Announcements <span class="tag win">🟢</span></h4><p class="muted">Academy notices feed (now visible after the read-policy fix), newest first, unread marker.</p></div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<section id="rollout">
+  <h2>8 · Suggested rollout (biggest perception per hour)</h2>
+  <div class="grid g3">
+    <div class="card"><h4>Phase 1 · cheap wins <span class="tag win">🟢</span></h4><ul>
+      <li>Bento grid on a strict spacing scale</li>
+      <li>KPI stat tiles: number + trend + sparkline</li>
+      <li>Hover lift + count-up numbers + one staggered entrance</li>
+      <li>Segmented time toggles + row quick-actions</li>
+      <li>Single-CTA empty states everywhere</li>
+      <li>Sidebar regroup into People / Academics / Finance / Comms / System</li>
+    </ul></div>
+    <div class="card"><h4>Phase 2 · medium <span class="tag med">🟡</span></h4><ul>
+      <li>Recharts + shadcn charts: area-line + target, funnel, sparklines</li>
+      <li>Skeleton loaders wired to Suspense / <code>loading.tsx</code></li>
+      <li>Chart draw-in + crosshair + tooltips</li>
+      <li>Cmd-K command palette</li>
+      <li>Teacher inline attendance + grading; per-role dashboards</li>
+      <li>Seeded demo data + onboarding checklist for “wow on first login”</li>
+    </ul></div>
+    <div class="card"><h4>Phase 3 · investments <span class="tag big">🔴</span></h4><ul>
+      <li>Click-to-drill-down with URL-param filter state</li>
+      <li>Multi-view toggle (list / calendar / kanban) on Students, Leads, Schedule</li>
+      <li>Inline editing with optimistic UI</li>
+      <li>Drag-and-drop pipeline kanban &amp; widget reorder</li>
+      <li>Small-multiples comparisons; rule-based alert engine</li>
+    </ul></div>
+  </div>
+  <div class="callout"><strong>Cross-cutting:</strong> grayscale-first hierarchy · <code>tabular-nums</code> on every figure · <code>prefers-reduced-motion</code> guards on all motion · test empty states at 375px · charts themed via CSS vars for automatic dark mode.</div>
+  <p class="muted">Recommended first slice to feel the change fast: <strong>rebuild the Admin dashboard as a bento grid with KPI tiles + one area-line + the funnel + the attention feed</strong>, add count-up + hover + skeletons. That single screen is the “wow”, and its components then propagate to every other role and tab.</p>
+</section>
+
+</div>
+<div class="footer"><div class="wrap">Thinkerzz EOS — UI/UX redesign blueprint · research-backed (TeachWorks · Fedena · Classe365 · Gradelink · Edmingle · Teachmint · Digistorm) · for approval before implementation.</div></div>
+</body>
+</html>

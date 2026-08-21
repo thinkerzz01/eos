@@ -31,6 +31,7 @@ export interface DemoSession {
   teacherId: string | null; // NULL for public unassigned bookings
   teacherName: string | null;
   scheduledTime: string; // ISO string or formatted PKT time
+  scheduledISO?: string; // raw UTC ISO - used to prefill the reschedule form
   durationMinutes: number;
   meetingLink: string;
   status: 'Scheduled' | 'Completed' | 'Cancelled' | 'Reassigned';

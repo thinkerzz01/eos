@@ -15,14 +15,20 @@ export function ResetPasswordControl({
   kind,
   label = 'Reset Password',
   variant = 'menu',
+  autoOpen = false,
+  onClose,
 }: {
   id: string;
   kind: 'teacher' | 'student';
   label?: string;
   variant?: 'menu' | 'icon';
+  // Headless mode: no trigger button, dialog opens immediately (used from a
+  // fixed-position row menu). onClose fires when the dialog is dismissed.
+  autoOpen?: boolean;
+  onClose?: () => void;
 }) {
   const { showToast } = useToast();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(autoOpen);
   const [busy, setBusy] = useState(false);
   const [temp, setTemp] = useState<string | null>(null);
   const [tempEmail, setTempEmail] = useState<string | null>(null);
@@ -65,11 +71,12 @@ export function ResetPasswordControl({
     setTemp(null);
     setTempEmail(null);
     setCopied(false);
+    onClose?.();
   };
 
   return (
     <>
-      {variant === 'icon' ? (
+      {autoOpen ? null : variant === 'icon' ? (
         <button
           type="button"
           onClick={() => setOpen(true)}

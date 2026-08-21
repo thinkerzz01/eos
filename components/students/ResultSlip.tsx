@@ -29,7 +29,7 @@ export function ResultSlip({
       <div className="border-b border-slate-200 dark:border-slate-800 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <Award className="w-5 h-5 text-[#5A31F4]" />
+            <Award className="w-5 h-5 text-[#5B47D6]" />
             <h3 className="font-heading text-lg font-bold text-slate-900 dark:text-slate-100">
               CAIE Academic Result Slip
             </h3>
@@ -39,7 +39,7 @@ export function ResultSlip({
           </p>
         </div>
 
-        <div className="px-3 py-1 bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 rounded-xl text-xs font-bold text-[#5A31F4] dark:text-purple-300 self-start sm:self-auto">
+        <div className="px-3 py-1 bg-purple-50 dark:bg-purple-950/50 border border-purple-200 dark:border-purple-800 rounded-xl text-xs font-bold text-[#5B47D6] dark:text-purple-300 self-start sm:self-auto">
           Cambridge Scale (A*-U)
         </div>
       </div>
@@ -64,7 +64,7 @@ export function ResultSlip({
               </th>
               <th className="px-4 py-3 text-center">
                 <div className="flex items-center justify-center gap-1">
-                  <Target className="w-3.5 h-3.5 text-[#5A31F4]" />
+                  <Target className="w-3.5 h-3.5 text-[#5B47D6]" />
                   <span>Target Grade</span>
                 </div>
               </th>
@@ -93,7 +93,7 @@ export function ResultSlip({
                   )}
                 </td>
                 <td className="px-4 py-3.5 text-center">
-                  <span className="font-heading font-bold text-[#5A31F4] dark:text-purple-300 px-3 py-1 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 rounded-lg text-sm">
+                  <span className="font-heading font-bold text-[#5B47D6] dark:text-purple-300 px-3 py-1 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 dark:border-purple-800 rounded-lg text-sm">
                     {g.targetGrade || 'A*'}
                   </span>
                 </td>
@@ -107,7 +107,7 @@ export function ResultSlip({
       <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl flex items-start gap-2 text-xs text-slate-500 dark:text-slate-400">
         <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
         <p>
-          <strong className="text-slate-700 dark:text-slate-300">Policy Note:</strong> Target Grade defaults to <span className="font-bold text-[#5A31F4]">A*</span> at enrollment. Assessed Grade is assigned by the subject teacher after each formal test cycle. The monthly parent report references only the assessed-grade trend (up / same / down), keeping raw scores separate.
+          <strong className="text-slate-700 dark:text-slate-300">Policy Note:</strong> Target Grade defaults to <span className="font-bold text-[#5B47D6]">A*</span> at enrollment. Assessed Grade is assigned by the subject teacher after each formal test cycle. The monthly parent report references only the assessed-grade trend (up / same / down), keeping raw scores separate.
         </p>
       </div>
     </div>

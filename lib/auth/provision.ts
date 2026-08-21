@@ -140,7 +140,7 @@ export async function provisionLogin(opts: {
     `After setting it, sign in at ${portalUrl()}/login with this email.\n\n` +
     `${saveContactNote}\nSave contact: ${contactCardUrl}\n\n` +
     (waNumber ? `Need help? Contact us on WhatsApp: https://wa.me/${waNumber.replace(/\D/g, '')}\n\n` : '') +
-    `- Thinkerzz Academy`;
+    `- Thinkerzz`;
   const html = renderEmailHtml({
     heading: `Welcome to Thinkerzz, ${opts.name}`,
     preheader: 'Set your password to access your Thinkerzz portal.',

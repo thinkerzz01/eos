@@ -68,7 +68,7 @@ export function DataTable<T>({
                 onClick={() => onFilterChange?.(chip.id)}
                 className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                   activeFilter === chip.id
-                    ? 'bg-[#5A31F4] text-white shadow-sm shadow-[#5A31F4]/20'
+                    ? 'bg-[#5B47D6] text-white shadow-sm shadow-[#5B47D6]/20'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
                 }`}
               >
@@ -108,7 +108,7 @@ export function DataTable<T>({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder={searchPlaceholder}
-              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-xs font-medium pl-9 pr-3.5 py-2 rounded-xl focus:outline-none focus:border-[#5A31F4] placeholder:text-slate-400 transition-colors"
+              className="w-full bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-xs font-medium pl-9 pr-3.5 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6] placeholder:text-slate-400 transition-colors"
             />
           </div>
         </div>

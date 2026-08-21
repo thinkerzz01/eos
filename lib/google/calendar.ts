@@ -137,6 +137,56 @@ export async function createMeetEvent(input: MeetEventInput): Promise<MeetEventR
   }
 }
 
+/** Move/patch an existing calendar event's time (and optionally its title +
+ *  description). `sendUpdates=all` re-notifies the student and teacher. Best-effort:
+ *  returns a structured result so the caller can tell the admin WHY it did not sync. */
+export async function updateCalendarEvent(
+  eventId: string,
+  input: { startISO: string; endISO: string; summary?: string; description?: string }
+): Promise<{ ok: boolean; reason?: CalendarSyncReason }> {
+  if (!eventId) return { ok: false, reason: 'api_error' };
+  if (!googleConfigured()) return { ok: false, reason: 'not_configured' };
+  const token = await getAccessToken();
+  if (!token) return { ok: false, reason: 'auth_failed' };
+  const calendarId = process.env.GOOGLE_CALENDAR_ID || 'primary';
+  const body: any = {
+    start: { dateTime: input.startISO, timeZone: 'Asia/Karachi' },
+    end: { dateTime: input.endISO, timeZone: 'Asia/Karachi' },
+  };
+  if (input.summary) body.summary = input.summary;
+  if (input.description) body.description = input.description;
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}?sendUpdates=all`,
+      { method: 'PATCH', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }
+    );
+    if (!res.ok) return { ok: false, reason: 'api_error' };
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: 'api_error' };
+  }
+}
+
+/** Cancel/delete a calendar event; `sendUpdates=all` drops it from the student's
+ *  and teacher's calendars. A 404/410 (already gone) counts as success. Best-effort. */
+export async function deleteCalendarEvent(eventId: string): Promise<{ ok: boolean; reason?: CalendarSyncReason }> {
+  if (!eventId) return { ok: true }; // nothing to cancel
+  if (!googleConfigured()) return { ok: false, reason: 'not_configured' };
+  const token = await getAccessToken();
+  if (!token) return { ok: false, reason: 'auth_failed' };
+  const calendarId = process.env.GOOGLE_CALENDAR_ID || 'primary';
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/calendar/v3/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}?sendUpdates=all`,
+      { method: 'DELETE', headers: { Authorization: `Bearer ${token}` } }
+    );
+    if (!res.ok && res.status !== 404 && res.status !== 410) return { ok: false, reason: 'api_error' };
+    return { ok: true };
+  } catch {
+    return { ok: false, reason: 'api_error' };
+  }
+}
+
 /**
  * Build a clean, professional calendar title + description for a class or demo
  * invite. No emojis (reads as unprofessional); plain hyphen bullets. The teacher

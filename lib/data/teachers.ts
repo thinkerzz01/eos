@@ -22,8 +22,9 @@ function teacherScore(rating: number, reliability: number, d: DemoStat): number 
   return Math.round(0.45 * ratingPct + 0.35 * convPct + 0.2 * reliability);
 }
 
-function mapRow(r: any, demo: DemoStat): Teacher {
-  const status: Teacher['status'] = r.status === 'on_leave' ? 'On Leave' : 'Teaching';
+function mapRow(r: any, demo: DemoStat, subjects: string[], programs: string[], load: number): Teacher {
+  const isLeft = !!r.left_at || r.status === 'left';
+  const status: Teacher['status'] = isLeft ? 'Left' : r.status === 'on_leave' ? 'On Leave' : 'Teaching';
   // RLS returns pay rates only to an Admin; for everyone else this is empty -> 0.
   const rates: any[] = Array.isArray(r.teacher_pay_rates) ? r.teacher_pay_rates : [];
   const latestRate = rates
@@ -36,10 +37,10 @@ function mapRow(r: any, demo: DemoStat): Teacher {
     email: r.email,
     phone: r.phone,
     joinDate: r.join_date,
-    subjects: [],       // from teacher_subjects (later slice)
-    programs: [],
+    subjects,           // from teacher_subjects
+    programs,           // distinct programs of those subjects
     capacity: r.capacity,
-    currentLoad: 0,     // from class_sessions (Phase 4)
+    currentLoad: load,  // enrolled student_subjects for this teacher
     perClassPay: latestRate ? Number(latestRate.rate_per_class) : 0,
     score: teacherScore(Number(r.rating || 0), Number(r.reliability || 0), demo),
     rating: r.rating,
@@ -58,17 +59,59 @@ function mapRow(r: any, demo: DemoStat): Teacher {
 export async function getTeachers(): Promise<Teacher[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
-  const { data, error } = await supabase
+  const baseCols =
+    'id,name,email,phone,capacity,status,rating,reliability,join_date,city,teacher_pay_rates(rate_per_class,effective_from)';
+  // Try to read the optional "left the academy" columns; fall back gracefully if
+  // the migration (left_at / leaving_reason) has not been applied yet, so the
+  // page never breaks before the SQL is run.
+  let data: any = null;
+  let error: any = null;
+  const rich = await supabase
     .from('teachers')
-    .select('id,name,email,phone,capacity,status,rating,reliability,join_date,city,teacher_pay_rates(rate_per_class,effective_from)')
+    .select(`${baseCols},left_at,leaving_reason`)
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
+  if (rich.error) {
+    const basic = await supabase
+      .from('teachers')
+      .select(baseCols)
+      .is('deleted_at', null)
+      .order('created_at', { ascending: false });
+    data = basic.data;
+    error = basic.error;
+  } else {
+    data = rich.data;
+  }
 
   if (error || !data) return [];
+
+  // Subjects + programs per teacher (from teacher_subjects), and enrolled load
+  // (from student_subjects). Both RLS-scoped. Empty until those links exist.
+  const [{ data: tsRows }, { data: ssRows }] = await Promise.all([
+    supabase.from('teacher_subjects').select('teacher_id,subjects(name,program)').is('deleted_at', null),
+    supabase.from('student_subjects').select('teacher_id').is('deleted_at', null),
+  ]);
+  const subjBy = new Map<string, Set<string>>();
+  const progBy = new Map<string, Set<string>>();
+  for (const row of (tsRows as any[]) ?? []) {
+    const tid = row.teacher_id as string;
+    const subj = Array.isArray(row.subjects) ? row.subjects[0] : row.subjects;
+    if (!tid || !subj) continue;
+    if (!subjBy.has(tid)) subjBy.set(tid, new Set());
+    if (!progBy.has(tid)) progBy.set(tid, new Set());
+    if (subj.name) subjBy.get(tid)!.add(subj.name);
+    if (subj.program) progBy.get(tid)!.add(subj.program);
+  }
+  const loadBy = new Map<string, number>();
+  for (const row of (ssRows as any[]) ?? []) {
+    const tid = (row as any).teacher_id as string;
+    if (tid) loadBy.set(tid, (loadBy.get(tid) ?? 0) + 1);
+  }
 
   // Rolling 90-day demo conversion per teacher (Master Plan §6.3): count only
   // demos that have a recorded outcome; converted = won.
@@ -89,5 +132,13 @@ export async function getTeachers(): Promise<Teacher[]> {
     byTeacher.set(id, e);
   }
 
-  return (data as any[]).map((r) => mapRow(r, byTeacher.get(r.id) ?? { completed: 0, converted: 0 }));
+  return (data as any[]).map((r) =>
+    mapRow(
+      r,
+      byTeacher.get(r.id) ?? { completed: 0, converted: 0 },
+      Array.from(subjBy.get(r.id) ?? []).sort(),
+      Array.from(progBy.get(r.id) ?? []).sort(),
+      loadBy.get(r.id) ?? 0
+    )
+  );
 }

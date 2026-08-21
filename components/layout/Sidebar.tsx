@@ -9,6 +9,7 @@ import {
   Users,
   UserCheck,
   Calendar,
+  CalendarCheck,
   BookOpen,
   GraduationCap,
   Receipt,
@@ -85,15 +86,15 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
       groupLabel: 'Admissions',
       items: [
         {
-          label: 'Leads & Demos',
-          href: '/leads',
-          icon: Users,
+          label: 'Demos & Schedule',
+          href: '/demos',
+          icon: UserCheck,
           allowedRoles: ['admin', 'manager'],
         },
         {
-          label: 'Booking & Schedule',
-          href: '/demos',
-          icon: UserCheck,
+          label: 'Leads',
+          href: '/leads',
+          icon: Users,
           allowedRoles: ['admin', 'manager'],
         },
         {
@@ -107,6 +108,18 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
     {
       groupLabel: 'Academic',
       items: [
+        {
+          label: 'Subjects',
+          href: '/subjects',
+          icon: BookOpen,
+          allowedRoles: ['admin', 'manager'],
+        },
+        {
+          label: 'Attendance',
+          href: '/attendance',
+          icon: CalendarCheck,
+          allowedRoles: ['admin', 'manager', 'teacher'],
+        },
         {
           label: 'Homework',
           href: '/homework',
@@ -131,15 +144,15 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
       groupLabel: 'Finance',
       items: [
         {
-          label: 'Payments Ledger',
-          href: '/payments',
-          icon: DollarSign,
-          allowedRoles: ['admin'],
-        },
-        {
           label: 'Fee Vouchers',
           href: '/vouchers',
           icon: Receipt,
+          allowedRoles: ['admin'],
+        },
+        {
+          label: 'Receipts',
+          href: '/payments',
+          icon: DollarSign,
           allowedRoles: ['admin'],
         },
         {

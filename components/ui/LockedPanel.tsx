@@ -11,7 +11,7 @@ interface LockedPanelProps {
 
 export function LockedPanel({
   title = 'Access Restricted',
-  description = 'You do not have permission to view this section. Permission enforcement is strictly controlled at the database level via Row-Level Security (RLS).',
+  description = 'You do not have permission to view this section. Please contact the academy owner if you need access.',
   requiredRole = 'Admin',
 }: LockedPanelProps) {
   return (

@@ -48,10 +48,14 @@ export function renderEmailHtml(opts: {
        </td></tr></table>`
     : '';
 
-  const waDigits = (opts.whatsapp?.number ?? '').replace(/\D/g, '');
+  // WhatsApp "need help" button on EVERY email by default (uses the academy number
+  // unless a caller passes its own). Pass whatsapp:null-equivalent is not supported;
+  // it is intentionally always shown so recipients can reach us in one tap.
+  const waNumber = opts.whatsapp?.number ?? process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP ?? '';
+  const waDigits = waNumber.replace(/\D/g, '');
   const whatsapp = waDigits
     ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:2px 0 8px;"><tr><td style="border-radius:10px;background:${WA_GREEN};">
-         <a href="https://wa.me/${waDigits}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">${esc(opts.whatsapp!.label ?? 'Contact us on WhatsApp')}</a>
+         <a href="https://wa.me/${waDigits}" style="display:inline-block;padding:11px 22px;font-size:14px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:10px;">${esc(opts.whatsapp?.label ?? 'Need help? Message us on WhatsApp')}</a>
        </td></tr></table>`
     : '';
 
@@ -63,23 +67,25 @@ export function renderEmailHtml(opts: {
     ? `<h1 style="margin:0 0 14px;font-size:20px;font-weight:800;color:${INK};">${esc(opts.heading)}</h1>`
     : '';
 
-  // Use a hosted logo image if one is configured, otherwise the text wordmark.
-  const logoUrl = process.env.NEXT_PUBLIC_EMAIL_LOGO_URL;
-  const header = logoUrl
-    ? `<img src="${logoUrl}" alt="Thinkerzz" height="34" style="height:34px;display:block;border:0;" />`
-    : `<span style="font-size:18px;font-weight:800;letter-spacing:0.5px;color:#ffffff;">THINKERZZ</span>
-       <span style="display:block;font-size:11px;font-weight:600;letter-spacing:1px;color:#e5e0ff;text-transform:uppercase;margin-top:2px;">Question. Think. Achieve.</span>`;
+  // Brand logo (dark version) on a white header on every email. Emails require an
+  // absolute, publicly-reachable URL, so default to the logo served from the
+  // portal domain; NEXT_PUBLIC_EMAIL_LOGO_URL can override it.
+  const portalBase = (process.env.NEXT_PUBLIC_PORTAL_URL ?? 'https://portal.thinkerzz.com').replace(/\/$/, '');
+  const logoUrl = process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || `${portalBase}/logo-light.png`;
+  const header = `<img src="${logoUrl}" alt="Thinkerzz" height="28" style="height:28px;width:auto;display:block;border:0;" />`;
 
-  const footer = opts.footerNote ?? `© ${new Date().getFullYear()} Thinkerzz Academy. This is an automated message, please do not reply.`;
+  const footer = opts.footerNote ?? `© ${new Date().getFullYear()} Thinkerzz. This is an automated message, please do not reply.`;
 
   return `<!doctype html><html><body style="margin:0;padding:0;background:#F6F7FB;">
 ${preheader}
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F7FB;padding:24px 12px;">
   <tr><td align="center">
     <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;border:1px solid #EBEDF3;">
-      <tr><td style="background:${BRAND};padding:18px 24px;">${header}</td></tr>
+      <tr><td style="background:#ffffff;padding:18px 24px;border-bottom:1px solid #EBEDF3;">${header}</td></tr>
       <tr><td style="padding:26px 24px 6px;">${heading}${paras}${ctaButton}${ctaFallback}${secondary}${whatsapp}</td></tr>
-      <tr><td style="padding:14px 24px 22px;border-top:1px solid #EBEDF3;">
+      <tr><td style="padding:16px 24px 22px;border-top:1px solid #EBEDF3;">
+        <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${INK};">Thinkerzz</p>
+        <p style="margin:0 0 10px;font-size:12px;color:${MUTED};">Question. Think. Achieve.</p>
         <p style="margin:0;font-size:12px;color:${MUTED};">${esc(footer)}</p>
       </td></tr>
     </table>

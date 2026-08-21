@@ -30,7 +30,7 @@ function fmtDate(iso: string): string {
   });
 }
 
-function mapRow(r: any): ScheduledClass {
+function mapRow(r: any, attendance?: Map<string, string>, notes?: Map<string, string>): ScheduledClass {
   const subject = one<any>(r.subjects);
   const teacher = one<any>(r.teachers);
   const student = one<any>(r.students);
@@ -40,6 +40,7 @@ function mapRow(r: any): ScheduledClass {
     studentId: r.student_id ?? '',
     studentName: student?.name ?? '',
     subject: subject?.name ?? '',
+    subjectId: r.subject_id ?? '',
     program: student?.program ?? '',
     grade: '',
     teacherId: r.teacher_id ?? '',
@@ -48,27 +49,56 @@ function mapRow(r: any): ScheduledClass {
     startAt: fmtTime(r.start_at),
     endAt: fmtTime(r.end_at),
     date: fmtDate(r.start_at),
+    startAtISO: r.start_at,
+    endAtISO: r.end_at,
     status: STATUS_UI[r.status as string] ?? 'Scheduled',
     room: '',
     isCharged: r.type !== 'makeup', // Makeups are never charged again
     enrolledStudentsCount: 1,
     meetingLink: r.meeting_link ?? '',
+    attendanceStatus: (attendance?.get(r.id) as ScheduledClass['attendanceStatus']) ?? '',
+    classNote: notes?.get(r.id) ?? '',
   };
 }
 
 export async function getSchedule(): Promise<ScheduledClass[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const { data, error } = await supabase
     .from('class_sessions')
-    .select('id,student_id,teacher_id,type,start_at,end_at,status,meeting_link,subjects(name),teachers(name),students(name,program)')
+    .select('id,student_id,subject_id,teacher_id,type,start_at,end_at,status,meeting_link,subjects(name),teachers(name),students(name,program)')
     .is('deleted_at', null)
     .order('start_at', { ascending: true });
 
   if (error || !data) return [];
-  return (data as any[]).map(mapRow);
+
+  // Recorded attendance per session (RLS-scoped). Latest row wins if the old
+  // duplicate-insert bug left more than one per session.
+  const { data: attRows } = await supabase
+    .from('attendance')
+    .select('session_id,status,created_at')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true });
+  const attBy = new Map<string, string>();
+  for (const a of (attRows as any[]) ?? []) {
+    if (a.session_id) attBy.set(a.session_id, a.status); // ascending order -> last set is newest
+  }
+
+  // Teacher class notes per session (latest wins).
+  const { data: noteRows } = await supabase
+    .from('class_notes')
+    .select('session_id,note,created_at')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: true });
+  const noteBy = new Map<string, string>();
+  for (const n of (noteRows as any[]) ?? []) {
+    if (n.session_id) noteBy.set(n.session_id, n.note);
+  }
+
+  return (data as any[]).map((r) => mapRow(r, attBy, noteBy));
 }

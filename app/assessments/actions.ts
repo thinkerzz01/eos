@@ -60,3 +60,66 @@ export async function recordTest(input: {
   revalidatePath('/');
   return { ok: true };
 }
+
+/** Correct a recorded test's name / date / score. RLS enforces write permission. */
+export async function updateTest(input: {
+  testId: string;
+  name?: string;
+  date?: string;
+  score?: number;
+  maxScore?: number;
+}): Promise<ActionResult> {
+  if (!input.testId) return { ok: false, error: 'Missing test id.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const patch: Record<string, any> = {};
+  if (input.name?.trim()) patch.name = input.name.trim();
+  if (input.date) patch.date = input.date;
+  const hasScore = input.score != null && !Number.isNaN(Number(input.score));
+  const hasMax = input.maxScore != null && !Number.isNaN(Number(input.maxScore));
+  const score = hasScore ? Number(input.score) : undefined;
+  const maxScore = hasMax ? Number(input.maxScore) : undefined;
+  if (score != null) {
+    if (score < 0) return { ok: false, error: 'Enter a valid score.' };
+    patch.score = score;
+  }
+  if (maxScore != null) {
+    if (maxScore <= 0) return { ok: false, error: 'Enter a valid maximum.' };
+    patch.max_score = maxScore;
+  }
+  if (score != null && maxScore != null && score > maxScore) {
+    return { ok: false, error: 'Score cannot exceed the maximum marks.' };
+  }
+  if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
+
+  const { error } = await supabase.from('tests').update(patch).eq('id', input.testId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/assessments');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/** Soft-delete a recorded test (e.g. entered by mistake). RLS enforces permission. */
+export async function deleteTest(testId: string): Promise<ActionResult> {
+  if (!testId) return { ok: false, error: 'Missing test id.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('tests')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', testId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/assessments');
+  revalidatePath('/');
+  return { ok: true };
+}

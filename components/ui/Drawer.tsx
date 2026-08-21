@@ -58,6 +58,7 @@ export function Drawer({
             </div>
             <button
               onClick={onClose}
+              aria-label="Close"
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-100 hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
             >
               <X className="w-5 h-5" />
@@ -73,7 +74,7 @@ export function Drawer({
                   onClick={() => onTabChange?.(tab.id)}
                   className={`py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'border-[#5A31F4] text-[#5A31F4] dark:border-purple-400 dark:text-purple-300'
+                      ? 'border-[#5B47D6] text-[#5B47D6] dark:border-purple-400 dark:text-purple-300'
                       : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
                   }`}
                 >

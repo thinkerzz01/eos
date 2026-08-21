@@ -1,30 +1,10 @@
 import type { Metadata } from 'next';
-import { Inter, Plus_Jakarta_Sans } from 'next/font/google';
+import { Inter, Plus_Jakarta_Sans, DM_Sans } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ThemeProvider } from '@/components/ui/ThemeContext';
 import { RoleProvider } from '@/components/ui/RoleContext';
-import type { UserRole } from '@/components/layout/Sidebar';
-import { createClient } from '@/lib/supabase/server';
-
-// Authoritative role, read server-side from the signed-in user's profile.
-// Defaults to 'student' (least privilege) for public pages / no session.
-async function getServerRole(): Promise<UserRole> {
-  try {
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) return 'student';
-    // Use the SECURITY DEFINER helper so role resolution does NOT depend on a
-    // per-role RLS read policy on `profiles` (non-admins have none, which made
-    // every non-admin fall back to 'student' and land on the student portal).
-    const { data: role } = await supabase.rpc('current_user_role');
-    return ((role as UserRole) ?? 'student');
-  } catch {
-    return 'student';
-  }
-}
+import { getServerRole } from '@/lib/auth/serverRole';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -35,6 +15,12 @@ const inter = Inter({
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
   variable: '--font-plus-jakarta',
+  display: 'swap',
+});
+
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  variable: '--font-dmsans',
   display: 'swap',
 });
 
@@ -54,10 +40,16 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${plusJakarta.variable}`}
+      className={`${inter.variable} ${plusJakarta.variable} ${dmSans.variable}`}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased bg-[#F6F7FB] text-[#171A2B] transition-colors duration-200">
+        {/* Apply the saved global text size before paint (set in Settings). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "try{var s=localStorage.getItem('tz-ui-scale');if(s&&s!=='100')document.documentElement.style.fontSize=s+'%';}catch(e){}",
+          }}
+        />
         <ThemeProvider>
           <RoleProvider role={role}>
             <ToastProvider>{children}</ToastProvider>

@@ -55,6 +55,10 @@ export async function saveSettings(input: {
   academyName: string;
   academicYear: string;
   gracePeriodDays: number;
+  bankTitle?: string;
+  bankAccountNo?: string;
+  bankIban?: string;
+  walletInfo?: string;
 }): Promise<ActionResult> {
   const supabase = createClient();
   const {
@@ -80,6 +84,14 @@ export async function saveSettings(input: {
     .eq('id', orgId);
   if (orgErr) return { ok: false, error: orgErr.message };
 
+  const bankPatch = {
+    grace_days: grace,
+    bank_title: input.bankTitle?.trim() || null,
+    bank_account_no: input.bankAccountNo?.trim() || null,
+    bank_iban: input.bankIban?.trim() || null,
+    wallet_info: input.walletInfo?.trim() || null,
+  };
+
   // settings has one row per org (org_id UNIQUE) - update if present, else insert.
   const { data: existing } = await supabase
     .from('settings')
@@ -88,11 +100,21 @@ export async function saveSettings(input: {
     .is('deleted_at', null)
     .maybeSingle();
 
-  const settingsErr = existing
-    ? (await supabase.from('settings').update({ grace_days: grace }).eq('org_id', orgId)).error
-    : (await supabase.from('settings').insert({ org_id: orgId, grace_days: grace })).error;
+  const writeSettings = (patch: Record<string, any>) =>
+    existing
+      ? supabase.from('settings').update(patch).eq('org_id', orgId)
+      : supabase.from('settings').insert({ org_id: orgId, ...patch });
+
+  let { error: settingsErr } = await writeSettings(bankPatch);
+  // If the settings_bank_info migration is not applied yet, the bank_* columns
+  // do not exist - retry with just grace_days so saving still works.
+  if (settingsErr && /bank_title|bank_account_no|bank_iban|wallet_info|column .* does not exist|schema cache/i.test(settingsErr.message)) {
+    ({ error: settingsErr } = await writeSettings({ grace_days: grace }));
+  }
   if (settingsErr) return { ok: false, error: settingsErr.message };
 
   revalidatePath('/settings');
+  revalidatePath('/vouchers');
+  revalidatePath('/fees');
   return { ok: true };
 }

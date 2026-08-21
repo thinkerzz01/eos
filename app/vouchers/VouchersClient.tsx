@@ -7,7 +7,11 @@ import { useRouter } from 'next/navigation';
 import { useRole } from '@/components/ui/RoleContext';
 import { FeeVoucher, PaymentTransaction } from '@/lib/mockFinanceData';
 import type { PaymentInfo } from '@/lib/config/paymentInfo';
-import { recordPayment, issueRefund, adminFeeDecision, createVoucher } from './actions';
+import { recordPayment, issueRefund, adminFeeDecision, createVoucher, updateVoucher, generateMonthlyVouchers } from './actions';
+import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
+import { downloadCsv } from '@/lib/export/csv';
 import {
   Receipt,
   Plus,
@@ -27,6 +31,8 @@ import {
   ArrowDownRight,
   TrendingDown,
   Sparkles,
+  Eye,
+  Edit3,
 } from 'lucide-react';
 
 // Add N days to a YYYY-MM-DD date, returned as YYYY-MM-DD (PKT calendar).
@@ -98,6 +104,27 @@ export function VouchersClient({
   useEffect(() => { setVouchersList(initialVouchers); }, [initialVouchers]);
   useEffect(() => { setPaymentsList(initialPayments); }, [initialPayments]);
 
+  // GENERATE THIS MONTH'S VOUCHERS
+  const [showGenerate, setShowGenerate] = useState(false);
+  const [genDueDate, setGenDueDate] = useState('');
+  const [generating, setGenerating] = useState(false);
+  const [genError, setGenError] = useState<string | null>(null);
+  const handleGenerate = async () => {
+    setGenError(null);
+    if (!genDueDate) { setGenError('Pick a due date.'); return; }
+    setGenerating(true);
+    const res = await generateMonthlyVouchers({ period: monthLabelPKT(genDueDate), dueDate: genDueDate });
+    setGenerating(false);
+    if (res.ok) {
+      setShowGenerate(false);
+      setGenDueDate('');
+      router.refresh();
+      alert(`${res.created} voucher${res.created === 1 ? '' : 's'} generated for ${monthLabelPKT(genDueDate)}` + (res.skipped ? ` · ${res.skipped} skipped (already invoiced or no fee set).` : '.'));
+    } else {
+      setGenError(res.error ?? 'Failed to generate vouchers.');
+    }
+  };
+
   // CREATE VOUCHER MODAL STATE
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newStudentId, setNewStudentId] = useState('');
@@ -107,6 +134,33 @@ export function VouchersClient({
   const [creating, setCreating] = useState(false);
   const [selectedStatusTab, setSelectedStatusTab] = useState<string>('All Vouchers');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  const [dateRange, setDateRange] = useState<'all' | '7' | '30' | 'custom'>('all');
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+
+  // Modify voucher
+  const [editVoucher, setEditVoucher] = useState<FeeVoucher | null>(null);
+  const [edAmount, setEdAmount] = useState('');
+  const [edDue, setEdDue] = useState('');
+  const [edSaving, setEdSaving] = useState(false);
+  const [edError, setEdError] = useState<string | null>(null);
+  const openEditVoucher = (v: FeeVoucher) => {
+    setEditVoucher(v); setEdAmount(String(v.totalAmount)); setEdDue(v.dueDate || ''); setEdError(null);
+  };
+  const handleUpdateVoucher = async () => {
+    if (!editVoucher) return;
+    setEdError(null);
+    const amt = parseFloat(edAmount);
+    if (Number.isNaN(amt) || amt <= 0) { setEdError('Enter a valid amount.'); return; }
+    setEdSaving(true);
+    const res = await updateVoucher({ voucherId: editVoucher.id, amount: amt, dueDate: edDue || undefined });
+    setEdSaving(false);
+    if (res.ok) { setEditVoucher(null); router.refresh(); }
+    else setEdError(res.error ?? 'Failed to update the voucher.');
+  };
+  const sendVoucherWa = (v: FeeVoucher) => {
+    window.open(`https://wa.me/${waDigits(v.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(v, paymentInfo))}`, '_blank');
+  };
 
   // MODAL STATES
   const [partialPayVoucher, setPartialPayVoucher] = useState<FeeVoucher | null>(null);
@@ -129,6 +183,20 @@ export function VouchersClient({
       if (selectedStatusTab === 'Stopped' && v.status !== 'Stopped') return false;
       if (selectedStatusTab === 'Needs Admin Decision' && !v.needsAdminDecision) return false;
 
+      // Date range (by due date)
+      if (dateRange !== 'all' && v.dueDate) {
+        const t = new Date(`${v.dueDate}T00:00:00+05:00`).getTime();
+        if (!Number.isNaN(t)) {
+          const now = Date.now();
+          if (dateRange === '7' && t < now - 7 * 864e5) return false;
+          if (dateRange === '30' && t < now - 30 * 864e5) return false;
+          if (dateRange === 'custom') {
+            if (fromDate && t < new Date(`${fromDate}T00:00:00`).getTime()) return false;
+            if (toDate && t > new Date(`${toDate}T23:59:59`).getTime()) return false;
+          }
+        }
+      }
+
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesStudent = v.studentName.toLowerCase().includes(q);
@@ -138,7 +206,7 @@ export function VouchersClient({
 
       return true;
     });
-  }, [vouchersList, selectedStatusTab, searchQuery]);
+  }, [vouchersList, selectedStatusTab, searchQuery, dateRange, fromDate, toDate]);
 
   // HANDLE PARTIAL / FULL PAYMENT (persists via server action, RLS-enforced)
   const handleRecordPayment = async () => {
@@ -241,9 +309,9 @@ export function VouchersClient({
           <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
             <Lock className="w-7 h-7" />
           </div>
-          <h2 className="font-heading font-extrabold text-xl text-slate-900">Access Denied (RLS Level Security)</h2>
+          <h2 className="font-heading font-extrabold text-xl text-slate-900">Access restricted</h2>
           <p className="text-xs text-[#6B7185] leading-relaxed">
-            Per <strong>AGENTS.md §3.3</strong>, Manager tokens are strictly denied access at the database level to all finance tables (<code className="bg-slate-100 px-1 py-0.5 rounded">vouchers</code>, <code className="bg-slate-100 px-1 py-0.5 rounded">payments</code>, <code className="bg-slate-100 px-1 py-0.5 rounded">refunds</code>).
+            Fee vouchers, receipts and refunds are visible to the Admin only. Please contact the academy owner if you need access.
           </p>
         </div>
       </PortalLayout>
@@ -258,7 +326,7 @@ export function VouchersClient({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
             <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Fee Vouchers & Fee Cycle (Admin Only)</span>
+              <span>Fee Vouchers</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
               No late fees. 3-day grace period. Partial payments & negative refund transactions.
@@ -271,17 +339,68 @@ export function VouchersClient({
               className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
             >
               <Receipt className="w-3.5 h-3.5 text-[#5B47D6]" />
-              <span>Payments Ledger →</span>
+              <span>Receipts →</span>
             </Link>
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="h-[38px] px-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            <Button
+              variant="secondary"
+              onClick={() =>
+                downloadCsv(
+                  'Thinkerzz_Vouchers',
+                  ['Voucher No', 'Student', 'Parent', 'Phone', 'Program', 'Total (PKR)', 'Paid (PKR)', 'Balance (PKR)', 'Status', 'Due Date', 'Grace Deadline'],
+                  filteredVouchers.map((v) => [
+                    v.voucherNo, v.studentName, v.parentName, v.parentPhone, v.program,
+                    v.totalAmount, v.paidAmount, v.runningBalance, v.status, v.dueDate, v.graceDeadlineDate,
+                  ])
+                )
+              }
+              title="Export the current view to CSV"
             >
+              <FileText className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Export CSV</span>
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => { setShowGenerate(true); setGenError(null); }}
+              title="Create this month's vouchers for every active student at once"
+            >
+              <RotateCcw className="w-3.5 h-3.5 text-[#5B47D6]" />
+              <span>Generate This Month</span>
+            </Button>
+            <Button variant="primary" onClick={() => setShowCreateModal(true)}>
               <Plus className="w-3.5 h-3.5" />
               <span>Create Voucher</span>
-            </button>
+            </Button>
           </div>
         </div>
+
+        {/* GENERATE MONTHLY VOUCHERS MODAL */}
+        {showGenerate && (
+          <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 my-6">
+              <div className="flex items-center justify-between">
+                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Generate This Month&apos;s Vouchers</h3>
+                <button onClick={() => setShowGenerate(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
+              </div>
+              <p className="text-xs text-[#6B7185]">
+                Creates one voucher for every <strong>active</strong> student (using their monthly fee) who isn&apos;t already invoiced for this month. Safe to run more than once — existing ones are skipped.
+              </p>
+              <div className="space-y-3 text-sm">
+                <div>
+                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Due date</label>
+                  <input type="date" value={genDueDate} onChange={(e) => setGenDueDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
+                  {genDueDate && <p className="text-[11px] text-slate-400 mt-1">Fee month: <strong>{monthLabelPKT(genDueDate)}</strong> · grace = due + 3 days.</p>}
+                </div>
+                {genError && <p className="text-xs font-semibold text-rose-600">{genError}</p>}
+              </div>
+              <div className="flex justify-end gap-2">
+                <button onClick={() => setShowGenerate(false)} className="px-4 py-2 border rounded-xl font-bold text-xs text-slate-600 dark:text-slate-300">Cancel</button>
+                <button onClick={handleGenerate} disabled={generating} className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm">
+                  {generating ? 'Generating…' : 'Generate Vouchers'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* 3-DAY GRACE POLICY BANNER */}
         <div className="p-4 bg-gradient-to-r from-purple-900 to-[#1B1E38] text-white rounded-[20px] shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -330,15 +449,33 @@ export function VouchersClient({
               ))}
             </div>
 
-            <div className="relative w-full sm:w-[240px]">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search voucher or student..."
-                className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#5B47D6]"
-              />
+            <div className="flex items-center gap-2 flex-wrap">
+              <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
+                <span className="text-[11px] text-[#6B7185] block font-medium">Due Date</span>
+                <select value={dateRange} onChange={(e) => setDateRange(e.target.value as any)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]">
+                  <option value="all">All Time</option>
+                  <option value="7">Last 7 Days</option>
+                  <option value="30">Last 30 Days</option>
+                  <option value="custom">Custom Range</option>
+                </select>
+              </div>
+              {dateRange === 'custom' && (
+                <div className="flex items-center gap-1.5 text-[13px]">
+                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                  <span className="text-[#6B7185]">to</span>
+                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                </div>
+              )}
+              <div className="relative w-full sm:w-[240px]">
+                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search voucher or student..."
+                  className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-8 pr-3 py-1.5 text-[13px] font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#5B47D6]"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -346,21 +483,21 @@ export function VouchersClient({
         {/* VOUCHERS DATA TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse min-w-[800px]">
+            <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 uppercase tracking-wide text-xs">
-                  <th className="py-3.5 px-3">VOUCHER NO & STUDENT</th>
-                  <th className="py-3.5 px-3">PARENT & PHONE</th>
-                  <th className="py-3.5 px-3">DUE DATE & GRACE DEADLINE</th>
-                  <th className="py-3.5 px-3">TOTAL FEE</th>
-                  <th className="py-3.5 px-3">PAID AMOUNT</th>
-                  <th className="py-3.5 px-3">RUNNING BALANCE</th>
-                  <th className="py-3.5 px-3">STATUS</th>
-                  <th className="py-3.5 px-3 text-center">ACTIONS</th>
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                  <th className="py-3.5 px-3">Voucher No & Student</th>
+                  <th className="py-3.5 px-3">Parent & Phone</th>
+                  <th className="py-3.5 px-3">Due Date & Grace Deadline</th>
+                  <th className="py-3.5 px-3">Total Fee</th>
+                  <th className="py-3.5 px-3">Paid Amount</th>
+                  <th className="py-3.5 px-3">Running Balance</th>
+                  <th className="py-3.5 px-3">Status</th>
+                  <th className="py-3.5 px-3 text-center">Actions</th>
                 </tr>
               </thead>
 
-              <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-xs font-medium">
+              <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                 {filteredVouchers.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-[#6B7185]">
@@ -371,12 +508,12 @@ export function VouchersClient({
                   filteredVouchers.map((v) => (
                     <tr key={v.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{v.studentName}</div>
+                        <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{v.studentName}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{v.voucherNo}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-slate-900 dark:text-slate-100">{v.parentName}</div>
+                        <div className="font-semibold text-slate-900 dark:text-slate-100">{v.parentName}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{v.parentPhone}</div>
                       </td>
 
@@ -399,21 +536,11 @@ export function VouchersClient({
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-extrabold ${
-                            v.status === 'Paid'
-                              ? 'bg-emerald-100 text-emerald-700'
-                              : v.status === 'In Grace'
-                              ? 'bg-purple-100 text-purple-700'
-                              : v.status === 'Stopped'
-                              ? 'bg-slate-700 text-white'
-                              : 'bg-rose-100 text-rose-700'
-                          }`}
-                        >
+                        <Badge tone={v.status === 'Paid' ? 'success' : v.status === 'In Grace' ? 'brand' : v.status === 'Stopped' ? 'neutral' : 'danger'}>
                           {v.status}
-                        </span>
+                        </Badge>
                         {v.needsAdminDecision && (
-                          <span className="block text-xs font-extrabold text-rose-600 mt-1 animate-pulse">
+                          <span className="block text-xs font-extrabold text-rose-600 mt-1">
                             ⚠️ Needs Admin Decision
                           </span>
                         )}
@@ -421,43 +548,31 @@ export function VouchersClient({
 
                       <td className="py-3.5 px-3 text-center">
                         <div className="flex items-center justify-center gap-1.5">
-                          <button
-                            onClick={() => setPreviewVoucher(v)}
-                            className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold text-xs rounded-lg cursor-pointer"
-                          >
-                            View
-                          </button>
-                          {v.needsAdminDecision ? (
+                          {v.needsAdminDecision && (
                             <button
                               onClick={() => setDecisionVoucher(v)}
-                              className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-xs rounded-lg shadow-xs transition-all cursor-pointer"
+                              className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
                             >
                               Fee Decision →
                             </button>
-                          ) : (
-                            <>
-                              {v.status !== 'Paid' && (
-                                <button
-                                  onClick={() => {
-                                    setPartialPayVoucher(v);
-                                    setPayAmountInput(v.runningBalance.toString());
-                                  }}
-                                  className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-lg shadow-xs transition-all cursor-pointer"
-                                >
-                                  + Payment
-                                </button>
-                              )}
-
-                              {v.paidAmount > 0 && (
-                                <button
-                                  onClick={() => setRefundVoucher(v)}
-                                  className="px-2.5 py-1 bg-rose-50 text-rose-700 font-extrabold text-xs rounded-lg border border-rose-200 hover:bg-rose-100 cursor-pointer"
-                                >
-                                  Refund
-                                </button>
-                              )}
-                            </>
                           )}
+                          {!v.needsAdminDecision && v.status !== 'Paid' && (
+                            <button
+                              onClick={() => { setPartialPayVoucher(v); setPayAmountInput(v.runningBalance.toString()); }}
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
+                            >
+                              + Payment
+                            </button>
+                          )}
+                          <RowActionsMenu
+                            actions={[
+                              { label: 'Review Voucher', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setPreviewVoucher(v) },
+                              { label: 'Send to Student', icon: <MessageSquare className="w-3.5 h-3.5" />, tone: 'success', onClick: () => sendVoucherWa(v) },
+                              { label: 'Modify Voucher', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditVoucher(v) },
+                              { label: 'Refund', icon: <ArrowDownRight className="w-3.5 h-3.5" />, tone: 'danger', hidden: !(v.paidAmount > 0), onClick: () => setRefundVoucher(v) },
+                              { label: 'Fee Decision', icon: <ShieldCheck className="w-3.5 h-3.5" />, tone: 'warning', hidden: v.needsAdminDecision, onClick: () => setDecisionVoucher(v) },
+                            ]}
+                          />
                         </div>
                       </td>
                     </tr>
@@ -555,60 +670,96 @@ export function VouchersClient({
 
         {/* VOUCHER PREVIEW (view / print / send on WhatsApp) */}
         {previewVoucher && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in" onClick={() => setPreviewVoucher(null)}>
-            <div className="bg-white rounded-3xl p-0 max-w-md w-full shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-              <div id="voucher-print" className="p-6 space-y-4 text-slate-900">
-                <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-black text-lg">T</div>
-                  <div>
-                    <div className="font-extrabold text-base leading-tight">Thinkerzz</div>
-                    <div className="text-xs text-slate-500 font-semibold">Fee Voucher</div>
-                  </div>
-                  <div className="ml-auto text-right">
-                    <div className="text-xs text-slate-500">Voucher</div>
-                    <div className="font-mono font-bold text-sm">{previewVoucher.voucherNo}</div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-y-1.5 gap-x-3 text-xs font-semibold">
-                  <div className="text-slate-500">Student</div><div className="text-right">{previewVoucher.studentName}</div>
-                  <div className="text-slate-500">Parent</div><div className="text-right">{previewVoucher.parentName}</div>
-                  <div className="text-slate-500">Program</div><div className="text-right">{previewVoucher.program}</div>
-                  <div className="text-slate-500">Due Date</div><div className="text-right">{previewVoucher.dueDate}</div>
-                  <div className="text-slate-500">Amount</div><div className="text-right font-mono font-bold">PKR {previewVoucher.totalAmount.toLocaleString()}</div>
-                  <div className="text-slate-500">Paid</div><div className="text-right font-mono">PKR {previewVoucher.paidAmount.toLocaleString()}</div>
-                  <div className="text-slate-500">Balance</div>
-                  <div className={`text-right font-mono font-bold ${previewVoucher.runningBalance > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>PKR {previewVoucher.runningBalance.toLocaleString()}</div>
-                  <div className="text-slate-500">Status</div><div className="text-right font-bold">{previewVoucher.status}</div>
-                </div>
-
-                {paymentInfo && (paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban || paymentInfo.wallet) && (
-                  <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-xs">
-                    <div className="font-extrabold text-slate-700 mb-1">How to pay</div>
-                    <div className="space-y-0.5 text-slate-700">
-                      {paymentInfo.bankTitle && <div>Bank Title: <span className="font-semibold">{paymentInfo.bankTitle}</span></div>}
-                      {paymentInfo.bankAccountNo && <div>Account No: <span className="font-mono">{paymentInfo.bankAccountNo}</span></div>}
-                      {paymentInfo.bankIban && <div>IBAN: <span className="font-mono">{paymentInfo.bankIban}</span></div>}
-                      {paymentInfo.wallet && <div>Mobile Wallet: <span className="font-semibold">{paymentInfo.wallet}</span></div>}
+          <>
+            <style>{`
+              @media print {
+                @page { margin: 0; }
+                html, body { background: #ffffff !important; }
+                body * { visibility: hidden !important; }
+                #voucher-print, #voucher-print * {
+                  visibility: visible !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                #voucher-print {
+                  position: absolute; left: 0; top: 0; width: 100%;
+                  box-shadow: none !important; border-radius: 0 !important; padding: 40px !important;
+                }
+              }
+            `}</style>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in" onClick={() => setPreviewVoucher(null)}>
+              <div className="bg-white rounded-3xl p-0 max-w-md w-full shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+                <div id="voucher-print" className="p-7 space-y-5 text-slate-900 text-[15px]">
+                  {/* Colored branded header */}
+                  <div className="flex items-center gap-3 rounded-2xl bg-[#5B47D6] text-white px-5 py-4">
+                    <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center font-black text-lg">T</div>
+                    <div>
+                      <div className="font-extrabold text-xl leading-tight">Thinkerzz</div>
+                      <div className="text-xs text-purple-200 font-semibold uppercase tracking-widest">Fee Voucher</div>
+                    </div>
+                    <div className="ml-auto text-right">
+                      <div className="text-[11px] text-purple-200">Voucher</div>
+                      <div className="font-mono font-bold text-sm">{previewVoucher.voucherNo}</div>
                     </div>
                   </div>
-                )}
-              </div>
 
-              <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50">
-                <a
-                  href={`https://wa.me/${waDigits(previewVoucher.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(previewVoucher, paymentInfo))}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1 text-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs rounded-xl"
-                >
-                  Send on WhatsApp
-                </a>
-                <button onClick={() => window.print()} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs rounded-xl">Print</button>
-                <button onClick={() => setPreviewVoucher(null)} className="px-3 py-2 border border-slate-300 font-bold text-xs rounded-xl">Close</button>
+                  {/* Amount the student has to pay - the headline */}
+                  <div className="rounded-2xl border-2 border-[#5B47D6]/20 bg-[#5B47D6]/5 p-4 text-center">
+                    <div className="text-xs font-bold uppercase tracking-widest text-[#5B47D6]">Amount To Pay</div>
+                    <div className="font-heading font-extrabold text-4xl text-slate-900 mt-1">
+                      PKR {(previewVoucher.runningBalance > 0 ? previewVoucher.runningBalance : previewVoucher.totalAmount).toLocaleString()}
+                    </div>
+                    <div className="text-[13px] font-semibold text-slate-500 mt-1">Due by {previewVoucher.dueDate}</div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-[14px] font-semibold">
+                    <div className="text-slate-500">Student</div><div className="text-right">{previewVoucher.studentName}</div>
+                    <div className="text-slate-500">Parent</div><div className="text-right">{previewVoucher.parentName}</div>
+                    <div className="text-slate-500">Program</div><div className="text-right">{previewVoucher.program}</div>
+                    <div className="text-slate-500">Status</div><div className="text-right font-bold">{previewVoucher.status}</div>
+                  </div>
+
+                  {paymentInfo && (paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban || paymentInfo.wallet) && (
+                    <div className="space-y-2.5">
+                      {(paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban) && (
+                        <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
+                          <div className="font-extrabold text-[#5B47D6] mb-1 uppercase tracking-wide text-xs">Bank Transfer</div>
+                          <div className="space-y-0.5 text-slate-700">
+                            {paymentInfo.bankTitle && <div>Title: <span className="font-semibold">{paymentInfo.bankTitle}</span></div>}
+                            {paymentInfo.bankAccountNo && <div>Account No: <span className="font-mono">{paymentInfo.bankAccountNo}</span></div>}
+                            {paymentInfo.bankIban && <div>IBAN: <span className="font-mono">{paymentInfo.bankIban}</span></div>}
+                          </div>
+                        </div>
+                      )}
+                      {paymentInfo.wallet && (
+                        <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
+                          <div className="font-extrabold text-[#12A150] mb-1 uppercase tracking-wide text-xs">JazzCash / Mobile Wallet</div>
+                          <div className="text-slate-700"><span className="font-semibold">{paymentInfo.wallet}</span></div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="text-center text-[11px] text-slate-400 font-medium pt-1 border-t border-slate-100">
+                    Please share the payment receipt after paying. Thank you. · Thinkerzz
+                  </div>
+                </div>
+
+                <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50 no-print">
+                  <a
+                    href={`https://wa.me/${waDigits(previewVoucher.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(previewVoucher, paymentInfo))}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 text-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl"
+                  >
+                    Send on WhatsApp
+                  </a>
+                  <button onClick={() => window.print()} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl">Print</button>
+                  <button onClick={() => setPreviewVoucher(null)} className="px-3 py-2 border border-slate-300 font-bold text-xs rounded-xl">Close</button>
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
 
         {partialPayVoucher && (
@@ -679,7 +830,7 @@ export function VouchersClient({
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-1 text-rose-900">
                   <div>Total Paid to Date: <span className="font-mono">PKR {refundVoucher.paidAmount.toLocaleString()}</span></div>
                   <div className="text-xs font-medium pt-1">
-                    Note: Per AGENTS.md §4, refunds are recorded as a <strong>negative payment entry</strong> linked to the voucher. The original payment is never edited or deleted.
+                    Note: refunds are recorded as a <strong>negative payment entry</strong> linked to the voucher. The original payment is never edited or deleted.
                   </div>
                 </div>
 
@@ -770,6 +921,41 @@ export function VouchersClient({
 
               <div className="flex justify-end pt-3 border-t">
                 <button onClick={() => setDecisionVoucher(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* MODIFY VOUCHER MODAL */}
+        {editVoucher && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+              <div className="flex justify-between items-center border-b pb-3">
+                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">Modify Voucher - {editVoucher.studentName}</h3>
+                <button onClick={() => setEditVoucher(null)}><X className="w-4 h-4 text-slate-400" /></button>
+              </div>
+              <div className="space-y-3 text-sm">
+                <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl text-[13px] font-bold">
+                  Voucher No: <span className="font-mono text-slate-900 dark:text-slate-100">{editVoucher.voucherNo}</span>
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Total Fee (PKR)</label>
+                  <input type="number" value={edAmount} onChange={(e) => setEdAmount(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-extrabold text-base text-slate-900 dark:text-slate-100" />
+                </div>
+                <div>
+                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
+                  <input type="date" value={edDue} onChange={(e) => setEdDue(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+                  <p className="text-xs text-slate-500 font-medium mt-1">A 3-day grace deadline is recalculated automatically.</p>
+                </div>
+                {edError && (
+                  <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                    <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><span>{edError}</span>
+                  </div>
+                )}
+              </div>
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button onClick={() => setEditVoucher(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
+                <button onClick={handleUpdateVoucher} disabled={edSaving} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50">{edSaving ? 'Saving...' : 'Save Changes'}</button>
               </div>
             </div>
           </div>

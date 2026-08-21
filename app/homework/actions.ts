@@ -4,10 +4,12 @@
 // permission. Feeds the 30% homework-completion health metric.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { notifyStudentById } from '@/lib/notifications/inapp';
 
 export interface ActionResult {
   ok: boolean;
   error?: string;
+  warning?: string;
 }
 
 export async function createHomework(input: {
@@ -52,9 +54,97 @@ export async function createHomework(input: {
   });
   if (error) return { ok: false, error: error.message };
 
+  // Let the student know (in-app bell) - best-effort.
+  await notifyStudentById(profile.org_id, input.studentId, {
+    title: 'New homework assigned',
+    body: title,
+    link: '/homework',
+  });
+
   revalidatePath('/homework');
   revalidatePath('/');
   return { ok: true };
+}
+
+/** Edit a homework's title and/or deadline. RLS enforces write permission. */
+export async function updateHomework(input: {
+  homeworkId: string;
+  title?: string;
+  deadline?: string; // YYYY-MM-DD (PKT)
+}): Promise<ActionResult> {
+  if (!input.homeworkId) return { ok: false, error: 'Missing homework id.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const patch: Record<string, any> = {};
+  if (input.title?.trim()) patch.title = input.title.trim();
+  if (input.deadline) patch.deadline = new Date(`${input.deadline}T23:59:00+05:00`).toISOString();
+  if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
+
+  const { error } = await supabase.from('homework').update(patch).eq('id', input.homeworkId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/homework');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/** Soft-delete a homework (sets deleted_at). RLS enforces write permission. */
+export async function deleteHomework(homeworkId: string): Promise<ActionResult> {
+  if (!homeworkId) return { ok: false, error: 'Missing homework id.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('homework')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', homeworkId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/homework');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/**
+ * Student submits their own homework. RLS (student_access_own_homework) ensures
+ * a student can only touch their own rows. Marks 'late' if past the deadline,
+ * else 'submitted' - both count as a submission; 'submitted' also counts as
+ * on-time in the health formula. Refuses if already graded.
+ */
+export async function submitHomework(input: { homeworkId: string }): Promise<ActionResult> {
+  if (!input.homeworkId) return { ok: false, error: 'Missing homework id.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { data: hw } = await supabase
+    .from('homework')
+    .select('deadline,status')
+    .eq('id', input.homeworkId)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!hw) return { ok: false, error: 'Homework not found (or not yours).' };
+  if (hw.status === 'graded') return { ok: false, error: 'This homework has already been graded.' };
+
+  const late = hw.deadline ? new Date(hw.deadline).getTime() < Date.now() : false;
+  const { error } = await supabase
+    .from('homework')
+    .update({ status: late ? 'late' : 'submitted' })
+    .eq('id', input.homeworkId);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/homework');
+  revalidatePath('/');
+  return { ok: true, warning: late ? 'Submitted after the deadline (marked late).' : undefined } as ActionResult;
 }
 
 /** Mark a homework graded (counts as on-time completion in the health formula). */
@@ -71,8 +161,22 @@ export async function gradeHomework(input: {
   const patch: Record<string, any> = { status: 'graded' };
   if (input.score != null && !Number.isNaN(input.score)) patch.score = input.score;
 
-  const { error } = await supabase.from('homework').update(patch).eq('id', input.homeworkId);
+  const { data: updated, error } = await supabase
+    .from('homework')
+    .update(patch)
+    .eq('id', input.homeworkId)
+    .select('org_id,student_id,title')
+    .maybeSingle();
   if (error) return { ok: false, error: error.message };
+
+  // Notify the student their homework was graded (in-app bell) - best-effort.
+  if (updated?.org_id && updated?.student_id) {
+    await notifyStudentById(updated.org_id as string, updated.student_id as string, {
+      title: 'Homework graded',
+      body: (updated.title as string) ?? '',
+      link: '/homework',
+    });
+  }
 
   revalidatePath('/homework');
   revalidatePath('/');

@@ -18,7 +18,8 @@ function one<T>(rel: T | T[] | null | undefined): T | null {
 function mapRow(r: any): FeeVoucher {
   const student = one<any>(r.students);
   const payments: any[] = Array.isArray(r.payments) ? r.payments : [];
-  const paidAmount = payments.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  // Exclude soft-deleted payments so a deleted receipt drops off the paid total.
+  const paidAmount = payments.filter((p) => !p.deleted_at).reduce((sum, p) => sum + Number(p.amount || 0), 0);
   const totalAmount = Number(r.amount || 0);
   const graceDeadline = r.grace_deadline; // 'YYYY-MM-DD'
   // Master Plan §2: in grace up to AND INCLUDING the grace-deadline date; overdue
@@ -48,13 +49,14 @@ function mapRow(r: any): FeeVoucher {
 export async function getVouchers(): Promise<FeeVoucher[]> {
   const supabase = createClient();
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
+  const user = session?.user;
   if (!user) return [];
 
   const { data, error } = await supabase
     .from('vouchers')
-    .select('id,code,student_id,voucher_no,period,amount,due_date,grace_deadline,status,students(name,parent_name,phone,program),payments(amount)')
+    .select('id,code,student_id,voucher_no,period,amount,due_date,grace_deadline,status,students(name,parent_name,phone,program),payments(amount,deleted_at)')
     .is('deleted_at', null)
     .order('due_date', { ascending: false });
 

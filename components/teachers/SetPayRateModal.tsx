@@ -52,7 +52,7 @@ export function SetPayRateModal({
       isOpen={isOpen}
       onClose={onClose}
       title={`Set Per-Class Pay Rate - ${teacherName}`}
-      subtitle="Pay rates live in a SEPARATE table with Admin-only RLS. Never queryable by Managers or Teachers."
+      subtitle="Pay rates are private to the Admin - managers and teachers can never see them."
       maxWidth="md"
       footerButtons={
         <>
@@ -67,7 +67,7 @@ export function SetPayRateModal({
             type="submit"
             form="payRateForm"
             disabled={loading}
-            className="px-6 py-2.5 bg-[#5A31F4] hover:bg-[#3B1CCF] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
+            className="px-6 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
           >
             <CreditCard className="w-4 h-4" />
             <span>{loading ? 'Saving...' : 'Save Pay Rate'}</span>
@@ -86,13 +86,13 @@ export function SetPayRateModal({
             value={rate}
             onChange={(e) => setRate(e.target.value)}
             placeholder="e.g. 75000"
-            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5A31F4] font-mono font-bold"
+            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] font-mono font-bold"
           />
         </div>
 
-        <div className="p-3.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl flex items-center gap-2 text-xs text-[#5A31F4] dark:text-purple-300 font-medium">
+        <div className="p-3.5 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800 rounded-xl flex items-center gap-2 text-xs text-[#5B47D6] dark:text-purple-300 font-medium">
           <Lock className="w-4 h-4 shrink-0" />
-          <span>Security Notice: Database RLS blocks Manager/Teacher/Student tokens from reading teacher_pay_rates table.</span>
+          <span>Pay rates are visible to the Admin only - never to managers, teachers or students.</span>
         </div>
       </form>
     </Modal>
