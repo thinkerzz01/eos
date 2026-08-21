@@ -1,10 +1,50 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
+// Per-request Content-Security-Policy with a nonce. In PRODUCTION the script-src
+// is nonce-based (no 'unsafe-inline'/'unsafe-eval'), so an injected inline script
+// can't run. In DEV it stays permissive because Next's HMR needs inline + eval.
+// The Turnstile host stays explicitly allow-listed (not via strict-dynamic) so
+// the bot-challenge script keeps loading. Next reads the nonce from the CSP on the
+// request headers and applies it to its own scripts; our one inline boot script
+// (app/layout.tsx) reads it from `x-nonce`.
+function buildCsp(nonce: string): string {
+  const isProd = process.env.NODE_ENV === 'production';
+  const scriptSrc = isProd
+    ? `'self' 'nonce-${nonce}' https://challenges.cloudflare.com`
+    : "'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com";
+  return [
+    "default-src 'self'",
+    `script-src ${scriptSrc}`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https://*.supabase.co",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://challenges.cloudflare.com",
+    "frame-src 'self' https://challenges.cloudflare.com",
+    "frame-ancestors 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "object-src 'none'",
+  ].join('; ');
+}
+
 export async function updateSession(request: NextRequest) {
+  // Fresh nonce per request (Edge runtime: btoa is available, Buffer is not).
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  const nonce = btoa(bin);
+  const csp = buildCsp(nonce);
+
+  // Forward the nonce + CSP on the REQUEST headers: Next extracts the nonce from
+  // the CSP header to nonce its framework scripts, and app/layout.tsx reads x-nonce.
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set('x-nonce', nonce);
+  requestHeaders.set('content-security-policy', csp);
+
   let response = NextResponse.next({
     request: {
-      headers: request.headers,
+      headers: requestHeaders,
     },
   });
 
@@ -20,7 +60,7 @@ export async function updateSession(request: NextRequest) {
           request.cookies.set({ name, value, ...options });
           response = NextResponse.next({
             request: {
-              headers: request.headers,
+              headers: requestHeaders,
             },
           });
           response.cookies.set({ name, value, ...options });
@@ -29,7 +69,7 @@ export async function updateSession(request: NextRequest) {
           request.cookies.set({ name, value: '', ...options });
           response = NextResponse.next({
             request: {
-              headers: request.headers,
+              headers: requestHeaders,
             },
           });
           response.cookies.set({ name, value: '', ...options });
@@ -72,5 +112,7 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
+  // Enforce the CSP on the response the browser receives.
+  response.headers.set('Content-Security-Policy', csp);
   return response;
 }

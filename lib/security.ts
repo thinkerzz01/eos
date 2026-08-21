@@ -12,9 +12,18 @@
  * Guards the /api/cron/* routes, which run with the service-role client and no
  * user session. Returns true only for an exact `Authorization: Bearer <secret>`.
  */
+import { timingSafeEqual } from 'crypto';
+
 export function verifyCronBearerHeader(authHeader: string | null, expectedSecret: string): boolean {
   if (!authHeader) return false;
   if (!authHeader.startsWith('Bearer ')) return false;
-  const token = authHeader.replace('Bearer ', '').trim();
-  return token === expectedSecret && expectedSecret.length > 0;
+  const token = authHeader.slice('Bearer '.length).trim();
+  if (!expectedSecret || token.length === 0) return false;
+  // Constant-time comparison (avoids leaking the secret via response timing).
+  // timingSafeEqual requires equal-length buffers, so length must match first;
+  // token length is not itself sensitive.
+  const a = Buffer.from(token);
+  const b = Buffer.from(expectedSecret);
+  if (a.length !== b.length) return false;
+  return timingSafeEqual(a, b);
 }
