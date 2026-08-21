@@ -5,7 +5,7 @@
 // `failed` for the admin panel. Failures are never dropped silently. See also
 // /api/cron/tick which runs the reminders enqueue AND this sender in one call.
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCronBearerHeader } from '@/lib/security';
+import { verifyCronBearerHeader, cronSecret } from '@/lib/security';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { runSend } from '@/lib/cron/send';
 
@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
-  if (!verifyCronBearerHeader(req.headers.get('authorization'), process.env.CRON_SECRET_TOKEN ?? '')) {
+  if (!verifyCronBearerHeader(req.headers.get('authorization'), cronSecret())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

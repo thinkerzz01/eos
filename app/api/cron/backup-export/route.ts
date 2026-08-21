@@ -4,7 +4,7 @@
 // the cron can capture, e.g.
 //   curl -H "Authorization: Bearer $CRON_SECRET_TOKEN" https://<host>/api/cron/backup-export > backup.json
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCronBearerHeader } from '@/lib/security';
+import { verifyCronBearerHeader, cronSecret } from '@/lib/security';
 import { createAdminClient } from '@/lib/supabase/admin';
 
 export const dynamic = 'force-dynamic';
@@ -20,7 +20,7 @@ const TABLES = [
 ];
 
 export async function GET(req: NextRequest) {
-  if (!verifyCronBearerHeader(req.headers.get('authorization'), process.env.CRON_SECRET_TOKEN ?? '')) {
+  if (!verifyCronBearerHeader(req.headers.get('authorization'), cronSecret())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

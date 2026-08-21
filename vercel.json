@@ -1,0 +1,7 @@
+{
+  "crons": [
+    { "path": "/api/cron/tick", "schedule": "0 * * * *" },
+    { "path": "/api/cron/monthly-reports", "schedule": "0 6 1 * *" },
+    { "path": "/api/cron/backup-export", "schedule": "0 3 * * *" }
+  ]
+}

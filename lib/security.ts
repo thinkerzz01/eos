@@ -14,6 +14,16 @@
  */
 import { timingSafeEqual } from 'crypto';
 
+/**
+ * The cron shared secret. Accepts either CRON_SECRET_TOKEN (this app's name, used
+ * by an external pinger) or CRON_SECRET (the name Vercel Cron uses when it
+ * auto-attaches `Authorization: Bearer <CRON_SECRET>` to scheduled invocations).
+ * Set whichever matches your scheduler - or both to the same value.
+ */
+export function cronSecret(): string {
+  return process.env.CRON_SECRET_TOKEN || process.env.CRON_SECRET || '';
+}
+
 export function verifyCronBearerHeader(authHeader: string | null, expectedSecret: string): boolean {
   if (!authHeader) return false;
   if (!authHeader.startsWith('Bearer ')) return false;

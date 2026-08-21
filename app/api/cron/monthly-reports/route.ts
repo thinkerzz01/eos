@@ -3,7 +3,7 @@
 // them warmly (LLM optional, first-name + facts only), and enqueue a priority-3
 // monthly_report notification. Idempotent per student per month.
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCronBearerHeader } from '@/lib/security';
+import { verifyCronBearerHeader, cronSecret } from '@/lib/security';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { enqueueNotification } from '@/lib/notifications/enqueue';
 import { assembleReportFacts, phraseReport } from '@/lib/reports/monthlyReport';
@@ -12,7 +12,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
-  if (!verifyCronBearerHeader(req.headers.get('authorization'), process.env.CRON_SECRET_TOKEN ?? '')) {
+  if (!verifyCronBearerHeader(req.headers.get('authorization'), cronSecret())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 

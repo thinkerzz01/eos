@@ -5,7 +5,7 @@
 // send anything - /api/cron/send drains the queue. See also /api/cron/tick which
 // runs this AND the sender in one call (recommended for a single-URL pinger).
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyCronBearerHeader } from '@/lib/security';
+import { verifyCronBearerHeader, cronSecret } from '@/lib/security';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { runReminders } from '@/lib/cron/reminders';
 
@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET(req: NextRequest) {
-  if (!verifyCronBearerHeader(req.headers.get('authorization'), process.env.CRON_SECRET_TOKEN ?? '')) {
+  if (!verifyCronBearerHeader(req.headers.get('authorization'), cronSecret())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
