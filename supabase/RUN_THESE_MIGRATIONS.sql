@@ -193,6 +193,55 @@ BEGIN
 END $$;
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-08-22  Performance lint wins (targeted indexes + auth initplan)
+--     Adds covering indexes on hot FK columns and hoists auth.uid() to a
+--     subselect in 6 policies. Skips the 515 multiple-permissive findings by
+--     design. Full file: supabase/migrations/2026-08-22_perf_lints.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE INDEX IF NOT EXISTS idx_student_subjects_teacher_id   ON public.student_subjects (teacher_id);
+CREATE INDEX IF NOT EXISTS idx_student_subjects_student_id   ON public.student_subjects (student_id);
+CREATE INDEX IF NOT EXISTS idx_student_subjects_subject_id   ON public.student_subjects (subject_id);
+CREATE INDEX IF NOT EXISTS idx_class_sessions_teacher_id     ON public.class_sessions (teacher_id);
+CREATE INDEX IF NOT EXISTS idx_class_sessions_student_id     ON public.class_sessions (student_id);
+CREATE INDEX IF NOT EXISTS idx_class_sessions_subject_id     ON public.class_sessions (subject_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_session_id         ON public.attendance (session_id);
+CREATE INDEX IF NOT EXISTS idx_attendance_student_id         ON public.attendance (student_id);
+CREATE INDEX IF NOT EXISTS idx_homework_student_id           ON public.homework (student_id);
+CREATE INDEX IF NOT EXISTS idx_homework_teacher_id           ON public.homework (teacher_id);
+CREATE INDEX IF NOT EXISTS idx_homework_subject_id           ON public.homework (subject_id);
+CREATE INDEX IF NOT EXISTS idx_vouchers_student_id           ON public.vouchers (student_id);
+CREATE INDEX IF NOT EXISTS idx_voucher_lines_voucher_id      ON public.voucher_lines (voucher_id);
+CREATE INDEX IF NOT EXISTS idx_payments_voucher_id           ON public.payments (voucher_id);
+CREATE INDEX IF NOT EXISTS idx_demos_teacher_id              ON public.demos (teacher_id);
+CREATE INDEX IF NOT EXISTS idx_demos_lead_id                 ON public.demos (lead_id);
+CREATE INDEX IF NOT EXISTS idx_lead_communications_lead_id   ON public.lead_communications (lead_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_opened_by            ON public.tickets (opened_by);
+CREATE INDEX IF NOT EXISTS idx_ticket_messages_ticket_id    ON public.ticket_messages (ticket_id);
+CREATE INDEX IF NOT EXISTS idx_app_notifications_user_id    ON public.app_notifications (user_id);
+
+DROP POLICY IF EXISTS own_profile_read ON public.profiles;
+CREATE POLICY own_profile_read ON public.profiles FOR SELECT
+  USING (user_id = (SELECT auth.uid()));
+DROP POLICY IF EXISTS own_app_notifications ON public.app_notifications;
+CREATE POLICY own_app_notifications ON public.app_notifications FOR ALL
+  USING (user_id = (SELECT auth.uid()));
+DROP POLICY IF EXISTS teacher_access_tickets ON public.tickets;
+CREATE POLICY teacher_access_tickets ON public.tickets FOR ALL
+  USING (current_user_role() = 'teacher' AND opened_by = (SELECT auth.uid()));
+DROP POLICY IF EXISTS student_access_own_tickets ON public.tickets;
+CREATE POLICY student_access_own_tickets ON public.tickets FOR ALL
+  USING (current_user_role() = 'student' AND opened_by = (SELECT auth.uid()));
+DROP POLICY IF EXISTS teacher_access_ticket_messages ON public.ticket_messages;
+CREATE POLICY teacher_access_ticket_messages ON public.ticket_messages FOR ALL
+  USING (current_user_role() = 'teacher' AND ticket_id IN (
+    SELECT id FROM public.tickets WHERE opened_by = (SELECT auth.uid()) AND deleted_at IS NULL));
+DROP POLICY IF EXISTS student_access_own_ticket_messages ON public.ticket_messages;
+CREATE POLICY student_access_own_ticket_messages ON public.ticket_messages FOR ALL
+  USING (current_user_role() = 'student' AND ticket_id IN (
+    SELECT id FROM public.tickets WHERE opened_by = (SELECT auth.uid()) AND deleted_at IS NULL));
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql
