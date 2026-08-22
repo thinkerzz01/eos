@@ -1,9 +1,9 @@
 'use client';
 
 import React, { createContext, useContext, useState } from 'react';
-import { CheckCircle2, AlertCircle, Info, X } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Info, Sparkles, X } from 'lucide-react';
 
-export type ToastType = 'success' | 'error' | 'info';
+export type ToastType = 'success' | 'error' | 'info' | 'brand';
 
 interface Toast {
   id: string;
@@ -45,12 +45,15 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                 ? 'bg-emerald-950 border border-emerald-700 text-emerald-100'
                 : toast.type === 'error'
                 ? 'bg-rose-950 border border-rose-700 text-rose-100'
+                : toast.type === 'brand'
+                ? 'bg-[#171233] border border-[#5B47D6]/60 text-indigo-50'
                 : 'bg-slate-900 border border-slate-700 text-slate-100'
             }`}
           >
             {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />}
             {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-400 shrink-0" />}
             {toast.type === 'info' && <Info className="w-5 h-5 text-sky-400 shrink-0" />}
+            {toast.type === 'brand' && <Sparkles className="w-5 h-5 text-[#8B79F0] shrink-0" />}
             <span>{toast.message}</span>
             <button
               onClick={() => removeToast(toast.id)}

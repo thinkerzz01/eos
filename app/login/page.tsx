@@ -15,6 +15,26 @@ import {
   EyeOff,
 } from 'lucide-react';
 
+// Role-specific sign-in greeting (Title Case). Students are greeted by first
+// name; if the name is missing the line still reads cleanly.
+function welcomeMessage(role?: string, name?: string): string {
+  const first = (name ?? '').trim().split(/\s+/)[0] ?? '';
+  switch (role) {
+    case 'admin':
+      return "Welcome Back, Boss. The Academy's All Yours.";
+    case 'manager':
+      return "Welcome Back. Let's Run The Show.";
+    case 'teacher':
+      return "Class Is Waiting. Let's Make It Count.";
+    case 'student':
+      return first
+        ? `Good To See You, ${first}. Let's Grow More.`
+        : "Good To See You. Let's Grow More.";
+    default:
+      return 'Signed In. Redirecting You Now.';
+  }
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -45,7 +65,15 @@ export default function LoginPage() {
       if (error) {
         showToast(error.message || 'Invalid email or password.', 'error');
       } else if (data.user) {
-        showToast('Signed in successfully! Redirecting...', 'success');
+        // Greet by role (students by first name). A failed lookup just falls
+        // back to the neutral welcome — never blocks the redirect.
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role,name')
+          .eq('user_id', data.user.id)
+          .is('deleted_at', null)
+          .maybeSingle();
+        showToast(welcomeMessage((profile as any)?.role, (profile as any)?.name), 'brand');
         router.push('/');
         router.refresh();
       }
