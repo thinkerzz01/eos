@@ -307,10 +307,10 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
   // DOWNLOAD SAMPLE CSV TEMPLATE
   const handleDownloadSampleCsv = () => {
     const sampleHeaders = "STU ID,Full Name,Program,Grade,Parent Name,Parent Phone,Parent Email,Fee Status,Attendance %,Performance Score\n";
-    const sampleRows = 
-      `"STU-00901","Zayn Malik","O Level","Grade 10","Mr. Malik","0300-1122334","malik@example.com","Paid",92,88\n` +
-      `"STU-00902","Anaya Khan","A Level","Grade 12","Mr. Khan","0321-4455667","khan@example.com","Due",85,76\n` +
-      `"STU-00903","Hamza Shah","IGCSE","Grade 9","Mr. Shah","0333-7788990","shah@example.com","In Grace",78,64\n`;
+    // A single illustrative row showing the expected format. Replace this line
+    // with your real students before importing.
+    const sampleRows =
+      `"STU-00001","Student Full Name","O Level","Grade 10","Parent / Guardian Name","03001234567","parent@email.com","Paid",0,0\n`;
 
     const blob = new Blob([sampleHeaders + sampleRows], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
