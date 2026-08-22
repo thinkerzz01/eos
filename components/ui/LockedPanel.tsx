@@ -19,7 +19,7 @@ export function LockedPanel({
       <div className="w-16 h-16 bg-rose-500/10 border border-rose-500/20 rounded-full flex items-center justify-center mb-4">
         <Lock className="w-8 h-8 text-rose-400" />
       </div>
-      <h3 className="text-xl font-bold text-slate-100 mb-2">{title}</h3>
+      <h3 className="text-xl font-medium text-slate-100 mb-2">{title}</h3>
       <p className="text-slate-400 max-w-md text-sm leading-relaxed mb-6">
         {description}
       </p>

@@ -146,7 +146,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
               <Plus className="w-4 h-4" /> {adding ? 'Adding…' : 'Add Subject'}
             </button>
           </div>
-          {addError && <p className="text-xs font-semibold text-rose-600 mt-2">{addError}</p>}
+          {addError && <p className="text-xs font-medium text-rose-600 mt-2">{addError}</p>}
         </div>
 
         {/* FILTERS */}
@@ -197,7 +197,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
             <button
               onClick={() => setSelectedSubjectIds([])}
               disabled={bulkBusy}
-              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
             >
               Clear
             </button>
@@ -235,7 +235,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
                           onChange={() => toggleSelectSubject(s.id)}
                           className="rounded accent-[#5B47D6]"
                         />
-                        <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{s.name}</span>
+                        <span className="font-medium text-slate-900 dark:text-slate-100 text-sm">{s.name}</span>
                       </label>
                       <RowActionsMenu
                         actions={[
@@ -269,7 +269,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
                   {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                 </select>
               </div>
-              {edError && <p className="text-xs font-semibold text-rose-600">{edError}</p>}
+              {edError && <p className="text-xs font-medium text-rose-600">{edError}</p>}
               <div className="flex justify-end gap-2 pt-1">
                 <button onClick={() => setEditing(null)} className="px-4 py-2 border rounded-xl font-medium text-xs text-slate-600 dark:text-slate-300">Cancel</button>
                 <button onClick={handleEdit} disabled={edSaving} className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-2">

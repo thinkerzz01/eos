@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { headers } from 'next/headers';
 import { Nunito, Jost, Inter, Poppins, Lora } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast';
@@ -9,7 +8,7 @@ import { getServerRole } from '@/lib/auth/serverRole';
 import { getTypography } from '@/lib/data/typography';
 import { fontVar, DEFAULT_HEADING_FONT, DEFAULT_BODY_FONT } from '@/lib/fonts';
 
-// Curated, admin-selectable font set (Settings → Typography). Nunito + Jost are
+// Curated, admin-selectable font set (Settings Typography). Nunito + Jost are
 // the defaults (headings + body). All variable fonts except Poppins, so each is a
 // single small woff2 (latin subset) - kept deliberately lightweight.
 const nunito = Nunito({ subsets: ['latin'], variable: '--font-nunito', display: 'swap' });
@@ -33,10 +32,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const role = await getServerRole();
-  // CSP nonce set by middleware; applied to the one inline boot script below so
-  // it runs under the production nonce-based policy.
-  const nonce = headers().get('x-nonce') ?? undefined;
-  // Admin-chosen fonts (Settings → Typography), applied via CSS variables that
+  // Admin-chosen fonts (Settings Typography), applied via CSS variables that
   // globals.css / Tailwind read. Defaults: Nunito headings, Jost body.
   const typography = await getTypography();
   const fontStyle = {
@@ -53,7 +49,6 @@ export default async function RootLayout({
       <body className="font-sans antialiased bg-[#F6F7FB] text-[#171A2B] transition-colors duration-200">
         {/* Apply the saved global text size before paint (set in Settings). */}
         <script
-          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: "try{var s=localStorage.getItem('tz-ui-scale');if(s&&s!=='100')document.documentElement.style.fontSize=s+'%';}catch(e){}",
           }}

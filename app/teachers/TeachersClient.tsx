@@ -365,7 +365,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{teachersList.length}</div>
               <div className="text-xs font-medium text-emerald-600 mt-1">Active staff</div>
             </div>
-            <span className="text-xs font-medium text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">View all →</span>
+            <span className="text-xs font-medium text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">View all</span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
@@ -379,7 +379,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{teachersList.filter((t) => t.status === 'Teaching').length}</div>
               <div className="text-xs font-medium text-emerald-600 mt-1">of total</div>
             </div>
-            <span className="text-xs font-medium text-emerald-600 hover:underline inline-flex items-center gap-0.5">View active →</span>
+            <span className="text-xs font-medium text-emerald-600 hover:underline inline-flex items-center gap-0.5">View active</span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
@@ -393,7 +393,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <div className="font-heading font-medium text-2xl text-amber-600 leading-none">{teachersList.filter((t) => t.capacity > 0 && t.currentLoad >= t.capacity).length}</div>
               <div className="text-xs font-medium text-amber-600 mt-1">at capacity</div>
             </div>
-            <span className="text-xs font-medium text-amber-600 hover:underline inline-flex items-center gap-0.5">View details →</span>
+            <span className="text-xs font-medium text-amber-600 hover:underline inline-flex items-center gap-0.5">View details</span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
@@ -407,7 +407,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{teachersList.length ? `${Math.round(teachersList.reduce((s, t) => s + (t.capacity ? (t.currentLoad / t.capacity) * 100 : 0), 0) / teachersList.length)}%` : '-'}</div>
               <div className="text-xs font-medium text-blue-600 mt-1">Avg load</div>
             </div>
-            <span className="text-xs font-medium text-blue-600 hover:underline inline-flex items-center gap-0.5">View report →</span>
+            <span className="text-xs font-medium text-blue-600 hover:underline inline-flex items-center gap-0.5">View report</span>
           </div>
 
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
@@ -421,7 +421,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{teachersList.length ? `PKR ${Math.round(teachersList.reduce((s, t) => s + t.perClassPay, 0) / teachersList.length).toLocaleString()}` : 'PKR 0'}</div>
               <div className="text-xs font-medium text-emerald-600 mt-1">Per class rate</div>
             </div>
-            <span className="text-xs font-medium text-purple-600 hover:underline inline-flex items-center gap-0.5">View rates →</span>
+            <span className="text-xs font-medium text-purple-600 hover:underline inline-flex items-center gap-0.5">View rates</span>
           </div>
 
           <div className="bg-gradient-to-br from-[#1B1E38] to-[#2E285C] text-white rounded-[16px] p-3.5 shadow-md flex flex-col justify-between">
@@ -444,7 +444,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                 )}
               </div>
             </div>
-            <span className="text-xs font-medium text-purple-300 hover:text-white mt-1 inline-flex items-center gap-0.5">View insights →</span>
+            <span className="text-xs font-medium text-purple-300 hover:text-white mt-1 inline-flex items-center gap-0.5">View insights</span>
           </div>
         </div>
 
@@ -557,7 +557,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               disabled={bulkBusy}
               title="Set availability status"
               onChange={(e) => { if (e.target.value) handleBulkTeacherStatus(e.target.value); }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-[#5B47D6]"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none focus:border-[#5B47D6]"
             >
               <option value="">Status…</option>
               <option value="Available">Available</option>
@@ -583,7 +583,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
             <button
               onClick={() => setSelectedTeacherIds([])}
               disabled={bulkBusy}
-              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
             >
               Clear
             </button>
@@ -648,17 +648,17 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                               <div className={`w-9 h-9 rounded-full font-medium text-xs flex items-center justify-center shrink-0 shadow-sm ${avatarColor}`}>
                                 {getInitials(t.name)}
                               </div>
-                              <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{t.name}</div>
+                              <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{t.name}</div>
                             </div>
                           </td>
 
                           <td className="py-3.5 px-3">
-                            <div className="font-semibold text-slate-900 dark:text-slate-100">{t.subjects.join(' · ')}</div>
+                            <div className="font-medium text-slate-900 dark:text-slate-100">{t.subjects.join(' · ')}</div>
                             <div className="text-xs text-[#6B7185] font-medium mt-0.5">{t.programs.join(' · ')}</div>
                           </td>
 
                           <td className="py-3.5 px-3">
-                            <div className="font-semibold text-slate-900 dark:text-slate-100">{t.joinDate}</div>
+                            <div className="font-medium text-slate-900 dark:text-slate-100">{t.joinDate}</div>
                             <div className="text-xs text-[#6B7185] font-medium mt-0.5">Emp ID: {t.empId}</div>
                           </td>
 
@@ -687,7 +687,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                                 onClick={() => setPayRateTeacher(t)}
                                 className="text-xs text-[#5B47D6] font-medium hover:underline cursor-pointer"
                               >
-                                Set rate →
+                                Set rate
                               </button>
                             </td>
                           )}
@@ -959,13 +959,13 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
               </div>
 
               {edError && (
-                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">
                   <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><span>{edError}</span>
                 </div>
               )}
             </div>
             <div className="flex justify-end gap-2 pt-1">
-              <button onClick={() => setEditTeacher(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+              <button onClick={() => setEditTeacher(null)} className="px-4 py-2.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
               <button onClick={handleUpdateTeacher} disabled={edSaving} className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-2">
                 <Check className="w-4 h-4" /><span>{edSaving ? 'Saving...' : 'Save Changes'}</span>
               </button>
@@ -992,7 +992,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                   <button
                     key={r}
                     onClick={() => setLeaveReason(r)}
-                    className={`w-full text-left px-3 py-2 rounded-xl border text-xs font-semibold transition-colors ${
+                    className={`w-full text-left px-3 py-2 rounded-xl border text-xs font-medium transition-colors ${
                       leaveReason === r ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
                     }`}
                   >
@@ -1009,13 +1009,13 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                 />
               )}
               {leaveError && (
-                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">
                   <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><span>{leaveError}</span>
                 </div>
               )}
             </div>
             <div className="flex justify-end gap-2 pt-1">
-              <button onClick={() => setLeaveTeacher(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+              <button onClick={() => setLeaveTeacher(null)} className="px-4 py-2.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
               <button onClick={handleMarkLeft} disabled={leaveSaving} className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-2">
                 <Archive className="w-4 h-4" /><span>{leaveSaving ? 'Saving...' : 'Confirm'}</span>
               </button>

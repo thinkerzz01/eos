@@ -66,7 +66,7 @@ export function Logo({
 
       <div>
         <div
-          className={`font-heading font-black tracking-wider leading-none ${
+          className={`font-heading font-medium tracking-wider leading-none ${
             isDarkBg ? 'text-white' : 'text-slate-900'
           } ${
             size === 'sm'
@@ -80,7 +80,7 @@ export function Logo({
         </div>
         {showTagline && (
           <div
-            className={`tracking-widest uppercase font-bold mt-1 ${
+            className={`tracking-widest uppercase font-medium mt-1 ${
               isDarkBg ? 'text-[#8B8FA8]' : 'text-[#5B47D6]'
             } ${
               size === 'sm'

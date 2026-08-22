@@ -251,7 +251,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
               </thead>
               <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={7} className="py-10 text-center text-slate-400 font-semibold">{payouts.length === 0 ? 'No active teachers yet. Add teachers on the Teachers tab.' : 'No teachers match these filters.'}</td></tr>
+                  <tr><td colSpan={7} className="py-10 text-center text-slate-400 font-medium">{payouts.length === 0 ? 'No active teachers yet. Add teachers on the Teachers tab.' : 'No teachers match these filters.'}</td></tr>
                 ) : (
                   filtered.map((p) => {
                     const balance = Math.max(0, p.grossAmount - p.paidAmount);
@@ -261,17 +261,17 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
                           <div className="font-medium text-slate-900 dark:text-slate-100">{p.teacherName}</div>
                           <div className="text-xs text-[#6B7185]">{p.subjects.length ? p.subjects.join(' · ') : '-'}</div>
                         </td>
-                        <td className="py-3.5 px-3 font-mono font-semibold text-slate-900 dark:text-slate-100">
+                        <td className="py-3.5 px-3 font-mono font-medium text-slate-900 dark:text-slate-100">
                           {p.perClassPay > 0 ? `PKR ${p.perClassPay.toLocaleString()}` : (
-                            <button onClick={() => openSetRate(p)} className="text-[#5B47D6] font-sans font-medium hover:underline cursor-pointer">Set rate →</button>
+                            <button onClick={() => openSetRate(p)} className="text-[#5B47D6] font-sans font-medium hover:underline cursor-pointer">Set rate</button>
                           )}
                         </td>
-                        <td className="py-3.5 px-3 font-semibold text-purple-600">{p.completedClassesCount}</td>
+                        <td className="py-3.5 px-3 font-medium text-purple-600">{p.completedClassesCount}</td>
                         <td className="py-3.5 px-3 font-mono font-medium text-slate-900 dark:text-slate-100">PKR {p.grossAmount.toLocaleString()}</td>
-                        <td className="py-3.5 px-3 font-mono font-semibold text-emerald-600">PKR {p.paidAmount.toLocaleString()}</td>
+                        <td className="py-3.5 px-3 font-mono font-medium text-emerald-600">PKR {p.paidAmount.toLocaleString()}</td>
                         <td className="py-3.5 px-3">
                           <Badge tone={p.status === 'Paid' ? 'success' : p.status === 'Partial' ? 'warning' : 'neutral'}>{p.status}</Badge>
-                          {balance > 0 && <div className="text-xs text-rose-600 font-semibold mt-1">Bal PKR {balance.toLocaleString()}</div>}
+                          {balance > 0 && <div className="text-xs text-rose-600 font-medium mt-1">Bal PKR {balance.toLocaleString()}</div>}
                         </td>
                         <td className="py-3.5 px-3">
                           <div className="flex items-center justify-center gap-1.5">
@@ -363,7 +363,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
               ].map(([k, v]) => (
                 <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
                   <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">{k}</div>
-                  <div className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
+                  <div className="font-medium text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
                 </div>
               ))}
             </div>
@@ -392,7 +392,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
               <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Rate per class (PKR)</label>
               <input type="number" value={rateInput} onChange={(e) => setRateInput(e.target.value)} placeholder="e.g. 1500" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-base text-slate-900 dark:text-slate-100" />
               <p className="text-xs text-slate-500 font-medium mt-1">A new rate row is saved (history is preserved). Earned = rate × completed classes.</p>
-              {rateError && <div className="mt-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">{rateError}</div>}
+              {rateError && <div className="mt-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">{rateError}</div>}
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t">
               <button onClick={() => setRateTeacher(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>

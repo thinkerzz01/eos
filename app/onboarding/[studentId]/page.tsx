@@ -348,7 +348,7 @@ export default function OnboardingPage({ params }: { params: { studentId: string
 
               <label className="mt-5 flex items-start gap-3 rounded-2xl bg-[#5B47D6]/5 border border-[#5B47D6]/15 p-3.5 cursor-pointer">
                 <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} className="mt-0.5 w-4 h-4 accent-[#5B47D6]" />
-                <span className="text-xs font-semibold text-slate-700 leading-relaxed">
+                <span className="text-xs font-medium text-slate-700 leading-relaxed">
                   I Agree To Thinkerzz's{' '}
                   <a href="https://thinkerzz.com/privacy-policy/" target="_blank" rel="noreferrer" className="text-[#5B47D6] underline">Privacy Policy</a>
                   {' '}And Class Code Of Conduct, And Confirm The Information Above Is Correct.

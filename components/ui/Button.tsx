@@ -8,7 +8,7 @@ type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 type Size = 'md' | 'sm';
 
 const BASE =
-  'inline-flex items-center justify-center gap-1.5 rounded-xl font-bold transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
+  'inline-flex items-center justify-center gap-1.5 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
 
 const SIZES: Record<Size, string> = {
   md: 'h-[38px] px-4 text-xs',

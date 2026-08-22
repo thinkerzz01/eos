@@ -42,8 +42,8 @@ export function FinanceOverview({
   return (
     <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] p-5 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">Finance at a glance</h3>
-        <span className="text-xs font-bold text-slate-400">This month</span>
+        <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Finance at a glance</h3>
+        <span className="text-xs font-medium text-slate-400">This month</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-[150px_1fr] gap-6 items-center">
@@ -58,14 +58,14 @@ export function FinanceOverview({
             <text x="70" y="66" transform="rotate(90 70 70)" textAnchor="middle" className="fill-slate-900 dark:fill-white" style={{ fontSize: 26, fontWeight: 800 }}>{pct}%</text>
             <text x="70" y="86" transform="rotate(90 70 70)" textAnchor="middle" className="fill-slate-400" style={{ fontSize: 10, fontWeight: 700 }}>COLLECTED</text>
           </svg>
-          <div className="text-xs font-bold text-slate-500 mt-1">Collection rate</div>
+          <div className="text-xs font-medium text-slate-500 mt-1">Collection rate</div>
         </div>
 
         {/* Money bars */}
         <div className="space-y-3">
           {bars.map((b) => (
             <div key={b.label}>
-              <div className="flex justify-between text-xs font-bold mb-1">
+              <div className="flex justify-between text-xs font-medium mb-1">
                 <span className="text-slate-600 dark:text-slate-300">{b.label}</span>
                 <span className="font-mono text-slate-900 dark:text-white">{fmtPkr(b.value)}</span>
               </div>
@@ -75,7 +75,7 @@ export function FinanceOverview({
             </div>
           ))}
 
-          <div className="flex justify-between items-center pt-2 mt-1 border-t border-slate-100 dark:border-slate-800 text-xs font-extrabold">
+          <div className="flex justify-between items-center pt-2 mt-1 border-t border-slate-100 dark:border-slate-800 text-xs font-medium">
             <span className="text-slate-500">Net this month (collected − payouts − refunds)</span>
             <span className={`font-mono ${net >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}>{fmtPkr(net)}</span>
           </div>

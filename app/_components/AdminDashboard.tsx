@@ -40,7 +40,7 @@ const shiftDay = (iso: string, n: number) => { const d = new Date(iso + 'T12:00:
 const Sel = ({ label, value, onChange, opts }: { label: string; value: string; onChange: (v: string) => void; opts: string[] }) => (
   <div className="relative inline-flex items-center">
     <select value={value} onChange={(e) => onChange(e.target.value)}
-      className="appearance-none cursor-pointer rounded-[9px] border border-[#e0e3ee] bg-white pl-3 pr-8 py-2 text-[13px] font-semibold text-[#3b4258] hover:border-[#c9cee0] focus:outline-none focus:border-[#5b47d6]">
+      className="appearance-none cursor-pointer rounded-[9px] border border-[#e0e3ee] bg-white pl-3 pr-8 py-2 text-[13px] font-medium text-[#3b4258] hover:border-[#c9cee0] focus:outline-none focus:border-[#5b47d6]">
       <option value={`All ${label}`}>{`All ${label}`}</option>
       {opts.map((o) => <option key={o} value={o}>{o}</option>)}
     </select>
@@ -49,7 +49,7 @@ const Sel = ({ label, value, onChange, opts }: { label: string; value: string; o
 );
 const Seg = ({ value, onChange, opts }: { value: string; onChange: (v: string) => void; opts: { k: string; label: string }[] }) => (
   <div className="inline-flex rounded-lg bg-[#f2f3f8] p-[3px]">
-    {opts.map((o) => <button key={o.k} onClick={() => onChange(o.k)} className={cls('rounded-md px-3 py-1 text-[12px] font-semibold transition-colors', value === o.k ? 'bg-white text-[#0f1729] shadow-sm' : 'text-[#6b7391]')}>{o.label}</button>)}
+    {opts.map((o) => <button key={o.k} onClick={() => onChange(o.k)} className={cls('rounded-md px-3 py-1 text-[12px] font-medium transition-colors', value === o.k ? 'bg-white text-[#0f1729] shadow-sm' : 'text-[#6b7391]')}>{o.label}</button>)}
   </div>
 );
 const Card = ({ children, i = 0, className = '' }: { children: React.ReactNode; i?: number; className?: string }) => (
@@ -104,7 +104,7 @@ function HealthStrip({ health }: { health: SystemHealth }) {
     <Card i={0} className={cls(worst === 'red' && '!border-[#f3cdd4]', worst === 'amber' && '!border-[#f4e2c0]')}>
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[15px] font-medium text-[#0f1729]"><Activity className="h-[18px] w-[18px] text-[#5b47d6]" />System health</div>
-        <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#6b7391]">
+        <span className="flex items-center gap-1.5 text-[12px] font-medium text-[#6b7391]">
           <span className={cls('h-2 w-2 rounded-full', DOT[worst])} />
           {worst === 'green' ? 'All systems operational' : worst === 'amber' ? 'Needs attention' : 'Action required'}
         </span>
@@ -177,7 +177,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
     const a = document.createElement('a'); a.href = url; a.download = `classes-${selDate}.csv`; a.click(); URL.revokeObjectURL(url);
   };
 
-  const chip = 'inline-flex items-center gap-1.5 rounded-[9px] border border-[#e0e3ee] bg-white px-3 py-2 text-[13px] font-semibold text-[#6b7391] cursor-pointer hover:border-[#c9cee0]';
+  const chip = 'inline-flex items-center gap-1.5 rounded-[9px] border border-[#e0e3ee] bg-white px-3 py-2 text-[13px] font-medium text-[#6b7391] cursor-pointer hover:border-[#c9cee0]';
 
   return (
     <div style={{ fontFamily: 'var(--font-dmsans, var(--font-inter), system-ui)' }} className="space-y-4 text-[15px] text-[#0f1729]">
@@ -195,8 +195,8 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
           <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] bg-[#fdecef] text-[#e0435a]"><AlertTriangle className="h-5 w-5" /></span>
           <div className="text-[14px]"><b className="font-medium">{data.kpis.demosToAssign} demos need a teacher</b> <span className="text-[#6b7391]">· {data.attention.some((a) => a.kind === 'overdue') ? 'fees overdue' : 'all fees on track'}</span></div>
           <div className="ml-auto flex gap-2">
-            <button onClick={() => router.push('/demos?new=1')} className="rounded-[9px] bg-[#e0435a] px-4 py-2 text-[13px] font-semibold text-white">Assign demos</button>
-            <button onClick={() => router.push('/vouchers')} className="rounded-[9px] border border-[#e0e3ee] bg-white px-4 py-2 text-[13px] font-semibold text-[#3b4258]">Review fees</button>
+            <button onClick={() => router.push('/demos?new=1')} className="rounded-[9px] bg-[#e0435a] px-4 py-2 text-[13px] font-medium text-white">Assign demos</button>
+            <button onClick={() => router.push('/vouchers')} className="rounded-[9px] border border-[#e0e3ee] bg-white px-4 py-2 text-[13px] font-medium text-[#3b4258]">Review fees</button>
           </div>
         </motion.div>
       )}
@@ -242,9 +242,9 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
           <SecH title={<><Calendar className="h-5 w-5 text-[#5b47d6]" />Classes</>} right={
             <div className="flex items-center gap-2">
               <button onClick={() => setSelDate(shiftDay(selDate, -1))} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e0e3ee] text-[#6b7391] hover:bg-[#f6f7fb]"><ChevronLeft className="h-4 w-4" /></button>
-              <input type="date" value={selDate} onChange={(e) => setSelDate(e.target.value)} className="rounded-lg border border-[#e0e3ee] px-2 py-1.5 text-[13px] font-semibold text-[#3b4258]" />
+              <input type="date" value={selDate} onChange={(e) => setSelDate(e.target.value)} className="rounded-lg border border-[#e0e3ee] px-2 py-1.5 text-[13px] font-medium text-[#3b4258]" />
               <button onClick={() => setSelDate(shiftDay(selDate, 1))} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e0e3ee] text-[#6b7391] hover:bg-[#f6f7fb]"><ChevronRight className="h-4 w-4" /></button>
-              {selDate !== data.todayISO && <button onClick={() => setSelDate(data.todayISO)} className="rounded-lg bg-[#f6f4ff] px-3 py-1.5 text-[12px] font-semibold text-[#5b47d6]">Today</button>}
+              {selDate !== data.todayISO && <button onClick={() => setSelDate(data.todayISO)} className="rounded-lg bg-[#f6f4ff] px-3 py-1.5 text-[12px] font-medium text-[#5b47d6]">Today</button>}
             </div>} />
           <div className="mb-3 flex items-center justify-between">
             <div className="text-[13px] font-medium text-[#6b7391]">{fmtDay(selDate)}{selDate === data.todayISO ? ' (today)' : ''}</div>
@@ -258,13 +258,13 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
                 <div className="flex items-center gap-3">
                   <div className={cls('w-[54px] text-center text-[15px] font-medium', c.status === 'live' && 'text-[#11a256]', c.status === 'missed' && 'text-[#e0435a]')}>{c.status === 'live' ? 'Now' : c.time}</div>
                   <div className="flex-1">
-                    <div className="text-[14px] font-semibold">{c.subject} · {c.student}</div>
+                    <div className="text-[14px] font-medium">{c.subject} · {c.student}</div>
                     <div className="text-[12.5px] text-[#6b7391]">{c.teacher}{c.type === 'makeup' ? ' · makeup class' : ''}{c.status === 'completed' ? ' · attendance marked' : ''}{c.status === 'missed' ? (mk ? ` · rescheduled to ${mk.dateISO}` : ' · not rescheduled') : ''}</div>
                   </div>
-                  {c.status === 'completed' ? <span className="rounded-full bg-[#e6f7ee] px-2.5 py-1 text-[12px] font-semibold text-[#11a256]">Done</span>
-                    : c.status === 'missed' ? (mk ? <span className="rounded-full bg-[#eef0f7] px-2.5 py-1 text-[12px] font-semibold text-[#6b7391]">Rescheduled</span> : <button onClick={() => router.push('/schedule')} className="rounded-lg bg-[#fdecef] px-3 py-1.5 text-[12px] font-semibold text-[#e0435a]">Reschedule</button>)
-                      : c.meetingLink ? <button onClick={() => window.open(c.meetingLink, '_blank')} className={cls('ml-auto inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-semibold', c.status === 'live' ? 'bg-[#5b47d6] text-white' : 'bg-[#f6f4ff] text-[#5b47d6]')}><Video className="h-4 w-4" />Join</button>
-                        : <span className="ml-auto rounded-full bg-[#fdf3e2] px-2.5 py-1 text-[12px] font-semibold text-[#d9820a]">No invite</span>}
+                  {c.status === 'completed' ? <span className="rounded-full bg-[#e6f7ee] px-2.5 py-1 text-[12px] font-medium text-[#11a256]">Done</span>
+                    : c.status === 'missed' ? (mk ? <span className="rounded-full bg-[#eef0f7] px-2.5 py-1 text-[12px] font-medium text-[#6b7391]">Rescheduled</span> : <button onClick={() => router.push('/schedule')} className="rounded-lg bg-[#fdecef] px-3 py-1.5 text-[12px] font-medium text-[#e0435a]">Reschedule</button>)
+                      : c.meetingLink ? <button onClick={() => window.open(c.meetingLink, '_blank')} className={cls('ml-auto inline-flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-[13px] font-medium', c.status === 'live' ? 'bg-[#5b47d6] text-white' : 'bg-[#f6f4ff] text-[#5b47d6]')}><Video className="h-4 w-4" />Join</button>
+                        : <span className="ml-auto rounded-full bg-[#fdf3e2] px-2.5 py-1 text-[12px] font-medium text-[#d9820a]">No invite</span>}
                 </div>
               </div>
             );
@@ -280,8 +280,8 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
             return (
               <div key={a.id} className={cls('mb-2 flex items-center gap-2.5 rounded-xl border p-2.5', a.severity === 'high' ? 'border-[#f3cdd4] bg-[#fef8f9]' : 'border-[#eaecf3]')}>
                 <span className={cls('flex h-8 w-8 flex-none items-center justify-center rounded-[9px]', ic)}><Icon className="h-[18px] w-[18px]" /></span>
-                <div className="flex-1"><div className="text-[14px] font-semibold">{a.title}</div><div className="text-[12.5px] text-[#6b7391]">{a.sub}</div></div>
-                <button onClick={() => router.push(a.href)} className="ml-auto rounded-lg bg-[#f6f4ff] px-3 py-1.5 text-[12.5px] font-semibold text-[#5b47d6]">{a.action}</button>
+                <div className="flex-1"><div className="text-[14px] font-medium">{a.title}</div><div className="text-[12.5px] text-[#6b7391]">{a.sub}</div></div>
+                <button onClick={() => router.push(a.href)} className="ml-auto rounded-lg bg-[#f6f4ff] px-3 py-1.5 text-[12.5px] font-medium text-[#5b47d6]">{a.action}</button>
               </div>
             );
           })}
@@ -295,7 +295,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
           <div className="flex flex-col gap-2">
             {[{ label: 'Leads', n: funnel.L, w: 100, bg: '#5b47d6', m: '' }, { label: 'Contacted', n: funnel.C, w: funnel.cW, bg: '#6f5fe0', m: `${funnel.cW}%` }, { label: 'Demos', n: funnel.D, w: funnel.dW, bg: '#8878ea', m: `${funnel.dW}%` }, { label: 'Won', n: funnel.W, w: funnel.wW, bg: '#11a256', m: `${funnel.wW}%` }].map((f) => (
               <div key={f.label} className="flex items-center gap-2.5">
-                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(f.w, 16)}%` }} transition={{ duration: 0.7, ease: 'easeOut' }} className="flex h-8 items-center rounded-md px-3 text-[12.5px] font-semibold text-white" style={{ background: f.bg }}>{f.label}</motion.div>
+                <motion.div initial={{ width: 0 }} animate={{ width: `${Math.max(f.w, 16)}%` }} transition={{ duration: 0.7, ease: 'easeOut' }} className="flex h-8 items-center rounded-md px-3 text-[12.5px] font-medium text-white" style={{ background: f.bg }}>{f.label}</motion.div>
                 <span className="whitespace-nowrap text-[12.5px] text-[#6b7391]"><b className="text-[#0f1729]">{f.n}</b>{f.m && ` · ${f.m}`}</span>
               </div>
             ))}
@@ -310,7 +310,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
             return (
               <div key={t.id} className="flex items-center gap-3 border-b border-[#eaecf3] py-2.5 last:border-0">
                 <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-[#efedfe] text-[11px] font-medium text-[#5b47d6]">{t.name.split(' ').map((x) => x[0]).join('').slice(0, 2)}</span>
-                <div className="flex-1 text-[13.5px] font-semibold">{t.name}</div>
+                <div className="flex-1 text-[13.5px] font-medium">{t.name}</div>
                 <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#eef0f6]"><motion.i initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.7 }} className="block h-full rounded-full" style={{ background: pct >= 85 ? '#d9820a' : '#11a256' }} /></div>
                 <span className="w-10 text-right text-[12.5px] tabular-nums text-[#6b7391]">{t.load}/{t.capacity}</span>
               </div>

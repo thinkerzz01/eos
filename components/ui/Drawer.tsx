@@ -53,7 +53,7 @@ export function Drawer({
           {/* Header */}
           <div className="px-6 py-5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-950/60 flex items-center justify-between">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">{title}</h2>
+              <h2 className="text-lg font-medium text-slate-900 dark:text-slate-100">{title}</h2>
               {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
             </div>
             <button
@@ -72,7 +72,7 @@ export function Drawer({
                 <button
                   key={tab.id}
                   onClick={() => onTabChange?.(tab.id)}
-                  className={`py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
+                  className={`py-3 text-xs font-medium uppercase tracking-wider border-b-2 transition-colors flex items-center gap-2 whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'border-[#5B47D6] text-[#5B47D6] dark:border-purple-400 dark:text-purple-300'
                       : 'border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'

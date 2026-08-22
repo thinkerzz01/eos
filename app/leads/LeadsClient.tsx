@@ -342,7 +342,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
             >
               <Calendar className="w-3.5 h-3.5 text-[#5B47D6]" />
-              <span>Demos Management →</span>
+              <span>Demos Management</span>
             </Link>
 
             <Button
@@ -365,7 +365,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
             <Button variant="primary" onClick={() => setShowAddLeadModal(true)}>
               <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>+ Add New Lead</span>
+              <span>Add New Lead</span>
             </Button>
           </div>
         </div>
@@ -477,7 +477,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               disabled={bulkBusy}
               title="Set stage"
               onChange={(e) => { if (e.target.value) handleBulkLeadStage(e.target.value); }}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-[#5B47D6]"
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none focus:border-[#5B47D6]"
             >
               <option value="">Set stage…</option>
               <option value="New">New</option>
@@ -506,7 +506,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
             <button
               onClick={() => setSelectedLeadIds([])}
               disabled={bulkBusy}
-              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
             >
               Clear
             </button>
@@ -566,17 +566,17 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{l.studentName}</div>
+                          <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{l.studentName}</div>
                           <div className="text-xs text-[#6B7185] font-mono">{l.leadId}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <div className="font-semibold text-slate-900 dark:text-slate-100">{l.parentName}</div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">{l.parentName}</div>
                           <div className="text-xs text-[#6B7185] font-mono">{l.parentPhone}</div>
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <div className="font-semibold text-slate-900 dark:text-slate-100">{l.program}</div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">{l.program}</div>
                           <div className="text-xs text-[#6B7185]">{l.grade} · {l.subjects.join(', ')}</div>
                         </td>
 
@@ -608,7 +608,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                                 title="Convert Lead to Active Student"
                                 className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
                               >
-                                Convert →
+                                Convert
                               </button>
                             )}
 
@@ -722,7 +722,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     onClick={() => setConvertModalLead(selectedLeadDrawer)}
                     className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-xs shadow-md transition-all cursor-pointer"
                   >
-                    Convert {selectedLeadDrawer.studentName} to Active Student →
+                    Convert {selectedLeadDrawer.studentName} to Active Student
                   </button>
                 </div>
               )}
@@ -752,7 +752,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     <select
                       value={commChannel}
                       onChange={(e) => setCommChannel(e.target.value)}
-                      className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-[#5B47D6]"
+                      className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-medium focus:outline-none focus:border-[#5B47D6]"
                     >
                       <option value="call">Call</option>
                       <option value="whatsapp">WhatsApp</option>
@@ -857,7 +857,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   </div>
                 </div>
 
-                <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-semibold">
+                <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-medium">
                   Converting records the <strong>first month as paid</strong>. The next fee will be due <strong>30 days after</strong> the paid date, and a paid voucher is created automatically.
                 </div>
               </div>
@@ -877,7 +877,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">+ Add New Lead</h3>
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Add New Lead</h3>
                 <button onClick={() => setShowAddLeadModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 
@@ -953,7 +953,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     <button
                       key={r}
                       onClick={() => setNotConvReason(r)}
-                      className={`w-full text-left px-3 py-2 rounded-xl border text-xs font-semibold transition-colors ${
+                      className={`w-full text-left px-3 py-2 rounded-xl border text-xs font-medium transition-colors ${
                         notConvReason === r ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-700 hover:bg-slate-50'
                       }`}
                     >
@@ -970,13 +970,13 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   />
                 )}
                 {notConvError && (
-                  <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                  <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">
                     <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><span>{notConvError}</span>
                   </div>
                 )}
               </div>
               <div className="flex justify-end gap-2 pt-1">
-                <button onClick={() => setNotConvLead(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+                <button onClick={() => setNotConvLead(null)} className="px-4 py-2.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
                 <button onClick={handleMarkNotConverted} disabled={notConvSaving} className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" /><span>{notConvSaving ? 'Saving...' : 'Confirm'}</span>
                 </button>

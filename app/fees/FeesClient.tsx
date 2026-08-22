@@ -35,7 +35,7 @@ export function FeesClient({
     {
       header: 'Amount',
       cell: (row: VoucherRow) => (
-        <span className="font-mono font-semibold text-slate-200">
+        <span className="font-mono font-medium text-slate-200">
           PKR {row.amount.toLocaleString()}
         </span>
       ),
@@ -68,13 +68,13 @@ export function FeesClient({
             href="/vouchers"
             className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl shadow-sm inline-flex items-center gap-1.5"
           >
-            <span>Manage Vouchers &amp; Payments →</span>
+            <span>Manage Vouchers &amp; Payments</span>
           </Link>
         </div>
       )}
       {paymentInfo && (
         <div className="mb-4 rounded-lg border border-slate-700 bg-slate-800/50 p-4">
-          <h3 className="text-sm font-semibold text-slate-200">How to pay your fee</h3>
+          <h3 className="text-sm font-medium text-slate-200">How to pay your fee</h3>
           <div className="mt-2 grid gap-1 text-sm text-slate-300">
             {paymentInfo.bankTitle && (
               <div>

@@ -166,7 +166,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                   rows.map((c) => (
                     <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                       <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.startAt}</td>
-                      <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">
+                      <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">
                         {c.studentName || '—'}
                         {c.attendanceStatus && <span className="ml-2 text-[10px] font-medium text-emerald-600">✓ recorded</span>}
                       </td>

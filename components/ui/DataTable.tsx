@@ -66,7 +66,7 @@ export function DataTable<T>({
               <button
                 key={chip.id}
                 onClick={() => onFilterChange?.(chip.id)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-medium whitespace-nowrap transition-all ${
                   activeFilter === chip.id
                     ? 'bg-[#5B47D6] text-white shadow-sm shadow-[#5B47D6]/20'
                     : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700'
@@ -83,7 +83,7 @@ export function DataTable<T>({
           {onImportCSV && (
             <button
               onClick={onImportCSV}
-              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all"
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-xl flex items-center gap-1.5 transition-all"
             >
               <Upload className="w-3.5 h-3.5" />
               <span>Import CSV</span>
@@ -93,7 +93,7 @@ export function DataTable<T>({
           {onExportCSV && (
             <button
               onClick={onExportCSV}
-              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all"
+              className="px-3.5 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-xl flex items-center gap-1.5 transition-all"
             >
               <Download className="w-3.5 h-3.5" />
               <span>Export CSV</span>
@@ -116,8 +116,8 @@ export function DataTable<T>({
 
       {/* Table Content with Uniform High-Legibility Typography */}
       <div className="overflow-x-auto">
-        <table className="w-full text-left text-sm font-semibold text-slate-800 dark:text-slate-200">
-          <thead className="bg-slate-100/80 dark:bg-slate-950/80 text-xs uppercase font-bold text-slate-600 dark:text-slate-300 border-b border-slate-200/80 dark:border-slate-800/80 tracking-wider">
+        <table className="w-full text-left text-sm font-medium text-slate-800 dark:text-slate-200">
+          <thead className="bg-slate-100/80 dark:bg-slate-950/80 text-xs uppercase font-medium text-slate-600 dark:text-slate-300 border-b border-slate-200/80 dark:border-slate-800/80 tracking-wider">
             <tr>
               {columns.map((col, idx) => (
                 <th key={idx} className={`px-5 py-3.5 ${col.className || ''}`}>
@@ -154,7 +154,7 @@ export function DataTable<T>({
                     <div className="w-14 h-14 bg-slate-100 dark:bg-slate-800/80 rounded-full flex items-center justify-center text-slate-400 mb-3">
                       <Inbox className="w-7 h-7" />
                     </div>
-                    <h4 className="text-base font-bold text-slate-800 dark:text-slate-200 mb-1">
+                    <h4 className="text-base font-medium text-slate-800 dark:text-slate-200 mb-1">
                       {emptyTitle}
                     </h4>
                     <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm">

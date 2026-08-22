@@ -165,7 +165,7 @@ export function OnboardStudentModal({
           <button
             type="button"
             onClick={onClose}
-            className="px-5 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
+            className="px-5 py-2.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl"
           >
             Cancel
           </button>
@@ -173,7 +173,7 @@ export function OnboardStudentModal({
             type="submit"
             form="onboardForm"
             disabled={loading}
-            className="px-6 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl shadow-md transition-all flex items-center gap-2"
+            className="px-6 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl shadow-md transition-all flex items-center gap-2"
           >
             <UserPlus className="w-4 h-4" />
             <span>{loading ? 'Admitting...' : 'Admit Student'}</span>
@@ -185,7 +185,7 @@ export function OnboardStudentModal({
         {/* Row 1: Name, Parent Name, Phone, WhatsApp */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Student Name *
             </label>
             <input
@@ -199,7 +199,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Parent / Guardian Name *
             </label>
             <input
@@ -213,7 +213,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Phone Number *
             </label>
             <input
@@ -227,7 +227,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               WhatsApp Number
             </label>
             <input
@@ -243,7 +243,7 @@ export function OnboardStudentModal({
         {/* Row 2: Email, Address, City (Plain Text Input!), Gender */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Email Address *
             </label>
             <input
@@ -258,7 +258,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               City
             </label>
             <input
@@ -271,7 +271,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Address
             </label>
             <input
@@ -284,7 +284,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Gender (Pronoun Merge)
             </label>
             <select
@@ -303,7 +303,7 @@ export function OnboardStudentModal({
         {/* Row 3: Program (All 7 Programs), Exam Session, Enrolled Date, Months Committed */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Program *
             </label>
             <select
@@ -320,7 +320,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Exam Session
             </label>
             <select
@@ -336,7 +336,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Enrolled Date
             </label>
             <input
@@ -348,7 +348,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Months Committed
             </label>
             <input
@@ -356,7 +356,7 @@ export function OnboardStudentModal({
               value={formData.months_committed}
               onChange={(e) => setFormData({ ...formData, months_committed: e.target.value })}
               placeholder="e.g. 6"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] font-mono font-bold"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] font-mono font-medium"
             />
           </div>
         </div>
@@ -364,7 +364,7 @@ export function OnboardStudentModal({
         {/* Row 4: Monthly Fee, Fee Status, Next Due Date, Lead Source */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Monthly Fee (PKR)
             </label>
             <input
@@ -372,12 +372,12 @@ export function OnboardStudentModal({
               value={formData.monthly_fee}
               onChange={(e) => setFormData({ ...formData, monthly_fee: e.target.value })}
               placeholder="e.g. 20000"
-              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] font-mono font-bold"
+              className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3.5 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] font-mono font-medium"
             />
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Fee Status
             </label>
             <select
@@ -394,7 +394,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Next Due Date
             </label>
             <input
@@ -406,7 +406,7 @@ export function OnboardStudentModal({
           </div>
 
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1.5">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1.5">
               Lead Source
             </label>
             <select
@@ -424,7 +424,7 @@ export function OnboardStudentModal({
 
         {/* Subjects Selection (CAIE + Local Board) */}
         <div>
-          <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-2">
+          <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-2">
             Select Enrolled Subjects (CAIE, Matric & Inter)
           </label>
           <div className="flex flex-wrap gap-2.5 max-h-44 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl">
@@ -438,7 +438,7 @@ export function OnboardStudentModal({
                   type="button"
                   key={subj}
                   onClick={() => toggleSubject(subj)}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-bold transition-all border ${
+                  className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all border ${
                     isSel
                       ? 'bg-[#5B47D6] text-white border-[#5B47D6] shadow-sm'
                       : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700 hover:bg-slate-100'
@@ -454,7 +454,7 @@ export function OnboardStudentModal({
         {/* Assign a teacher per selected subject (creates the enrollment link) */}
         {formData.selectedSubjects.length > 0 && (
           <div>
-            <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-2">
+            <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-2">
               Assign Teacher per Subject
             </label>
             <div className="space-y-2">
@@ -463,7 +463,7 @@ export function OnboardStudentModal({
                 const options = eligible.length > 0 ? eligible : teachers;
                 return (
                   <div key={subj} className="grid grid-cols-1 sm:grid-cols-2 gap-2 items-center">
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">{subj}</span>
+                    <span className="text-xs font-medium text-slate-700 dark:text-slate-300">{subj}</span>
                     <select
                       value={subjectTeacher[subj] || ''}
                       onChange={(e) => setSubjectTeacher((prev) => ({ ...prev, [subj]: e.target.value }))}

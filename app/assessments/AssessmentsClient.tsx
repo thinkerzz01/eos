@@ -165,7 +165,7 @@ export function AssessmentsClient({
                           }}
                           className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl shadow-xs transition-all cursor-pointer"
                         >
-                          Generate Result Slip →
+                          Generate Result Slip
                         </button>
                       </td>
                     </tr>

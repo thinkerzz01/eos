@@ -59,6 +59,16 @@ body {
   letter-spacing: -0.01em;
 }
 
+/* Emails, phone numbers, codes and amounts were tagged `font-mono`, which fell
+   back to a monospace stack that looked jarringly different from the rest of
+   the UI. Render them in the normal body font instead, but keep digits aligned
+   with tabular figures so numeric columns still line up. (Sits after @tailwind
+   utilities so it wins on same-specificity.) */
+.font-mono {
+  font-family: var(--app-font-body), ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 5px;

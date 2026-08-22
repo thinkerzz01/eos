@@ -99,7 +99,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
             className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
           >
             <Send className="w-3.5 h-3.5 text-[#5B47D6]" />
-            <span>Email Queue →</span>
+            <span>Email Queue</span>
           </Link>
         </div>
 
@@ -257,12 +257,12 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                     <img src="/logo-light.png" alt="Thinkerzz" className="h-9 w-auto object-contain brightness-0 invert" />
                     <div>
                       <div className="text-2xl font-medium leading-none">Thinkerzz</div>
-                      <div className="text-[11px] font-semibold uppercase tracking-widest text-purple-200 mt-1">Monthly Progress Report</div>
+                      <div className="text-[11px] font-medium uppercase tracking-widest text-purple-200 mt-1">Monthly Progress Report</div>
                     </div>
                   </div>
                   <div className="text-right">
                     <div className="text-lg font-medium leading-tight">{selectedReport.firstName}</div>
-                    <div className="text-[11px] font-semibold text-purple-200">{selectedReport.program} · {selectedReport.month}</div>
+                    <div className="text-[11px] font-medium text-purple-200">{selectedReport.program} · {selectedReport.month}</div>
                   </div>
                 </div>
               </div>

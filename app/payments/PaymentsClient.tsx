@@ -191,7 +191,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
             </Button>
             <Link href="/vouchers" className="h-[38px] px-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
               <Receipt className="w-3.5 h-3.5" />
-              <span>Manage Vouchers →</span>
+              <span>Manage Vouchers</span>
             </Link>
           </div>
         </div>
@@ -244,7 +244,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
 
             <button
               onClick={() => setSelectedReceiptIds([])}
-              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
             >
               Clear
             </button>
@@ -292,7 +292,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
                         <div className="text-xs text-[#6B7185] font-mono">{p.receiptNo}</div>
                       </td>
                       <td className="py-3.5 px-3">
-                        <div className="font-semibold text-slate-900 dark:text-slate-100">{humanDate(p.paymentDate)}</div>
+                        <div className="font-medium text-slate-900 dark:text-slate-100">{humanDate(p.paymentDate)}</div>
                         <div className="text-xs text-[#6B7185]">{p.paymentMethod}</div>
                       </td>
                       <td className="py-3.5 px-3">
@@ -350,7 +350,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
                 <input type="text" value={edRef} onChange={(e) => setEdRef(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
               </div>
               {edError && (
-                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl"><span>{edError}</span></div>
+                <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl"><span>{edError}</span></div>
               )}
             </div>
             <div className="flex justify-end gap-2 pt-3 border-t">
@@ -385,11 +385,11 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
                   <div className="w-11 h-11 rounded-xl bg-[#5B47D6] text-white flex items-center justify-center font-medium text-lg">T</div>
                   <div>
                     <div className="font-medium text-lg leading-tight">Thinkerzz</div>
-                    <div className="text-xs text-slate-500 font-semibold">Payment Receipt</div>
+                    <div className="text-xs text-slate-500 font-medium">Payment Receipt</div>
                   </div>
                   <div className="ml-auto font-mono font-medium text-sm">{receipt.receiptNo}</div>
                 </div>
-                <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-[14px] font-semibold">
+                <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-[14px] font-medium">
                   <div className="text-slate-500">Student</div><div className="text-right">{receipt.studentName}</div>
                   <div className="text-slate-500">Date</div><div className="text-right">{humanDate(receipt.paymentDate)}</div>
                   <div className="text-slate-500">Method</div><div className="text-right">{receipt.paymentMethod}</div>

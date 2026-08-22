@@ -288,7 +288,7 @@ export function HomeworkClient({
             <button
               onClick={() => setSelectedHwIds([])}
               disabled={bulkBusy}
-              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
             >
               Clear
             </button>
@@ -342,12 +342,12 @@ export function HomeworkClient({
                         <div className="font-medium text-slate-900 dark:text-slate-100">{hw.title}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{hw.homeworkCode}</div>
                       </td>
-                      <td className="py-3.5 px-3 font-semibold text-slate-900 dark:text-slate-100">{hw.studentName || '-'}</td>
-                      <td className="py-3.5 px-3 font-semibold text-slate-900 dark:text-slate-100">{hw.subject || '-'}</td>
-                      <td className="py-3.5 px-3 font-semibold text-slate-900 dark:text-slate-100">{hw.teacherName || '-'}</td>
+                      <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{hw.studentName || '-'}</td>
+                      <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{hw.subject || '-'}</td>
+                      <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{hw.teacherName || '-'}</td>
                       <td className="py-3.5 px-3">
                         <div className="text-slate-700">Assigned: {fdate(hw.assignedDate)}</div>
-                        <div className="text-rose-600 font-semibold">Due: {fdate(hw.dueISO)}</div>
+                        <div className="text-rose-600 font-medium">Due: {fdate(hw.dueISO)}</div>
                       </td>
                       <td className="py-3.5 px-3">
                         <Badge tone={hw.submissionStatus === 'Graded' ? 'success' : hw.submissionStatus === 'Submitted' ? 'info' : 'neutral'}>{hw.submissionStatus}</Badge>
@@ -369,7 +369,7 @@ export function HomeworkClient({
                             </button>
                           )}
                           {!canManage && hw.submissionStatus !== 'Not submitted' && (
-                            <span className="text-xs font-semibold text-emerald-600">✓ {hw.submissionStatus}</span>
+                            <span className="text-xs font-medium text-emerald-600">✓ {hw.submissionStatus}</span>
                           )}
                           {canManage && (
                             <RowActionsMenu
@@ -414,7 +414,7 @@ export function HomeworkClient({
                 ].map(([k, v]) => (
                   <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
                     <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">{k}</div>
-                    <div className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
+                    <div className="font-medium text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
                   </div>
                 ))}
               </div>
@@ -440,11 +440,11 @@ export function HomeworkClient({
                   <input type="date" value={edDeadline} onChange={(e) => setEdDeadline(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                 </div>
                 {edError && (
-                  <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl"><span>{edError}</span></div>
+                  <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl"><span>{edError}</span></div>
                 )}
               </div>
               <div className="flex justify-end gap-2 pt-1">
-                <button onClick={() => setEditHw(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
+                <button onClick={() => setEditHw(null)} className="px-4 py-2.5 text-xs font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
                 <button onClick={handleUpdate} disabled={edSaving} className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm">{edSaving ? 'Saving...' : 'Save Changes'}</button>
               </div>
             </div>

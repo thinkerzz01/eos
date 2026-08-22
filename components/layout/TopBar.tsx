@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useTheme } from '@/components/ui/ThemeContext';
 import { useRole } from '@/components/ui/RoleContext';
 import { createClient } from '@/lib/supabase/client';
@@ -41,6 +41,8 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showQuickMenu, setShowQuickMenu] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+  const isDashboard = pathname === '/'; // the greeting only makes sense on the dashboard
 
   // In-app notifications (the bell). Polled lightly so the badge stays fresh.
   const [notifs, setNotifs] = useState<MyNotification[]>([]);
@@ -149,15 +151,17 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
           </button>
         )}
 
-        <div>
-          <h1 className="font-heading font-extrabold text-slate-900 dark:text-white text-lg sm:text-xl flex items-center gap-1.5 leading-tight">
-            <span>Welcome back, {displayName}!</span>
-            <span>👋</span>
-          </h1>
-          <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium hidden sm:block">
-            Here's what's happening at Thinkerzz today.
-          </p>
-        </div>
+        {isDashboard && (
+          <div>
+            <h1 className="font-heading font-medium text-slate-900 dark:text-white text-lg sm:text-xl flex items-center gap-1.5 leading-tight">
+              <span>Welcome back, {displayName}!</span>
+              <span>👋</span>
+            </h1>
+            <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium hidden sm:block">
+              Here's what's happening at Thinkerzz today.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Right Controls: Search, Quick Action, Bell, Theme, Profile */}
@@ -191,14 +195,14 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                   ) : (
                     searchGroups.map((g) => (
                       <div key={g.label}>
-                        <div className="px-4 pt-2.5 pb-1 text-[10px] font-bold uppercase tracking-wide text-[#9AA0B4]">{g.label}</div>
+                        <div className="px-4 pt-2.5 pb-1 text-[10px] font-medium uppercase tracking-wide text-[#9AA0B4]">{g.label}</div>
                         {g.hits.map((h) => (
                           <button
                             key={h.id}
                             onClick={() => gotoHit(h.link)}
                             className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800/60"
                           >
-                            <span className="block text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{h.label}</span>
+                            <span className="block text-xs font-medium text-slate-900 dark:text-slate-100 truncate">{h.label}</span>
                             {h.sub && <span className="block text-[11px] text-[#6B7185] truncate">{h.sub}</span>}
                           </button>
                         ))}
@@ -216,7 +220,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
         <div className="relative">
           <button
             onClick={() => setShowQuickMenu(!showQuickMenu)}
-            className="h-[38px] px-3.5 sm:px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-2 shadow-sm shadow-[#5B47D6]/20 transition-all"
+            className="h-[38px] px-3.5 sm:px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl flex items-center gap-2 shadow-sm shadow-[#5B47D6]/20 transition-all"
           >
             <Plus className="w-4 h-4 stroke-[2.5]" />
             <span className="hidden sm:inline">Quick Action</span>
@@ -224,7 +228,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
           </button>
 
           {showQuickMenu && (
-            <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-[#0F172A] border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-2xl py-2 z-50 text-xs font-semibold space-y-0.5 max-h-[420px] overflow-y-auto">
+            <div className="absolute right-0 mt-2 w-60 bg-white dark:bg-[#0F172A] border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-2xl py-2 z-50 text-xs font-medium space-y-0.5 max-h-[420px] overflow-y-auto">
               <button
                 onClick={() => {
                   onQuickAdd?.('student');
@@ -233,7 +237,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
               >
                 <UserPlus className="w-4 h-4 text-[#5B47D6]" />
-                <span>+ New Student</span>
+                <span>New Student</span>
               </button>
               <button
                 onClick={() => {
@@ -243,7 +247,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
               >
                 <UserPlus className="w-4 h-4 text-emerald-600" />
-                <span>+ New Lead</span>
+                <span>New Lead</span>
               </button>
               <button
                 onClick={() => {
@@ -253,7 +257,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
               >
                 <BookOpen className="w-4 h-4 text-amber-500" />
-                <span>+ Book Demo</span>
+                <span>Book Demo</span>
               </button>
               <button
                 onClick={() => {
@@ -263,7 +267,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
               >
                 <Calendar className="w-4 h-4 text-blue-500" />
-                <span>+ Schedule Class</span>
+                <span>Schedule Class</span>
               </button>
               <button
                 onClick={() => {
@@ -273,7 +277,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
               >
                 <Receipt className="w-4 h-4 text-purple-600" />
-                <span>+ Create Voucher</span>
+                <span>Create Voucher</span>
               </button>
               <button
                 onClick={() => {
@@ -283,7 +287,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
               >
                 <DollarSign className="w-4 h-4 text-emerald-500" />
-                <span>+ Record Payment</span>
+                <span>Record Payment</span>
               </button>
               <button
                 onClick={() => {
@@ -293,7 +297,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
               >
                 <FileText className="w-4 h-4 text-blue-600" />
-                <span>+ Assign Homework</span>
+                <span>Assign Homework</span>
               </button>
               <button
                 onClick={() => {
@@ -303,7 +307,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                 className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 flex items-center gap-2.5"
               >
                 <Megaphone className="w-4 h-4 text-[#5B47D6]" />
-                <span>+ Post Announcement</span>
+                <span>Post Announcement</span>
               </button>
             </div>
           )}
@@ -320,7 +324,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
           >
             <Bell className="w-4.5 h-4.5" />
             {unread > 0 && (
-              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-medium flex items-center justify-center">
                 {unread > 9 ? '9+' : unread}
               </span>
             )}
@@ -331,9 +335,9 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
               <div className="fixed inset-0 z-40" onClick={() => setShowNotifs(false)} />
               <div className="absolute right-0 mt-2 w-80 max-w-[92vw] bg-white dark:bg-[#0F172A] border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
-                  <span className="font-bold text-sm text-slate-900 dark:text-white">Notifications</span>
+                  <span className="font-medium text-sm text-slate-900 dark:text-white">Notifications</span>
                   {unread > 0 && (
-                    <button onClick={handleMarkAllRead} className="text-xs font-semibold text-[#5B47D6] hover:underline">Mark all read</button>
+                    <button onClick={handleMarkAllRead} className="text-xs font-medium text-[#5B47D6] hover:underline">Mark all read</button>
                   )}
                 </div>
                 <div className="max-h-[360px] overflow-y-auto divide-y divide-slate-100 dark:divide-slate-800">
@@ -348,7 +352,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                       >
                         <span className={`mt-1.5 w-2 h-2 rounded-full shrink-0 ${n.read ? 'bg-transparent' : 'bg-[#5B47D6]'}`} />
                         <span className="min-w-0">
-                          <span className="block text-xs font-bold text-slate-900 dark:text-slate-100 truncate">{n.title}</span>
+                          <span className="block text-xs font-medium text-slate-900 dark:text-slate-100 truncate">{n.title}</span>
                           {n.body && <span className="block text-xs text-[#6B7185] line-clamp-2">{n.body}</span>}
                           <span className="block text-[10px] text-slate-400 mt-0.5">{timeAgo(n.createdAt)}</span>
                         </span>
@@ -381,11 +385,11 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
             onClick={() => setShowProfileMenu(!showProfileMenu)}
             className="flex items-center gap-2 p-1.5 rounded-xl border border-[#EBEDF3] dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all shadow-sm"
           >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#5B47D6] to-[#8B7BF0] text-white flex items-center justify-center font-medium text-xs shadow-sm">
               <User className="w-4 h-4" />
             </div>
             <div className="text-left hidden sm:block pr-1">
-              <div className="text-xs font-extrabold text-slate-900 dark:text-slate-100 flex items-center gap-1">
+              <div className="text-xs font-medium text-slate-900 dark:text-slate-100 flex items-center gap-1">
                 <span>{displayName}</span>
                 <Shield className="w-3 h-3 text-[#5B47D6]" />
               </div>
@@ -395,13 +399,13 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
           {showProfileMenu && (
             <div className="absolute right-0 mt-2 w-52 bg-white dark:bg-[#0F172A] border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-xl p-3 z-50 text-xs">
               <div className="pb-2 border-b border-slate-100 dark:border-slate-800 mb-2">
-                <div className="font-bold text-slate-900 dark:text-slate-100 truncate text-xs flex items-center gap-1.5">
+                <div className="font-medium text-slate-900 dark:text-slate-100 truncate text-xs flex items-center gap-1.5">
                   <User className="w-3.5 h-3.5 text-[#5B47D6]" />
                   <span>{displayName}</span>
                 </div>
               </div>
 
-              <div className="px-2.5 py-1.5 text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
+              <div className="px-2.5 py-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1.5">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#5B47D6]" />
                 <span>Role: <span className="capitalize text-slate-800 dark:text-slate-200">{role}</span></span>
               </div>
@@ -409,7 +413,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
               <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800">
                 <button
                   onClick={handleSignOut}
-                  className="w-full text-left px-2.5 py-1.5 rounded-lg font-bold flex items-center gap-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
+                  className="w-full text-left px-2.5 py-1.5 rounded-lg font-medium flex items-center gap-2 text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                   <span>Sign Out</span>

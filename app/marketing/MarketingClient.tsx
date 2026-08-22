@@ -122,7 +122,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
   const reset = () => { setRange('all'); setFromDate(''); setToDate(''); setSourceFilter('All Sources'); setConv('all'); };
 
   const seg = (active: boolean) =>
-    `px-3 py-1.5 rounded-lg text-[13px] font-semibold transition-colors ${active ? 'bg-[#5B47D6] text-white' : 'text-[#6B7185] hover:bg-slate-100'}`;
+    `px-3 py-1.5 rounded-lg text-[13px] font-medium transition-colors ${active ? 'bg-[#5B47D6] text-white' : 'text-[#6B7185] hover:bg-slate-100'}`;
 
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
@@ -169,7 +169,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
                   <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Month</label>
                   <input type="date" value={spMonth} onChange={(e) => setSpMonth(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                 </div>
-                {spError && <p className="text-xs font-semibold text-rose-600">{spError}</p>}
+                {spError && <p className="text-xs font-medium text-rose-600">{spError}</p>}
               </div>
               <div className="flex justify-end gap-2">
                 <button onClick={() => setShowSpend(false)} className="px-4 py-2 border rounded-xl font-medium text-xs text-slate-600 dark:text-slate-300">Cancel</button>
@@ -191,9 +191,9 @@ export function MarketingClient({ data }: { data: MarketingData }) {
           </div>
           {range === 'custom' && (
             <div className="flex items-center gap-1.5 text-[13px]">
-              <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1.5 font-semibold" />
+              <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1.5 font-medium" />
               <span className="text-[#6B7185]">to</span>
-              <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1.5 font-semibold" />
+              <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg px-2 py-1.5 font-medium" />
             </div>
           )}
 
@@ -260,9 +260,9 @@ export function MarketingClient({ data }: { data: MarketingData }) {
                   stats.map((r) => (
                     <tr key={r.key} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{r.source}</td>
-                      <td className="py-3.5 px-3 font-semibold text-slate-900 dark:text-slate-100">{r.leads}</td>
-                      <td className="py-3.5 px-3 font-semibold text-emerald-600">{r.won}</td>
-                      <td className="py-3.5 px-3 font-semibold text-purple-600">{r.conversionPct}%</td>
+                      <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{r.leads}</td>
+                      <td className="py-3.5 px-3 font-medium text-emerald-600">{r.won}</td>
+                      <td className="py-3.5 px-3 font-medium text-purple-600">{r.conversionPct}%</td>
                       <td className="py-3.5 px-3 font-mono text-slate-900 dark:text-slate-100">{r.spend > 0 ? `PKR ${r.spend.toLocaleString()}` : '-'}</td>
                       <td className="py-3.5 px-3 font-mono text-slate-900 dark:text-slate-100">{r.costPerStudent != null ? `PKR ${r.costPerStudent.toLocaleString()}` : '-'}</td>
                     </tr>

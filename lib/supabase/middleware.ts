@@ -1,21 +1,16 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-// Per-request Content-Security-Policy with a nonce. In PRODUCTION the script-src
-// is nonce-based (no 'unsafe-inline'/'unsafe-eval'), so an injected inline script
-// can't run. In DEV it stays permissive because Next's HMR needs inline + eval.
-// The Turnstile host stays explicitly allow-listed (not via strict-dynamic) so
-// the bot-challenge script keeps loading. Next reads the nonce from the CSP on the
-// request headers and applies it to its own scripts; our one inline boot script
-// (app/layout.tsx) reads it from `x-nonce`.
-function buildCsp(nonce: string): string {
-  const isProd = process.env.NODE_ENV === 'production';
-  const scriptSrc = isProd
-    ? `'self' 'nonce-${nonce}' https://challenges.cloudflare.com`
-    : "'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com";
+// Content-Security-Policy applied to every response. Uses 'unsafe-inline' for
+// script-src (needed by Next's inline bootstrap + the text-size boot script). A
+// nonce-based policy was tried but is fragile with Next's cached/prefetched HTML
+// (a nonce mismatch silently blocks ALL scripts -> no hydration), so we use this
+// robust static policy instead. The value is still real: connect-src / form-action
+// / frame-ancestors / object-src / base-uri stay locked down.
+function buildCsp(): string {
   return [
     "default-src 'self'",
-    `script-src ${scriptSrc}`,
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' data: https://fonts.gstatic.com",
     "img-src 'self' data: blob: https://*.supabase.co",
@@ -29,22 +24,11 @@ function buildCsp(nonce: string): string {
 }
 
 export async function updateSession(request: NextRequest) {
-  // Fresh nonce per request (Edge runtime: btoa is available, Buffer is not).
-  const bytes = crypto.getRandomValues(new Uint8Array(16));
-  let bin = '';
-  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
-  const nonce = btoa(bin);
-  const csp = buildCsp(nonce);
-
-  // Forward the nonce + CSP on the REQUEST headers: Next extracts the nonce from
-  // the CSP header to nonce its framework scripts, and app/layout.tsx reads x-nonce.
-  const requestHeaders = new Headers(request.headers);
-  requestHeaders.set('x-nonce', nonce);
-  requestHeaders.set('content-security-policy', csp);
+  const csp = buildCsp();
 
   let response = NextResponse.next({
     request: {
-      headers: requestHeaders,
+      headers: request.headers,
     },
   });
 
@@ -60,7 +44,7 @@ export async function updateSession(request: NextRequest) {
           request.cookies.set({ name, value, ...options });
           response = NextResponse.next({
             request: {
-              headers: requestHeaders,
+              headers: request.headers,
             },
           });
           response.cookies.set({ name, value, ...options });
@@ -69,7 +53,7 @@ export async function updateSession(request: NextRequest) {
           request.cookies.set({ name, value: '', ...options });
           response = NextResponse.next({
             request: {
-              headers: requestHeaders,
+              headers: request.headers,
             },
           });
           response.cookies.set({ name, value: '', ...options });

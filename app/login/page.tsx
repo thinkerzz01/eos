@@ -84,7 +84,7 @@ export default function LoginPage() {
       <div className="absolute top-6 right-6 z-20">
         <button
           onClick={toggleTheme}
-          className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-xs font-semibold"
+          className="p-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 shadow-md hover:shadow-lg transition-all flex items-center gap-2 text-xs font-medium"
           title="Toggle Light/Dark Theme"
         >
           {theme === 'dark' ? (
@@ -105,7 +105,7 @@ export default function LoginPage() {
         {/* Brand Logo (light logo on light bg, white logo on dark bg) */}
         <img src="/logo-light.png" alt="Thinkerzz" className="mx-auto h-11 w-auto object-contain mb-3 dark:hidden" />
         <img src="/logo-dark.png" alt="Thinkerzz" className="mx-auto h-11 w-auto object-contain mb-3 hidden dark:block" />
-        <p className="mt-1.5 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+        <p className="mt-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
           Operating System & Portal Suite
         </p>
       </div>
@@ -178,7 +178,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={handleForgot}
                   disabled={loading}
-                  className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 hover:underline disabled:opacity-50"
+                  className="text-xs font-medium text-indigo-600 dark:text-indigo-400 hover:underline disabled:opacity-50"
                 >
                   Forgot password?
                 </button>

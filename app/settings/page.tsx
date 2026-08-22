@@ -381,7 +381,7 @@ export default function SettingsPage() {
                   </button>
                 </div>
                 {testResult && (
-                  <div className={`text-xs font-semibold normal-case ${testResult.startsWith('✓') ? 'text-emerald-600' : 'text-rose-600'}`}>
+                  <div className={`text-xs font-medium normal-case ${testResult.startsWith('✓') ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {testResult}
                   </div>
                 )}

@@ -371,7 +371,7 @@ export function VouchersClient({
               className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
             >
               <Receipt className="w-3.5 h-3.5 text-[#5B47D6]" />
-              <span>Receipts →</span>
+              <span>Receipts</span>
             </Link>
             <Button
               variant="secondary"
@@ -422,7 +422,7 @@ export function VouchersClient({
                   <input type="date" value={genDueDate} onChange={(e) => setGenDueDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                   {genDueDate && <p className="text-[11px] text-slate-400 mt-1">Fee month: <strong>{monthLabelPKT(genDueDate)}</strong> · grace = due + 3 days.</p>}
                 </div>
-                {genError && <p className="text-xs font-semibold text-rose-600">{genError}</p>}
+                {genError && <p className="text-xs font-medium text-rose-600">{genError}</p>}
               </div>
               <div className="flex justify-end gap-2">
                 <button onClick={() => setShowGenerate(false)} className="px-4 py-2 border rounded-xl font-medium text-xs text-slate-600 dark:text-slate-300">Cancel</button>
@@ -539,7 +539,7 @@ export function VouchersClient({
             <button
               onClick={() => setSelectedVoucherIds([])}
               disabled={bulkBusy}
-              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-medium text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
             >
               Clear
             </button>
@@ -590,12 +590,12 @@ export function VouchersClient({
                         />
                       </td>
                       <td className="py-3.5 px-3">
-                        <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{v.studentName}</div>
+                        <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{v.studentName}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{v.voucherNo}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <div className="font-semibold text-slate-900 dark:text-slate-100">{v.parentName}</div>
+                        <div className="font-medium text-slate-900 dark:text-slate-100">{v.parentName}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{v.parentPhone}</div>
                       </td>
 
@@ -635,7 +635,7 @@ export function VouchersClient({
                               onClick={() => setDecisionVoucher(v)}
                               className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-medium text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
                             >
-                              Fee Decision →
+                              Fee Decision
                             </button>
                           )}
                           {!v.needsAdminDecision && v.status !== 'Paid' && (
@@ -777,7 +777,7 @@ export function VouchersClient({
                     <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center font-medium text-lg">T</div>
                     <div>
                       <div className="font-medium text-xl leading-tight">Thinkerzz</div>
-                      <div className="text-xs text-purple-200 font-semibold uppercase tracking-widest">Fee Voucher</div>
+                      <div className="text-xs text-purple-200 font-medium uppercase tracking-widest">Fee Voucher</div>
                     </div>
                     <div className="ml-auto text-right">
                       <div className="text-[11px] text-purple-200">Voucher</div>
@@ -791,10 +791,10 @@ export function VouchersClient({
                     <div className="font-heading font-medium text-4xl text-slate-900 mt-1">
                       PKR {(previewVoucher.runningBalance > 0 ? previewVoucher.runningBalance : previewVoucher.totalAmount).toLocaleString()}
                     </div>
-                    <div className="text-[13px] font-semibold text-slate-500 mt-1">Due by {previewVoucher.dueDate}</div>
+                    <div className="text-[13px] font-medium text-slate-500 mt-1">Due by {previewVoucher.dueDate}</div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-[14px] font-semibold">
+                  <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-[14px] font-medium">
                     <div className="text-slate-500">Student</div><div className="text-right">{previewVoucher.studentName}</div>
                     <div className="text-slate-500">Parent</div><div className="text-right">{previewVoucher.parentName}</div>
                     <div className="text-slate-500">Program</div><div className="text-right">{previewVoucher.program}</div>
@@ -807,7 +807,7 @@ export function VouchersClient({
                         <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
                           <div className="font-medium text-[#5B47D6] mb-1 uppercase tracking-wide text-xs">Bank Transfer</div>
                           <div className="space-y-0.5 text-slate-700">
-                            {paymentInfo.bankTitle && <div>Title: <span className="font-semibold">{paymentInfo.bankTitle}</span></div>}
+                            {paymentInfo.bankTitle && <div>Title: <span className="font-medium">{paymentInfo.bankTitle}</span></div>}
                             {paymentInfo.bankAccountNo && <div>Account No: <span className="font-mono">{paymentInfo.bankAccountNo}</span></div>}
                             {paymentInfo.bankIban && <div>IBAN: <span className="font-mono">{paymentInfo.bankIban}</span></div>}
                           </div>
@@ -816,7 +816,7 @@ export function VouchersClient({
                       {paymentInfo.wallet && (
                         <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
                           <div className="font-medium text-[#12A150] mb-1 uppercase tracking-wide text-xs">JazzCash / Mobile Wallet</div>
-                          <div className="text-slate-700"><span className="font-semibold">{paymentInfo.wallet}</span></div>
+                          <div className="text-slate-700"><span className="font-medium">{paymentInfo.wallet}</span></div>
                         </div>
                       )}
                     </div>
@@ -1030,7 +1030,7 @@ export function VouchersClient({
                   <p className="text-xs text-slate-500 font-medium mt-1">A 3-day grace deadline is recalculated automatically.</p>
                 </div>
                 {edError && (
-                  <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">
+                  <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">
                     <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" /><span>{edError}</span>
                   </div>
                 )}

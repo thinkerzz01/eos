@@ -72,7 +72,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
               className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
-              <span>+ New Announcement</span>
+              <span>New Announcement</span>
             </button>
           )}
         </div>
@@ -113,7 +113,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">+ Create Announcement</h3>
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Create Announcement</h3>
                 <button onClick={() => setShowAddModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 

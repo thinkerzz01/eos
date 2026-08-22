@@ -116,7 +116,7 @@ export function EmailQueueClient({ initialNotifications }: { initialNotification
               <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-10 text-center text-slate-400 font-semibold">
+                    <td colSpan={5} className="py-10 text-center text-slate-400 font-medium">
                       {notifications.length === 0 ? 'The notification queue is empty. Reminders and reports are enqueued by the cron jobs.' : 'No queue items match your search.'}
                     </td>
                   </tr>
@@ -130,11 +130,11 @@ export function EmailQueueClient({ initialNotifications }: { initialNotification
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{item.recipientEmail}</div>
+                        <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{item.recipientEmail}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{item.uniqueKey}</div>
                       </td>
 
-                      <td className="py-3.5 px-3 font-semibold text-slate-900 dark:text-slate-100">
+                      <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">
                         {item.templateName}
                       </td>
 

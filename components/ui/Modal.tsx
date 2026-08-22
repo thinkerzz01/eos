@@ -54,7 +54,7 @@ export function Modal({
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/70 dark:bg-slate-950/40">
           <div>
-            <h3 className="text-base font-bold text-slate-900 dark:text-slate-100">{title}</h3>
+            <h3 className="text-base font-medium text-slate-900 dark:text-slate-100">{title}</h3>
             {subtitle && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
           <button

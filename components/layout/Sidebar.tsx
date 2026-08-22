@@ -223,7 +223,7 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
 
           return (
             <div key={idx}>
-              <div className="text-xs tracking-[0.13em] uppercase text-[#666C89] px-2.5 pt-3.5 pb-1.5 font-semibold">
+              <div className="text-xs tracking-[0.13em] uppercase text-[#666C89] px-2.5 pt-3.5 pb-1.5 font-medium">
                 {group.groupLabel}
               </div>
               {visibleItems.map((item) => {
@@ -236,14 +236,14 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
                     href={item.href}
                     className={`flex items-center gap-3 px-[11px] py-2 rounded-[10px] text-[13.5px] font-medium transition-all mb-[1px] ${
                       isActive
-                        ? 'bg-gradient-to-r from-[#5B47D6] to-[#6E5CE6] text-white shadow-[0_6px_16px_rgba(91,71,214,0.4)] font-semibold'
+                        ? 'bg-gradient-to-r from-[#5B47D6] to-[#6E5CE6] text-white shadow-[0_6px_16px_rgba(91,71,214,0.4)] font-medium'
                         : 'text-[#B6BAD0] hover:bg-white/[0.055] hover:text-white'
                     }`}
                   >
                     <Icon className="w-[18px] h-[18px] shrink-0" />
                     <span className="truncate">{item.label}</span>
                     {item.badge !== undefined && item.badge > 0 && (
-                      <span className={`ml-auto text-xs font-bold px-[7px] py-[1px] rounded-full ${item.badgeColor || 'bg-[#5B47D6] text-white'}`}>
+                      <span className={`ml-auto text-xs font-medium px-[7px] py-[1px] rounded-full ${item.badgeColor || 'bg-[#5B47D6] text-white'}`}>
                         {item.badge}
                       </span>
                     )}
