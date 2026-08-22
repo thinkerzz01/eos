@@ -118,6 +118,29 @@ export async function updateSubject(input: { id: string; name?: string; program?
   return { ok: true };
 }
 
+/** Soft-delete several subjects at once. Admin/manager only (mirrors deleteSubject). */
+export async function bulkDeleteSubjects(ids: string[]): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No subjects selected.' };
+  const { supabase, orgId, role } = await ctx();
+  if (!orgId) return { ok: false, error: 'You are not signed in.' };
+  if (role !== 'admin' && role !== 'manager') {
+    return { ok: false, error: 'Only an admin or manager can delete subjects.' };
+  }
+
+  const { error } = await supabase
+    .from('subjects')
+    .update({ deleted_at: new Date().toISOString() })
+    .in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/subjects');
+  revalidatePath('/teachers');
+  revalidatePath('/students');
+  revalidatePath('/schedule');
+  return { ok: true };
+}
+
 /** Soft-delete a subject. Past classes/homework that referenced it are untouched. */
 export async function deleteSubject(id: string): Promise<ActionResult> {
   if (!id) return { ok: false, error: 'Missing subject id.' };

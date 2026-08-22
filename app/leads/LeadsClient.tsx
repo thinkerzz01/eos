@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { Lead } from '@/lib/mockAdmissionsData';
 import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
-import { createLead, convertLead, updateLead, softDeleteLead, markLeadNotConverted, listLeadCommunications, logLeadCommunication, type LeadCommunication } from './actions';
+import { createLead, convertLead, updateLead, softDeleteLead, markLeadNotConverted, listLeadCommunications, logLeadCommunication, bulkDeleteLeads, bulkSetLeadStage, type LeadCommunication } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -110,6 +110,10 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   });
 
   const router = useRouter();
+
+  // BULK SELECTION STATE
+  const [selectedLeadIds, setSelectedLeadIds] = useState<string[]>([]);
+  const [bulkBusy, setBulkBusy] = useState(false);
 
   // Keep the table + open drawer in sync when the server refetches after a write.
   useEffect(() => {
@@ -247,6 +251,43 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
     else setNotConvError(res.error ?? 'Failed to update the lead.');
   };
 
+  // BULK SELECTION helpers (operate on the current filtered view)
+  const toggleSelectAllLeads = () => {
+    if (selectedLeadIds.length === filteredLeads.length && filteredLeads.length > 0) {
+      setSelectedLeadIds([]);
+    } else {
+      setSelectedLeadIds(filteredLeads.map((l) => l.id));
+    }
+  };
+  const toggleSelectLead = (id: string) => {
+    setSelectedLeadIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+  const handleBulkDeleteLeads = async () => {
+    if (selectedLeadIds.length === 0) return;
+    if (!confirm(`Delete ${selectedLeadIds.length} selected lead${selectedLeadIds.length === 1 ? '' : 's'}? This removes them from the pipeline.`)) return;
+    setBulkBusy(true);
+    const res = await bulkDeleteLeads(selectedLeadIds);
+    setBulkBusy(false);
+    if (res.ok) { setSelectedLeadIds([]); router.refresh(); }
+    else alert(res.error ?? 'Failed to delete the selected leads.');
+  };
+  const handleBulkLeadStage = async (stage: string) => {
+    if (selectedLeadIds.length === 0 || !stage) return;
+    setBulkBusy(true);
+    const res = await bulkSetLeadStage(selectedLeadIds, stage);
+    setBulkBusy(false);
+    if (res.ok) { setSelectedLeadIds([]); router.refresh(); }
+    else alert(res.error ?? 'Failed to update stage.');
+  };
+  const handleBulkExportLeads = () => {
+    const rows = leadsList.filter((l) => selectedLeadIds.includes(l.id));
+    downloadCsv(
+      'Thinkerzz_Leads',
+      ['Lead ID', 'Student', 'Parent', 'Phone', 'Program', 'Stage', 'Temperature', 'Source'],
+      rows.map((l) => [l.leadId, l.studentName, l.parentName, l.parentPhone, l.program, l.stage, l.temperature, l.source])
+    );
+  };
+
   const handleConvertLeadToStudent = async () => {
     if (!convertModalLead) return;
     const feeNum = parseFloat(convertFee);
@@ -287,7 +328,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
         {/* TOP HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Leads CRM & Admissions Pipeline</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -298,7 +339,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
           <div className="flex items-center gap-2.5 flex-wrap">
             <Link
               href="/demos"
-              className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
+              className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
             >
               <Calendar className="w-3.5 h-3.5 text-[#5B47D6]" />
               <span>Demos Management →</span>
@@ -344,7 +385,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 <button
                   key={tab.name}
                   onClick={() => setActiveStageTab(tab.name)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeStageTab === tab.name
                       ? tab.name === 'Won'
                         ? 'bg-emerald-600 text-white shadow-sm'
@@ -363,8 +404,8 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
             </div>
 
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-500">Pipeline Conversion Rate:</span>
-              <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 font-extrabold text-xs rounded-full">
+              <span className="text-xs font-medium text-slate-500">Pipeline Conversion Rate:</span>
+              <span className="px-2.5 py-1 bg-emerald-100 text-emerald-700 font-medium text-xs rounded-full">
                 {Math.round((stageCounts.won / (stageCounts.all || 1)) * 100)}%
               </span>
             </div>
@@ -385,7 +426,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
               <span className="text-xs text-[#6B7185] block font-medium">Program</span>
-              <select value={selectedProgram} onChange={(e) => setSelectedProgram(e.target.value)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
+              <select value={selectedProgram} onChange={(e) => setSelectedProgram(e.target.value)} className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
                 <option value="All Programs">All Programs</option>
                 {Array.from(new Set(leadsList.map((l) => l.program).filter(Boolean))).map((p) => (
                   <option key={p} value={p}>{p}</option>
@@ -395,7 +436,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
               <span className="text-xs text-[#6B7185] block font-medium">Temperature</span>
-              <select value={selectedTemperature} onChange={(e) => setSelectedTemperature(e.target.value)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
+              <select value={selectedTemperature} onChange={(e) => setSelectedTemperature(e.target.value)} className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
                 <option value="All Temperatures">All Temperatures</option>
                 <option value="Hot">🔥 Hot</option>
                 <option value="Warm">🟡 Warm</option>
@@ -405,7 +446,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
             <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
               <span className="text-xs text-[#6B7185] block font-medium">Date</span>
-              <select value={dateRange} onChange={(e) => setDateRange(e.target.value as any)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
+              <select value={dateRange} onChange={(e) => setDateRange(e.target.value as any)} className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
                 <option value="all">All Time</option>
                 <option value="7">Last 7 Days</option>
                 <option value="30">Last 30 Days</option>
@@ -415,13 +456,62 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
             {dateRange === 'custom' && (
               <div className="flex items-center gap-1.5 text-xs">
-                <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-medium text-slate-800 dark:text-slate-100" />
                 <span className="text-[#6B7185]">to</span>
-                <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-medium text-slate-800 dark:text-slate-100" />
               </div>
             )}
           </div>
         </div>
+
+        {/* BULK ACTION BAR — appears when rows are selected */}
+        {selectedLeadIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
+            <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
+              {selectedLeadIds.length} selected
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+
+            <select
+              value=""
+              disabled={bulkBusy}
+              title="Set stage"
+              onChange={(e) => { if (e.target.value) handleBulkLeadStage(e.target.value); }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-[#5B47D6]"
+            >
+              <option value="">Set stage…</option>
+              <option value="New">New</option>
+              <option value="Contacted">Contacted</option>
+              <option value="Demo Set">Demo Set</option>
+              <option value="Won">Won</option>
+              <option value="Lost">Lost</option>
+            </select>
+
+            <button
+              onClick={handleBulkExportLeads}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-600" /> Export CSV
+            </button>
+
+            <button
+              onClick={handleBulkDeleteLeads}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> {bulkBusy ? 'Working…' : 'Delete'}
+            </button>
+
+            <button
+              onClick={() => setSelectedLeadIds([])}
+              disabled={bulkBusy}
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+            >
+              Clear
+            </button>
+          </div>
+        )}
 
         {/* MAIN LEADS DATA TABLE & STAGE PIPELINE CARDS */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -431,7 +521,15 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse min-w-[700px]">
                 <thead>
-                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                    <th className="py-3.5 px-3 w-[40px] text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedLeadIds.length === filteredLeads.length && filteredLeads.length > 0}
+                        onChange={toggleSelectAllLeads}
+                        className="rounded accent-[#5B47D6] cursor-pointer"
+                      />
+                    </th>
                     <th className="py-3.5 px-3">Lead ID & Student</th>
                     <th className="py-3.5 px-3">Parent & Contact</th>
                     <th className="py-3.5 px-3">Program & Grade</th>
@@ -445,7 +543,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                   {filteredLeads.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-[#6B7185]">
+                      <td colSpan={8} className="py-8 text-center text-[#6B7185]">
                         No leads match the selected stage filter.
                       </td>
                     </tr>
@@ -458,6 +556,15 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                           selectedLeadDrawer?.id === l.id ? 'bg-purple-50/70 border-l-4 border-l-[#5B47D6]' : 'hover:bg-slate-50'
                         }`}
                       >
+                        <td className="py-3.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={selectedLeadIds.includes(l.id)}
+                            onChange={() => toggleSelectLead(l.id)}
+                            className="rounded accent-[#5B47D6]"
+                          />
+                        </td>
+
                         <td className="py-3.5 px-3">
                           <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{l.studentName}</div>
                           <div className="text-xs text-[#6B7185] font-mono">{l.leadId}</div>
@@ -499,7 +606,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                               <button
                                 onClick={() => setConvertModalLead(l)}
                                 title="Convert Lead to Active Student"
-                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
+                                className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
                               >
                                 Convert →
                               </button>
@@ -521,7 +628,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               </table>
             </div>
 
-            <div className="p-3 bg-slate-50 border-t flex justify-between items-center text-xs font-bold text-slate-600">
+            <div className="p-3 bg-slate-50 border-t flex justify-between items-center text-xs font-medium text-slate-600">
               <div>Showing {filteredLeads.length} of {leadsList.length} leads</div>
             </div>
           </div>
@@ -532,20 +639,20 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               <div className="flex justify-between items-start border-b pb-4">
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">{selectedLeadDrawer.studentName}</h2>
-                    <span className="text-xs font-extrabold px-2 py-0.5 rounded-full bg-purple-100 text-[#5B47D6]">
+                    <h2 className="font-heading font-medium text-lg text-slate-900 dark:text-white">{selectedLeadDrawer.studentName}</h2>
+                    <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-purple-100 text-[#5B47D6]">
                       {selectedLeadDrawer.stage}
                     </span>
                   </div>
                   <div className="text-xs text-[#6B7185] font-medium mt-0.5">
-                    Lead ID: <span className="font-mono font-bold text-slate-800">{selectedLeadDrawer.leadId}</span> · Created {selectedLeadDrawer.createdDate}
+                    Lead ID: <span className="font-mono font-medium text-slate-800">{selectedLeadDrawer.leadId}</span> · Created {selectedLeadDrawer.createdDate}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   {role === 'admin' && (
                     <button
                       onClick={() => handleDeleteLead(selectedLeadDrawer.id, selectedLeadDrawer.studentName)}
-                      className="px-2.5 py-1 bg-rose-50 text-rose-600 font-extrabold text-xs rounded-lg border border-rose-200 hover:bg-rose-100 cursor-pointer"
+                      className="px-2.5 py-1 bg-rose-50 text-rose-600 font-medium text-xs rounded-lg border border-rose-200 hover:bg-rose-100 cursor-pointer"
                     >
                       Delete
                     </button>
@@ -555,7 +662,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               </div>
 
               {/* QUICK ACTIONS */}
-              <div className="flex items-center gap-2 text-xs font-bold">
+              <div className="flex items-center gap-2 text-xs font-medium">
                 <a href={`https://wa.me/${selectedLeadDrawer.parentPhone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="flex-1 py-2 bg-[#E7F9EE] text-[#12A150] rounded-xl flex items-center justify-center gap-1.5 border border-[#BDE8CC]">
                   <MessageSquare className="w-3.5 h-3.5" />
                   <span>WhatsApp</span>
@@ -570,7 +677,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               {role !== 'student' && role !== 'teacher' && (
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
-                    <label className="font-bold text-slate-500 block mb-1">Stage</label>
+                    <label className="font-medium text-slate-500 block mb-1">Stage</label>
                     <select
                       value={selectedLeadDrawer.stage}
                       onChange={async (e) => {
@@ -578,7 +685,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                         if (res.ok) router.refresh();
                         else alert(res.error ?? 'Failed to update.');
                       }}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-bold text-slate-900 dark:text-slate-100"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100"
                     >
                       {['New', 'Contacted', 'Demo Set', 'Won', 'Lost'].map((s) => (
                         <option key={s} value={s}>{s}</option>
@@ -586,7 +693,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     </select>
                   </div>
                   <div>
-                    <label className="font-bold text-slate-500 block mb-1">Temperature</label>
+                    <label className="font-medium text-slate-500 block mb-1">Temperature</label>
                     <select
                       value={selectedLeadDrawer.temperature}
                       onChange={async (e) => {
@@ -594,7 +701,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                         if (res.ok) router.refresh();
                         else alert(res.error ?? 'Failed to update.');
                       }}
-                      className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-bold text-slate-900 dark:text-slate-100"
+                      className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100"
                     >
                       {['Hot', 'Warm', 'Cold'].map((t) => (
                         <option key={t} value={t}>{t}</option>
@@ -607,13 +714,13 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               {/* CONVERT BUTTON BANNER */}
               {selectedLeadDrawer.stage !== 'Won' && (
                 <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl space-y-2">
-                  <div className="flex justify-between items-center font-extrabold text-xs text-emerald-900">
+                  <div className="flex justify-between items-center font-medium text-xs text-emerald-900">
                     <span>Ready to Enroll Student?</span>
                     <span className="text-emerald-700 text-xs">Default Target Grade: A*</span>
                   </div>
                   <button
                     onClick={() => setConvertModalLead(selectedLeadDrawer)}
-                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-extrabold text-xs shadow-md transition-all cursor-pointer"
+                    className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-xs shadow-md transition-all cursor-pointer"
                   >
                     Convert {selectedLeadDrawer.studentName} to Active Student →
                   </button>
@@ -622,17 +729,17 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
               {/* LEAD DETAILS */}
               <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl space-y-2 text-xs">
-                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Parent Name</span><span className="font-extrabold text-slate-900">{selectedLeadDrawer.parentName}</span></div>
-                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Parent Phone</span><span className="font-mono font-bold text-slate-900">{selectedLeadDrawer.parentPhone}</span></div>
-                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Parent Email</span><span className="font-mono font-bold text-slate-900">{selectedLeadDrawer.parentEmail}</span></div>
-                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Program & Grade</span><span className="font-extrabold text-slate-900">{selectedLeadDrawer.program} · {selectedLeadDrawer.grade}</span></div>
-                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Interested Subjects</span><span className="font-extrabold text-slate-900">{selectedLeadDrawer.subjects.join(', ')}</span></div>
-                <div className="flex justify-between py-1"><span className="text-[#6B7185]">Lead Source</span><span className="font-bold text-purple-600">{selectedLeadDrawer.source}</span></div>
+                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Parent Name</span><span className="font-medium text-slate-900">{selectedLeadDrawer.parentName}</span></div>
+                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Parent Phone</span><span className="font-mono font-medium text-slate-900">{selectedLeadDrawer.parentPhone}</span></div>
+                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Parent Email</span><span className="font-mono font-medium text-slate-900">{selectedLeadDrawer.parentEmail}</span></div>
+                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Program & Grade</span><span className="font-medium text-slate-900">{selectedLeadDrawer.program} · {selectedLeadDrawer.grade}</span></div>
+                <div className="flex justify-between py-1 border-b"><span className="text-[#6B7185]">Interested Subjects</span><span className="font-medium text-slate-900">{selectedLeadDrawer.subjects.join(', ')}</span></div>
+                <div className="flex justify-between py-1"><span className="text-[#6B7185]">Lead Source</span><span className="font-medium text-purple-600">{selectedLeadDrawer.source}</span></div>
               </div>
 
               {/* NOTES & RECENT TIMELINE */}
               <div className="space-y-2 text-xs">
-                <div className="font-extrabold text-slate-900 uppercase">Lead Notes &amp; History</div>
+                <div className="font-medium text-slate-900 uppercase">Lead Notes &amp; History</div>
                 {selectedLeadDrawer.notes && (
                   <div className="p-3 bg-slate-50 border rounded-xl font-medium text-slate-700 leading-relaxed">
                     {selectedLeadDrawer.notes}
@@ -663,7 +770,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     <button
                       onClick={handleLogComm}
                       disabled={commSaving || !commNote.trim()}
-                      className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-50 text-white rounded-lg text-xs font-bold"
+                      className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-50 text-white rounded-lg text-xs font-medium"
                     >
                       {commSaving ? '…' : 'Log'}
                     </button>
@@ -678,7 +785,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     comms.map((c) => (
                       <div key={c.id} className="p-2.5 bg-slate-50 border border-slate-100 rounded-lg">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-bold uppercase tracking-wide text-[#5B47D6]">{c.channel}</span>
+                          <span className="text-[10px] font-medium uppercase tracking-wide text-[#5B47D6]">{c.channel}</span>
                           <span className="text-[10px] text-slate-400">{commTimeAgo(c.at)}</span>
                         </div>
                         <p className="text-xs text-slate-700 mt-0.5 leading-relaxed">{c.note}</p>
@@ -702,7 +809,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     <UserCheck className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-lg">Convert Lead to Student</h3>
+                    <h3 className="font-heading font-medium text-slate-900 dark:text-white text-lg">Convert Lead to Student</h3>
                     <p className="text-xs text-[#6B7185]">Enroll {convertModalLead.studentName} into the official active student roster.</p>
                   </div>
                 </div>
@@ -712,14 +819,14 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               {/* PRE-FILLED STUDENT FORM DETAILS */}
               <div className="space-y-3 text-xs">
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
-                  <div className="flex justify-between font-bold"><span className="text-slate-500">Student Name:</span><span className="text-slate-900">{convertModalLead.studentName}</span></div>
-                  <div className="flex justify-between font-bold"><span className="text-slate-500">Program & Grade:</span><span className="text-slate-900">{convertModalLead.program} · {convertModalLead.grade}</span></div>
-                  <div className="flex justify-between font-bold"><span className="text-slate-500">Parent Name:</span><span className="text-slate-900">{convertModalLead.parentName} ({convertModalLead.parentPhone})</span></div>
+                  <div className="flex justify-between font-medium"><span className="text-slate-500">Student Name:</span><span className="text-slate-900">{convertModalLead.studentName}</span></div>
+                  <div className="flex justify-between font-medium"><span className="text-slate-500">Program & Grade:</span><span className="text-slate-900">{convertModalLead.program} · {convertModalLead.grade}</span></div>
+                  <div className="flex justify-between font-medium"><span className="text-slate-500">Parent Name:</span><span className="text-slate-900">{convertModalLead.parentName} ({convertModalLead.parentPhone})</span></div>
                 </div>
 
                 <div className="space-y-1 bg-purple-50 p-3 rounded-xl border border-purple-200">
-                  <label className="font-extrabold text-purple-900 block">Default Target Grade (Locked Policy)</label>
-                  <div className="w-full bg-white border border-purple-300 rounded-lg p-2 font-extrabold text-purple-900">
+                  <label className="font-medium text-purple-900 block">Default Target Grade (Locked Policy)</label>
+                  <div className="w-full bg-white border border-purple-300 rounded-lg p-2 font-medium text-purple-900">
                     A* (Default per Master Plan §4)
                   </div>
                   <p className="text-xs text-purple-700 font-medium mt-1">
@@ -730,20 +837,20 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 {/* Enrollment fee fields (required by the students table) */}
                 <div className="grid grid-cols-2 gap-2.5">
                   <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Exam Session</label>
-                    <input type="text" value={convertSession} onChange={(e) => setConvertSession(e.target.value)} placeholder="e.g. May/June 2027" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-bold text-slate-900 dark:text-slate-100" />
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Exam Session</label>
+                    <input type="text" value={convertSession} onChange={(e) => setConvertSession(e.target.value)} placeholder="e.g. May/June 2027" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Monthly Fee (PKR)</label>
-                    <input type="number" value={convertFee} onChange={(e) => setConvertFee(e.target.value)} placeholder="e.g. 20000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-mono font-extrabold text-slate-900 dark:text-slate-100" />
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Monthly Fee (PKR)</label>
+                    <input type="number" value={convertFee} onChange={(e) => setConvertFee(e.target.value)} placeholder="e.g. 20000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-mono font-medium text-slate-900 dark:text-slate-100" />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Date First Fee Paid</label>
-                    <input type="date" value={convertPaidDate} onChange={(e) => setConvertPaidDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-bold text-slate-900 dark:text-slate-100" />
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Date First Fee Paid</label>
+                    <input type="date" value={convertPaidDate} onChange={(e) => setConvertPaidDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 dark:text-slate-300 block mb-1">Payment Method</label>
-                    <select value={convertMethod} onChange={(e) => setConvertMethod(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-bold text-slate-900 dark:text-slate-100">
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Payment Method</label>
+                    <select value={convertMethod} onChange={(e) => setConvertMethod(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100">
                       <option value="Bank Transfer">Bank Transfer</option>
                       <option value="JazzCash">JazzCash</option>
                     </select>
@@ -756,8 +863,8 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setConvertModalLead(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleConvertLeadToStudent} disabled={converting} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
+                <button onClick={() => setConvertModalLead(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleConvertLeadToStudent} disabled={converting} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">
                   {converting ? 'Converting...' : 'Confirm Conversion & Create Student'}
                 </button>
               </div>
@@ -770,47 +877,47 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">+ Add New Lead</h3>
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">+ Add New Lead</h3>
                 <button onClick={() => setShowAddLeadModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 
               <div className="space-y-3 text-xs">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Student Name</label>
-                  <input type="text" value={newLeadData.studentName} onChange={(e) => setNewLeadData({ ...newLeadData, studentName: e.target.value })} placeholder="e.g. Hamza Khan" className="w-full bg-slate-50 border rounded-xl p-2 font-bold" />
+                  <label className="font-medium text-slate-700 block mb-1">Student Name</label>
+                  <input type="text" value={newLeadData.studentName} onChange={(e) => setNewLeadData({ ...newLeadData, studentName: e.target.value })} placeholder="e.g. Hamza Khan" className="w-full bg-slate-50 border rounded-xl p-2 font-medium" />
                 </div>
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Parent Name</label>
-                  <input type="text" value={newLeadData.parentName} onChange={(e) => setNewLeadData({ ...newLeadData, parentName: e.target.value })} placeholder="e.g. Mr. Shahzaib Khan" className="w-full bg-slate-50 border rounded-xl p-2 font-bold" />
+                  <label className="font-medium text-slate-700 block mb-1">Parent Name</label>
+                  <input type="text" value={newLeadData.parentName} onChange={(e) => setNewLeadData({ ...newLeadData, parentName: e.target.value })} placeholder="e.g. Mr. Shahzaib Khan" className="w-full bg-slate-50 border rounded-xl p-2 font-medium" />
                 </div>
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Parent Phone</label>
-                    <input type="text" value={newLeadData.parentPhone} onChange={(e) => setNewLeadData({ ...newLeadData, parentPhone: e.target.value })} placeholder="+92 300..." className="w-full bg-slate-50 border rounded-xl p-2 font-bold" />
+                    <label className="font-medium text-slate-700 block mb-1">Parent Phone</label>
+                    <input type="text" value={newLeadData.parentPhone} onChange={(e) => setNewLeadData({ ...newLeadData, parentPhone: e.target.value })} placeholder="+92 300..." className="w-full bg-slate-50 border rounded-xl p-2 font-medium" />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Parent Email</label>
-                    <input type="email" value={newLeadData.parentEmail} onChange={(e) => setNewLeadData({ ...newLeadData, parentEmail: e.target.value })} placeholder="parent@example.com" className="w-full bg-slate-50 border rounded-xl p-2 font-bold" />
+                    <label className="font-medium text-slate-700 block mb-1">Parent Email</label>
+                    <input type="email" value={newLeadData.parentEmail} onChange={(e) => setNewLeadData({ ...newLeadData, parentEmail: e.target.value })} placeholder="parent@example.com" className="w-full bg-slate-50 border rounded-xl p-2 font-medium" />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Program</label>
-                    <select value={newLeadData.program} onChange={(e) => setNewLeadData({ ...newLeadData, program: e.target.value })} className="w-full bg-slate-50 border rounded-xl p-2 font-bold">
+                    <label className="font-medium text-slate-700 block mb-1">Program</label>
+                    <select value={newLeadData.program} onChange={(e) => setNewLeadData({ ...newLeadData, program: e.target.value })} className="w-full bg-slate-50 border rounded-xl p-2 font-medium">
                       {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                     </select>
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Subject(s)</label>
-                    <input type="text" value={newLeadData.subjects} onChange={(e) => setNewLeadData({ ...newLeadData, subjects: e.target.value })} placeholder="e.g. Physics, Maths" className="w-full bg-slate-50 border rounded-xl p-2 font-bold" />
+                    <label className="font-medium text-slate-700 block mb-1">Subject(s)</label>
+                    <input type="text" value={newLeadData.subjects} onChange={(e) => setNewLeadData({ ...newLeadData, subjects: e.target.value })} placeholder="e.g. Physics, Maths" className="w-full bg-slate-50 border rounded-xl p-2 font-medium" />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">How did they find us?</label>
-                    <select value={newLeadData.source} onChange={(e) => setNewLeadData({ ...newLeadData, source: e.target.value })} className="w-full bg-slate-50 border rounded-xl p-2 font-bold">
+                    <label className="font-medium text-slate-700 block mb-1">How did they find us?</label>
+                    <select value={newLeadData.source} onChange={(e) => setNewLeadData({ ...newLeadData, source: e.target.value })} className="w-full bg-slate-50 border rounded-xl p-2 font-medium">
                       {['Google', 'Facebook', 'Instagram', 'WhatsApp', 'Referral', 'Walk-in'].map((s) => (<option key={s} value={s}>{s}</option>))}
                     </select>
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Interest (Temperature)</label>
-                    <select value={newLeadData.temperature} onChange={(e) => setNewLeadData({ ...newLeadData, temperature: e.target.value as 'Hot' | 'Warm' | 'Cold' })} className="w-full bg-slate-50 border rounded-xl p-2 font-bold">
+                    <label className="font-medium text-slate-700 block mb-1">Interest (Temperature)</label>
+                    <select value={newLeadData.temperature} onChange={(e) => setNewLeadData({ ...newLeadData, temperature: e.target.value as 'Hot' | 'Warm' | 'Cold' })} className="w-full bg-slate-50 border rounded-xl p-2 font-medium">
                       <option value="Hot">Hot (very interested)</option>
                       <option value="Warm">Warm (considering)</option>
                       <option value="Cold">Cold (just inquiring)</option>
@@ -821,8 +928,8 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t">
-                <button onClick={() => setShowAddLeadModal(false)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleAddNewLead} disabled={addingLead} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50">{addingLead ? 'Adding...' : 'Add Lead'}</button>
+                <button onClick={() => setShowAddLeadModal(false)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleAddNewLead} disabled={addingLead} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{addingLead ? 'Adding...' : 'Add Lead'}</button>
               </div>
             </div>
           </div>
@@ -834,13 +941,13 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 my-6 text-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Mark as not converted</h3>
+                  <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Mark as not converted</h3>
                   <p className="text-xs text-[#6B7185] mt-0.5">{notConvLead.studentName} moves to Lost. The reason is saved on the lead.</p>
                 </div>
                 <button onClick={() => setNotConvLead(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
               <div className="space-y-2">
-                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300">Reason</label>
+                <label className="block font-medium text-xs text-slate-700 dark:text-slate-300">Reason</label>
                 <div className="grid grid-cols-1 gap-1.5">
                   {[...NOT_CONVERTED_REASONS, 'Other'].map((r) => (
                     <button
@@ -870,7 +977,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               </div>
               <div className="flex justify-end gap-2 pt-1">
                 <button onClick={() => setNotConvLead(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
-                <button onClick={handleMarkNotConverted} disabled={notConvSaving} className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2">
+                <button onClick={handleMarkNotConverted} disabled={notConvSaving} className="px-5 py-2.5 bg-amber-600 hover:bg-amber-700 disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4" /><span>{notConvSaving ? 'Saving...' : 'Confirm'}</span>
                 </button>
               </div>

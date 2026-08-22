@@ -159,7 +159,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
       <PortalLayout title="" subtitle="" allowedRoles={['admin']}>
         <div className="p-8 max-w-lg mx-auto text-center bg-white border border-rose-200 rounded-3xl shadow-xl space-y-4 my-12">
           <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto"><LockIcon className="w-7 h-7" /></div>
-          <h2 className="font-heading font-extrabold text-xl text-slate-900">Access restricted</h2>
+          <h2 className="font-heading font-medium text-xl text-slate-900">Access restricted</h2>
           <p className="text-xs text-[#6B7185] leading-relaxed">Teacher pay rates and payouts are visible to the Admin only. Please contact the academy owner if you need access.</p>
         </div>
       </PortalLayout>
@@ -170,7 +170,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
   const totalPaid = filtered.reduce((s, p) => s + p.paidAmount, 0);
   const totalDue = filtered.reduce((s, p) => s + Math.max(0, p.grossAmount - p.paidAmount), 0);
   const boxCls = 'bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs';
-  const selCls = 'bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]';
+  const selCls = 'bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]';
 
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin']}>
@@ -179,7 +179,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Teacher Payouts</span>
             </h1>
             <p className="text-[13px] text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -191,19 +191,19 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
         {/* SUMMARY CARDS */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
-            <div className="text-xs font-bold text-slate-500 uppercase">Earned This Month</div>
-            <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white">{fmt(totalEarned)}</div>
-            <div className="text-xs text-slate-500 font-bold">{filtered.length} Faculty Member{filtered.length === 1 ? '' : 's'}</div>
+            <div className="text-xs font-medium text-slate-500 uppercase">Earned This Month</div>
+            <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white">{fmt(totalEarned)}</div>
+            <div className="text-xs text-slate-500 font-medium">{filtered.length} Faculty Member{filtered.length === 1 ? '' : 's'}</div>
           </div>
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
-            <div className="text-xs font-bold text-slate-500 uppercase">Balance Due</div>
-            <div className="font-heading font-extrabold text-2xl text-purple-600">{fmt(totalDue)}</div>
-            <div className="text-xs text-purple-600 font-bold">Awaiting Payout</div>
+            <div className="text-xs font-medium text-slate-500 uppercase">Balance Due</div>
+            <div className="font-heading font-medium text-2xl text-purple-600">{fmt(totalDue)}</div>
+            <div className="text-xs text-purple-600 font-medium">Awaiting Payout</div>
           </div>
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
-            <div className="text-xs font-bold text-slate-500 uppercase">Paid This Month</div>
-            <div className="font-heading font-extrabold text-2xl text-emerald-600">{fmt(totalPaid)}</div>
-            <div className="text-xs text-emerald-600 font-bold">Dispatched</div>
+            <div className="text-xs font-medium text-slate-500 uppercase">Paid This Month</div>
+            <div className="font-heading font-medium text-2xl text-emerald-600">{fmt(totalPaid)}</div>
+            <div className="text-xs text-emerald-600 font-medium">Dispatched</div>
           </div>
         </div>
 
@@ -239,7 +239,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse min-w-[860px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
                   <th className="py-3.5 px-3">Teacher & Subjects</th>
                   <th className="py-3.5 px-3">Per Class Rate</th>
                   <th className="py-3.5 px-3">Completed Classes</th>
@@ -258,16 +258,16 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
                     return (
                       <tr key={p.id} className="hover:bg-slate-50 transition-colors">
                         <td className="py-3.5 px-3">
-                          <div className="font-bold text-slate-900 dark:text-slate-100">{p.teacherName}</div>
+                          <div className="font-medium text-slate-900 dark:text-slate-100">{p.teacherName}</div>
                           <div className="text-xs text-[#6B7185]">{p.subjects.length ? p.subjects.join(' · ') : '-'}</div>
                         </td>
                         <td className="py-3.5 px-3 font-mono font-semibold text-slate-900 dark:text-slate-100">
                           {p.perClassPay > 0 ? `PKR ${p.perClassPay.toLocaleString()}` : (
-                            <button onClick={() => openSetRate(p)} className="text-[#5B47D6] font-sans font-bold hover:underline cursor-pointer">Set rate →</button>
+                            <button onClick={() => openSetRate(p)} className="text-[#5B47D6] font-sans font-medium hover:underline cursor-pointer">Set rate →</button>
                           )}
                         </td>
                         <td className="py-3.5 px-3 font-semibold text-purple-600">{p.completedClassesCount}</td>
-                        <td className="py-3.5 px-3 font-mono font-bold text-slate-900 dark:text-slate-100">PKR {p.grossAmount.toLocaleString()}</td>
+                        <td className="py-3.5 px-3 font-mono font-medium text-slate-900 dark:text-slate-100">PKR {p.grossAmount.toLocaleString()}</td>
                         <td className="py-3.5 px-3 font-mono font-semibold text-emerald-600">PKR {p.paidAmount.toLocaleString()}</td>
                         <td className="py-3.5 px-3">
                           <Badge tone={p.status === 'Paid' ? 'success' : p.status === 'Partial' ? 'warning' : 'neutral'}>{p.status}</Badge>
@@ -276,7 +276,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
                         <td className="py-3.5 px-3">
                           <div className="flex items-center justify-center gap-1.5">
                             {p.status !== 'Paid' && (
-                              <button onClick={() => openPay(p)} className="px-2.5 py-1 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-bold text-[13px] rounded-lg cursor-pointer">Pay</button>
+                              <button onClick={() => openPay(p)} className="px-2.5 py-1 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-[13px] rounded-lg cursor-pointer">Pay</button>
                             )}
                             <RowActionsMenu
                               actions={[
@@ -295,7 +295,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
               </tbody>
             </table>
           </div>
-          <div className="p-3 bg-slate-50 border-t text-[13px] font-bold text-slate-600">Showing {filtered.length} of {payouts.length} teachers · {PERIOD}</div>
+          <div className="p-3 bg-slate-50 border-t text-[13px] font-medium text-slate-600">Showing {filtered.length} of {payouts.length} teachers · {PERIOD}</div>
         </div>
 
       </div>
@@ -305,19 +305,19 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setPayTeacher(null)}>
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">Pay {payTeacher.teacherName}</h3>
+              <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Pay {payTeacher.teacherName}</h3>
               <button onClick={() => setPayTeacher(null)}><X className="w-4 h-4 text-slate-400" /></button>
             </div>
-            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl text-[13px] font-bold grid grid-cols-2 gap-y-1">
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl text-[13px] font-medium grid grid-cols-2 gap-y-1">
               <span className="text-slate-500">Completed classes</span><span className="text-right">{payTeacher.completedClassesCount}</span>
               <span className="text-slate-500">Earned</span><span className="text-right font-mono">PKR {payTeacher.grossAmount.toLocaleString()}</span>
               <span className="text-slate-500">Already paid</span><span className="text-right font-mono text-emerald-600">PKR {payTeacher.paidAmount.toLocaleString()}</span>
               <span className="text-slate-500">Balance</span><span className="text-right font-mono text-rose-600">PKR {Math.max(0, payTeacher.grossAmount - payTeacher.paidAmount).toLocaleString()}</span>
             </div>
-            <div className="space-y-3 text-xs font-bold">
+            <div className="space-y-3 text-xs font-medium">
               <div>
                 <label className="text-slate-700 dark:text-slate-300 block mb-1">Payout Amount (PKR)</label>
-                <input type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="e.g. 30000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-extrabold text-slate-900 dark:text-slate-100" />
+                <input type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="e.g. 30000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-slate-900 dark:text-slate-100" />
               </div>
               <div>
                 <label className="text-slate-700 dark:text-slate-300 block mb-1">Method</label>
@@ -332,8 +332,8 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
               </div>
             </div>
             <div className="flex justify-end gap-2 pt-3 border-t">
-              <button onClick={() => setPayTeacher(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-              <button onClick={submitPay} disabled={paying} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50">{paying ? 'Recording...' : 'Record Payout'}</button>
+              <button onClick={() => setPayTeacher(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+              <button onClick={submitPay} disabled={paying} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{paying ? 'Recording...' : 'Record Payout'}</button>
             </div>
           </div>
         </div>
@@ -345,7 +345,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b pb-3">
               <div>
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">{viewPayout.teacherName}</h3>
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">{viewPayout.teacherName}</h3>
                 <p className="text-xs text-[#6B7185]">Payout details · {PERIOD}</p>
               </div>
               <button onClick={() => setViewPayout(null)}><X className="w-4 h-4 text-slate-400" /></button>
@@ -362,15 +362,15 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
                 ['Last payout', viewPayout.payoutDate ? `${viewPayout.payoutDate}${viewPayout.paymentMethod ? ` · ${viewPayout.paymentMethod}` : ''}` : 'None yet'],
               ].map(([k, v]) => (
                 <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-[#6B7185]">{k}</div>
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">{k}</div>
                   <div className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
                 </div>
               ))}
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button onClick={() => sendReceiptWa(viewPayout)} disabled={!viewPayout.teacherPhone} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white rounded-xl font-bold text-xs flex items-center gap-1.5"><MessageSquare className="w-4 h-4" /> Send Receipt</button>
+              <button onClick={() => sendReceiptWa(viewPayout)} disabled={!viewPayout.teacherPhone} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white rounded-xl font-medium text-xs flex items-center gap-1.5"><MessageSquare className="w-4 h-4" /> Send Receipt</button>
               {viewPayout.status !== 'Paid' && (
-                <button onClick={() => { const p = viewPayout; setViewPayout(null); openPay(p); }} className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-bold text-xs">Record Payout</button>
+                <button onClick={() => { const p = viewPayout; setViewPayout(null); openPay(p); }} className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-medium text-xs">Record Payout</button>
               )}
             </div>
           </div>
@@ -383,20 +383,20 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b pb-3">
               <div>
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">Set Per-Class Rate</h3>
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Set Per-Class Rate</h3>
                 <p className="text-xs text-[#6B7185]">{rateTeacher.teacherName} · earns this per completed class</p>
               </div>
               <button onClick={() => setRateTeacher(null)}><X className="w-4 h-4 text-slate-400" /></button>
             </div>
             <div>
-              <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Rate per class (PKR)</label>
-              <input type="number" value={rateInput} onChange={(e) => setRateInput(e.target.value)} placeholder="e.g. 1500" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-extrabold text-base text-slate-900 dark:text-slate-100" />
+              <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Rate per class (PKR)</label>
+              <input type="number" value={rateInput} onChange={(e) => setRateInput(e.target.value)} placeholder="e.g. 1500" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-base text-slate-900 dark:text-slate-100" />
               <p className="text-xs text-slate-500 font-medium mt-1">A new rate row is saved (history is preserved). Earned = rate × completed classes.</p>
               {rateError && <div className="mt-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold px-3 py-2 rounded-xl">{rateError}</div>}
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t">
-              <button onClick={() => setRateTeacher(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-              <button onClick={handleSetRate} disabled={rateSaving} className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50">{rateSaving ? 'Saving...' : 'Save Rate'}</button>
+              <button onClick={() => setRateTeacher(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+              <button onClick={handleSetRate} disabled={rateSaving} className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{rateSaving ? 'Saving...' : 'Save Rate'}</button>
             </div>
           </div>
         </div>

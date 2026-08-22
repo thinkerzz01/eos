@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useRole } from '@/components/ui/RoleContext';
 import { FeeVoucher, PaymentTransaction } from '@/lib/mockFinanceData';
 import type { PaymentInfo } from '@/lib/config/paymentInfo';
-import { recordPayment, issueRefund, adminFeeDecision, createVoucher, updateVoucher, generateMonthlyVouchers } from './actions';
+import { recordPayment, issueRefund, adminFeeDecision, createVoucher, updateVoucher, generateMonthlyVouchers, bulkDeleteVouchers } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -33,6 +33,7 @@ import {
   Sparkles,
   Eye,
   Edit3,
+  Trash2,
 } from 'lucide-react';
 
 // Add N days to a YYYY-MM-DD date, returned as YYYY-MM-DD (PKT calendar).
@@ -301,6 +302,37 @@ export function VouchersClient({
     }
   };
 
+  // BULK SELECTION STATE + handlers (operate on the current filtered view)
+  const [selectedVoucherIds, setSelectedVoucherIds] = useState<string[]>([]);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const toggleSelectAllVouchers = () => {
+    if (selectedVoucherIds.length === filteredVouchers.length && filteredVouchers.length > 0) {
+      setSelectedVoucherIds([]);
+    } else {
+      setSelectedVoucherIds(filteredVouchers.map((v) => v.id));
+    }
+  };
+  const toggleSelectVoucher = (id: string) => {
+    setSelectedVoucherIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+  const handleBulkDeleteVouchers = async () => {
+    if (selectedVoucherIds.length === 0) return;
+    if (!confirm(`Delete ${selectedVoucherIds.length} selected voucher${selectedVoucherIds.length === 1 ? '' : 's'}? This removes them from the list.`)) return;
+    setBulkBusy(true);
+    const res = await bulkDeleteVouchers(selectedVoucherIds);
+    setBulkBusy(false);
+    if (res.ok) { setSelectedVoucherIds([]); router.refresh(); }
+    else alert(res.error ?? 'Failed to delete the selected vouchers.');
+  };
+  const handleBulkExportVouchers = () => {
+    const rows = vouchersList.filter((v) => selectedVoucherIds.includes(v.id));
+    downloadCsv(
+      'Thinkerzz_Vouchers',
+      ['Voucher No', 'Student', 'Parent', 'Total (PKR)', 'Paid (PKR)', 'Balance (PKR)', 'Status', 'Due Date'],
+      rows.map((v) => [v.voucherNo, v.studentName, v.parentName, v.totalAmount, v.paidAmount, v.runningBalance, v.status, v.dueDate])
+    );
+  };
+
   // RLS CHECK: MANAGER DENIED AT DATABASE LEVEL
   if (role === 'manager') {
     return (
@@ -309,7 +341,7 @@ export function VouchersClient({
           <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
             <Lock className="w-7 h-7" />
           </div>
-          <h2 className="font-heading font-extrabold text-xl text-slate-900">Access restricted</h2>
+          <h2 className="font-heading font-medium text-xl text-slate-900">Access restricted</h2>
           <p className="text-xs text-[#6B7185] leading-relaxed">
             Fee vouchers, receipts and refunds are visible to the Admin only. Please contact the academy owner if you need access.
           </p>
@@ -325,7 +357,7 @@ export function VouchersClient({
         {/* TOP HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Fee Vouchers</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -336,7 +368,7 @@ export function VouchersClient({
           <div className="flex items-center gap-2.5 flex-wrap">
             <Link
               href="/payments"
-              className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
+              className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
             >
               <Receipt className="w-3.5 h-3.5 text-[#5B47D6]" />
               <span>Receipts →</span>
@@ -378,7 +410,7 @@ export function VouchersClient({
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 my-6">
               <div className="flex items-center justify-between">
-                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Generate This Month&apos;s Vouchers</h3>
+                <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Generate This Month&apos;s Vouchers</h3>
                 <button onClick={() => setShowGenerate(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
               <p className="text-xs text-[#6B7185]">
@@ -386,15 +418,15 @@ export function VouchersClient({
               </p>
               <div className="space-y-3 text-sm">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Due date</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Due date</label>
                   <input type="date" value={genDueDate} onChange={(e) => setGenDueDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                   {genDueDate && <p className="text-[11px] text-slate-400 mt-1">Fee month: <strong>{monthLabelPKT(genDueDate)}</strong> · grace = due + 3 days.</p>}
                 </div>
                 {genError && <p className="text-xs font-semibold text-rose-600">{genError}</p>}
               </div>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setShowGenerate(false)} className="px-4 py-2 border rounded-xl font-bold text-xs text-slate-600 dark:text-slate-300">Cancel</button>
-                <button onClick={handleGenerate} disabled={generating} className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm">
+                <button onClick={() => setShowGenerate(false)} className="px-4 py-2 border rounded-xl font-medium text-xs text-slate-600 dark:text-slate-300">Cancel</button>
+                <button onClick={handleGenerate} disabled={generating} className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm">
                   {generating ? 'Generating…' : 'Generate Vouchers'}
                 </button>
               </div>
@@ -405,7 +437,7 @@ export function VouchersClient({
         {/* 3-DAY GRACE POLICY BANNER */}
         <div className="p-4 bg-gradient-to-r from-purple-900 to-[#1B1E38] text-white rounded-[20px] shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <div className="flex items-center gap-2 font-heading font-extrabold text-xs text-purple-300 uppercase tracking-wider">
+            <div className="flex items-center gap-2 font-heading font-medium text-xs text-purple-300 uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-purple-400" />
               <span>Locked Policy: 3-Day Grace & Admin Decision Rule</span>
             </div>
@@ -413,7 +445,7 @@ export function VouchersClient({
               Paying within the 3-day grace period scores <strong>100 on Fee Timeliness</strong>. Grace expiry <strong>never auto-stops a student</strong>; it raises a card for Admin to choose: <strong>Stop</strong>, <strong>Extend Grace</strong>, or <strong>Mark Paid</strong>.
             </p>
           </div>
-          <span className="px-3 py-1 bg-emerald-500 text-white font-extrabold text-xs rounded-full shrink-0">
+          <span className="px-3 py-1 bg-emerald-500 text-white font-medium text-xs rounded-full shrink-0">
             No Late Fees Ever
           </span>
         </div>
@@ -433,7 +465,7 @@ export function VouchersClient({
                 <button
                   key={tab.name}
                   onClick={() => setSelectedStatusTab(tab.name)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                     selectedStatusTab === tab.name
                       ? tab.name === 'Needs Admin Decision'
                         ? 'bg-rose-600 text-white shadow-sm'
@@ -452,7 +484,7 @@ export function VouchersClient({
             <div className="flex items-center gap-2 flex-wrap">
               <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
                 <span className="text-[11px] text-[#6B7185] block font-medium">Due Date</span>
-                <select value={dateRange} onChange={(e) => setDateRange(e.target.value as any)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]">
+                <select value={dateRange} onChange={(e) => setDateRange(e.target.value as any)} className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]">
                   <option value="all">All Time</option>
                   <option value="7">Last 7 Days</option>
                   <option value="30">Last 30 Days</option>
@@ -461,9 +493,9 @@ export function VouchersClient({
               </div>
               {dateRange === 'custom' && (
                 <div className="flex items-center gap-1.5 text-[13px]">
-                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-medium text-slate-800 dark:text-slate-100" />
                   <span className="text-[#6B7185]">to</span>
-                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-medium text-slate-800 dark:text-slate-100" />
                 </div>
               )}
               <div className="relative w-full sm:w-[240px]">
@@ -480,12 +512,54 @@ export function VouchersClient({
           </div>
         </div>
 
+        {/* BULK ACTION BAR — appears when rows are selected */}
+        {selectedVoucherIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
+            <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
+              {selectedVoucherIds.length} selected
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+
+            <button
+              onClick={handleBulkExportVouchers}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-600" /> Export CSV
+            </button>
+
+            <button
+              onClick={handleBulkDeleteVouchers}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> {bulkBusy ? 'Working…' : 'Delete'}
+            </button>
+
+            <button
+              onClick={() => setSelectedVoucherIds([])}
+              disabled={bulkBusy}
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
         {/* VOUCHERS DATA TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                  <th className="py-3.5 px-3 w-[40px] text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedVoucherIds.length === filteredVouchers.length && filteredVouchers.length > 0}
+                      onChange={toggleSelectAllVouchers}
+                      className="rounded accent-[#5B47D6] cursor-pointer"
+                    />
+                  </th>
                   <th className="py-3.5 px-3">Voucher No & Student</th>
                   <th className="py-3.5 px-3">Parent & Phone</th>
                   <th className="py-3.5 px-3">Due Date & Grace Deadline</th>
@@ -500,13 +574,21 @@ export function VouchersClient({
               <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                 {filteredVouchers.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-[#6B7185]">
+                    <td colSpan={9} className="py-8 text-center text-[#6B7185]">
                       No fee vouchers match the filter criteria.
                     </td>
                   </tr>
                 ) : (
                   filteredVouchers.map((v) => (
                     <tr key={v.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3.5 px-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedVoucherIds.includes(v.id)}
+                          onChange={() => toggleSelectVoucher(v.id)}
+                          className="rounded accent-[#5B47D6]"
+                        />
+                      </td>
                       <td className="py-3.5 px-3">
                         <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{v.studentName}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{v.voucherNo}</div>
@@ -519,19 +601,19 @@ export function VouchersClient({
 
                       <td className="py-3.5 px-3 font-mono">
                         <div>Due: <strong className="text-slate-900">{v.dueDate}</strong></div>
-                        <div className="text-purple-600 font-bold">Grace: {v.graceDeadlineDate}</div>
+                        <div className="text-purple-600 font-medium">Grace: {v.graceDeadlineDate}</div>
                       </td>
 
-                      <td className="py-3.5 px-3 font-mono font-extrabold text-slate-900 dark:text-slate-100 text-sm">
+                      <td className="py-3.5 px-3 font-mono font-medium text-slate-900 dark:text-slate-100 text-sm">
                         PKR {v.totalAmount.toLocaleString()}
                       </td>
 
-                      <td className="py-3.5 px-3 font-mono font-extrabold text-emerald-600 text-sm">
+                      <td className="py-3.5 px-3 font-mono font-medium text-emerald-600 text-sm">
                         PKR {v.paidAmount.toLocaleString()}
                       </td>
 
                       {/* RUNNING BALANCE COLUMN FOR PARTIAL PAYMENTS */}
-                      <td className="py-3.5 px-3 font-mono font-extrabold text-rose-600 text-sm">
+                      <td className="py-3.5 px-3 font-mono font-medium text-rose-600 text-sm">
                         PKR {v.runningBalance.toLocaleString()}
                       </td>
 
@@ -540,7 +622,7 @@ export function VouchersClient({
                           {v.status}
                         </Badge>
                         {v.needsAdminDecision && (
-                          <span className="block text-xs font-extrabold text-rose-600 mt-1">
+                          <span className="block text-xs font-medium text-rose-600 mt-1">
                             ⚠️ Needs Admin Decision
                           </span>
                         )}
@@ -551,7 +633,7 @@ export function VouchersClient({
                           {v.needsAdminDecision && (
                             <button
                               onClick={() => setDecisionVoucher(v)}
-                              className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-bold text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
+                              className="px-2.5 py-1 bg-rose-600 hover:bg-rose-700 text-white font-medium text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
                             >
                               Fee Decision →
                             </button>
@@ -559,7 +641,7 @@ export function VouchersClient({
                           {!v.needsAdminDecision && v.status !== 'Paid' && (
                             <button
                               onClick={() => { setPartialPayVoucher(v); setPayAmountInput(v.runningBalance.toString()); }}
-                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
+                              className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-[13px] rounded-lg shadow-xs transition-all cursor-pointer"
                             >
                               + Payment
                             </button>
@@ -589,11 +671,11 @@ export function VouchersClient({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">Create Fee Voucher</h3>
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Create Fee Voucher</h3>
                 <button onClick={() => setShowCreateModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 
-              <div className="space-y-3 text-xs font-bold">
+              <div className="space-y-3 text-xs font-medium">
                 <div>
                   <label className="text-slate-700 dark:text-slate-300 block mb-1">Student</label>
                   <select
@@ -636,7 +718,7 @@ export function VouchersClient({
                     value={newAmount}
                     onChange={(e) => setNewAmount(e.target.value)}
                     placeholder="e.g. 20000"
-                    className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-extrabold text-base text-slate-900 dark:text-slate-100"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-base text-slate-900 dark:text-slate-100"
                   />
                 </div>
 
@@ -655,11 +737,11 @@ export function VouchersClient({
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
+                <button onClick={() => setShowCreateModal(false)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
                 <button
                   onClick={handleCreateVoucher}
                   disabled={creating}
-                  className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50"
+                  className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50"
                 >
                   {creating ? 'Creating...' : 'Create Voucher'}
                 </button>
@@ -692,21 +774,21 @@ export function VouchersClient({
                 <div id="voucher-print" className="p-7 space-y-5 text-slate-900 text-[15px]">
                   {/* Colored branded header */}
                   <div className="flex items-center gap-3 rounded-2xl bg-[#5B47D6] text-white px-5 py-4">
-                    <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center font-black text-lg">T</div>
+                    <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center font-medium text-lg">T</div>
                     <div>
-                      <div className="font-extrabold text-xl leading-tight">Thinkerzz</div>
+                      <div className="font-medium text-xl leading-tight">Thinkerzz</div>
                       <div className="text-xs text-purple-200 font-semibold uppercase tracking-widest">Fee Voucher</div>
                     </div>
                     <div className="ml-auto text-right">
                       <div className="text-[11px] text-purple-200">Voucher</div>
-                      <div className="font-mono font-bold text-sm">{previewVoucher.voucherNo}</div>
+                      <div className="font-mono font-medium text-sm">{previewVoucher.voucherNo}</div>
                     </div>
                   </div>
 
                   {/* Amount the student has to pay - the headline */}
                   <div className="rounded-2xl border-2 border-[#5B47D6]/20 bg-[#5B47D6]/5 p-4 text-center">
-                    <div className="text-xs font-bold uppercase tracking-widest text-[#5B47D6]">Amount To Pay</div>
-                    <div className="font-heading font-extrabold text-4xl text-slate-900 mt-1">
+                    <div className="text-xs font-medium uppercase tracking-widest text-[#5B47D6]">Amount To Pay</div>
+                    <div className="font-heading font-medium text-4xl text-slate-900 mt-1">
                       PKR {(previewVoucher.runningBalance > 0 ? previewVoucher.runningBalance : previewVoucher.totalAmount).toLocaleString()}
                     </div>
                     <div className="text-[13px] font-semibold text-slate-500 mt-1">Due by {previewVoucher.dueDate}</div>
@@ -716,14 +798,14 @@ export function VouchersClient({
                     <div className="text-slate-500">Student</div><div className="text-right">{previewVoucher.studentName}</div>
                     <div className="text-slate-500">Parent</div><div className="text-right">{previewVoucher.parentName}</div>
                     <div className="text-slate-500">Program</div><div className="text-right">{previewVoucher.program}</div>
-                    <div className="text-slate-500">Status</div><div className="text-right font-bold">{previewVoucher.status}</div>
+                    <div className="text-slate-500">Status</div><div className="text-right font-medium">{previewVoucher.status}</div>
                   </div>
 
                   {paymentInfo && (paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban || paymentInfo.wallet) && (
                     <div className="space-y-2.5">
                       {(paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban) && (
                         <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
-                          <div className="font-extrabold text-[#5B47D6] mb-1 uppercase tracking-wide text-xs">Bank Transfer</div>
+                          <div className="font-medium text-[#5B47D6] mb-1 uppercase tracking-wide text-xs">Bank Transfer</div>
                           <div className="space-y-0.5 text-slate-700">
                             {paymentInfo.bankTitle && <div>Title: <span className="font-semibold">{paymentInfo.bankTitle}</span></div>}
                             {paymentInfo.bankAccountNo && <div>Account No: <span className="font-mono">{paymentInfo.bankAccountNo}</span></div>}
@@ -733,7 +815,7 @@ export function VouchersClient({
                       )}
                       {paymentInfo.wallet && (
                         <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
-                          <div className="font-extrabold text-[#12A150] mb-1 uppercase tracking-wide text-xs">JazzCash / Mobile Wallet</div>
+                          <div className="font-medium text-[#12A150] mb-1 uppercase tracking-wide text-xs">JazzCash / Mobile Wallet</div>
                           <div className="text-slate-700"><span className="font-semibold">{paymentInfo.wallet}</span></div>
                         </div>
                       )}
@@ -750,12 +832,12 @@ export function VouchersClient({
                     href={`https://wa.me/${waDigits(previewVoucher.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(previewVoucher, paymentInfo))}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 text-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl"
+                    className="flex-1 text-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-xl"
                   >
                     Send on WhatsApp
                   </a>
-                  <button onClick={() => window.print()} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl">Print</button>
-                  <button onClick={() => setPreviewVoucher(null)} className="px-3 py-2 border border-slate-300 font-bold text-xs rounded-xl">Close</button>
+                  <button onClick={() => window.print()} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl">Print</button>
+                  <button onClick={() => setPreviewVoucher(null)} className="px-3 py-2 border border-slate-300 font-medium text-xs rounded-xl">Close</button>
                 </div>
               </div>
             </div>
@@ -766,13 +848,13 @@ export function VouchersClient({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">
                   Record Fee Payment - {partialPayVoucher.studentName}
                 </h3>
                 <button onClick={() => setPartialPayVoucher(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 
-              <div className="space-y-3 text-xs font-bold">
+              <div className="space-y-3 text-xs font-medium">
                 <div className="p-3 bg-slate-50 rounded-xl space-y-1">
                   <div>Voucher No: <span className="font-mono text-slate-900">{partialPayVoucher.voucherNo}</span></div>
                   <div>Total Fee: <span className="font-mono text-slate-900">PKR {partialPayVoucher.totalAmount.toLocaleString()}</span></div>
@@ -785,7 +867,7 @@ export function VouchersClient({
                     type="number"
                     value={payAmountInput}
                     onChange={(e) => setPayAmountInput(e.target.value)}
-                    className="w-full bg-slate-50 border rounded-xl p-2.5 font-mono font-extrabold text-base text-slate-900"
+                    className="w-full bg-slate-50 border rounded-xl p-2.5 font-mono font-medium text-base text-slate-900"
                   />
                   <p className="text-xs text-slate-500 font-medium mt-1">
                     Partial payment updates running balance; voucher stays <strong>Due</strong> until balance reaches 0.
@@ -806,8 +888,8 @@ export function VouchersClient({
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setPartialPayVoucher(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleRecordPayment} className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-extrabold text-xs shadow-md">
+                <button onClick={() => setPartialPayVoucher(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleRecordPayment} className="px-4 py-2 bg-emerald-600 text-white rounded-xl font-medium text-xs shadow-md">
                   Confirm Payment Entry
                 </button>
               </div>
@@ -820,13 +902,13 @@ export function VouchersClient({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">
                   Issue Refund - {refundVoucher.studentName}
                 </h3>
                 <button onClick={() => setRefundVoucher(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 
-              <div className="space-y-3 text-xs font-bold">
+              <div className="space-y-3 text-xs font-medium">
                 <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl space-y-1 text-rose-900">
                   <div>Total Paid to Date: <span className="font-mono">PKR {refundVoucher.paidAmount.toLocaleString()}</span></div>
                   <div className="text-xs font-medium pt-1">
@@ -841,7 +923,7 @@ export function VouchersClient({
                     value={refundAmountInput}
                     onChange={(e) => setRefundAmountInput(e.target.value)}
                     placeholder="e.g. 5000"
-                    className="w-full bg-slate-50 border rounded-xl p-2.5 font-mono font-extrabold text-base text-slate-900"
+                    className="w-full bg-slate-50 border rounded-xl p-2.5 font-mono font-medium text-base text-slate-900"
                   />
                 </div>
 
@@ -858,8 +940,8 @@ export function VouchersClient({
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setRefundVoucher(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleIssueRefund} className="px-4 py-2 bg-rose-600 text-white rounded-xl font-extrabold text-xs shadow-md">
+                <button onClick={() => setRefundVoucher(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleIssueRefund} className="px-4 py-2 bg-rose-600 text-white rounded-xl font-medium text-xs shadow-md">
                   Issue Audited Negative Refund Entry
                 </button>
               </div>
@@ -872,7 +954,7 @@ export function VouchersClient({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">
                   Fees Need an Admin Decision
                 </h3>
                 <button onClick={() => setDecisionVoucher(null)}><X className="w-4 h-4 text-slate-400" /></button>
@@ -886,7 +968,7 @@ export function VouchersClient({
                 <div className="space-y-2">
                   <button
                     onClick={() => handleAdminDecision('Stop')}
-                    className="w-full p-3 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-2xl text-left font-extrabold text-rose-700 flex justify-between items-center transition-all"
+                    className="w-full p-3 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-2xl text-left font-medium text-rose-700 flex justify-between items-center transition-all"
                   >
                     <div>
                       <div>1. Stop Student (Change Status to Stopped)</div>
@@ -897,7 +979,7 @@ export function VouchersClient({
 
                   <button
                     onClick={() => handleAdminDecision('Extend')}
-                    className="w-full p-3 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded-2xl text-left font-extrabold text-[#5B47D6] flex justify-between items-center transition-all"
+                    className="w-full p-3 bg-purple-50 border border-purple-200 hover:bg-purple-100 rounded-2xl text-left font-medium text-[#5B47D6] flex justify-between items-center transition-all"
                   >
                     <div>
                       <div>2. Extend Grace Period (+3 Days)</div>
@@ -908,7 +990,7 @@ export function VouchersClient({
 
                   <button
                     onClick={() => handleAdminDecision('Mark Paid')}
-                    className="w-full p-3 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-2xl text-left font-extrabold text-emerald-700 flex justify-between items-center transition-all"
+                    className="w-full p-3 bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 rounded-2xl text-left font-medium text-emerald-700 flex justify-between items-center transition-all"
                   >
                     <div>
                       <div>3. Mark Paid (Confirm Manual Payment)</div>
@@ -920,7 +1002,7 @@ export function VouchersClient({
               </div>
 
               <div className="flex justify-end pt-3 border-t">
-                <button onClick={() => setDecisionVoucher(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
+                <button onClick={() => setDecisionVoucher(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
               </div>
             </div>
           </div>
@@ -931,19 +1013,19 @@ export function VouchersClient({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">Modify Voucher - {editVoucher.studentName}</h3>
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Modify Voucher - {editVoucher.studentName}</h3>
                 <button onClick={() => setEditVoucher(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
               <div className="space-y-3 text-sm">
-                <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl text-[13px] font-bold">
+                <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl text-[13px] font-medium">
                   Voucher No: <span className="font-mono text-slate-900 dark:text-slate-100">{editVoucher.voucherNo}</span>
                 </div>
                 <div>
-                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Total Fee (PKR)</label>
-                  <input type="number" value={edAmount} onChange={(e) => setEdAmount(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-extrabold text-base text-slate-900 dark:text-slate-100" />
+                  <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Total Fee (PKR)</label>
+                  <input type="number" value={edAmount} onChange={(e) => setEdAmount(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-base text-slate-900 dark:text-slate-100" />
                 </div>
                 <div>
-                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
+                  <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Due Date</label>
                   <input type="date" value={edDue} onChange={(e) => setEdDue(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
                   <p className="text-xs text-slate-500 font-medium mt-1">A 3-day grace deadline is recalculated automatically.</p>
                 </div>
@@ -954,8 +1036,8 @@ export function VouchersClient({
                 )}
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setEditVoucher(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleUpdateVoucher} disabled={edSaving} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50">{edSaving ? 'Saving...' : 'Save Changes'}</button>
+                <button onClick={() => setEditVoucher(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleUpdateVoucher} disabled={edSaving} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{edSaving ? 'Saving...' : 'Save Changes'}</button>
               </div>
             </div>
           </div>

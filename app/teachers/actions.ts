@@ -230,6 +230,63 @@ export async function updateTeacher(input: {
   return { ok: true };
 }
 
+/** Soft-delete several teachers at once. Admin-only. */
+export async function bulkDeleteTeachers(ids: string[]): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No teachers selected.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (profile?.role !== 'admin') return { ok: false, error: 'Only an Admin can delete teachers.' };
+
+  const { error } = await supabase
+    .from('teachers')
+    .update({ deleted_at: new Date().toISOString() })
+    .in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/teachers');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/** Set the availability status (Available / On Leave) on several teachers. Admin-only.
+ *  ('Left the academy' is intentionally NOT bulk - it requires a per-teacher reason.) */
+export async function bulkSetTeacherStatus(ids: string[], status: string): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No teachers selected.' };
+  const db = status === 'On Leave' ? 'on_leave' : status === 'Available' ? 'available' : '';
+  if (!db) return { ok: false, error: 'Invalid status.' };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (profile?.role !== 'admin') return { ok: false, error: 'Only an Admin can change teacher status.' };
+
+  const { error } = await supabase.from('teachers').update({ status: db }).in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/teachers');
+  revalidatePath('/');
+  return { ok: true };
+}
+
 /** Soft-delete a teacher (sets deleted_at). Admin-only. */
 export async function softDeleteTeacher(id: string): Promise<ActionResult> {
   if (!id) return { ok: false, error: 'Missing teacher id.' };

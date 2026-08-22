@@ -58,7 +58,7 @@ const Card = ({ children, i = 0, className = '' }: { children: React.ReactNode; 
 );
 const SecH = ({ title, right }: { title: React.ReactNode; right?: React.ReactNode }) => (
   <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-    <h3 className="m-0 flex items-center gap-2 text-[16px] font-bold text-[#0f1729]">{title}</h3>{right}
+    <h3 className="m-0 flex items-center gap-2 text-[16px] font-medium text-[#0f1729]">{title}</h3>{right}
   </div>
 );
 
@@ -73,7 +73,7 @@ function HealthPill({ tone, icon, label, detail }: { tone: HealthTone; icon: Rea
     <div className={cls('flex items-center gap-2.5 rounded-xl px-3 py-2', TONE_BG[tone])}>
       <span className="flex-none">{icon}</span>
       <div className="min-w-0">
-        <div className="text-[12.5px] font-bold leading-tight">{label}</div>
+        <div className="text-[12.5px] font-medium leading-tight">{label}</div>
         <div className="text-[11.5px] font-medium opacity-80 leading-tight truncate">{detail}</div>
       </div>
     </div>
@@ -103,7 +103,7 @@ function HealthStrip({ health }: { health: SystemHealth }) {
   return (
     <Card i={0} className={cls(worst === 'red' && '!border-[#f3cdd4]', worst === 'amber' && '!border-[#f4e2c0]')}>
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-[15px] font-bold text-[#0f1729]"><Activity className="h-[18px] w-[18px] text-[#5b47d6]" />System health</div>
+        <div className="flex items-center gap-2 text-[15px] font-medium text-[#0f1729]"><Activity className="h-[18px] w-[18px] text-[#5b47d6]" />System health</div>
         <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#6b7391]">
           <span className={cls('h-2 w-2 rounded-full', DOT[worst])} />
           {worst === 'green' ? 'All systems operational' : worst === 'amber' ? 'Needs attention' : 'Action required'}
@@ -183,7 +183,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
     <div style={{ fontFamily: 'var(--font-dmsans, var(--font-inter), system-ui)' }} className="space-y-4 text-[15px] text-[#0f1729]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="m-0 text-[24px] font-bold tracking-tight">{greeting()}, Admin</h2>
+          <h2 className="m-0 text-[24px] font-medium tracking-tight">{greeting()}, Admin</h2>
           <div className="mt-0.5 text-[14px] text-[#6b7391]">{todayLine()} · here is what needs you today.</div>
         </div>
       </div>
@@ -193,7 +193,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
           className="relative flex flex-wrap items-center gap-3.5 overflow-hidden rounded-2xl border border-[#f4cdd4] bg-white px-4 py-3.5">
           <span className="absolute left-0 top-0 bottom-0 w-1 bg-[#e0435a]" />
           <span className="flex h-10 w-10 flex-none items-center justify-center rounded-[10px] bg-[#fdecef] text-[#e0435a]"><AlertTriangle className="h-5 w-5" /></span>
-          <div className="text-[14px]"><b className="font-bold">{data.kpis.demosToAssign} demos need a teacher</b> <span className="text-[#6b7391]">· {data.attention.some((a) => a.kind === 'overdue') ? 'fees overdue' : 'all fees on track'}</span></div>
+          <div className="text-[14px]"><b className="font-medium">{data.kpis.demosToAssign} demos need a teacher</b> <span className="text-[#6b7391]">· {data.attention.some((a) => a.kind === 'overdue') ? 'fees overdue' : 'all fees on track'}</span></div>
           <div className="ml-auto flex gap-2">
             <button onClick={() => router.push('/demos?new=1')} className="rounded-[9px] bg-[#e0435a] px-4 py-2 text-[13px] font-semibold text-white">Assign demos</button>
             <button onClick={() => router.push('/vouchers')} className="rounded-[9px] border border-[#e0e3ee] bg-white px-4 py-2 text-[13px] font-semibold text-[#3b4258]">Review fees</button>
@@ -230,7 +230,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
             <div onClick={() => router.push(k.to)}>
               <span className={cls('mb-3 flex h-9 w-9 items-center justify-center rounded-[10px]', k.ic)}>{k.icon}</span>
               <div className="text-[13px] font-medium text-[#6b7391]">{k.l}</div>
-              <div className={cls('mt-0.5 text-[27px] font-bold tracking-tight tabular-nums', k.hot && 'text-[#e0435a]')}>{k.v}</div>
+              <div className={cls('mt-0.5 text-[27px] font-medium tracking-tight tabular-nums', k.hot && 'text-[#e0435a]')}>{k.v}</div>
             </div>
           </Card>
         ))}
@@ -256,7 +256,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
             return (
               <div key={c.id} className={cls('mb-2.5 rounded-xl border p-3', c.status === 'live' ? 'border-[#bfe6d0] bg-[#f2fbf6]' : c.status === 'missed' ? 'border-[#f3cdd4] bg-[#fef8f9]' : 'border-[#eaecf3]')}>
                 <div className="flex items-center gap-3">
-                  <div className={cls('w-[54px] text-center text-[15px] font-bold', c.status === 'live' && 'text-[#11a256]', c.status === 'missed' && 'text-[#e0435a]')}>{c.status === 'live' ? 'Now' : c.time}</div>
+                  <div className={cls('w-[54px] text-center text-[15px] font-medium', c.status === 'live' && 'text-[#11a256]', c.status === 'missed' && 'text-[#e0435a]')}>{c.status === 'live' ? 'Now' : c.time}</div>
                   <div className="flex-1">
                     <div className="text-[14px] font-semibold">{c.subject} · {c.student}</div>
                     <div className="text-[12.5px] text-[#6b7391]">{c.teacher}{c.type === 'makeup' ? ' · makeup class' : ''}{c.status === 'completed' ? ' · attendance marked' : ''}{c.status === 'missed' ? (mk ? ` · rescheduled to ${mk.dateISO}` : ' · not rescheduled') : ''}</div>
@@ -309,7 +309,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
             const pct = t.capacity ? Math.round((t.load / t.capacity) * 100) : 0;
             return (
               <div key={t.id} className="flex items-center gap-3 border-b border-[#eaecf3] py-2.5 last:border-0">
-                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-[#efedfe] text-[11px] font-bold text-[#5b47d6]">{t.name.split(' ').map((x) => x[0]).join('').slice(0, 2)}</span>
+                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-[#efedfe] text-[11px] font-medium text-[#5b47d6]">{t.name.split(' ').map((x) => x[0]).join('').slice(0, 2)}</span>
                 <div className="flex-1 text-[13.5px] font-semibold">{t.name}</div>
                 <div className="h-1.5 w-16 overflow-hidden rounded-full bg-[#eef0f6]"><motion.i initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.7 }} className="block h-full rounded-full" style={{ background: pct >= 85 ? '#d9820a' : '#11a256' }} /></div>
                 <span className="w-10 text-right text-[12.5px] tabular-nums text-[#6b7391]">{t.load}/{t.capacity}</span>
@@ -321,8 +321,8 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
         {!isManager && <Card i={9} className="lg:col-span-3">
           <SecH title="Fees" right={<span className="text-[13px] text-[#6b7391]">Month</span>} />
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="rounded-xl bg-[#f8f9fc] p-3"><div className="text-[12px] text-[#6b7391]">Overdue</div><div className="mt-0.5 text-[18px] font-bold text-[#e0435a]">Rs {Math.round(data.fees.overdue / 1000)}k</div></div>
-            <div className="rounded-xl bg-[#f8f9fc] p-3"><div className="text-[12px] text-[#6b7391]">Outstanding</div><div className="mt-0.5 text-[18px] font-bold text-[#d9820a]">Rs {Math.round(data.fees.outstanding / 1000)}k</div></div>
+            <div className="rounded-xl bg-[#f8f9fc] p-3"><div className="text-[12px] text-[#6b7391]">Overdue</div><div className="mt-0.5 text-[18px] font-medium text-[#e0435a]">Rs {Math.round(data.fees.overdue / 1000)}k</div></div>
+            <div className="rounded-xl bg-[#f8f9fc] p-3"><div className="text-[12px] text-[#6b7391]">Outstanding</div><div className="mt-0.5 text-[18px] font-medium text-[#d9820a]">Rs {Math.round(data.fees.outstanding / 1000)}k</div></div>
           </div>
           <div className="mt-3 flex items-center gap-2 text-[12.5px]"><span className="text-[#6b7391]">Collection</span><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#eef0f6]"><motion.i initial={{ width: 0 }} animate={{ width: `${data.fees.collectionPct}%` }} transition={{ duration: 0.8 }} className="block h-full rounded-full bg-[#11a256]" /></div><b className="tabular-nums">{data.fees.collectionPct}%</b></div>
         </Card>}

@@ -500,6 +500,31 @@ export async function rescheduleClass(input: {
  * previous mark rather than stacking duplicates. RLS decides permission (a
  * teacher may only touch their own class's attendance).
  */
+/**
+ * Bulk cancel + soft-delete several classes at once. One DB write (RLS decides
+ * permission: admin/manager any, a teacher only their own). Calendar events are
+ * NOT individually cancelled here (that would be one Google API call per class) -
+ * the classes just drop out of the timetable; remove stale invites from Google
+ * Calendar manually if needed.
+ */
+export async function bulkDeleteClasses(input: { sessionIds: string[] }): Promise<{ ok: boolean; count: number; error?: string }> {
+  const ids = (input.sessionIds ?? []).filter(Boolean);
+  if (ids.length === 0) return { ok: false, count: 0, error: 'No classes selected.' };
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, count: 0, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('class_sessions')
+    .update({ status: 'cancelled', deleted_at: new Date().toISOString() })
+    .in('id', ids);
+  if (error) return { ok: false, count: 0, error: error.message };
+
+  revalidatePath('/schedule');
+  revalidatePath('/attendance');
+  revalidatePath('/');
+  return { ok: true, count: ids.length };
+}
+
 export async function completeClassWithAttendance(input: {
   sessionId: string;
   studentId: string;

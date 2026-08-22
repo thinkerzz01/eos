@@ -37,7 +37,7 @@ export function EmailQueueClient({ initialNotifications }: { initialNotification
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Email Queue</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -47,7 +47,7 @@ export function EmailQueueClient({ initialNotifications }: { initialNotification
 
           <button
             onClick={() => router.refresh()}
-            className="h-[38px] px-4 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer hover:bg-slate-50"
+            className="h-[38px] px-4 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer hover:bg-slate-50"
           >
             <RefreshCw className="w-4 h-4 text-[#5B47D6]" />
             <span>Refresh Queue</span>
@@ -55,28 +55,28 @@ export function EmailQueueClient({ initialNotifications }: { initialNotification
         </div>
 
         {/* NOTIFICATION QUEUE METRICS BANNER (live) */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center text-xs font-bold">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center text-xs font-medium">
           <div className="p-4 bg-white border rounded-2xl space-y-1">
             <div className="text-slate-500 uppercase">Sent (this queue)</div>
-            <div className="font-heading font-extrabold text-2xl text-slate-900">{sentCount} / 100</div>
+            <div className="font-heading font-medium text-2xl text-slate-900">{sentCount} / 100</div>
             <div className="text-xs text-emerald-600">Resend daily cap</div>
           </div>
 
           <div className="p-4 bg-white border rounded-2xl space-y-1">
             <div className="text-slate-500 uppercase">Priority 1 Pending</div>
-            <div className="font-heading font-extrabold text-2xl text-rose-600">{p1Pending} Item{p1Pending === 1 ? '' : 's'}</div>
+            <div className="font-heading font-medium text-2xl text-rose-600">{p1Pending} Item{p1Pending === 1 ? '' : 's'}</div>
             <div className="text-xs text-rose-600">Drained First</div>
           </div>
 
           <div className="p-4 bg-white border rounded-2xl space-y-1">
             <div className="text-slate-500 uppercase">Priority 2 & 3 Pending</div>
-            <div className="font-heading font-extrabold text-2xl text-purple-600">{p23Pending} Item{p23Pending === 1 ? '' : 's'}</div>
+            <div className="font-heading font-medium text-2xl text-purple-600">{p23Pending} Item{p23Pending === 1 ? '' : 's'}</div>
             <div className="text-xs text-purple-600">Drained After P1</div>
           </div>
 
           <div className="p-4 bg-white border rounded-2xl space-y-1">
             <div className="text-slate-500 uppercase">Failed (retrying)</div>
-            <div className="font-heading font-extrabold text-2xl text-amber-600 mt-1">{failedCount}</div>
+            <div className="font-heading font-medium text-2xl text-amber-600 mt-1">{failedCount}</div>
             <div className="text-xs text-slate-500">Auto-retried by cron</div>
           </div>
         </div>
@@ -89,7 +89,7 @@ export function EmailQueueClient({ initialNotifications }: { initialNotification
           </div>
           <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
             <span className="text-[11px] text-[#6B7185] block font-medium">Status</span>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]">
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]">
               <option>All Statuses</option>
               <option value="Sent">Sent</option>
               <option value="Pending">Pending</option>
@@ -104,7 +104,7 @@ export function EmailQueueClient({ initialNotifications }: { initialNotification
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
                   <th className="py-3.5 px-3">Priority</th>
                   <th className="py-3.5 px-3">Unique Key & Recipient</th>
                   <th className="py-3.5 px-3">Template</th>

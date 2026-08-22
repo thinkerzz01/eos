@@ -8,7 +8,7 @@ import { useRole } from '@/components/ui/RoleContext';
 import { useToast } from '@/components/ui/Toast';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
 import { ALL_PROGRAMS, EXAM_SESSIONS } from '@/lib/syllabiSeed';
-import { bulkCreateStudents, updateStudent, softDeleteStudent, markStudentPassout } from './actions';
+import { bulkCreateStudents, updateStudent, softDeleteStudent, markStudentPassout, bulkDeleteStudents, bulkSetFeeStatus, bulkSetStatus, bulkSetProgram } from './actions';
 import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
@@ -501,6 +501,43 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
     }
   };
 
+  // BULK ACTIONS on the current selection.
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const handleBulkDelete = async () => {
+    if (selectedStudentIds.length === 0) return;
+    if (!confirm(`Delete ${selectedStudentIds.length} selected student${selectedStudentIds.length === 1 ? '' : 's'}? This removes them from the roster and is logged.`)) return;
+    setBulkBusy(true);
+    const res = await bulkDeleteStudents(selectedStudentIds);
+    setBulkBusy(false);
+    if (res.ok) { setSelectedStudentIds([]); router.refresh(); }
+    else alert(res.error ?? 'Failed to delete the selected students.');
+  };
+  const handleBulkFeeStatus = async (feeStatus: string) => {
+    if (selectedStudentIds.length === 0 || !feeStatus) return;
+    setBulkBusy(true);
+    const res = await bulkSetFeeStatus(selectedStudentIds, feeStatus);
+    setBulkBusy(false);
+    if (res.ok) { setSelectedStudentIds([]); router.refresh(); }
+    else alert(res.error ?? 'Failed to update fee status.');
+  };
+  const handleBulkStatus = async (status: string) => {
+    if (selectedStudentIds.length === 0 || !status) return;
+    setBulkBusy(true);
+    const res = await bulkSetStatus(selectedStudentIds, status);
+    setBulkBusy(false);
+    if (res.ok) { setSelectedStudentIds([]); router.refresh(); }
+    else alert(res.error ?? 'Failed to update status.');
+  };
+  const handleBulkProgram = async (program: string) => {
+    if (selectedStudentIds.length === 0 || !program) return;
+    if (!confirm(`Change program to "${program}" for ${selectedStudentIds.length} student${selectedStudentIds.length === 1 ? '' : 's'}?`)) return;
+    setBulkBusy(true);
+    const res = await bulkSetProgram(selectedStudentIds, program);
+    setBulkBusy(false);
+    if (res.ok) { setSelectedStudentIds([]); router.refresh(); }
+    else alert(res.error ?? 'Failed to update program.');
+  };
+
   const handleExportCsv = () => {
     const dataToExport = selectedStudentIds.length > 0
       ? studentsData.filter(s => selectedStudentIds.includes(s.id))
@@ -538,7 +575,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
         {/* TOP PAGE HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Students Management</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -573,13 +610,13 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="w-7.5 h-7.5 rounded-lg bg-[#EEEBFB] text-[#5B47D6] flex items-center justify-center">
                 <Users className="w-4 h-4" />
               </div>
-              <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">Total Students</span>
+              <span className="font-heading font-medium text-[12.5px] text-[#3D4157] dark:text-slate-200">Total Students</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{studentsData.length}</div>
+              <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{studentsData.length}</div>
               <div className="text-xs font-medium text-[#6B7185] mt-1">In the system</div>
             </div>
-            <span className="text-xs font-bold text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-medium text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">
               View all →
             </span>
           </div>
@@ -589,13 +626,13 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="w-7.5 h-7.5 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <UserCheck className="w-4 h-4" />
               </div>
-              <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">Active Students</span>
+              <span className="font-heading font-medium text-[12.5px] text-[#3D4157] dark:text-slate-200">Active Students</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{counts.active}</div>
-              <div className="text-xs font-bold text-emerald-600 mt-1">Enrolled</div>
+              <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{counts.active}</div>
+              <div className="text-xs font-medium text-emerald-600 mt-1">Enrolled</div>
             </div>
-            <span className="text-xs font-bold text-emerald-600 hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-medium text-emerald-600 hover:underline inline-flex items-center gap-0.5">
               View active →
             </span>
           </div>
@@ -605,13 +642,13 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="w-7.5 h-7.5 rounded-lg bg-rose-50 text-[#E5484D] flex items-center justify-center">
                 <AlertTriangle className="w-4 h-4" />
               </div>
-              <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">At Risk Students</span>
+              <span className="font-heading font-medium text-[12.5px] text-[#3D4157] dark:text-slate-200">At Risk Students</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-[#E5484D] leading-none">{counts.atRisk}</div>
-              <div className="text-xs font-bold text-[#E5484D] mt-1">Critical review</div>
+              <div className="font-heading font-medium text-2xl text-[#E5484D] leading-none">{counts.atRisk}</div>
+              <div className="text-xs font-medium text-[#E5484D] mt-1">Critical review</div>
             </div>
-            <span className="text-xs font-bold text-[#E5484D] hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-medium text-[#E5484D] hover:underline inline-flex items-center gap-0.5">
               View at risk →
             </span>
           </div>
@@ -621,13 +658,13 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="w-7.5 h-7.5 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
                 <Receipt className="w-4 h-4" />
               </div>
-              <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">Fees Due Today</span>
+              <span className="font-heading font-medium text-[12.5px] text-[#3D4157] dark:text-slate-200">Fees Due Today</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{counts.feesDue}</div>
-              <div className="text-xs font-bold text-amber-600 mt-1">Due this cycle</div>
+              <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{counts.feesDue}</div>
+              <div className="text-xs font-medium text-amber-600 mt-1">Due this cycle</div>
             </div>
-            <span className="text-xs font-bold text-amber-600 hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-medium text-amber-600 hover:underline inline-flex items-center gap-0.5">
               Collect now →
             </span>
           </div>
@@ -637,13 +674,13 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="w-7.5 h-7.5 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                 <Calendar className="w-4 h-4" />
               </div>
-              <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">Classes Today</span>
+              <span className="font-heading font-medium text-[12.5px] text-[#3D4157] dark:text-slate-200">Classes Today</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">0</div>
-              <div className="text-xs font-bold text-blue-600 mt-1">Scheduled</div>
+              <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">0</div>
+              <div className="text-xs font-medium text-blue-600 mt-1">Scheduled</div>
             </div>
-            <span className="text-xs font-bold text-blue-600 hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-medium text-blue-600 hover:underline inline-flex items-center gap-0.5">
               View schedule →
             </span>
           </div>
@@ -653,13 +690,13 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="w-7.5 h-7.5 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
                 <UserPlus className="w-4 h-4" />
               </div>
-              <span className="font-heading font-extrabold text-[12.5px] text-[#3D4157] dark:text-slate-200">Demo Students</span>
+              <span className="font-heading font-medium text-[12.5px] text-[#3D4157] dark:text-slate-200">Demo Students</span>
             </div>
             <div className="my-2">
-              <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white leading-none">{counts.demo}</div>
-              <div className="text-xs font-bold text-purple-600 mt-1">Trial period</div>
+              <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{counts.demo}</div>
+              <div className="text-xs font-medium text-purple-600 mt-1">Trial period</div>
             </div>
-            <span className="text-xs font-bold text-purple-600 hover:underline inline-flex items-center gap-0.5">
+            <span className="text-xs font-medium text-purple-600 hover:underline inline-flex items-center gap-0.5">
               View demo →
             </span>
           </div>
@@ -667,7 +704,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
           <div className="bg-gradient-to-br from-[#1B1E38] to-[#2E285C] text-white rounded-[16px] p-3.5 shadow-md flex flex-col justify-between">
             <div>
               <div className="flex items-center justify-between gap-1 mb-1.5">
-                <div className="flex items-center gap-1.5 font-heading font-extrabold text-[12.5px] text-purple-200">
+                <div className="flex items-center gap-1.5 font-heading font-medium text-[12.5px] text-purple-200">
                   <Sparkles className="w-4 h-4 text-purple-400" />
                   <span>Student Summary</span>
                 </div>
@@ -680,7 +717,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
             <button
               onClick={() => setShowAiInsightsModal(true)}
-              className="text-xs font-bold text-purple-300 hover:text-white mt-2 inline-flex items-center gap-0.5 text-left cursor-pointer"
+              className="text-xs font-medium text-purple-300 hover:text-white mt-2 inline-flex items-center gap-0.5 text-left cursor-pointer"
             >
               View all 5 AI insights →
             </button>
@@ -704,7 +741,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                     setActiveTabStatus(tab.name);
                     setCurrentPage(1);
                   }}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeTabStatus === tab.name
                       ? tab.name === 'Passout / Alumni'
                         ? 'bg-slate-800 text-white shadow-sm'
@@ -727,7 +764,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             <div className="relative">
               <button
                 onClick={() => setShowSavedViewsMenu(!showSavedViewsMenu)}
-                className="h-8 px-3 border border-[#EBEDF3] dark:border-slate-700 rounded-lg text-xs font-bold text-slate-700 dark:text-slate-200 flex items-center gap-1.5 hover:bg-slate-50 shadow-sm cursor-pointer"
+                className="h-8 px-3 border border-[#EBEDF3] dark:border-slate-700 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-200 flex items-center gap-1.5 hover:bg-slate-50 shadow-sm cursor-pointer"
               >
                 <SlidersHorizontal className="w-3.5 h-3.5 text-[#5B47D6]" />
                 <span>Saved Views</span>
@@ -736,12 +773,12 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
               {showSavedViewsMenu && (
                 <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-xl shadow-2xl p-2 z-50 text-xs font-medium space-y-1">
-                  <div className="text-xs font-extrabold uppercase text-slate-400 px-2 py-1">Preset Saved Views</div>
+                  <div className="text-xs font-medium uppercase text-slate-400 px-2 py-1">Preset Saved Views</div>
                   {savedViews.map((sv) => (
                     <button
                       key={sv.id}
                       onClick={() => applySavedView(sv)}
-                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-bold flex items-center justify-between text-slate-800 dark:text-slate-200 cursor-pointer"
+                      className="w-full text-left px-3 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 font-medium flex items-center justify-between text-slate-800 dark:text-slate-200 cursor-pointer"
                     >
                       <span>{sv.name}</span>
                     </button>
@@ -749,7 +786,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   <div className="border-t pt-1 mt-1">
                     <button
                       onClick={() => { setShowSavedViewsMenu(false); setShowSaveViewModal(true); }}
-                      className="w-full text-left px-3 py-2 rounded-lg bg-[#EEEBFB] hover:bg-[#E2DCFA] font-bold text-[#5B47D6] flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full text-left px-3 py-2 rounded-lg bg-[#EEEBFB] hover:bg-[#E2DCFA] font-medium text-[#5B47D6] flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Save Current Filters as View</span>
@@ -784,7 +821,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   setSelectedProgram(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
+                className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
               >
                 <option value="All Programs">All Programs</option>
                 {Array.from(new Set(studentsData.map((s) => s.program).filter(Boolean))).map((p) => (
@@ -801,7 +838,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   setSelectedSubject(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
+                className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
               >
                 <option value="All Subjects">All Subjects</option>
                 {Array.from(new Set(studentsData.flatMap((s) => s.enrolledSubjects.map((es) => es.subject)).filter(Boolean))).map((sub) => (
@@ -818,7 +855,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   setSelectedTeacher(e.target.value);
                   setCurrentPage(1);
                 }}
-                className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
+                className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
               >
                 <option value="All Teachers">All Teachers</option>
                 {Array.from(new Set(studentsData.flatMap((s) => s.enrolledSubjects.map((es) => es.teacherName)).filter(Boolean))).map((t) => (
@@ -829,7 +866,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
             <button
               onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
-              className={`h-[38px] px-3.5 border text-xs font-bold rounded-xl flex items-center gap-1.5 transition-all ml-auto cursor-pointer ${
+              className={`h-[38px] px-3.5 border text-xs font-medium rounded-xl flex items-center gap-1.5 transition-all ml-auto cursor-pointer ${
                 showAdvancedFilters
                   ? 'bg-[#5B47D6] text-white border-[#5B47D6] shadow-sm'
                   : 'bg-white dark:bg-slate-800 border-[#EBEDF3] dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50'
@@ -845,9 +882,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
           {showAdvancedFilters && (
             <div className="pt-3 border-t border-[#EBEDF3] dark:border-slate-800 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs animate-in fade-in">
               <div className="space-y-1.5 bg-[#F6F7FB] dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                <div className="flex justify-between font-bold text-slate-700 dark:text-slate-300">
+                <div className="flex justify-between font-medium text-slate-700 dark:text-slate-300">
                   <span>Min Attendance %</span>
-                  <span className="text-[#5B47D6] font-extrabold">{minAttendanceFilter}%</span>
+                  <span className="text-[#5B47D6] font-medium">{minAttendanceFilter}%</span>
                 </div>
                 <input
                   type="range"
@@ -861,9 +898,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               </div>
 
               <div className="space-y-1.5 bg-[#F6F7FB] dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                <div className="flex justify-between font-bold text-slate-700 dark:text-slate-300">
+                <div className="flex justify-between font-medium text-slate-700 dark:text-slate-300">
                   <span>Min Homework %</span>
-                  <span className="text-[#5B47D6] font-extrabold">{minHomeworkFilter}%</span>
+                  <span className="text-[#5B47D6] font-medium">{minHomeworkFilter}%</span>
                 </div>
                 <input
                   type="range"
@@ -877,11 +914,11 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               </div>
 
               <div className="space-y-1.5 bg-[#F6F7FB] dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                <label className="font-bold text-slate-700 dark:text-slate-300 block">Health Tier Risk</label>
+                <label className="font-medium text-slate-700 dark:text-slate-300 block">Health Tier Risk</label>
                 <select
                   value={selectedRiskLevel}
                   onChange={(e) => { setSelectedRiskLevel(e.target.value); setCurrentPage(1); }}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 font-bold text-slate-800 dark:text-slate-100 cursor-pointer"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 font-medium text-slate-800 dark:text-slate-100 cursor-pointer"
                 >
                   <option value="All Tiers">All Tiers</option>
                   <option value="Green (Healthy)">Green (Healthy)</option>
@@ -891,11 +928,11 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               </div>
 
               <div className="space-y-1.5 bg-[#F6F7FB] dark:bg-slate-800/60 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
-                <label className="font-bold text-slate-700 dark:text-slate-300 block">Subject Count Enrolled</label>
+                <label className="font-medium text-slate-700 dark:text-slate-300 block">Subject Count Enrolled</label>
                 <select
                   value={subjectCountFilter}
                   onChange={(e) => { setSubjectCountFilter(e.target.value); setCurrentPage(1); }}
-                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 font-bold text-slate-800 dark:text-slate-100 cursor-pointer"
+                  className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-1.5 font-medium text-slate-800 dark:text-slate-100 cursor-pointer"
                 >
                   <option value="All">All Counts</option>
                   <option value="Single Subject">Single Subject</option>
@@ -907,7 +944,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="col-span-full flex justify-end">
                 <button
                   onClick={resetAllFilters}
-                  className="px-3.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors border border-rose-200 cursor-pointer"
+                  className="px-3.5 py-1.5 bg-rose-50 text-rose-600 hover:bg-rose-100 rounded-xl font-medium text-xs flex items-center gap-1.5 transition-colors border border-rose-200 cursor-pointer"
                 >
                   <RotateCcw className="w-3.5 h-3.5" />
                   <span>Reset All Advanced Filters</span>
@@ -917,12 +954,84 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
           )}
         </div>
 
+        {/* BULK ACTION BAR — appears when rows are selected */}
+        {selectedStudentIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
+            <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
+              {selectedStudentIds.length} selected
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+
+            <select
+              value=""
+              disabled={bulkBusy}
+              title="Set fee status"
+              onChange={(e) => { if (e.target.value) handleBulkFeeStatus(e.target.value); }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-[#5B47D6]"
+            >
+              <option value="">Fee status…</option>
+              <option value="Paid">Paid</option>
+              <option value="Due">Due</option>
+              <option value="In Grace">In Grace</option>
+              <option value="Stopped">Stopped</option>
+            </select>
+
+            <select
+              value=""
+              disabled={bulkBusy}
+              title="Set student status"
+              onChange={(e) => { if (e.target.value) handleBulkStatus(e.target.value); }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-[#5B47D6]"
+            >
+              <option value="">Status…</option>
+              <option value="Active">Active</option>
+              <option value="Paused">Paused</option>
+              <option value="Alumni">Alumni (passed out)</option>
+            </select>
+
+            <select
+              value=""
+              disabled={bulkBusy}
+              title="Change program (e.g. promote a batch)"
+              onChange={(e) => { if (e.target.value) handleBulkProgram(e.target.value); }}
+              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-2 py-1.5 text-xs font-semibold focus:outline-none focus:border-[#5B47D6]"
+            >
+              <option value="">Program…</option>
+              {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
+            </select>
+
+            <button
+              onClick={handleExportCsv}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-600" /> Export
+            </button>
+
+            <button
+              onClick={handleBulkDelete}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> {bulkBusy ? 'Working…' : 'Delete'}
+            </button>
+
+            <button
+              onClick={() => setSelectedStudentIds([])}
+              disabled={bulkBusy}
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
         {/* 100% MATCHING MAIN STUDENTS TABLE */}
         <div className="w-full bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse min-w-[900px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
                   <th className="py-3.5 px-3 w-[40px] text-center">
                     <input
                       type="checkbox"
@@ -931,14 +1040,14 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       className="rounded accent-[#5B47D6] cursor-pointer"
                     />
                   </th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Student</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Parent / Guardian</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Program / Grade</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Enrolled Subjects & Teachers</th>
-                  <th className="py-3.5 px-3 text-center font-extrabold text-slate-900 dark:text-white">Performance Score</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Fee Status</th>
-                  <th className="py-3.5 px-3 font-extrabold text-slate-900 dark:text-white">Next Class</th>
-                  <th className="py-3.5 px-3 text-center font-extrabold text-slate-900 dark:text-white">Actions</th>
+                  <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Student</th>
+                  <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Parent / Guardian</th>
+                  <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Program / Grade</th>
+                  <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Enrolled Subjects & Teachers</th>
+                  <th className="py-3.5 px-3 text-center font-medium text-slate-900 dark:text-white">Performance Score</th>
+                  <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Fee Status</th>
+                  <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Next Class</th>
+                  <th className="py-3.5 px-3 text-center font-medium text-slate-900 dark:text-white">Actions</th>
                 </tr>
               </thead>
 
@@ -962,7 +1071,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
                         <td className="py-3.5 px-3">
                           <div className="flex items-center gap-3">
-                            <div className={`w-9 h-9 rounded-full font-extrabold text-xs flex items-center justify-center shrink-0 shadow-sm ${avatarColor}`}>
+                            <div className={`w-9 h-9 rounded-full font-medium text-xs flex items-center justify-center shrink-0 shadow-sm ${avatarColor}`}>
                               {getInitials(s.name)}
                             </div>
                             <div>
@@ -995,7 +1104,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
                         <td className="py-3.5 px-3 text-center">
                           <span
-                            className={`inline-block font-extrabold text-sm sm:text-base font-mono px-3.5 py-1.5 rounded-full border-2 shadow-sm ${
+                            className={`inline-block font-medium text-sm sm:text-base font-mono px-3.5 py-1.5 rounded-full border-2 shadow-sm ${
                               s.performanceScore < 60
                                 ? 'bg-rose-50 border-rose-400 text-rose-600'
                                 : s.performanceScore < 80
@@ -1048,7 +1157,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                             <button
                               onClick={() => { setProfileModalStudent(s); setIsEditMode(false); }}
                               title="View Full Profile Modal"
-                              className="h-8 px-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-sm transition-all cursor-pointer"
+                              className="h-8 px-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl flex items-center gap-1 shadow-sm transition-all cursor-pointer"
                             >
                               <span>Profile</span>
                             </button>
@@ -1075,7 +1184,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
           </div>
 
           {/* PAGINATION */}
-          <div className="p-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-bold text-slate-600">
+          <div className="p-4 bg-slate-50 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-medium text-slate-600">
             <div className="flex items-center gap-3">
               <div>Showing {filteredStudents.length === 0 ? 0 : ((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, filteredStudents.length)} of {filteredStudents.length} students</div>
               <div className="flex items-center gap-1.5">
@@ -1083,7 +1192,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                 <select
                   value={pageSize}
                   onChange={(e) => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                  className="bg-white border rounded-lg px-2 py-1 font-bold text-slate-700 focus:outline-none focus:border-[#5B47D6] cursor-pointer"
+                  className="bg-white border rounded-lg px-2 py-1 font-medium text-slate-700 focus:outline-none focus:border-[#5B47D6] cursor-pointer"
                 >
                   {[10, 20, 50, 100, 500].map((n) => (<option key={n} value={n}>{n}</option>))}
                 </select>
@@ -1107,7 +1216,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                     <FileSpreadsheet className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-lg">Import Students CSV</h3>
+                    <h3 className="font-heading font-medium text-slate-900 dark:text-white text-lg">Import Students CSV</h3>
                     <p className="text-xs text-[#6B7185]">Bulk import student records into the academy database.</p>
                   </div>
                 </div>
@@ -1116,12 +1225,12 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
               <div className="p-4 bg-[#F6F7FB] dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700 flex items-center justify-between gap-3">
                 <div>
-                  <div className="font-extrabold text-xs text-slate-900 dark:text-white">Download Sample CSV Template</div>
+                  <div className="font-medium text-xs text-slate-900 dark:text-white">Download Sample CSV Template</div>
                   <div className="text-xs text-[#6B7185] mt-0.5">Use our pre-formatted template with all required columns.</div>
                 </div>
                 <button
                   onClick={handleDownloadSampleCsv}
-                  className="px-3.5 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-[#5B47D6] font-extrabold text-xs rounded-xl flex items-center gap-1.5 hover:bg-purple-50 transition-colors shrink-0 shadow-sm cursor-pointer"
+                  className="px-3.5 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-[#5B47D6] font-medium text-xs rounded-xl flex items-center gap-1.5 hover:bg-purple-50 transition-colors shrink-0 shadow-sm cursor-pointer"
                 >
                   <Download className="w-4 h-4" />
                   <span>Download Sample</span>
@@ -1139,11 +1248,11 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   <Upload className="w-6 h-6" />
                 </div>
                 <div>
-                  <span className="font-extrabold text-sm text-[#5B47D6] block">Click to upload CSV or drag and drop</span>
+                  <span className="font-medium text-sm text-[#5B47D6] block">Click to upload CSV or drag and drop</span>
                   <span className="text-xs text-[#6B7185] mt-0.5 block">Supports UTF-8 formatted .csv files</span>
                 </div>
                 {importedFileName && (
-                  <div className="mt-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl inline-flex items-center gap-1.5 border border-emerald-200">
+                  <div className="mt-2 text-xs font-medium text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl inline-flex items-center gap-1.5 border border-emerald-200">
                     <CheckCircle className="w-4 h-4" />
                     <span>Selected: {importedFileName} ({importedRows.length} rows parsed)</span>
                   </div>
@@ -1152,10 +1261,10 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
               {importedRows.length > 0 && (
                 <div className="space-y-2">
-                  <div className="font-extrabold text-xs text-slate-800">Parsed Preview ({importedRows.length} students)</div>
+                  <div className="font-medium text-xs text-slate-800">Parsed Preview ({importedRows.length} students)</div>
                   <div className="max-h-36 overflow-y-auto border border-slate-200 rounded-xl">
                     <table className="w-full text-left text-xs">
-                      <thead className="bg-slate-100 font-extrabold text-slate-700">
+                      <thead className="bg-slate-100 font-medium text-slate-700">
                         <tr>
                           <th className="p-2">Name</th>
                           <th className="p-2">Program</th>
@@ -1167,7 +1276,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       <tbody className="divide-y divide-slate-100 font-medium">
                         {importedRows.map((r, i) => (
                           <tr key={i}>
-                            <td className="p-2 font-bold">{r.name}</td>
+                            <td className="p-2 font-medium">{r.name}</td>
                             <td className="p-2">{r.program}</td>
                             <td className="p-2">{r.grade}</td>
                             <td className="p-2">{r.parentName}</td>
@@ -1183,14 +1292,14 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button
                   onClick={() => setShowImportModal(false)}
-                  className="px-4 py-2 border border-slate-300 rounded-xl font-bold text-xs text-slate-700 hover:bg-slate-50 cursor-pointer"
+                  className="px-4 py-2 border border-slate-300 rounded-xl font-medium text-xs text-slate-700 hover:bg-slate-50 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   disabled={importedRows.length === 0}
                   onClick={handleConfirmImport}
-                  className="px-4 py-2 bg-[#5B47D6] disabled:opacity-50 text-white rounded-xl font-bold text-xs shadow-md hover:bg-[#4F3DC7] transition-all cursor-pointer"
+                  className="px-4 py-2 bg-[#5B47D6] disabled:opacity-50 text-white rounded-xl font-medium text-xs shadow-md hover:bg-[#4F3DC7] transition-all cursor-pointer"
                 >
                   Confirm & Import ({importedRows.length})
                 </button>
@@ -1204,24 +1313,24 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-extrabold text-slate-900 dark:text-white text-base">Save Current Filters as View</h3>
+                <h3 className="font-medium text-slate-900 dark:text-white text-base">Save Current Filters as View</h3>
                 <button onClick={() => setShowSaveViewModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 
               <div>
-                <label className="font-bold text-xs text-slate-700 dark:text-slate-300 block mb-1">View Name</label>
+                <label className="font-medium text-xs text-slate-700 dark:text-slate-300 block mb-1">View Name</label>
                 <input
                   type="text"
                   value={newViewName}
                   onChange={(e) => setNewViewName(e.target.value)}
                   placeholder="e.g. My Critical O-Level View"
-                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-bold focus:outline-none focus:border-[#5B47D6]"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-xs font-medium focus:outline-none focus:border-[#5B47D6]"
                 />
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t">
-                <button onClick={() => setShowSaveViewModal(false)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleSaveCurrentView} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-bold text-xs shadow-md">Save View</button>
+                <button onClick={() => setShowSaveViewModal(false)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleSaveCurrentView} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md">Save View</button>
               </div>
             </div>
           </div>
@@ -1236,18 +1345,18 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="shrink-0 bg-white dark:bg-slate-900 p-4 sm:p-6 border-b border-[#EBEDF3] dark:border-slate-800 space-y-3 z-20">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <div className="flex items-center gap-3.5">
-                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-[#5B47D6] to-[#8B7BF0] text-white font-extrabold text-lg flex items-center justify-center shrink-0 shadow-md">
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-[#5B47D6] to-[#8B7BF0] text-white font-medium text-lg flex items-center justify-center shrink-0 shadow-md">
                       {getInitials(profileModalStudent.name)}
                     </div>
                     <div>
-                      <h2 className="font-heading font-extrabold text-xl sm:text-2xl text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                      <h2 className="font-heading font-medium text-xl sm:text-2xl text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
                         <span>{profileModalStudent.name}</span>
-                        <span className={`text-xs font-bold px-3 py-0.5 rounded-full ${profileModalStudent.status === 'active' ? 'bg-emerald-100 text-[#12A150]' : 'bg-amber-100 text-amber-700'}`}>
+                        <span className={`text-xs font-medium px-3 py-0.5 rounded-full ${profileModalStudent.status === 'active' ? 'bg-emerald-100 text-[#12A150]' : 'bg-amber-100 text-amber-700'}`}>
                           {profileModalStudent.status.toUpperCase()}
                         </span>
                       </h2>
                       <div className="text-xs sm:text-sm text-[#6B7185] font-medium mt-0.5">
-                        <span className="font-mono text-slate-800 dark:text-slate-200 font-bold">{profileModalStudent.stuId}</span> · {profileModalStudent.program} • {profileModalStudent.grade}
+                        <span className="font-mono text-slate-800 dark:text-slate-200 font-medium">{profileModalStudent.stuId}</span> · {profileModalStudent.program} • {profileModalStudent.grade}
                       </div>
                     </div>
                   </div>
@@ -1258,7 +1367,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         setEditFormData(profileModalStudent);
                         setIsEditMode(!isEditMode);
                       }}
-                      className={`h-9 px-4 text-xs font-extrabold rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
+                      className={`h-9 px-4 text-xs font-medium rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
                         isEditMode
                           ? 'bg-[#5B47D6] text-white'
                           : 'bg-purple-50 text-[#5B47D6] hover:bg-purple-100 border border-[#D5CEF6]'
@@ -1268,15 +1377,15 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       <span>{isEditMode ? 'Close Edit Mode' : 'Edit Profile'}</span>
                     </button>
 
-                    <a href={`https://wa.me/${profileModalStudent.parentPhone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="h-9 px-3 bg-[#E7F9EE] text-[#12A150] rounded-xl font-bold text-xs flex items-center gap-1.5 border border-[#BDE8CC]">
+                    <a href={`https://wa.me/${profileModalStudent.parentPhone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="h-9 px-3 bg-[#E7F9EE] text-[#12A150] rounded-xl font-medium text-xs flex items-center gap-1.5 border border-[#BDE8CC]">
                       <MessageSquare className="w-3.5 h-3.5" />
                       <span>WhatsApp</span>
                     </a>
-                    <a href={`tel:${profileModalStudent.parentPhone}`} className="h-9 px-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center gap-1.5">
+                    <a href={`tel:${profileModalStudent.parentPhone}`} className="h-9 px-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium text-xs flex items-center gap-1.5">
                       <Phone className="w-3.5 h-3.5" />
                       <span>Call</span>
                     </a>
-                    <a href={`mailto:${profileModalStudent.parentEmail}`} className="h-9 px-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-xs flex items-center gap-1.5">
+                    <a href={`mailto:${profileModalStudent.parentEmail}`} className="h-9 px-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium text-xs flex items-center gap-1.5">
                       <Mail className="w-3.5 h-3.5" />
                       <span>Email</span>
                     </a>
@@ -1287,7 +1396,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                 </div>
 
                 {/* MODAL TABS NAVIGATION */}
-                <div className="flex items-center gap-4 sm:gap-6 border-b border-[#EBEDF3] dark:border-slate-800 pt-1 pb-0.5 text-xs font-extrabold overflow-x-auto">
+                <div className="flex items-center gap-4 sm:gap-6 border-b border-[#EBEDF3] dark:border-slate-800 pt-1 pb-0.5 text-xs font-medium overflow-x-auto">
                   {[
                     { name: 'Overview', icon: User },
                     { name: 'Academics', icon: BookOpen },
@@ -1323,43 +1432,43 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                 {isEditMode ? (
                   <div className="bg-purple-50/50 border-2 border-[#5B47D6]/30 rounded-2xl p-5 space-y-4 text-xs animate-in fade-in mb-6">
                     <div className="flex justify-between items-center border-b border-purple-200 pb-2">
-                      <h3 className="font-extrabold text-[#5B47D6] text-sm flex items-center gap-2">
+                      <h3 className="font-medium text-[#5B47D6] text-sm flex items-center gap-2">
                         <Edit3 className="w-4 h-4" />
                         <span>Edit Student Profile Details</span>
                       </h3>
-                      <span className="text-xs font-bold text-[#5B47D6] bg-white px-2.5 py-0.5 rounded-full border border-[#5B47D6]/30">
+                      <span className="text-xs font-medium text-[#5B47D6] bg-white px-2.5 py-0.5 rounded-full border border-[#5B47D6]/30">
                         Live Profile Editor
                       </span>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Student Full Name</label>
+                        <label className="font-medium text-slate-700 block mb-1">Student Full Name</label>
                         <input
                           type="text"
                           value={editFormData.name || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, name: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Program</label>
+                        <label className="font-medium text-slate-700 block mb-1">Program</label>
                         <select
                           value={editFormData.program || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, program: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         >
                           {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                         </select>
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Fee Status</label>
+                        <label className="font-medium text-slate-700 block mb-1">Fee Status</label>
                         <select
                           value={editFormData.feeStatus || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, feeStatus: e.target.value as any })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         >
                           <option value="Paid">Paid</option>
                           <option value="Due">Due</option>
@@ -1369,51 +1478,51 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Parent Name</label>
+                        <label className="font-medium text-slate-700 block mb-1">Parent Name</label>
                         <input
                           type="text"
                           value={editFormData.parentName || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, parentName: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Parent Phone</label>
+                        <label className="font-medium text-slate-700 block mb-1">Parent Phone</label>
                         <input
                           type="text"
                           value={editFormData.parentPhone || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, parentPhone: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Email <span className="text-slate-400 font-medium">(calendar invites)</span></label>
+                        <label className="font-medium text-slate-700 block mb-1">Email <span className="text-slate-400 font-medium">(calendar invites)</span></label>
                         <input
                           type="email"
                           value={editFormData.parentEmail || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, parentEmail: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">WhatsApp</label>
+                        <label className="font-medium text-slate-700 block mb-1">WhatsApp</label>
                         <input
                           type="text"
                           value={editFormData.whatsapp || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, whatsapp: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Gender</label>
+                        <label className="font-medium text-slate-700 block mb-1">Gender</label>
                         <select
                           value={editFormData.gender || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         >
                           <option value="">Select…</option>
                           <option value="female">Female (she/her)</option>
@@ -1423,41 +1532,41 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Date of Birth</label>
+                        <label className="font-medium text-slate-700 block mb-1">Date of Birth</label>
                         <input
                           type="date"
                           value={editFormData.dob || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, dob: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">City</label>
+                        <label className="font-medium text-slate-700 block mb-1">City</label>
                         <input
                           type="text"
                           value={editFormData.city || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, city: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div className="sm:col-span-2 md:col-span-3">
-                        <label className="font-bold text-slate-700 block mb-1">Address</label>
+                        <label className="font-medium text-slate-700 block mb-1">Address</label>
                         <input
                           type="text"
                           value={editFormData.address || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, address: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Exam Session</label>
+                        <label className="font-medium text-slate-700 block mb-1">Exam Session</label>
                         <select
                           value={editFormData.examSession || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, examSession: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         >
                           <option value="">Select…</option>
                           {EXAM_SESSIONS.map((s) => (<option key={s} value={s}>{s}</option>))}
@@ -1465,32 +1574,32 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Monthly Fee (PKR)</label>
+                        <label className="font-medium text-slate-700 block mb-1">Monthly Fee (PKR)</label>
                         <input
                           type="number"
                           value={editFormData.monthlyFee ?? ''}
                           onChange={(e) => setEditFormData({ ...editFormData, monthlyFee: e.target.value === '' ? undefined : Number(e.target.value) })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold font-mono focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium font-mono focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Next Due Date</label>
+                        <label className="font-medium text-slate-700 block mb-1">Next Due Date</label>
                         <input
                           type="date"
                           value={editFormData.nextDueDate || ''}
                           onChange={(e) => setEditFormData({ ...editFormData, nextDueDate: e.target.value })}
-                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-bold focus:outline-none focus:border-[#5B47D6]"
+                          className="w-full bg-white border border-slate-200 rounded-xl p-2 font-medium focus:outline-none focus:border-[#5B47D6]"
                         />
                       </div>
 
                       <div>
-                        <label className="font-bold text-slate-700 block mb-1">Performance Score (/100) <span className="text-slate-400 font-medium">(auto)</span></label>
+                        <label className="font-medium text-slate-700 block mb-1">Performance Score (/100) <span className="text-slate-400 font-medium">(auto)</span></label>
                         <input
                           type="number"
                           disabled
                           value={editFormData.performanceScore || 0}
-                          className="w-full bg-slate-100 border border-slate-200 rounded-xl p-2 font-bold text-slate-500 cursor-not-allowed"
+                          className="w-full bg-slate-100 border border-slate-200 rounded-xl p-2 font-medium text-slate-500 cursor-not-allowed"
                         />
                       </div>
                     </div>
@@ -1498,13 +1607,13 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                     <div className="flex justify-end gap-2 pt-2 border-t border-purple-200">
                       <button
                         onClick={() => setIsEditMode(false)}
-                        className="px-4 py-2 border rounded-xl font-bold bg-white text-slate-700"
+                        className="px-4 py-2 border rounded-xl font-medium bg-white text-slate-700"
                       >
                         Cancel
                       </button>
                       <button
                         onClick={handleSaveProfileChanges}
-                        className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-bold shadow-md"
+                        className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium shadow-md"
                       >
                         Save Changes
                       </button>
@@ -1518,27 +1627,27 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                     {/* COLUMN 1 */}
                     <div className="space-y-6 flex flex-col justify-between">
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
-                        <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Student Info</h3>
+                        <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Student Info</h3>
                         <div className="space-y-2.5 text-xs sm:text-sm">
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-slate-400" /> Full Name</span><span className="font-extrabold text-slate-900">{profileModalStudent.name}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-slate-400" /> Date of Birth</span><span className="font-extrabold text-slate-900">{profileModalStudent.dob}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-slate-400" /> Gender</span><span className="font-extrabold text-slate-900">{profileModalStudent.gender}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-slate-400" /> Program</span><span className="font-extrabold text-slate-900">{profileModalStudent.program}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Award className="w-3.5 h-3.5 text-slate-400" /> Grade</span><span className="font-extrabold text-slate-900">{profileModalStudent.grade}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-slate-400" /> Roll Number</span><span className="font-extrabold text-slate-900">{profileModalStudent.rollNo}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" /> Admission Date</span><span className="font-extrabold text-slate-900">{profileModalStudent.admissionDate}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Status</span><span className={`font-extrabold ${profileModalStudent.status === 'active' ? 'text-emerald-600' : 'text-amber-600'}`}>{profileModalStudent.status.charAt(0).toUpperCase() + profileModalStudent.status.slice(1)}</span></div>
-                          <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5 text-slate-400" /> Student ID</span><span className="font-mono font-extrabold text-slate-900">{profileModalStudent.stuId}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-slate-400" /> Full Name</span><span className="font-medium text-slate-900">{profileModalStudent.name}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Calendar className="w-3.5 h-3.5 text-slate-400" /> Date of Birth</span><span className="font-medium text-slate-900">{profileModalStudent.dob}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-slate-400" /> Gender</span><span className="font-medium text-slate-900">{profileModalStudent.gender}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><BookOpen className="w-3.5 h-3.5 text-slate-400" /> Program</span><span className="font-medium text-slate-900">{profileModalStudent.program}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Award className="w-3.5 h-3.5 text-slate-400" /> Grade</span><span className="font-medium text-slate-900">{profileModalStudent.grade}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Tag className="w-3.5 h-3.5 text-slate-400" /> Roll Number</span><span className="font-medium text-slate-900">{profileModalStudent.rollNo}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><Clock className="w-3.5 h-3.5 text-slate-400" /> Admission Date</span><span className="font-medium text-slate-900">{profileModalStudent.admissionDate}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Status</span><span className={`font-medium ${profileModalStudent.status === 'active' ? 'text-emerald-600' : 'text-amber-600'}`}>{profileModalStudent.status.charAt(0).toUpperCase() + profileModalStudent.status.slice(1)}</span></div>
+                          <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium flex items-center gap-1.5"><QrCode className="w-3.5 h-3.5 text-slate-400" /> Student ID</span><span className="font-mono font-medium text-slate-900">{profileModalStudent.stuId}</span></div>
                         </div>
                       </div>
 
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
-                        <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Parent / Guardian</h3>
+                        <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Parent / Guardian</h3>
                         <div className="space-y-4 text-xs sm:text-sm">
                           <div>
-                            <div className="text-xs text-[#6B7185] font-extrabold uppercase tracking-wider">FATHER</div>
+                            <div className="text-xs text-[#6B7185] font-medium uppercase tracking-wider">FATHER</div>
                             <div className="flex items-center justify-between mt-1">
-                              <span className="font-extrabold text-slate-900 text-sm">{profileModalStudent.parentName}</span>
+                              <span className="font-medium text-slate-900 text-sm">{profileModalStudent.parentName}</span>
                               <div className="flex items-center gap-2 text-slate-400">
                                 <a href={`tel:${profileModalStudent.parentPhone}`} title="Call Father" className="hover:text-blue-600 p-1">
                                   <Phone className="w-4 h-4 text-emerald-600" />
@@ -1555,9 +1664,9 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           </div>
 
                           <div className="pt-3 border-t border-slate-100">
-                            <div className="text-xs text-[#6B7185] font-extrabold uppercase tracking-wider">MOTHER</div>
+                            <div className="text-xs text-[#6B7185] font-medium uppercase tracking-wider">MOTHER</div>
                             <div className="flex items-center justify-between mt-1">
-                              <span className="font-extrabold text-slate-900 text-sm">{profileModalStudent.motherName}</span>
+                              <span className="font-medium text-slate-900 text-sm">{profileModalStudent.motherName}</span>
                               <div className="flex items-center gap-2 text-slate-400">
                                 <a href={`tel:${profileModalStudent.motherPhone}`} title="Call Mother" className="hover:text-blue-600 p-1">
                                   <Phone className="w-4 h-4 text-emerald-600" />
@@ -1575,11 +1684,11 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
                           <div className="pt-3 border-t border-slate-100 flex justify-between">
                             <span className="text-[#6B7185] font-medium">Preferred Language</span>
-                            <span className="font-extrabold text-slate-900">{profileModalStudent.prefLanguage}</span>
+                            <span className="font-medium text-slate-900">{profileModalStudent.prefLanguage}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-[#6B7185] font-medium">Last Contact</span>
-                            <span className="font-extrabold text-slate-900">{profileModalStudent.lastContact}</span>
+                            <span className="font-medium text-slate-900">{profileModalStudent.lastContact}</span>
                           </div>
                         </div>
                       </div>
@@ -1587,17 +1696,17 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       {/* ADMISSION & ONBOARDING — details collected on the public onboarding form */}
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
                         <div className="flex items-center justify-between">
-                          <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Admission &amp; Onboarding</h3>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${profileModalStudent.onboardingDone ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
+                          <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Admission &amp; Onboarding</h3>
+                          <span className={`text-[10px] font-medium px-2 py-0.5 rounded-full border ${profileModalStudent.onboardingDone ? 'text-emerald-700 bg-emerald-50 border-emerald-200' : 'text-amber-700 bg-amber-50 border-amber-200'}`}>
                             {profileModalStudent.onboardingDone ? 'Completed' : 'Pending'}
                           </span>
                         </div>
                         <div className="space-y-2.5 text-xs sm:text-sm">
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">School</span><span className="font-bold text-slate-900 text-right">{profileModalStudent.schoolName || '—'}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Emergency Contact</span><span className="font-bold text-slate-900 text-right">{profileModalStudent.emergencyContact || '—'}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Exam Session</span><span className="font-bold text-slate-900 text-right">{profileModalStudent.examSession || '—'}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">City</span><span className="font-bold text-slate-900 text-right">{profileModalStudent.city || '—'}</span></div>
-                          <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium">Address</span><span className="font-bold text-slate-900 text-right max-w-[60%] truncate" title={profileModalStudent.address || ''}>{profileModalStudent.address || '—'}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">School</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.schoolName || '—'}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Emergency Contact</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.emergencyContact || '—'}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Exam Session</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.examSession || '—'}</span></div>
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">City</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.city || '—'}</span></div>
+                          <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium">Address</span><span className="font-medium text-slate-900 text-right max-w-[60%] truncate" title={profileModalStudent.address || ''}>{profileModalStudent.address || '—'}</span></div>
                         </div>
                       </div>
                     </div>
@@ -1606,45 +1715,45 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                     <div className="space-y-6 flex flex-col justify-between">
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-4 sm:p-5 space-y-5 shadow-sm">
                         <div className="flex justify-between items-center border-b pb-2.5">
-                          <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Academic Snapshot</h3>
+                          <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Academic Snapshot</h3>
                         </div>
 
                         {/* RESPONSIVE 2x2 ON MOBILE, 4-COL ON LG WITH TRUNCATED LABELS */}
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5 text-center">
                           <div className="bg-[#E7F6EC] p-2.5 sm:p-3 rounded-2xl border border-[#C6EAD3] flex flex-col justify-center">
-                            <div className="text-xs sm:text-xs font-bold text-[#6B7185] truncate">Attendance</div>
-                            <div className="font-extrabold text-base sm:text-lg text-[#12A150] mt-0.5">{profileModalStudent.attendancePct}%</div>
+                            <div className="text-xs sm:text-xs font-medium text-[#6B7185] truncate">Attendance</div>
+                            <div className="font-medium text-base sm:text-lg text-[#12A150] mt-0.5">{profileModalStudent.attendancePct}%</div>
                           </div>
                           <div className="bg-[#E9F1FE] p-2.5 sm:p-3 rounded-2xl border border-[#CBE0FE] flex flex-col justify-center">
-                            <div className="text-xs sm:text-xs font-bold text-[#6B7185] truncate">Homework</div>
-                            <div className="font-extrabold text-base sm:text-lg text-blue-600 mt-0.5">{profileModalStudent.homeworkPct}%</div>
+                            <div className="text-xs sm:text-xs font-medium text-[#6B7185] truncate">Homework</div>
+                            <div className="font-medium text-base sm:text-lg text-blue-600 mt-0.5">{profileModalStudent.homeworkPct}%</div>
                           </div>
                           <div className="bg-[#FEF3E2] p-2.5 sm:p-3 rounded-2xl border border-[#FCDAA8] flex flex-col justify-center">
-                            <div className="text-xs sm:text-xs font-bold text-[#6B7185] truncate">Tests</div>
-                            <div className="font-extrabold text-base sm:text-lg text-amber-600 mt-0.5">{profileModalStudent.testsPct}%</div>
+                            <div className="text-xs sm:text-xs font-medium text-[#6B7185] truncate">Tests</div>
+                            <div className="font-medium text-base sm:text-lg text-amber-600 mt-0.5">{profileModalStudent.testsPct}%</div>
                           </div>
                           <div className="bg-[#EEEBFB] p-2.5 sm:p-3 rounded-2xl border border-[#D5CEF6] flex flex-col justify-center">
-                            <div className="text-xs sm:text-xs font-bold text-[#6B7185] truncate">Assignments</div>
-                            <div className="font-extrabold text-base sm:text-lg text-[#5B47D6] mt-0.5">{profileModalStudent.assignmentsPct}%</div>
+                            <div className="text-xs sm:text-xs font-medium text-[#6B7185] truncate">Assignments</div>
+                            <div className="font-medium text-base sm:text-lg text-[#5B47D6] mt-0.5">{profileModalStudent.assignmentsPct}%</div>
                           </div>
                         </div>
 
                         <div className="bg-rose-50 p-3 rounded-2xl border border-rose-200 text-center">
-                          <div className="text-xs font-bold text-rose-600">Concept Mastery</div>
-                          <div className="font-extrabold text-lg text-rose-700 mt-0.5">{profileModalStudent.masteryPct}%</div>
+                          <div className="text-xs font-medium text-rose-600">Concept Mastery</div>
+                          <div className="font-medium text-lg text-rose-700 mt-0.5">{profileModalStudent.masteryPct}%</div>
                         </div>
 
                         {/* PERFECT RESPONSIVE PERFORMANCE SCORE GAUGE & LEGEND */}
                         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 pt-3 border-t border-slate-100">
                           <div className={`relative w-28 h-28 sm:w-32 sm:h-32 shrink-0 flex flex-col items-center justify-center bg-white rounded-full border-[8px] shadow-md ${profileModalStudent.performanceScore < 60 ? 'border-rose-400' : profileModalStudent.performanceScore < 80 ? 'border-amber-400' : 'border-[#12A150]'}`}>
-                            <div className="font-heading font-extrabold text-3xl sm:text-4xl leading-none text-slate-900">{profileModalStudent.performanceScore}</div>
-                            <div className="text-xs font-bold text-[#6B7185] mt-0.5">/100</div>
-                            <div className="text-xs font-extrabold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full mt-1 border border-slate-200">
+                            <div className="font-heading font-medium text-3xl sm:text-4xl leading-none text-slate-900">{profileModalStudent.performanceScore}</div>
+                            <div className="text-xs font-medium text-[#6B7185] mt-0.5">/100</div>
+                            <div className="text-xs font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded-full mt-1 border border-slate-200">
                               {profileModalStudent.aiTag}
                             </div>
                           </div>
 
-                          <div className="space-y-2 text-xs font-bold w-full flex-1">
+                          <div className="space-y-2 text-xs font-medium w-full flex-1">
                             <div className="flex items-center gap-2">
                               <span className="flex items-center gap-1.5 truncate"><span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0" /> Excellent (80-100)</span>
                             </div>
@@ -1662,7 +1771,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                       </div>
 
                       <div className="bg-gradient-to-br from-purple-900 to-[#2E285C] text-white rounded-2xl p-5 space-y-3 shadow-md">
-                        <div className="flex items-center gap-2 font-extrabold text-xs text-purple-200 uppercase tracking-wider">
+                        <div className="flex items-center gap-2 font-medium text-xs text-purple-200 uppercase tracking-wider">
                           <Sparkles className="w-4 h-4 text-purple-400" />
                           <span>AI Recommendation</span>
                         </div>
@@ -1671,7 +1780,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         </p>
                         <div className="flex flex-wrap gap-1.5 pt-1">
                           {profileModalStudent.tags.map((tag, i) => (
-                            <span key={i} className="px-2.5 py-0.5 bg-purple-500/20 text-purple-200 rounded-full text-xs font-bold border border-purple-500/30">{tag}</span>
+                            <span key={i} className="px-2.5 py-0.5 bg-purple-500/20 text-purple-200 rounded-full text-xs font-medium border border-purple-500/30">{tag}</span>
                           ))}
                         </div>
                       </div>
@@ -1680,44 +1789,44 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                     {/* COLUMN 3 */}
                     <div className="space-y-6 flex flex-col justify-between">
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-3 shadow-sm">
-                        <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Next Class</h3>
-                        <div className="font-extrabold text-slate-900 text-sm flex items-center justify-between">
+                        <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Next Class</h3>
+                        <div className="font-medium text-slate-900 text-sm flex items-center justify-between">
                           <span>{profileModalStudent.nextClassTime}</span>
                         </div>
-                        <div className="text-xs text-blue-600 font-bold">{profileModalStudent.nextClassSubject}</div>
+                        <div className="text-xs text-blue-600 font-medium">{profileModalStudent.nextClassSubject}</div>
                         <div className="flex items-center gap-2.5 pt-3 border-t border-slate-100 text-xs">
-                          <div className="w-7 h-7 rounded-full bg-slate-200 font-extrabold text-xs flex items-center justify-center">{getInitials(profileModalStudent.nextClassTeacher || '')}</div>
-                          <span className="font-extrabold text-slate-800">{profileModalStudent.nextClassTeacher}</span>
-                          <span className="text-xs text-slate-600 font-bold ml-auto">{profileModalStudent.nextClassRoom}</span>
+                          <div className="w-7 h-7 rounded-full bg-slate-200 font-medium text-xs flex items-center justify-center">{getInitials(profileModalStudent.nextClassTeacher || '')}</div>
+                          <span className="font-medium text-slate-800">{profileModalStudent.nextClassTeacher}</span>
+                          <span className="text-xs text-slate-600 font-medium ml-auto">{profileModalStudent.nextClassRoom}</span>
                         </div>
                       </div>
 
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-3 shadow-sm">
-                        <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Fee Status</h3>
+                        <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Fee Status</h3>
                         <div className="flex justify-between items-center text-xs sm:text-sm">
                           <div>
-                            <span className={`font-extrabold text-xs px-2.5 py-1 rounded-full ${profileModalStudent.feeStatus === 'Paid' ? 'bg-[#E7F6EC] text-[#12A150]' : profileModalStudent.feeStatus === 'Stopped' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>{profileModalStudent.feeStatus}</span>
+                            <span className={`font-medium text-xs px-2.5 py-1 rounded-full ${profileModalStudent.feeStatus === 'Paid' ? 'bg-[#E7F6EC] text-[#12A150]' : profileModalStudent.feeStatus === 'Stopped' ? 'bg-rose-50 text-rose-600' : 'bg-amber-50 text-amber-600'}`}>{profileModalStudent.feeStatus}</span>
                             <div className="text-xs text-[#6B7185] mt-1 font-medium">{profileModalStudent.feeDateText}</div>
                           </div>
                           <div className="text-right">
                             <span className="text-[#6B7185] block text-xs font-medium">Total Paid</span>
-                            <span className="font-extrabold text-slate-900 text-sm sm:text-base">{profileModalStudent.totalPaid}</span>
+                            <span className="font-medium text-slate-900 text-sm sm:text-base">{profileModalStudent.totalPaid}</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-3 shadow-sm">
-                        <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Quick Actions</h3>
+                        <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Quick Actions</h3>
                         <div className="grid grid-cols-2 gap-3 text-xs sm:text-sm">
-                          <button onClick={() => router.push('/homework')} className="p-3 bg-purple-50 text-[#5B47D6] rounded-xl font-bold flex items-center gap-2 hover:bg-purple-100 transition-colors cursor-pointer">
+                          <button onClick={() => router.push('/homework')} className="p-3 bg-purple-50 text-[#5B47D6] rounded-xl font-medium flex items-center gap-2 hover:bg-purple-100 transition-colors cursor-pointer">
                             <FilePlus className="w-4 h-4" />
                             <span>Assign Homework</span>
                           </button>
-                          <button onClick={() => router.push('/schedule')} className="p-3 bg-blue-50 text-blue-600 rounded-xl font-bold flex items-center gap-2 hover:bg-blue-100 transition-colors cursor-pointer">
+                          <button onClick={() => router.push('/schedule')} className="p-3 bg-blue-50 text-blue-600 rounded-xl font-medium flex items-center gap-2 hover:bg-blue-100 transition-colors cursor-pointer">
                             <CalendarPlus className="w-4 h-4" />
                             <span>Schedule Class</span>
                           </button>
-                          <button onClick={() => router.push('/vouchers')} className="p-3 bg-emerald-50 text-emerald-600 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-100 transition-colors cursor-pointer">
+                          <button onClick={() => router.push('/vouchers')} className="p-3 bg-emerald-50 text-emerald-600 rounded-xl font-medium flex items-center gap-2 hover:bg-emerald-100 transition-colors cursor-pointer">
                             <Receipt className="w-4 h-4" />
                             <span>Generate Invoice</span>
                           </button>
@@ -1733,32 +1842,32 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   <div className="space-y-6 text-sm">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Subjects Enrolled</div>
-                        <div className="font-extrabold text-2xl text-slate-900 mt-1">{profileModalStudent.enrolledSubjects.length}</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Subjects Enrolled</div>
+                        <div className="font-medium text-2xl text-slate-900 mt-1">{profileModalStudent.enrolledSubjects.length}</div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Overall Average</div>
-                        <div className="font-extrabold text-2xl text-slate-900 mt-1">{profileModalStudent.performanceScore || 0}%</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Overall Average</div>
+                        <div className="font-medium text-2xl text-slate-900 mt-1">{profileModalStudent.performanceScore || 0}%</div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Homework Completion</div>
-                        <div className="font-extrabold text-2xl text-slate-900 mt-1">{profileModalStudent.homeworkPct || 0}%</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Homework Completion</div>
+                        <div className="font-medium text-2xl text-slate-900 mt-1">{profileModalStudent.homeworkPct || 0}%</div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Program</div>
-                        <div className="font-extrabold text-lg text-slate-900 mt-1">{profileModalStudent.program}</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Program</div>
+                        <div className="font-medium text-lg text-slate-900 mt-1">{profileModalStudent.program}</div>
                       </div>
                     </div>
 
                     <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
-                      <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider">Subject Performance</h3>
+                      <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Subject Performance</h3>
                       {profileModalStudent.enrolledSubjects.length === 0 ? (
                         <div className="text-center text-[#6B7185] py-10 text-xs font-medium">No subjects enrolled yet. Assessed grades appear here after the first test.</div>
                       ) : (
                         <div className="overflow-x-auto">
                           <table className="w-full text-left text-xs sm:text-sm border-collapse min-w-[560px]">
                             <thead>
-                              <tr className="bg-[#F6F7FB] border-b font-extrabold text-[#6B7185] text-xs uppercase">
+                              <tr className="bg-[#F6F7FB] border-b font-medium text-[#6B7185] text-xs uppercase">
                                 <th className="py-2.5 px-3">SUBJECT</th>
                                 <th className="py-2.5 px-3">TEACHER</th>
                                 <th className="py-2.5 px-3">ASSESSED</th>
@@ -1770,13 +1879,13 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                             <tbody className="divide-y divide-slate-100">
                               {profileModalStudent.enrolledSubjects.map((row, idx) => (
                                 <tr key={idx} className="hover:bg-slate-50">
-                                  <td className="py-3 px-3 font-extrabold text-slate-900">{row.subject}</td>
+                                  <td className="py-3 px-3 font-medium text-slate-900">{row.subject}</td>
                                   <td className="py-3 px-3 text-slate-700">{row.teacherName}</td>
-                                  <td className="py-3 px-3 font-extrabold text-emerald-600">{row.assessedGrade || '\u2014'}</td>
-                                  <td className="py-3 px-3 font-bold text-[#5B47D6]">{row.targetGrade}</td>
-                                  <td className="py-3 px-3 font-bold">{row.avgScore}%</td>
+                                  <td className="py-3 px-3 font-medium text-emerald-600">{row.assessedGrade || '\u2014'}</td>
+                                  <td className="py-3 px-3 font-medium text-[#5B47D6]">{row.targetGrade}</td>
+                                  <td className="py-3 px-3 font-medium">{row.avgScore}%</td>
                                   <td className="py-3 px-3">
-                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-extrabold ${row.status === 'Excellent' ? 'bg-emerald-100 text-emerald-700' : row.status === 'Good' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
+                                    <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${row.status === 'Excellent' ? 'bg-emerald-100 text-emerald-700' : row.status === 'Good' ? 'bg-blue-100 text-blue-700' : 'bg-amber-100 text-amber-700'}`}>
                                       {row.status}
                                     </span>
                                   </td>
@@ -1795,24 +1904,24 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   <div className="space-y-6 text-sm">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Attendance Rate</div>
-                        <div className="font-extrabold text-2xl text-slate-900 mt-1">{profileModalStudent.attendancePct || 0}%</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Attendance Rate</div>
+                        <div className="font-medium text-2xl text-slate-900 mt-1">{profileModalStudent.attendancePct || 0}%</div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Homework Completion</div>
-                        <div className="font-extrabold text-2xl text-slate-900 mt-1">{profileModalStudent.homeworkPct || 0}%</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Homework Completion</div>
+                        <div className="font-medium text-2xl text-slate-900 mt-1">{profileModalStudent.homeworkPct || 0}%</div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Health Band</div>
-                        <div className={`font-extrabold text-2xl mt-1 ${profileModalStudent.healthBand === 'Green' ? 'text-emerald-600' : profileModalStudent.healthBand === 'Amber' ? 'text-amber-600' : 'text-rose-600'}`}>{profileModalStudent.healthBand}</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Health Band</div>
+                        <div className={`font-medium text-2xl mt-1 ${profileModalStudent.healthBand === 'Green' ? 'text-emerald-600' : profileModalStudent.healthBand === 'Amber' ? 'text-amber-600' : 'text-rose-600'}`}>{profileModalStudent.healthBand}</div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Status</div>
-                        <div className="font-extrabold text-lg text-slate-900 mt-1 capitalize">{profileModalStudent.status}</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Status</div>
+                        <div className="font-medium text-lg text-slate-900 mt-1 capitalize">{profileModalStudent.status}</div>
                       </div>
                     </div>
                     <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 shadow-sm">
-                      <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider mb-3">Attendance History</h3>
+                      <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider mb-3">Attendance History</h3>
                       <div className="text-center text-[#6B7185] py-10 text-xs font-medium">Class-by-class attendance appears here once sessions are recorded.</div>
                     </div>
                   </div>
@@ -1823,24 +1932,24 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   <div className="space-y-6 text-sm">
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Fee Status</div>
-                        <div className={`font-extrabold text-2xl mt-1 ${profileModalStudent.feeStatus === 'Paid' ? 'text-emerald-600' : profileModalStudent.feeStatus === 'Stopped' ? 'text-rose-600' : 'text-amber-600'}`}>{profileModalStudent.feeStatus}</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Fee Status</div>
+                        <div className={`font-medium text-2xl mt-1 ${profileModalStudent.feeStatus === 'Paid' ? 'text-emerald-600' : profileModalStudent.feeStatus === 'Stopped' ? 'text-rose-600' : 'text-amber-600'}`}>{profileModalStudent.feeStatus}</div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Next Due Date</div>
-                        <div className="font-extrabold text-lg text-slate-900 mt-1">{profileModalStudent.feeDateText || '\u2014'}</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Next Due Date</div>
+                        <div className="font-medium text-lg text-slate-900 mt-1">{profileModalStudent.feeDateText || '\u2014'}</div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Total Paid</div>
-                        <div className="font-extrabold text-lg text-emerald-600 mt-1">{profileModalStudent.totalPaid || 'PKR 0'}</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Total Paid</div>
+                        <div className="font-medium text-lg text-emerald-600 mt-1">{profileModalStudent.totalPaid || 'PKR 0'}</div>
                       </div>
                       <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-sm">
-                        <div className="text-[#6B7185] font-extrabold text-xs">Outstanding</div>
-                        <div className="font-extrabold text-lg text-rose-600 mt-1">{profileModalStudent.totalOutstanding || 'PKR 0'}</div>
+                        <div className="text-[#6B7185] font-medium text-xs">Outstanding</div>
+                        <div className="font-medium text-lg text-rose-600 mt-1">{profileModalStudent.totalOutstanding || 'PKR 0'}</div>
                       </div>
                     </div>
                     <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 shadow-sm">
-                      <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider mb-3">Payment History</h3>
+                      <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider mb-3">Payment History</h3>
                       <div className="text-center text-[#6B7185] py-10 text-xs font-medium">Vouchers and payments for this student appear here once recorded.</div>
                     </div>
                   </div>
@@ -1850,7 +1959,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                 {modalActiveTab === 'Timeline' && (
                   <div className="space-y-4 text-sm">
                     <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 shadow-sm">
-                      <h3 className="font-extrabold text-[#6B7185] text-xs uppercase tracking-wider mb-3">Activity Timeline</h3>
+                      <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider mb-3">Activity Timeline</h3>
                       {profileModalStudent.timeline.length === 0 ? (
                         <div className="text-center text-[#6B7185] py-10 text-xs font-medium">No activity yet for this student.</div>
                       ) : (
@@ -1858,7 +1967,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           {profileModalStudent.timeline.map((t, idx) => (
                             <div key={idx} className="flex justify-between items-start gap-3 p-3 rounded-xl bg-slate-50">
                               <div>
-                                <div className="font-extrabold text-slate-900">{t.title}</div>
+                                <div className="font-medium text-slate-900">{t.title}</div>
                                 <div className="text-xs text-slate-500 font-medium mt-0.5">{t.desc}</div>
                               </div>
                               <span className="text-xs text-slate-400 font-mono shrink-0">{t.date}</span>

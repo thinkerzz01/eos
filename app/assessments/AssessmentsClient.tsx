@@ -103,7 +103,7 @@ export function AssessmentsClient({
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Assessments</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -113,7 +113,7 @@ export function AssessmentsClient({
           {role !== 'student' && (
             <button
               onClick={() => setShowRecordModal(true)}
-              className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0"
+              className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl flex items-center gap-1.5 shadow-sm cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Record Test</span>
@@ -125,14 +125,14 @@ export function AssessmentsClient({
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           
           <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-[#EBEDF3] font-heading font-extrabold text-sm text-slate-900 dark:text-white">
+            <div className="p-4 border-b border-[#EBEDF3] font-heading font-medium text-sm text-slate-900 dark:text-white">
               Recent Conducted Assessments
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse min-w-[500px]">
                 <thead>
-                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                  <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
                     <th className="py-3.5 px-3">Test Title & Code</th>
                     <th className="py-3.5 px-3">Subject & Date</th>
                     <th className="py-3.5 px-3">Total Marks</th>
@@ -144,16 +144,16 @@ export function AssessmentsClient({
                   {assessments.map((ast) => (
                     <tr key={ast.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-sm text-slate-900 dark:text-slate-100">{ast.testTitle}</div>
+                        <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{ast.testTitle}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{ast.testCode}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-slate-900 dark:text-slate-100">{ast.subject}</div>
+                        <div className="font-medium text-slate-900 dark:text-slate-100">{ast.subject}</div>
                         <div className="text-xs text-[#6B7185]">{ast.dateConducted}</div>
                       </td>
 
-                      <td className="py-3.5 px-3 font-mono font-extrabold text-slate-900 dark:text-slate-100">
+                      <td className="py-3.5 px-3 font-mono font-medium text-slate-900 dark:text-slate-100">
                         {ast.totalMarks} Marks
                       </td>
 
@@ -163,7 +163,7 @@ export function AssessmentsClient({
                             setSelectedAssessmentForSlip(ast);
                             setShowResultSlipModal(true);
                           }}
-                          className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-extrabold text-xs rounded-xl shadow-xs transition-all cursor-pointer"
+                          className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl shadow-xs transition-all cursor-pointer"
                         >
                           Generate Result Slip →
                         </button>
@@ -178,11 +178,11 @@ export function AssessmentsClient({
           {/* CAIE GRADE SCALE POLICY CARD */}
           <div className="lg:col-span-5 space-y-4">
             <div className="bg-gradient-to-br from-[#0B0E23] to-[#1D2145] text-white rounded-[20px] p-5 shadow-lg space-y-3">
-              <div className="flex items-center gap-2 font-heading font-extrabold text-xs text-purple-300 uppercase tracking-wider">
+              <div className="flex items-center gap-2 font-heading font-medium text-xs text-purple-300 uppercase tracking-wider">
                 <Award className="w-4 h-4 text-purple-400" />
                 <span>Cambridge / CAIE Locked Grade Scale</span>
               </div>
-              <div className="flex items-center gap-2 flex-wrap text-xs font-bold pt-1">
+              <div className="flex items-center gap-2 flex-wrap text-xs font-medium pt-1">
                 <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg">A* (90-100%)</span>
                 <span className="px-3 py-1 bg-emerald-600 text-white rounded-lg">A (80-89%)</span>
                 <span className="px-3 py-1 bg-blue-600 text-white rounded-lg">B (70-79%)</span>
@@ -207,8 +207,8 @@ export function AssessmentsClient({
               {/* RESULT SLIP HEADER */}
               <div className="flex justify-between items-start border-b pb-4">
                 <div>
-                  <div className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">THINKERZZ</div>
-                  <div className="text-xs text-[#5B47D6] font-bold">OFFICIAL CAIE RESULT SLIP</div>
+                  <div className="font-heading font-medium text-xl text-slate-900 dark:text-white">THINKERZZ</div>
+                  <div className="text-xs text-[#5B47D6] font-medium">OFFICIAL CAIE RESULT SLIP</div>
                   <div className="text-xs text-slate-500 mt-1 font-medium">{selectedAssessmentForSlip.testTitle} ({selectedAssessmentForSlip.dateConducted})</div>
                 </div>
                 <button onClick={() => setShowResultSlipModal(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-600" /></button>
@@ -224,18 +224,18 @@ export function AssessmentsClient({
                 return (
                   <div className="grid grid-cols-3 gap-3 text-center">
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
-                      <div className="text-xs font-bold text-slate-500 uppercase">Internal Average</div>
-                      <div className="font-heading font-extrabold text-xl text-slate-900 mt-1">{avg.toFixed(1)}%</div>
+                      <div className="text-xs font-medium text-slate-500 uppercase">Internal Average</div>
+                      <div className="font-heading font-medium text-xl text-slate-900 mt-1">{avg.toFixed(1)}%</div>
                     </div>
 
                     <div className="p-3 bg-purple-50 border border-purple-200 rounded-2xl">
-                      <div className="text-xs font-bold text-[#5B47D6] uppercase">Assessed Grade</div>
-                      <div className="font-heading font-extrabold text-2xl text-[#5B47D6] mt-1">{assessed}</div>
+                      <div className="text-xs font-medium text-[#5B47D6] uppercase">Assessed Grade</div>
+                      <div className="font-heading font-medium text-2xl text-[#5B47D6] mt-1">{assessed}</div>
                     </div>
 
                     <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
-                      <div className="text-xs font-bold text-emerald-700 uppercase">Target Grade</div>
-                      <div className="font-heading font-extrabold text-2xl text-emerald-600 mt-1">-</div>
+                      <div className="text-xs font-medium text-emerald-700 uppercase">Target Grade</div>
+                      <div className="font-heading font-medium text-2xl text-emerald-600 mt-1">-</div>
                     </div>
                   </div>
                 );
@@ -244,7 +244,7 @@ export function AssessmentsClient({
               {/* STUDENT SCORES TABLE */}
               <div className="border rounded-2xl overflow-hidden text-xs">
                 <table className="w-full text-left">
-                  <thead className="bg-slate-100 text-slate-700 font-extrabold">
+                  <thead className="bg-slate-100 text-slate-700 font-medium">
                     <tr>
                       <th className="p-2.5">Student Name</th>
                       <th className="p-2.5">Marks Obtained</th>
@@ -252,7 +252,7 @@ export function AssessmentsClient({
                       {canManageTests && <th className="p-2.5 text-center print:hidden">Edit</th>}
                     </tr>
                   </thead>
-                  <tbody className="divide-y font-bold">
+                  <tbody className="divide-y font-medium">
                     {selectedAssessmentForSlip.grades.map((g) => (
                       <tr key={g.testId ?? g.studentId}>
                         <td className="p-2.5 text-slate-900">{g.studentName}</td>
@@ -272,7 +272,7 @@ export function AssessmentsClient({
                           )}
                         </td>
                         <td className="p-2.5">
-                          <span className="px-2 py-0.5 bg-purple-100 text-[#5B47D6] font-extrabold rounded-md">
+                          <span className="px-2 py-0.5 bg-purple-100 text-[#5B47D6] font-medium rounded-md">
                             {g.assessedGrade}
                           </span>
                         </td>
@@ -299,7 +299,7 @@ export function AssessmentsClient({
 
               <div className="flex justify-between items-center pt-3 border-t">
                 <span className="text-xs text-slate-400 font-medium">Issued by Thinkerzz Examination Board</span>
-                <button onClick={() => window.print()} className="px-4 py-2 bg-slate-900 text-white font-extrabold text-xs rounded-xl flex items-center gap-1.5 cursor-pointer">
+                <button onClick={() => window.print()} className="px-4 py-2 bg-slate-900 text-white font-medium text-xs rounded-xl flex items-center gap-1.5 cursor-pointer">
                   <Printer className="w-4 h-4" />
                   <span>Print Result Slip</span>
                 </button>
@@ -314,11 +314,11 @@ export function AssessmentsClient({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">Record Test</h3>
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Record Test</h3>
                 <button onClick={() => setShowRecordModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 
-              <div className="space-y-3 text-xs font-bold">
+              <div className="space-y-3 text-xs font-medium">
                 <div>
                   <label className="text-slate-700 dark:text-slate-300 block mb-1">Test Name</label>
                   <input type="text" value={tName} onChange={(e) => setTName(e.target.value)} placeholder="e.g. Unit Test 3" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
@@ -357,8 +357,8 @@ export function AssessmentsClient({
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setShowRecordModal(false)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleRecordTest} disabled={recording} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">{recording ? 'Saving...' : 'Record Test'}</button>
+                <button onClick={() => setShowRecordModal(false)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleRecordTest} disabled={recording} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{recording ? 'Saving...' : 'Record Test'}</button>
               </div>
             </div>
           </div>

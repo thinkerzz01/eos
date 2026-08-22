@@ -9,8 +9,9 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        heading: ['var(--font-plus-jakarta)', 'system-ui', 'sans-serif'],
-        sans: ['var(--font-inter)', 'system-ui', 'sans-serif'],
+        // Driven by the admin-selectable CSS vars (Settings → Typography).
+        heading: ['var(--app-font-heading)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        sans: ['var(--app-font-body)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       colors: {
         violet: {

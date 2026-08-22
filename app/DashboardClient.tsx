@@ -150,8 +150,8 @@ export function DashboardClient({
       <PortalLayout title="" subtitle="" allowedRoles={['student']}>
         <div className="space-y-6 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12 text-xs">
           <div className="bg-gradient-to-r from-[#5B47D6] via-[#7C6BF0] to-[#8B7BF0] text-white p-6 rounded-[24px] shadow-lg">
-            <span className="px-3 py-1 bg-white/20 text-white font-extrabold text-xs rounded-full">🎓 Student Portal</span>
-            <h1 className="font-heading font-extrabold text-2xl sm:text-3xl mt-2">{me ? `Welcome, ${me.name}` : 'Welcome to your portal'}</h1>
+            <span className="px-3 py-1 bg-white/20 text-white font-medium text-xs rounded-full">🎓 Student Portal</span>
+            <h1 className="font-heading font-medium text-2xl sm:text-3xl mt-2">{me ? `Welcome, ${me.name}` : 'Welcome to your portal'}</h1>
             <p className="text-xs text-purple-100 mt-1 font-medium">
               {me?.nextClassSubject
                 ? `Next class: ${me.nextClassSubject}${me.nextClassTime ? ` at ${me.nextClassTime}` : ''}`
@@ -159,11 +159,11 @@ export function DashboardClient({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 font-bold">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 font-medium">
             {studentTiles.map((k) => (
               <div key={k.label} className="bg-white border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
                 <div className="text-xs text-slate-500 uppercase">{k.label}</div>
-                <div className="font-heading font-extrabold text-3xl text-slate-900">{k.value}</div>
+                <div className="font-heading font-medium text-3xl text-slate-900">{k.value}</div>
               </div>
             ))}
           </div>
@@ -176,11 +176,11 @@ export function DashboardClient({
   if (role === 'teacher') {
     return (
       <PortalLayout title="" subtitle="" allowedRoles={['teacher']}>
-        <div className="space-y-6 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12 text-xs font-bold">
+        <div className="space-y-6 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12 text-xs font-medium">
           <div className="bg-gradient-to-r from-purple-900 to-[#1D1B48] text-white p-6 rounded-[24px] shadow-lg flex justify-between items-center">
             <div>
-              <span className="px-3 py-1 bg-white/20 text-white font-extrabold text-xs rounded-full">👨‍🏫 Faculty Portal</span>
-              <h1 className="font-heading font-extrabold text-2xl sm:text-3xl mt-2">Welcome to the Faculty Portal</h1>
+              <span className="px-3 py-1 bg-white/20 text-white font-medium text-xs rounded-full">👨‍🏫 Faculty Portal</span>
+              <h1 className="font-heading font-medium text-2xl sm:text-3xl mt-2">Welcome to the Faculty Portal</h1>
               <p className="text-xs text-purple-200 mt-1 font-medium">
                 {teacherStats?.nextClass
                   ? `Next class: ${teacherStats.nextClass.label} (${teacherStats.nextClass.time})`
@@ -198,7 +198,7 @@ export function DashboardClient({
             ].map((k) => (
               <div key={k.label} className="bg-white border rounded-2xl p-4 shadow-sm space-y-1">
                 <div className="text-xs text-slate-500 uppercase">{k.label}</div>
-                <div className="font-heading font-extrabold text-3xl text-slate-900">{k.value}</div>
+                <div className="font-heading font-medium text-3xl text-slate-900">{k.value}</div>
               </div>
             ))}
           </div>

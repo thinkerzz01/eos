@@ -59,6 +59,8 @@ export async function saveSettings(input: {
   bankAccountNo?: string;
   bankIban?: string;
   walletInfo?: string;
+  headingFont?: string;
+  bodyFont?: string;
 }): Promise<ActionResult> {
   const supabase = createClient();
   const {
@@ -78,10 +80,21 @@ export async function saveSettings(input: {
   const orgId = profile.org_id as string;
   const grace = Math.max(0, Math.floor(Number(input.gracePeriodDays) || 0));
 
-  const { error: orgErr } = await supabase
-    .from('orgs')
-    .update({ name: input.academyName?.trim() || 'Thinkerzz', academic_year: input.academicYear?.trim() || '' })
-    .eq('id', orgId);
+  const orgBase = {
+    name: input.academyName?.trim() || 'Thinkerzz',
+    academic_year: input.academicYear?.trim() || '',
+  };
+  const orgFull = {
+    ...orgBase,
+    heading_font: input.headingFont?.trim() || null,
+    body_font: input.bodyFont?.trim() || null,
+  };
+  let { error: orgErr } = await supabase.from('orgs').update(orgFull).eq('id', orgId);
+  // If the typography migration isn't applied yet (no heading_font/body_font
+  // columns), retry with just the base fields so saving still works.
+  if (orgErr && /heading_font|body_font|column .* does not exist|schema cache/i.test(orgErr.message)) {
+    ({ error: orgErr } = await supabase.from('orgs').update(orgBase).eq('id', orgId));
+  }
   if (orgErr) return { ok: false, error: orgErr.message };
 
   const bankPatch = {
@@ -116,5 +129,8 @@ export async function saveSettings(input: {
   revalidatePath('/settings');
   revalidatePath('/vouchers');
   revalidatePath('/fees');
+  // Fonts live in the root layout - revalidate it so a typography change applies
+  // across every page, not just /settings.
+  revalidatePath('/', 'layout');
   return { ok: true };
 }

@@ -7,6 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { createClient } from '@/lib/supabase/client';
 import { saveSettings, sendTestEmail } from './actions';
+import { FONT_OPTIONS, DEFAULT_HEADING_FONT, DEFAULT_BODY_FONT } from '@/lib/fonts';
 import {
   Settings as SettingsIcon,
   ShieldCheck,
@@ -35,6 +36,8 @@ export default function SettingsPage() {
   const [bankAccountNo, setBankAccountNo] = useState('');
   const [bankIban, setBankIban] = useState('');
   const [walletInfo, setWalletInfo] = useState('');
+  const [headingFont, setHeadingFont] = useState<string>(DEFAULT_HEADING_FONT);
+  const [bodyFont, setBodyFont] = useState<string>(DEFAULT_BODY_FONT);
   const [saving, setSaving] = useState(false);
 
   // Global text size (root font scale) - reflects on every tab. Persisted locally.
@@ -76,9 +79,13 @@ export default function SettingsPage() {
   useEffect(() => {
     (async () => {
       const supabase = createClient();
-      const { data: org } = await supabase.from('orgs').select('name,academic_year').limit(1).maybeSingle();
+      // select('*') so heading_font/body_font simply come back undefined (no 400)
+      // until the typography migration runs.
+      const { data: org } = await supabase.from('orgs').select('*').limit(1).maybeSingle();
       if (org?.name) setAcademyName(org.name);
       if (org?.academic_year) setAcademicYear(org.academic_year);
+      if (org?.heading_font) setHeadingFont(org.heading_font);
+      if (org?.body_font) setBodyFont(org.body_font);
       // select('*') returns whatever columns exist, so the bank_* fields simply
       // come back undefined (no 400) until the settings_bank_info migration runs.
       const { data: st } = await supabase.from('settings').select('*').limit(1).maybeSingle();
@@ -98,7 +105,7 @@ export default function SettingsPage() {
           <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
             <Lock className="w-7 h-7" />
           </div>
-          <h2 className="font-heading font-extrabold text-xl text-slate-900">Access restricted</h2>
+          <h2 className="font-heading font-medium text-xl text-slate-900">Access restricted</h2>
           <p className="text-xs text-[#6B7185] leading-relaxed">
             Settings are visible to the Admin only. Please contact the academy owner if you need access.
           </p>
@@ -109,7 +116,7 @@ export default function SettingsPage() {
 
   const handleSaveSettings = async () => {
     setSaving(true);
-    const res = await saveSettings({ academyName, academicYear, gracePeriodDays, bankTitle, bankAccountNo, bankIban, walletInfo });
+    const res = await saveSettings({ academyName, academicYear, gracePeriodDays, bankTitle, bankAccountNo, bankIban, walletInfo, headingFont, bodyFont });
     setSaving(false);
     if (res.ok) {
       alert('Settings saved (academy name, academic year, grace-period days persisted).');
@@ -126,7 +133,7 @@ export default function SettingsPage() {
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Central System Configuration & Settings</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -137,7 +144,7 @@ export default function SettingsPage() {
           <button
             onClick={handleSaveSettings}
             disabled={saving}
-            className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
+            className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-50"
           >
             <Save className="w-4 h-4" />
             <span>{saving ? 'Saving...' : 'Save Settings'}</span>
@@ -146,7 +153,7 @@ export default function SettingsPage() {
 
         {/* 5 CONFIGURATION TABS */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] p-4 shadow-sm space-y-4">
-          <div className="flex items-center gap-2 border-b pb-3 text-xs font-extrabold flex-wrap">
+          <div className="flex items-center gap-2 border-b pb-3 text-xs font-medium flex-wrap">
             {[
               { id: 'Branding', label: '🏢 Academy Branding & Info' },
               { id: 'Financial', label: '💰 Fee & Financial Policies' },
@@ -170,7 +177,7 @@ export default function SettingsPage() {
 
           {/* TAB 1: ACADEMY BRANDING & GENERAL SETTINGS */}
           {activeTab === 'Branding' && (
-            <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
+            <div className="space-y-4 max-w-2xl text-xs font-medium animate-in fade-in">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-700 block mb-1">Academy Name</label>
@@ -197,9 +204,36 @@ export default function SettingsPage() {
                 </div>
               </div>
 
+              {/* TYPOGRAPHY - heading + body fonts, applied portal-wide on Save */}
+              <div className="pt-4 border-t space-y-2">
+                <div className="flex items-center gap-2 text-slate-800 font-medium text-sm normal-case">
+                  <Sliders className="w-4 h-4 text-[#5B47D6]" />
+                  <span>Typography (fonts for the whole portal)</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-slate-700 block mb-1">Heading font</label>
+                    <select value={headingFont} onChange={(e) => setHeadingFont(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900 font-medium normal-case">
+                      {FONT_OPTIONS.map((f) => (<option key={f.key} value={f.key}>{f.label}</option>))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-slate-700 block mb-1">Body font</label>
+                    <select value={bodyFont} onChange={(e) => setBodyFont(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900 font-medium normal-case">
+                      {FONT_OPTIONS.map((f) => (<option key={f.key} value={f.key}>{f.label}</option>))}
+                    </select>
+                  </div>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-white p-3">
+                  <div className="font-heading text-lg text-slate-900 normal-case">Aa — Heading preview</div>
+                  <p className="text-sm text-slate-600 font-normal normal-case mt-0.5">The quick brown fox jumps over the lazy dog — body text preview.</p>
+                </div>
+                <p className="text-[11px] text-slate-400 normal-case font-medium">Defaults: Nunito headings, Jost body. Applies across the whole portal after you press Save.</p>
+              </div>
+
               {/* GLOBAL TEXT SIZE - applies to every tab, saved on this device */}
               <div className="pt-4 border-t space-y-2">
-                <div className="flex items-center gap-2 text-slate-800 font-extrabold text-sm normal-case">
+                <div className="flex items-center gap-2 text-slate-800 font-medium text-sm normal-case">
                   <Sliders className="w-4 h-4 text-[#5B47D6]" />
                   <span>Text Size (applies to the whole portal)</span>
                 </div>
@@ -208,7 +242,7 @@ export default function SettingsPage() {
                     <button
                       key={o.p}
                       onClick={() => applyScale(o.p)}
-                      className={`px-4 py-2 rounded-xl border text-xs font-bold transition-colors normal-case ${uiScale === o.p ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}
+                      className={`px-4 py-2 rounded-xl border text-xs font-medium transition-colors normal-case ${uiScale === o.p ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-50'}`}
                     >
                       {o.l} <span className="opacity-70">({o.p}%)</span>
                     </button>
@@ -221,9 +255,9 @@ export default function SettingsPage() {
 
           {/* TAB 2: FINANCIAL & FEE POLICIES */}
           {activeTab === 'Financial' && (
-            <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
+            <div className="space-y-4 max-w-2xl text-xs font-medium animate-in fade-in">
               <div className="p-3.5 bg-purple-50 border border-purple-200 rounded-2xl space-y-1 text-purple-900">
-                <div className="font-extrabold uppercase text-xs">Locked Financial Invariants</div>
+                <div className="font-medium uppercase text-xs">Locked Financial Invariants</div>
                 <div className="text-xs font-medium leading-relaxed">
                   • 3-Day Grace Period score: <strong>100 Fee Timeliness</strong><br />
                   • Expired Grace action: Raises Admin Decision card (Stop / Extend / Mark Paid)<br />
@@ -244,7 +278,7 @@ export default function SettingsPage() {
 
               {/* BANK / PAYMENT DETAILS (shown on fee vouchers) */}
               <div className="pt-4 border-t space-y-3">
-                <div className="flex items-center gap-2 text-slate-800 font-extrabold text-sm normal-case">
+                <div className="flex items-center gap-2 text-slate-800 font-medium text-sm normal-case">
                   <Building className="w-4 h-4 text-[#5B47D6]" />
                   <span>Bank & Payment Details</span>
                 </div>
@@ -273,9 +307,9 @@ export default function SettingsPage() {
 
           {/* TAB 3: SECURITY & ROLE MATRIX */}
           {activeTab === 'Security' && (
-            <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
+            <div className="space-y-4 max-w-2xl text-xs font-medium animate-in fade-in">
               <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2">
-                <div className="flex justify-between items-center text-xs font-extrabold text-emerald-400">
+                <div className="flex justify-between items-center text-xs font-medium text-emerald-400">
                   <span>Data Security</span>
                   <span>🟢 Protected</span>
                 </div>
@@ -288,7 +322,7 @@ export default function SettingsPage() {
 
           {/* TAB 4: API SECRETS & INTEGRATIONS */}
           {activeTab === 'API' && (
-            <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
+            <div className="space-y-4 max-w-2xl text-xs font-medium animate-in fade-in">
               <div>
                 <label className="text-slate-700 block mb-1">cPanel Cron Bearer Secret Token (Authorization: Bearer)</label>
                 <input type="text" disabled value="•••••••••• - set via the CRON_SECRET_TOKEN env var (never stored here)" className="w-full bg-slate-100 border rounded-xl p-2.5 font-mono text-slate-500 cursor-not-allowed" />
@@ -299,14 +333,14 @@ export default function SettingsPage() {
               </div>
 
               <div className="p-4 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
-                <div className="font-extrabold text-slate-800 normal-case">Data Backup</div>
+                <div className="font-medium text-slate-800 normal-case">Data Backup</div>
                 <p className="text-xs text-slate-500 font-medium normal-case">
                   Download a full copy of the database (every table) as a JSON file. This is the same
                   data the weekly cron backs up - use this to grab a copy on demand.
                 </p>
                 <a
                   href="/api/admin/backup"
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#5B47D6] hover:bg-[#4F3DC7] text-white px-4 py-2.5 text-xs font-extrabold shadow-sm transition normal-case"
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#5B47D6] hover:bg-[#4F3DC7] text-white px-4 py-2.5 text-xs font-medium shadow-sm transition normal-case"
                 >
                   <DownloadIcon className="w-4 h-4" /> Download Full Backup
                 </a>
@@ -316,17 +350,17 @@ export default function SettingsPage() {
 
           {/* TAB 5: NOTIFICATIONS & ADAPTERS */}
           {activeTab === 'Notifications' && (
-            <div className="space-y-4 max-w-2xl text-xs font-bold animate-in fade-in">
+            <div className="space-y-4 max-w-2xl text-xs font-medium animate-in fade-in">
               <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl space-y-1 text-emerald-900">
-                <div className="font-extrabold">Queue Drainage Rules</div>
+                <div className="font-medium">Queue Drainage Rules</div>
                 <div className="text-xs font-medium">
-                  Adapter drains Priority 1 fully, then Priority 2, then Priority 3. Templates enforce <code className="bg-white px-1 py-0.5 rounded font-mono font-bold text-slate-800">{"{{student_name}}"}</code> and <code className="bg-white px-1 py-0.5 rounded font-mono font-bold text-slate-800">{"{{pronoun}}"}</code> merge fields.
+                  Adapter drains Priority 1 fully, then Priority 2, then Priority 3. Templates enforce <code className="bg-white px-1 py-0.5 rounded font-mono font-medium text-slate-800">{"{{student_name}}"}</code> and <code className="bg-white px-1 py-0.5 rounded font-mono font-medium text-slate-800">{"{{pronoun}}"}</code> merge fields.
                 </div>
               </div>
 
               {/* SEND TEST EMAIL - verify Resend delivery */}
               <div className="p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2">
-                <div className="font-extrabold text-slate-800">Send a test email</div>
+                <div className="font-medium text-slate-800">Send a test email</div>
                 <div className="text-xs font-medium text-slate-500 normal-case">
                   Use this after verifying your Resend domain to confirm real delivery. Sends one email to the address below.
                 </div>
@@ -341,7 +375,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSendTest}
                     disabled={testing}
-                    className="px-4 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-extrabold text-xs shadow-sm disabled:opacity-50"
+                    className="px-4 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-medium text-xs shadow-sm disabled:opacity-50"
                   >
                     {testing ? 'Sending...' : 'Send Test Email'}
                   </button>

@@ -133,6 +133,25 @@ export async function deleteHomework(homeworkId: string): Promise<ActionResult> 
   return { ok: true };
 }
 
+/** Soft-delete several homeworks at once. Staff-only (students can never bulk-delete). */
+export async function bulkDeleteHomework(ids: string[]): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No homework selected.' };
+  const supabase = createClient();
+  const gate = await requireStaff(supabase);
+  if (gate) return { ok: false, error: gate.error };
+
+  const { error } = await supabase
+    .from('homework')
+    .update({ deleted_at: new Date().toISOString() })
+    .in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/homework');
+  revalidatePath('/');
+  return { ok: true };
+}
+
 /**
  * Student submits their own homework. RLS (student_access_own_homework) ensures
  * a student can only touch their own rows. Marks 'late' if past the deadline,

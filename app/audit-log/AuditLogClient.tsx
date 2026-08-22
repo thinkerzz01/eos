@@ -25,7 +25,7 @@ export function AuditLogClient({ initialLogs }: { initialLogs: AuditLogEntry[] }
           <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
             <Lock className="w-7 h-7" />
           </div>
-          <h2 className="font-heading font-extrabold text-xl text-slate-900">Access restricted</h2>
+          <h2 className="font-heading font-medium text-xl text-slate-900">Access restricted</h2>
           <p className="text-xs text-[#6B7185] leading-relaxed">
             The activity log is visible to the Admin only. Please contact the academy owner if you need access.
           </p>
@@ -41,7 +41,7 @@ export function AuditLogClient({ initialLogs }: { initialLogs: AuditLogEntry[] }
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Activity Log</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -65,7 +65,7 @@ export function AuditLogClient({ initialLogs }: { initialLogs: AuditLogEntry[] }
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse min-w-[700px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
                   <th className="py-3.5 px-3">Action & Table</th>
                   <th className="py-3.5 px-3">Actor & Role</th>
                   <th className="py-3.5 px-3">Timestamp & IP</th>
@@ -79,12 +79,12 @@ export function AuditLogClient({ initialLogs }: { initialLogs: AuditLogEntry[] }
                 ) : filtered.map((log) => (
                   <tr key={log.id} className="hover:bg-slate-50 transition-colors">
                     <td className="py-3.5 px-3">
-                      <div className="font-extrabold text-sm text-purple-700 font-mono">{log.action}</div>
+                      <div className="font-medium text-sm text-purple-700 font-mono">{log.action}</div>
                       <div className="text-xs text-[#6B7185] font-mono">{log.targetTable}</div>
                     </td>
 
                     <td className="py-3.5 px-3">
-                      <div className="font-extrabold text-slate-900 dark:text-slate-100">{log.actorName}</div>
+                      <div className="font-medium text-slate-900 dark:text-slate-100">{log.actorName}</div>
                       <div className="text-xs text-[#6B7185]">{log.actorRole}</div>
                     </td>
 

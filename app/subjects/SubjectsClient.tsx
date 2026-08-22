@@ -8,9 +8,10 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
-import { createSubject, updateSubject, deleteSubject } from './actions';
+import { createSubject, updateSubject, deleteSubject, bulkDeleteSubjects } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
-import { BookOpen, Plus, Edit3, Trash2, Check, X, Search } from 'lucide-react';
+import { downloadCsv } from '@/lib/export/csv';
+import { BookOpen, Plus, Edit3, Trash2, Check, X, Search, FileText } from 'lucide-react';
 
 export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOption[] }) {
   const router = useRouter();
@@ -75,12 +76,38 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
     else alert(res.error ?? 'Failed to delete subject.');
   };
 
+  // BULK SELECTION STATE + handlers (checked rows across all program groups)
+  const [selectedSubjectIds, setSelectedSubjectIds] = useState<string[]>([]);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const toggleSelectSubject = (id: string) => {
+    setSelectedSubjectIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+  const toggleSelectGroup = (subs: SubjectOption[]) => {
+    const ids = subs.map((s) => s.id);
+    const allSelected = ids.every((id) => selectedSubjectIds.includes(id));
+    if (allSelected) setSelectedSubjectIds((prev) => prev.filter((id) => !ids.includes(id)));
+    else setSelectedSubjectIds((prev) => Array.from(new Set([...prev, ...ids])));
+  };
+  const handleBulkDeleteSubjects = async () => {
+    if (selectedSubjectIds.length === 0) return;
+    if (!confirm(`Delete ${selectedSubjectIds.length} selected subject${selectedSubjectIds.length === 1 ? '' : 's'}?\n\nThey are removed from the pickers. Past classes/homework that used them are kept.`)) return;
+    setBulkBusy(true);
+    const res = await bulkDeleteSubjects(selectedSubjectIds);
+    setBulkBusy(false);
+    if (res.ok) { setSelectedSubjectIds([]); router.refresh(); }
+    else alert(res.error ?? 'Failed to delete the selected subjects.');
+  };
+  const handleBulkExportSubjects = () => {
+    const rows = initialSubjects.filter((s) => selectedSubjectIds.includes(s.id));
+    downloadCsv('Thinkerzz_Subjects', ['Name', 'Program'], rows.map((s) => [s.name, s.program]));
+  };
+
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
         {/* HEADER */}
         <div className="flex flex-col gap-1">
-          <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-[#5B47D6]" /> Subjects
           </h1>
           <p className="text-sm text-[#6B7185]">
@@ -92,7 +119,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-sm p-4">
           <div className="flex flex-col sm:flex-row sm:items-end gap-3">
             <div className="flex-1">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Subject name</label>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Subject name</label>
               <input
                 value={addName}
                 onChange={(e) => setAddName(e.target.value)}
@@ -102,7 +129,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Program</label>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Program</label>
               <select
                 value={addProgram}
                 onChange={(e) => setAddProgram(e.target.value)}
@@ -114,7 +141,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
             <button
               onClick={handleAdd}
               disabled={adding}
-              className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl text-xs font-bold shadow-sm disabled:opacity-50 flex items-center gap-1.5 justify-center"
+              className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl text-xs font-medium shadow-sm disabled:opacity-50 flex items-center gap-1.5 justify-center"
             >
               <Plus className="w-4 h-4" /> {adding ? 'Adding…' : 'Add Subject'}
             </button>
@@ -143,6 +170,40 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
           </select>
         </div>
 
+        {/* BULK ACTION BAR — appears when rows are selected */}
+        {selectedSubjectIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
+            <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
+              {selectedSubjectIds.length} selected
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+
+            <button
+              onClick={handleBulkExportSubjects}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-600" /> Export CSV
+            </button>
+
+            <button
+              onClick={handleBulkDeleteSubjects}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> {bulkBusy ? 'Working…' : 'Delete'}
+            </button>
+
+            <button
+              onClick={() => setSelectedSubjectIds([])}
+              disabled={bulkBusy}
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
         {/* LIST (grouped by program) */}
         {grouped.length === 0 ? (
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-sm py-12 text-center text-[#6B7185]">
@@ -153,13 +214,29 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
             {grouped.map(([program, subs]) => (
               <div key={program} className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
                 <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-950/60 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                  <span className="font-bold text-slate-900 dark:text-white text-sm">{program}</span>
+                  <label className="flex items-center gap-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={subs.every((s) => selectedSubjectIds.includes(s.id))}
+                      onChange={() => toggleSelectGroup(subs)}
+                      className="rounded accent-[#5B47D6] cursor-pointer"
+                    />
+                    <span className="font-medium text-slate-900 dark:text-white text-sm">{program}</span>
+                  </label>
                   <span className="text-xs text-[#6B7185]">{subs.length} subject{subs.length === 1 ? '' : 's'}</span>
                 </div>
                 <div className="divide-y divide-slate-100 dark:divide-slate-800">
                   {subs.map((s) => (
                     <div key={s.id} className="flex items-center justify-between px-4 py-2.5 hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                      <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{s.name}</span>
+                      <label className="flex items-center gap-2.5 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedSubjectIds.includes(s.id)}
+                          onChange={() => toggleSelectSubject(s.id)}
+                          className="rounded accent-[#5B47D6]"
+                        />
+                        <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{s.name}</span>
+                      </label>
                       <RowActionsMenu
                         actions={[
                           { label: 'Edit', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEdit(s) },
@@ -179,23 +256,23 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 my-6 text-sm">
               <div className="flex items-center justify-between">
-                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Edit Subject</h3>
+                <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Edit Subject</h3>
                 <button onClick={() => setEditing(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Subject name</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Subject name</label>
                 <input value={edName} onChange={(e) => setEdName(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
               </div>
               <div>
-                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Program</label>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Program</label>
                 <select value={edProgram} onChange={(e) => setEdProgram(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
                   {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                 </select>
               </div>
               {edError && <p className="text-xs font-semibold text-rose-600">{edError}</p>}
               <div className="flex justify-end gap-2 pt-1">
-                <button onClick={() => setEditing(null)} className="px-4 py-2 border rounded-xl font-bold text-xs text-slate-600 dark:text-slate-300">Cancel</button>
-                <button onClick={handleEdit} disabled={edSaving} className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2">
+                <button onClick={() => setEditing(null)} className="px-4 py-2 border rounded-xl font-medium text-xs text-slate-600 dark:text-slate-300">Cancel</button>
+                <button onClick={handleEdit} disabled={edSaving} className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-2">
                   <Check className="w-4 h-4" /> {edSaving ? 'Saving…' : 'Save'}
                 </button>
               </div>

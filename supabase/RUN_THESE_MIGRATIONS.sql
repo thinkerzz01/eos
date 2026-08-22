@@ -142,6 +142,17 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 GRANT EXECUTE ON FUNCTION public.submit_onboarding(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, DATE, JSONB) TO anon, authenticated;
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-08-22  Settings → Typography (admin-selectable fonts)
+--     Adds orgs.heading_font / orgs.body_font (font keys from lib/fonts.ts).
+--     App falls back to Nunito headings + Jost body when null.
+--     Full file: supabase/migrations/2026-08-22_org_typography.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+ALTER TABLE public.orgs
+  ADD COLUMN IF NOT EXISTS heading_font TEXT,
+  ADD COLUMN IF NOT EXISTS body_font TEXT;
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql

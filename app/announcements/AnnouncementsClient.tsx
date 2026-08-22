@@ -58,7 +58,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Announcements & Broadcasts</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -69,7 +69,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
           {(role === 'admin' || role === 'manager') && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+              className="h-[38px] px-4 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>+ New Announcement</span>
@@ -89,9 +89,9 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
               <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2">
                   {anc.isPinned && <Pin className="w-4 h-4 text-[#5B47D6] fill-[#5B47D6]" />}
-                  <h3 className="font-heading font-extrabold text-base text-slate-900 dark:text-white">{anc.title}</h3>
+                  <h3 className="font-heading font-medium text-base text-slate-900 dark:text-white">{anc.title}</h3>
                 </div>
-                <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-bold rounded-full">
+                <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
                   Audience: Everyone
                 </span>
               </div>
@@ -113,11 +113,11 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">+ Create Announcement</h3>
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">+ Create Announcement</h3>
                 <button onClick={() => setShowAddModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 
-              <div className="space-y-3 text-xs font-bold">
+              <div className="space-y-3 text-xs font-medium">
                 <div>
                   <label className="text-slate-700 block mb-1">Title</label>
                   <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Exam Schedule Release" className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />
@@ -129,8 +129,8 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setShowAddModal(false)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleCreateAnnouncement} disabled={posting} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">{posting ? 'Publishing...' : 'Publish Notice'}</button>
+                <button onClick={() => setShowAddModal(false)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleCreateAnnouncement} disabled={posting} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{posting ? 'Publishing...' : 'Publish Notice'}</button>
               </div>
             </div>
           </div>

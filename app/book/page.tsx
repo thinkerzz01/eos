@@ -86,7 +86,7 @@ export default function PublicBookingPage() {
 
   const field = 'w-full bg-white border border-slate-200 rounded-xl pl-10 pr-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#5B47D6] focus:ring-2 focus:ring-[#5B47D6]/15 transition';
   const plain = 'w-full bg-white border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#5B47D6] focus:ring-2 focus:ring-[#5B47D6]/15 transition';
-  const lbl = 'block text-xs font-bold text-slate-700 mb-1.5';
+  const lbl = 'block text-xs font-medium text-slate-700 mb-1.5';
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-indigo-50/40 text-[#171A2B] font-sans flex flex-col">
@@ -97,7 +97,7 @@ export default function PublicBookingPage() {
           <a href={`https://wa.me/${HELP_WA}`} target="_blank" rel="noreferrer"
             className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-emerald-700 hover:bg-emerald-100 transition">
             <MessageCircle className="w-4 h-4" />
-            <span className="text-xs font-bold">Need Help? Chat on WhatsApp</span>
+            <span className="text-xs font-medium">Need Help? Chat on WhatsApp</span>
           </a>
         </div>
       </header>
@@ -107,10 +107,10 @@ export default function PublicBookingPage() {
           <>
             {/* HERO */}
             <div className="text-center space-y-3 max-w-2xl mx-auto mb-8">
-              <span className="px-4 py-1.5 bg-[#5B47D6]/10 text-[#5B47D6] text-xs font-extrabold rounded-full inline-flex items-center gap-1.5">
+              <span className="px-4 py-1.5 bg-[#5B47D6]/10 text-[#5B47D6] text-xs font-medium rounded-full inline-flex items-center gap-1.5">
                 <Star className="w-3.5 h-3.5" /> Free 1-On-1 Live Demo Class
               </span>
-              <h1 className="font-heading font-extrabold text-4xl sm:text-5xl text-slate-900 tracking-tight leading-[1.1]">
+              <h1 className="font-heading font-medium text-4xl sm:text-5xl text-slate-900 tracking-tight leading-[1.1]">
                 Book Your Free <span className="text-[#5B47D6]">Demo Class</span>
               </h1>
               <p className="text-sm sm:text-base text-slate-500 font-medium leading-relaxed">
@@ -121,7 +121,7 @@ export default function PublicBookingPage() {
             <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 items-start">
               {/* BENEFITS PANEL */}
               <aside className="rounded-3xl bg-gradient-to-br from-[#5B47D6] to-[#3F2F9E] text-white p-6 shadow-xl shadow-[#5B47D6]/20 lg:sticky lg:top-24">
-                <h2 className="font-heading font-extrabold text-xl">What You Get</h2>
+                <h2 className="font-heading font-medium text-xl">What You Get</h2>
                 <p className="text-xs text-indigo-200 font-medium mt-1">Your free demo, at no cost and no commitment.</p>
                 <div className="space-y-4 mt-5">
                   {[
@@ -135,7 +135,7 @@ export default function PublicBookingPage() {
                       <div key={b.t} className="flex items-start gap-3">
                         <div className="w-9 h-9 rounded-xl bg-white/15 flex items-center justify-center shrink-0"><Icon className="w-5 h-5" /></div>
                         <div>
-                          <div className="text-sm font-extrabold">{b.t}</div>
+                          <div className="text-sm font-medium">{b.t}</div>
                           <div className="text-xs text-indigo-200 font-medium leading-snug">{b.d}</div>
                         </div>
                       </div>
@@ -152,8 +152,8 @@ export default function PublicBookingPage() {
                 {/* SECTION 1 */}
                 <div>
                   <div className="flex items-center gap-2.5 mb-4">
-                    <div className="w-8 h-8 rounded-xl bg-[#5B47D6] text-white flex items-center justify-center text-sm font-extrabold">1</div>
-                    <div className="font-heading font-extrabold text-base text-slate-900">Choose Your Slot</div>
+                    <div className="w-8 h-8 rounded-xl bg-[#5B47D6] text-white flex items-center justify-center text-sm font-medium">1</div>
+                    <div className="font-heading font-medium text-base text-slate-900">Choose Your Slot</div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -178,7 +178,7 @@ export default function PublicBookingPage() {
                         <option value="">Hour</option>
                         {HOURS_12.map((h) => (<option key={h} value={h}>{h}</option>))}
                       </select>
-                      <span className="flex items-center font-extrabold text-slate-300 text-lg">:</span>
+                      <span className="flex items-center font-medium text-slate-300 text-lg">:</span>
                       <select value={minute} onChange={(e) => setMinute(e.target.value)} className={plain} aria-label="Minutes">
                         {MINUTES.map((m) => (<option key={m} value={m}>{m}</option>))}
                       </select>
@@ -197,8 +197,8 @@ export default function PublicBookingPage() {
                 {/* SECTION 2 */}
                 <div className="pt-6 border-t border-slate-100">
                   <div className="flex items-center gap-2.5 mb-4">
-                    <div className="w-8 h-8 rounded-xl bg-[#5B47D6] text-white flex items-center justify-center text-sm font-extrabold">2</div>
-                    <div className="font-heading font-extrabold text-base text-slate-900">Your Details</div>
+                    <div className="w-8 h-8 rounded-xl bg-[#5B47D6] text-white flex items-center justify-center text-sm font-medium">2</div>
+                    <div className="font-heading font-medium text-base text-slate-900">Your Details</div>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -251,7 +251,7 @@ export default function PublicBookingPage() {
                 </div>
 
                 {error && (
-                  <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold text-rose-700">
+                  <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs font-medium text-rose-700">
                     <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" /><span>{error}</span>
                   </div>
                 )}
@@ -259,7 +259,7 @@ export default function PublicBookingPage() {
                 <TurnstileWidget onToken={setTurnstileToken} />
 
                 <button type="submit" disabled={submitting}
-                  className="w-full py-4 bg-gradient-to-r from-[#5B47D6] to-[#7C6BF0] hover:from-[#4F3DC7] hover:to-[#6B5AE0] text-white rounded-xl font-extrabold text-sm shadow-lg shadow-[#5B47D6]/25 transition flex items-center justify-center gap-2 disabled:opacity-50">
+                  className="w-full py-4 bg-gradient-to-r from-[#5B47D6] to-[#7C6BF0] hover:from-[#4F3DC7] hover:to-[#6B5AE0] text-white rounded-xl font-medium text-sm shadow-lg shadow-[#5B47D6]/25 transition flex items-center justify-center gap-2 disabled:opacity-50">
                   <span>{submitting ? 'Confirming...' : 'Confirm My Free Demo'}</span>
                   {!submitting && <ArrowRight className="w-4 h-4" />}
                 </button>
@@ -274,14 +274,14 @@ export default function PublicBookingPage() {
               <CheckCircle2 className="w-11 h-11 stroke-[2.5]" />
             </div>
             <div className="space-y-2">
-              <h2 className="font-heading font-extrabold text-3xl text-slate-900">Demo Booked!</h2>
+              <h2 className="font-heading font-medium text-3xl text-slate-900">Demo Booked!</h2>
               <p className="text-sm text-slate-600 font-medium max-w-md mx-auto">
                 Thank you, <strong className="text-slate-900">{parentName}</strong>! Your free demo for <strong className="text-slate-900">{studentName}</strong> is booked.
               </p>
             </div>
             <div className="p-4 bg-[#5B47D6]/5 border border-[#5B47D6]/15 rounded-2xl space-y-1.5">
-              <div className="text-[#5B47D6] text-xs uppercase tracking-wider font-bold">Booking Reference</div>
-              <div className="font-mono text-2xl text-[#5B47D6] font-extrabold">{bookingRef}</div>
+              <div className="text-[#5B47D6] text-xs uppercase tracking-wider font-medium">Booking Reference</div>
+              <div className="font-mono text-2xl text-[#5B47D6] font-medium">{bookingRef}</div>
               <div className="text-slate-600 text-xs font-medium pt-1">
                 {prettyDate}{time && <> at <strong>{prettyTime(time)} PKT</strong></>}{subject && <> for <strong>{subject}</strong></>}
               </div>
@@ -295,7 +295,7 @@ export default function PublicBookingPage() {
                 setIsSubmitted(false); setStudentName(''); setParentName(''); setParentPhone('');
                 setParentEmail(''); setHour12(''); setMinute('00'); setAmpm('PM'); setSubject(''); setSource(''); setSchool(''); setCity(''); setBookingRef('');
               }}
-              className="px-6 py-2.5 bg-slate-900 text-white font-extrabold text-xs rounded-xl hover:bg-slate-800 transition">
+              className="px-6 py-2.5 bg-slate-900 text-white font-medium text-xs rounded-xl hover:bg-slate-800 transition">
               Book Another Demo
             </button>
           </div>

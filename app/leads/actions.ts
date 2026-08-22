@@ -302,6 +302,43 @@ export async function markLeadNotConverted(input: {
   return { ok: true };
 }
 
+/** Soft-delete several leads at once. RLS enforces admin/manager write. */
+export async function bulkDeleteLeads(ids: string[]): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No leads selected.' };
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('leads')
+    .update({ deleted_at: new Date().toISOString() })
+    .in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/leads');
+  revalidatePath('/demos');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/** Set the stage on several leads at once (maps the UI stage to leads.status). */
+export async function bulkSetLeadStage(ids: string[], stage: string): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No leads selected.' };
+  const db = STAGE_DB[stage];
+  if (!db) return { ok: false, error: 'Invalid stage.' };
+
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase.from('leads').update({ status: db }).in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/leads');
+  revalidatePath('/');
+  return { ok: true };
+}
+
 /** Inline-edit a lead's stage and/or temperature. */
 export async function updateLead(input: {
   leadId: string;

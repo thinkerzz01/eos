@@ -9,10 +9,11 @@ import { DemoSession } from '@/lib/mockAdmissionsData';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { ALL_PROGRAMS, LEAD_SOURCES } from '@/lib/syllabiSeed';
 import { createClient } from '@/lib/supabase/client';
-import { assignTeacher, recordOutcome, deleteDemo, createDemo, updateDemo } from './actions';
+import { assignTeacher, recordOutcome, deleteDemo, createDemo, updateDemo, bulkDeleteDemos } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { downloadCsv } from '@/lib/export/csv';
 import {
   Calendar,
   Clock,
@@ -35,6 +36,7 @@ import {
   Edit3,
   Trash2,
   Check,
+  FileText,
 } from 'lucide-react';
 
 export function DemosClient({
@@ -274,6 +276,37 @@ export function DemosClient({
     } else setEdError(res.error ?? 'Failed to reschedule the demo.');
   };
 
+  // BULK SELECTION STATE + handlers (operate on the current filtered view)
+  const [selectedDemoIds, setSelectedDemoIds] = useState<string[]>([]);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const toggleSelectAllDemos = () => {
+    if (selectedDemoIds.length === filteredDemos.length && filteredDemos.length > 0) {
+      setSelectedDemoIds([]);
+    } else {
+      setSelectedDemoIds(filteredDemos.map((d) => d.id));
+    }
+  };
+  const toggleSelectDemo = (id: string) => {
+    setSelectedDemoIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+  const handleBulkDeleteDemos = async () => {
+    if (selectedDemoIds.length === 0) return;
+    if (!confirm(`Delete ${selectedDemoIds.length} selected demo${selectedDemoIds.length === 1 ? '' : 's'}? This removes them from the list.`)) return;
+    setBulkBusy(true);
+    const res = await bulkDeleteDemos(selectedDemoIds);
+    setBulkBusy(false);
+    if (res.ok) { setSelectedDemoIds([]); router.refresh(); }
+    else alert(res.error ?? 'Failed to delete the selected demos.');
+  };
+  const handleBulkExportDemos = () => {
+    const rows = demosList.filter((d) => selectedDemoIds.includes(d.id));
+    downloadCsv(
+      'Thinkerzz_Demos',
+      ['Demo ID', 'Student', 'Parent', 'Phone', 'Program', 'Subject', 'Teacher', 'Scheduled', 'Status', 'Outcome'],
+      rows.map((d) => [d.demoId, d.studentName, d.parentName, d.parentPhone, d.program, d.subject, d.teacherName ?? '', d.scheduledTime, d.status, d.outcome || 'Pending'])
+    );
+  };
+
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
@@ -282,7 +315,7 @@ export function DemosClient({
         {enrollLink && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
-              <div className="flex items-center gap-2 text-emerald-600 font-heading font-extrabold text-lg">
+              <div className="flex items-center gap-2 text-emerald-600 font-heading font-medium text-lg">
                 <CheckCircle2 className="w-5 h-5" />
                 <span>Student Won - Send Enrollment Form</span>
               </div>
@@ -293,10 +326,10 @@ export function DemosClient({
                 {enrollLink}
               </div>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setEnrollLink(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Close</button>
+                <button onClick={() => setEnrollLink(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Close</button>
                 <button
                   onClick={() => { try { navigator.clipboard?.writeText(enrollLink); } catch {} }}
-                  className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md"
+                  className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md"
                 >
                   Copy link
                 </button>
@@ -308,7 +341,7 @@ export function DemosClient({
         {/* TOP HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Demos &amp; Schedule</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -320,7 +353,7 @@ export function DemosClient({
             <Link
               href="/book"
               target="_blank"
-              className="h-[38px] px-3.5 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 text-xs font-extrabold text-[#5B47D6] rounded-xl flex items-center gap-1.5 hover:bg-purple-100 transition-all shadow-sm cursor-pointer"
+              className="h-[38px] px-3.5 bg-purple-50 dark:bg-purple-950/60 border border-purple-200 text-xs font-medium text-[#5B47D6] rounded-xl flex items-center gap-1.5 hover:bg-purple-100 transition-all shadow-sm cursor-pointer"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Preview Booking Page ↗</span>
@@ -347,7 +380,7 @@ export function DemosClient({
                 <button
                   key={tab.name}
                   onClick={() => setSelectedStatusTab(tab.name)}
-                  className={`px-3.5 py-1.5 rounded-lg text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                     selectedStatusTab === tab.name
                       ? tab.name === 'Needs Teacher'
                         ? 'bg-orange-600 text-white shadow-sm'
@@ -366,7 +399,7 @@ export function DemosClient({
             <div className="flex items-center gap-2 flex-wrap">
               <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
                 <span className="text-xs text-[#6B7185] block font-medium">Date</span>
-                <select value={dateRange} onChange={(e) => setDateRange(e.target.value as any)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
+                <select value={dateRange} onChange={(e) => setDateRange(e.target.value as any)} className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
                   <option value="all">All Time</option>
                   <option value="7">Last 7 Days</option>
                   <option value="30">Last 30 Days</option>
@@ -375,9 +408,9 @@ export function DemosClient({
               </div>
               {dateRange === 'custom' && (
                 <div className="flex items-center gap-1.5 text-xs">
-                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                  <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-medium text-slate-800 dark:text-slate-100" />
                   <span className="text-[#6B7185]">to</span>
-                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+                  <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-medium text-slate-800 dark:text-slate-100" />
                 </div>
               )}
               <div className="relative w-full sm:w-[240px]">
@@ -394,12 +427,56 @@ export function DemosClient({
           </div>
         </div>
 
+        {/* BULK ACTION BAR — appears when rows are selected */}
+        {canManage && selectedDemoIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
+            <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
+              {selectedDemoIds.length} selected
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+
+            <button
+              onClick={handleBulkExportDemos}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-600" /> Export CSV
+            </button>
+
+            <button
+              onClick={handleBulkDeleteDemos}
+              disabled={bulkBusy}
+              className="h-8 px-3 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> {bulkBusy ? 'Working…' : 'Delete'}
+            </button>
+
+            <button
+              onClick={() => setSelectedDemoIds([])}
+              disabled={bulkBusy}
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+            >
+              Clear
+            </button>
+          </div>
+        )}
+
         {/* DEMOS DATA TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                  {canManage && (
+                    <th className="py-3.5 px-3 w-[40px] text-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedDemoIds.length === filteredDemos.length && filteredDemos.length > 0}
+                        onChange={toggleSelectAllDemos}
+                        className="rounded accent-[#5B47D6] cursor-pointer"
+                      />
+                    </th>
+                  )}
                   <th className="py-3.5 px-3">Demo ID & Student</th>
                   <th className="py-3.5 px-3">Parent Contact</th>
                   <th className="py-3.5 px-3">Program & Subject</th>
@@ -414,13 +491,23 @@ export function DemosClient({
               <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                 {filteredDemos.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-8 text-center text-[#6B7185]">
+                    <td colSpan={canManage ? 9 : 8} className="py-8 text-center text-[#6B7185]">
                       No demo sessions match the filter criteria.
                     </td>
                   </tr>
                 ) : (
                   filteredDemos.map((d) => (
                     <tr key={d.id} className="hover:bg-slate-50 transition-colors">
+                      {canManage && (
+                        <td className="py-3.5 px-3 text-center">
+                          <input
+                            type="checkbox"
+                            checked={selectedDemoIds.includes(d.id)}
+                            onChange={() => toggleSelectDemo(d.id)}
+                            className="rounded accent-[#5B47D6]"
+                          />
+                        </td>
+                      )}
                       <td className="py-3.5 px-3">
                         <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">{d.studentName}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{d.demoId}</div>
@@ -446,7 +533,7 @@ export function DemosClient({
                         ) : (
                           <button
                             onClick={() => setAssignModalDemo(d)}
-                            className="px-2.5 py-1 bg-orange-100 text-orange-700 font-extrabold text-xs rounded-lg flex items-center gap-1 hover:bg-orange-200 transition-all cursor-pointer"
+                            className="px-2.5 py-1 bg-orange-100 text-orange-700 font-medium text-xs rounded-lg flex items-center gap-1 hover:bg-orange-200 transition-all cursor-pointer"
                           >
                             <UserPlus className="w-3 h-3" />
                             <span>Assign Teacher</span>
@@ -454,7 +541,7 @@ export function DemosClient({
                         )}
                       </td>
 
-                      <td className="py-3.5 px-3 font-mono font-bold text-slate-900 dark:text-slate-100">
+                      <td className="py-3.5 px-3 font-mono font-medium text-slate-900 dark:text-slate-100">
                         {d.scheduledTime}
                       </td>
 
@@ -464,7 +551,7 @@ export function DemosClient({
                             href={d.meetingLink}
                             target="_blank"
                             rel="noreferrer"
-                            className="px-2.5 py-1 bg-blue-50 text-blue-700 font-bold text-xs rounded-lg border border-blue-200 inline-flex items-center gap-1 hover:bg-blue-100"
+                            className="px-2.5 py-1 bg-blue-50 text-blue-700 font-medium text-xs rounded-lg border border-blue-200 inline-flex items-center gap-1 hover:bg-blue-100"
                           >
                             <Video className="w-3 h-3 text-blue-600" />
                             <span>Join Link ↗</span>
@@ -472,7 +559,7 @@ export function DemosClient({
                         ) : (
                           <span
                             title="No Google Calendar invite / Meet link for this demo. Assign a teacher (with student & teacher emails on file) or reconnect Google."
-                            className="px-2.5 py-1 bg-amber-50 text-amber-700 font-bold text-xs rounded-lg border border-amber-200 inline-flex items-center gap-1"
+                            className="px-2.5 py-1 bg-amber-50 text-amber-700 font-medium text-xs rounded-lg border border-amber-200 inline-flex items-center gap-1"
                           >
                             ⚠ No invite
                           </span>
@@ -489,7 +576,7 @@ export function DemosClient({
                         <div className="flex items-center justify-center gap-1.5">
                           <button
                             onClick={() => setOutcomeModalDemo(d)}
-                            className="px-2.5 py-1 bg-purple-50 text-[#5B47D6] font-bold text-[13px] rounded-lg border border-purple-200 hover:bg-purple-100 cursor-pointer"
+                            className="px-2.5 py-1 bg-purple-50 text-[#5B47D6] font-medium text-[13px] rounded-lg border border-purple-200 hover:bg-purple-100 cursor-pointer"
                           >
                             Log Outcome
                           </button>
@@ -518,7 +605,7 @@ export function DemosClient({
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 my-6 text-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Book a New Demo</h3>
+                  <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Book a New Demo</h3>
                   <p className="text-xs text-[#6B7185] mt-0.5">Creates the lead + a demo needing a teacher. Assign a teacher afterwards to send the Google Meet invite.</p>
                 </div>
                 <button onClick={() => setShowNewDemo(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
@@ -529,33 +616,33 @@ export function DemosClient({
               <div className="space-y-3">
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Student Name *</label>
+                    <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Student Name *</label>
                     <input value={ndName} onChange={(e) => setNdName(e.target.value)} placeholder="e.g. Ahmed Raza" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                   </div>
                   <div>
-                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Parent Name *</label>
+                    <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Parent Name *</label>
                     <input value={ndParent} onChange={(e) => setNdParent(e.target.value)} placeholder="e.g. Mr. Raza Khan" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                   </div>
                   <div>
-                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Phone *</label>
+                    <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Phone *</label>
                     <input value={ndPhone} onChange={(e) => setNdPhone(e.target.value)} placeholder="+92 300 1234567" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                   </div>
                   <div>
-                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Email *</label>
+                    <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Email *</label>
                     <input type="email" value={ndEmail} onChange={(e) => setNdEmail(e.target.value)} placeholder="parent@gmail.com" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Program</label>
+                    <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Program</label>
                     <select value={ndProgram} onChange={(e) => { setNdProgram(e.target.value); setNdSubjectId(''); }} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]">
                       <option value="">Select program...</option>
                       {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                     </select>
                   </div>
                   <div>
-                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Subject</label>
+                    <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Subject</label>
                     <select value={ndSubjectId} onChange={(e) => setNdSubjectId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]">
                       <option value="">{ndProgram ? 'Select subject...' : 'Any (pick program first)'}</option>
                       {ndSubjects.map((s) => (<option key={s.id} value={s.id}>{s.name}</option>))}
@@ -565,15 +652,15 @@ export function DemosClient({
 
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Date *</label>
+                    <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Date *</label>
                     <input type="date" value={ndDate} onChange={(e) => setNdDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                   </div>
                   <div>
-                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Time *</label>
+                    <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Time *</label>
                     <input type="time" value={ndTime} onChange={(e) => setNdTime(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                   </div>
                   <div>
-                    <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Source</label>
+                    <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Source</label>
                     <select value={ndSource} onChange={(e) => setNdSource(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]">
                       <option value="">Walk-in</option>
                       {LEAD_SOURCES.map((s) => (<option key={s} value={s}>{s}</option>))}
@@ -591,7 +678,7 @@ export function DemosClient({
 
               <div className="flex justify-end gap-2 pt-1">
                 <button onClick={() => setShowNewDemo(false)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
-                <button onClick={handleCreateDemo} disabled={ndSaving} className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2">
+                <button onClick={handleCreateDemo} disabled={ndSaving} className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
                   <span>{ndSaving ? 'Creating...' : 'Create Demo'}</span>
                 </button>
@@ -605,7 +692,7 @@ export function DemosClient({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">
                   Assign Teacher (doAssign Conflict Re-Check)
                 </h3>
                 <button onClick={() => setAssignModalDemo(null)}><X className="w-4 h-4 text-slate-400" /></button>
@@ -618,11 +705,11 @@ export function DemosClient({
                 </div>
 
                 <div>
-                  <label className="font-extrabold text-slate-700 block mb-1">Select Available Teacher</label>
+                  <label className="font-medium text-slate-700 block mb-1">Select Available Teacher</label>
                   <select
                     value={selectedTeacherId}
                     onChange={(e) => setSelectedTeacherId(e.target.value)}
-                    className="w-full bg-slate-50 border rounded-xl p-2.5 font-bold text-slate-900"
+                    className="w-full bg-slate-50 border rounded-xl p-2.5 font-medium text-slate-900"
                   >
                     <option value="">Select a teacher...</option>
                     {teachers.map((t) => (
@@ -635,15 +722,15 @@ export function DemosClient({
                 </div>
 
                 {conflictErrorMessage && (
-                  <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-700 text-xs font-bold leading-relaxed">
+                  <div className="p-3 bg-rose-50 border border-rose-300 rounded-xl text-rose-700 text-xs font-medium leading-relaxed">
                     {conflictErrorMessage}
                   </div>
                 )}
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setAssignModalDemo(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleDoAssignTeacher} disabled={assigning} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
+                <button onClick={() => setAssignModalDemo(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleDoAssignTeacher} disabled={assigning} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">
                   {assigning ? 'Checking...' : 'Verify & Assign Teacher'}
                 </button>
               </div>
@@ -656,13 +743,13 @@ export function DemosClient({
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
-                <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">
+                <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">
                   Log Demo Outcome - {outcomeModalDemo.studentName}
                 </h3>
                 <button onClick={() => setOutcomeModalDemo(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
 
-              <div className="space-y-3 text-xs font-bold">
+              <div className="space-y-3 text-xs font-medium">
                 <div>
                   <label className="text-slate-700 block mb-1">Demo Outcome Status</label>
                   <select
@@ -690,8 +777,8 @@ export function DemosClient({
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setOutcomeModalDemo(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-                <button onClick={handleSaveOutcome} disabled={savingOutcome} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-extrabold text-xs shadow-md disabled:opacity-50">
+                <button onClick={() => setOutcomeModalDemo(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleSaveOutcome} disabled={savingOutcome} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">
                   {savingOutcome ? 'Saving...' : 'Save Demo Outcome'}
                 </button>
               </div>
@@ -705,18 +792,18 @@ export function DemosClient({
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 my-6 text-sm">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Reschedule Demo</h3>
+                  <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Reschedule Demo</h3>
                   <p className="text-xs text-[#6B7185] mt-0.5">{editDemo.studentName} · {editDemo.demoId}. If a teacher is assigned, the calendar invite moves too.</p>
                 </div>
                 <button onClick={() => setEditDemo(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Date *</label>
+                  <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Date *</label>
                   <input type="date" value={edDate} onChange={(e) => setEdDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                 </div>
                 <div>
-                  <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Time *</label>
+                  <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Time *</label>
                   <input type="time" value={edTime} onChange={(e) => setEdTime(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                 </div>
               </div>
@@ -727,7 +814,7 @@ export function DemosClient({
               )}
               <div className="flex justify-end gap-2 pt-1">
                 <button onClick={() => setEditDemo(null)} className="px-4 py-2.5 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl">Cancel</button>
-                <button onClick={handleUpdateDemo} disabled={edSaving} className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm flex items-center gap-2">
+                <button onClick={handleUpdateDemo} disabled={edSaving} className="px-5 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm flex items-center gap-2">
                   <Check className="w-4 h-4" /><span>{edSaving ? 'Saving...' : 'Save'}</span>
                 </button>
               </div>
@@ -740,7 +827,7 @@ export function DemosClient({
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-3 my-6 text-sm">
               <div className="flex items-center justify-between">
-                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Demo Details</h3>
+                <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Demo Details</h3>
                 <button onClick={() => setViewDemo(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
               <div className="grid grid-cols-2 gap-3 text-[13px]">
@@ -757,19 +844,19 @@ export function DemosClient({
                   ['Demo ID', viewDemo.demoId],
                 ].map(([k, v]) => (
                   <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
-                    <div className="text-[11px] font-bold uppercase tracking-wide text-[#6B7185]">{k}</div>
+                    <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">{k}</div>
                     <div className="font-semibold text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
                   </div>
                 ))}
               </div>
               {viewDemo.feedback && (
                 <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5 text-[13px]">
-                  <div className="text-[11px] font-bold uppercase tracking-wide text-[#6B7185]">Notes / Reason</div>
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Notes / Reason</div>
                   <div className="font-medium text-slate-800 dark:text-slate-200 mt-0.5">{viewDemo.feedback}</div>
                 </div>
               )}
               {viewDemo.meetingLink && (
-                <a href={viewDemo.meetingLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 px-3 py-2 text-xs font-bold hover:bg-blue-100">
+                <a href={viewDemo.meetingLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 px-3 py-2 text-xs font-medium hover:bg-blue-100">
                   <Video className="w-4 h-4" /> Join Meet Link
                 </a>
               )}

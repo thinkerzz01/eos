@@ -108,6 +108,24 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
     });
   }, [payments, method, dateRange, fromDate, toDate, search]);
 
+  // BULK SELECTION STATE (export-only; this is an append-only audit trail)
+  const [selectedReceiptIds, setSelectedReceiptIds] = useState<string[]>([]);
+  const toggleSelectAllReceipts = () => {
+    if (selectedReceiptIds.length === filtered.length && filtered.length > 0) setSelectedReceiptIds([]);
+    else setSelectedReceiptIds(filtered.map((p) => p.id));
+  };
+  const toggleSelectReceipt = (id: string) => {
+    setSelectedReceiptIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
+  const handleBulkExportReceipts = () => {
+    const rows = payments.filter((p) => selectedReceiptIds.includes(p.id));
+    downloadCsv(
+      'Thinkerzz_Receipts',
+      ['Receipt No', 'Student', 'Phone', 'Amount (PKR)', 'Type', 'Method', 'Date', 'Reason', 'Audited By'],
+      rows.map((p) => [p.receiptNo, p.studentName, p.studentPhone ?? '', p.amount, p.type, p.paymentMethod, p.paymentDate, p.reason ?? '', p.auditedBy])
+    );
+  };
+
   const sendReceiptWa = (p: PaymentTransaction) => {
     const text = [
       `*Thinkerzz - Payment Receipt*`,
@@ -125,14 +143,14 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
   };
 
   const boxCls = 'bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs';
-  const selCls = 'bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]';
+  const selCls = 'bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]';
 
   if (role === 'manager') {
     return (
       <PortalLayout title="" subtitle="" allowedRoles={['admin']}>
         <div className="p-8 max-w-lg mx-auto text-center bg-white border border-rose-200 rounded-3xl shadow-xl space-y-4 my-12">
           <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto"><Lock className="w-7 h-7" /></div>
-          <h2 className="font-heading font-extrabold text-xl text-slate-900">Access restricted</h2>
+          <h2 className="font-heading font-medium text-xl text-slate-900">Access restricted</h2>
           <p className="text-xs text-[#6B7185] leading-relaxed">Receipts and finance records are visible to the Admin only. Please contact the academy owner if you need access.</p>
         </div>
       </PortalLayout>
@@ -146,7 +164,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Receipts</span>
             </h1>
             <p className="text-[13px] text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -171,7 +189,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
               <FileText className="w-3.5 h-3.5 text-emerald-600" />
               <span>Export CSV</span>
             </Button>
-            <Link href="/vouchers" className="h-[38px] px-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-bold rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
+            <Link href="/vouchers" className="h-[38px] px-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl flex items-center gap-1.5 shadow-sm transition-all cursor-pointer">
               <Receipt className="w-3.5 h-3.5" />
               <span>Manage Vouchers →</span>
             </Link>
@@ -202,19 +220,51 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
           </div>
           {dateRange === 'custom' && (
             <div className="flex items-center gap-1.5 text-[13px]">
-              <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+              <input type="date" value={fromDate} onChange={(e) => setFromDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-medium text-slate-800 dark:text-slate-100" />
               <span className="text-[#6B7185]">to</span>
-              <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-bold text-slate-800 dark:text-slate-100" />
+              <input type="date" value={toDate} onChange={(e) => setToDate(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2 py-1.5 font-medium text-slate-800 dark:text-slate-100" />
             </div>
           )}
         </div>
+
+        {/* BULK ACTION BAR — export only (append-only audit trail) */}
+        {selectedReceiptIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
+            <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
+              {selectedReceiptIds.length} selected
+            </span>
+            <span className="text-slate-300 dark:text-slate-600">|</span>
+
+            <button
+              onClick={handleBulkExportReceipts}
+              className="h-8 px-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 flex items-center gap-1.5"
+            >
+              <FileText className="w-3.5 h-3.5 text-emerald-600" /> Export CSV
+            </button>
+
+            <button
+              onClick={() => setSelectedReceiptIds([])}
+              className="ml-auto h-8 px-3 rounded-lg text-xs font-semibold text-slate-500 dark:text-slate-400 hover:bg-white/60 dark:hover:bg-slate-800"
+            >
+              Clear
+            </button>
+          </div>
+        )}
 
         {/* RECEIPTS TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse min-w-[720px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                  <th className="py-3.5 px-3 w-[40px] text-center">
+                    <input
+                      type="checkbox"
+                      checked={selectedReceiptIds.length === filtered.length && filtered.length > 0}
+                      onChange={toggleSelectAllReceipts}
+                      className="rounded accent-[#5B47D6] cursor-pointer"
+                    />
+                  </th>
                   <th className="py-3.5 px-3">Receipt No & Student</th>
                   <th className="py-3.5 px-3">Date & Method</th>
                   <th className="py-3.5 px-3">Type</th>
@@ -225,12 +275,20 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
               </thead>
               <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={6} className="py-8 text-center text-[#6B7185]">No receipts match these filters.</td></tr>
+                  <tr><td colSpan={7} className="py-8 text-center text-[#6B7185]">No receipts match these filters.</td></tr>
                 ) : (
                   filtered.map((p) => (
                     <tr key={p.id} className="hover:bg-slate-50 transition-colors">
+                      <td className="py-3.5 px-3 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedReceiptIds.includes(p.id)}
+                          onChange={() => toggleSelectReceipt(p.id)}
+                          className="rounded accent-[#5B47D6]"
+                        />
+                      </td>
                       <td className="py-3.5 px-3">
-                        <div className="font-bold text-slate-900 dark:text-slate-100">{p.studentName}</div>
+                        <div className="font-medium text-slate-900 dark:text-slate-100">{p.studentName}</div>
                         <div className="text-xs text-[#6B7185] font-mono">{p.receiptNo}</div>
                       </td>
                       <td className="py-3.5 px-3">
@@ -240,7 +298,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
                       <td className="py-3.5 px-3">
                         <Badge tone={p.type === 'Refund' ? 'danger' : p.type === 'Partial Payment' ? 'warning' : 'success'}>{p.type}</Badge>
                       </td>
-                      <td className="py-3.5 px-3 font-mono font-bold">
+                      <td className="py-3.5 px-3 font-mono font-medium">
                         <span className={p.amount < 0 ? 'text-rose-600' : 'text-emerald-600'}>
                           {p.amount < 0 ? `-PKR ${Math.abs(p.amount).toLocaleString()}` : `+PKR ${p.amount.toLocaleString()}`}
                         </span>
@@ -264,7 +322,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
               </tbody>
             </table>
           </div>
-          <div className="p-3 bg-slate-50 border-t text-[13px] font-bold text-slate-600">Showing {filtered.length} of {payments.length} receipts</div>
+          <div className="p-3 bg-slate-50 border-t text-[13px] font-medium text-slate-600">Showing {filtered.length} of {payments.length} receipts</div>
         </div>
       </div>
 
@@ -273,22 +331,22 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setEditRcpt(null)}>
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b pb-3">
-              <h3 className="font-heading font-extrabold text-slate-900 dark:text-white text-base">Edit Receipt - {editRcpt.receiptNo}</h3>
+              <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Edit Receipt - {editRcpt.receiptNo}</h3>
               <button onClick={() => setEditRcpt(null)}><X className="w-4 h-4 text-slate-400" /></button>
             </div>
             <div className="space-y-3 text-sm">
               <div>
-                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Amount (PKR){editRcpt.amount < 0 ? ' - refund' : ''}</label>
-                <input type="number" value={edAmount} onChange={(e) => setEdAmount(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-extrabold text-slate-900 dark:text-slate-100" />
+                <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Amount (PKR){editRcpt.amount < 0 ? ' - refund' : ''}</label>
+                <input type="number" value={edAmount} onChange={(e) => setEdAmount(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-slate-900 dark:text-slate-100" />
               </div>
               <div>
-                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Method</label>
+                <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Method</label>
                 <select value={edMethod} onChange={(e) => setEdMethod(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
                   {['Bank Transfer', 'Cash', 'JazzCash', 'Easypaisa', 'Cheque'].map((m) => (<option key={m} value={m}>{m}</option>))}
                 </select>
               </div>
               <div>
-                <label className="block font-bold text-xs text-slate-700 dark:text-slate-300 mb-1">Reference / Note (optional)</label>
+                <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Reference / Note (optional)</label>
                 <input type="text" value={edRef} onChange={(e) => setEdRef(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
               </div>
               {edError && (
@@ -296,8 +354,8 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
               )}
             </div>
             <div className="flex justify-end gap-2 pt-3 border-t">
-              <button onClick={() => setEditRcpt(null)} className="px-4 py-2 border rounded-xl font-bold text-xs">Cancel</button>
-              <button onClick={handleUpdate} disabled={edSaving} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-50">{edSaving ? 'Saving...' : 'Save Changes'}</button>
+              <button onClick={() => setEditRcpt(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+              <button onClick={handleUpdate} disabled={edSaving} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{edSaving ? 'Saving...' : 'Save Changes'}</button>
             </div>
           </div>
         </div>
@@ -324,12 +382,12 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
             <div id="receipt-print-area" className="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="p-6 space-y-4 text-slate-900 text-[14px]">
                 <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
-                  <div className="w-11 h-11 rounded-xl bg-[#5B47D6] text-white flex items-center justify-center font-black text-lg">T</div>
+                  <div className="w-11 h-11 rounded-xl bg-[#5B47D6] text-white flex items-center justify-center font-medium text-lg">T</div>
                   <div>
-                    <div className="font-extrabold text-lg leading-tight">Thinkerzz</div>
+                    <div className="font-medium text-lg leading-tight">Thinkerzz</div>
                     <div className="text-xs text-slate-500 font-semibold">Payment Receipt</div>
                   </div>
-                  <div className="ml-auto font-mono font-bold text-sm">{receipt.receiptNo}</div>
+                  <div className="ml-auto font-mono font-medium text-sm">{receipt.receiptNo}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-[14px] font-semibold">
                   <div className="text-slate-500">Student</div><div className="text-right">{receipt.studentName}</div>
@@ -337,15 +395,15 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
                   <div className="text-slate-500">Method</div><div className="text-right">{receipt.paymentMethod}</div>
                   <div className="text-slate-500">Type</div><div className="text-right">{receipt.type}</div>
                   <div className="text-slate-500">Amount</div>
-                  <div className={`text-right font-mono font-bold ${receipt.amount < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                  <div className={`text-right font-mono font-medium ${receipt.amount < 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
                     {receipt.amount < 0 ? `-PKR ${Math.abs(receipt.amount).toLocaleString()}` : `PKR ${receipt.amount.toLocaleString()}`}
                   </div>
                 </div>
               </div>
               <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50 no-print">
-                <button onClick={() => sendReceiptWa(receipt)} disabled={!receipt.studentPhone} className="flex-1 px-3 py-2 bg-[#12A150] hover:bg-[#0f8a44] disabled:opacity-40 text-white font-bold text-xs rounded-xl flex items-center justify-center gap-1.5"><MessageSquare className="w-4 h-4" /> Send on WhatsApp</button>
-                <button onClick={() => window.print()} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl">Print</button>
-                <button onClick={() => setReceipt(null)} className="px-3 py-2 border border-slate-300 font-bold text-xs rounded-xl">Close</button>
+                <button onClick={() => sendReceiptWa(receipt)} disabled={!receipt.studentPhone} className="flex-1 px-3 py-2 bg-[#12A150] hover:bg-[#0f8a44] disabled:opacity-40 text-white font-medium text-xs rounded-xl flex items-center justify-center gap-1.5"><MessageSquare className="w-4 h-4" /> Send on WhatsApp</button>
+                <button onClick={() => window.print()} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl">Print</button>
+                <button onClick={() => setReceipt(null)} className="px-3 py-2 border border-slate-300 font-medium text-xs rounded-xl">Close</button>
               </div>
             </div>
           </div>

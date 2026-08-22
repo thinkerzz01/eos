@@ -434,6 +434,96 @@ export async function markStudentPassout(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+/** Soft-delete several students at once. RLS enforces admin/manager. */
+export async function bulkDeleteStudents(ids: string[]): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No students selected.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('students')
+    .update({ deleted_at: new Date().toISOString() })
+    .in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/students');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/** Set the fee status on several students at once. RLS enforces admin/manager. */
+export async function bulkSetFeeStatus(ids: string[], feeStatus: string): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No students selected.' };
+  const db = FEE_UI_TO_DB[feeStatus];
+  if (!db) return { ok: false, error: 'Invalid fee status.' };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase.from('students').update({ fee_status: db }).in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/students');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+const STATUS_UI_TO_DB: Record<string, string> = {
+  Active: 'active',
+  Paused: 'paused',
+  Alumni: 'stopped',
+  Stopped: 'stopped',
+};
+
+/** Set the lifecycle status (Active / Paused / Alumni) on several students. */
+export async function bulkSetStatus(ids: string[], status: string): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No students selected.' };
+  const db = STATUS_UI_TO_DB[status];
+  if (!db) return { ok: false, error: 'Invalid status.' };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase.from('students').update({ status: db }).in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/students');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/** Change the program on several students at once (e.g. promote a batch O1 -> O2). */
+export async function bulkSetProgram(ids: string[], program: string): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No students selected.' };
+  if (!ENROLLABLE_PROGRAMS.includes(program)) return { ok: false, error: 'Pick a valid program.' };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase.from('students').update({ program }).in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/students');
+  revalidatePath('/');
+  return { ok: true };
+}
+
 /** Soft-delete a student (sets deleted_at). RLS enforces admin/manager. */
 export async function softDeleteStudent(id: string): Promise<ActionResult> {
   if (!id) return { ok: false, error: 'Missing student id.' };

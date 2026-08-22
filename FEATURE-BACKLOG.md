@@ -198,7 +198,9 @@ No retry/cancel/send-now for a permanently-failed email.
   those fields is a data-model change, not a field edit.
 - Documents upload — needs a Supabase Storage bucket + upload flow.
 - Support tickets / referrals — full features, not cleanup.
-- Bulk multi-select actions — medium; deferred.
+- Bulk multi-select actions — DONE for Students (2026-08-22): a bulk action bar
+  appears on selection with Set fee status / Export / Delete (bulkDeleteStudents +
+  bulkSetFeeStatus in app/students/actions.ts). Still could extend to Leads/Vouchers.
 - Fabricated per-student metrics (tests%/mastery%) — depend on academic slices
   that aren't built yet.
 

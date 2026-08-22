@@ -86,7 +86,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <span>Monthly AI Reports</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
@@ -96,7 +96,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
 
           <Link
             href="/email-queue"
-            className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
+            className="h-[38px] px-3.5 bg-white dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 text-xs font-medium text-slate-700 dark:text-slate-200 rounded-xl flex items-center gap-1.5 hover:bg-slate-50 transition-all shadow-sm cursor-pointer"
           >
             <Send className="w-3.5 h-3.5 text-[#5B47D6]" />
             <span>Email Queue →</span>
@@ -105,7 +105,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
 
         {/* PRIVACY & NUMBER INTEGRITY POLICY BANNER */}
         <div className="p-4 bg-gradient-to-r from-[#0B0E23] to-[#1D2145] text-white rounded-[20px] shadow-md space-y-2">
-          <div className="flex items-center gap-2 font-heading font-extrabold text-xs text-purple-300 uppercase tracking-wider">
+          <div className="flex items-center gap-2 font-heading font-medium text-xs text-purple-300 uppercase tracking-wider">
             <Lock className="w-4 h-4 text-purple-400" />
             <span>Privacy &amp; Data Integrity</span>
           </div>
@@ -129,20 +129,20 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
         {initialFunnel && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-1 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-4 space-y-3">
-              <div className="font-heading font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider">Admissions Funnel</div>
+              <div className="font-heading font-medium text-sm text-slate-900 dark:text-white uppercase tracking-wider">Admissions Funnel</div>
               <div className="text-center py-2">
-                <div className="font-heading font-extrabold text-4xl text-[#5B47D6]">{initialFunnel.funnelPct}%</div>
+                <div className="font-heading font-medium text-4xl text-[#5B47D6]">{initialFunnel.funnelPct}%</div>
                 <div className="text-xs text-slate-500 font-medium mt-1">{initialFunnel.studentsEnrolled} enrolled / {initialFunnel.demosBooked} demos booked</div>
               </div>
             </div>
             <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-4 space-y-2">
-              <div className="font-heading font-extrabold text-sm text-slate-900 dark:text-white uppercase tracking-wider">Lost Reasons</div>
+              <div className="font-heading font-medium text-sm text-slate-900 dark:text-white uppercase tracking-wider">Lost Reasons</div>
               {initialFunnel.lostReasons.length === 0 ? (
                 <div className="text-xs text-slate-400 font-medium py-6 text-center">No lost leads recorded.</div>
               ) : (
                 <div className="space-y-1.5 pt-1">
                   {initialFunnel.lostReasons.map((lr) => (
-                    <div key={lr.reason} className="flex justify-between items-center text-xs font-bold">
+                    <div key={lr.reason} className="flex justify-between items-center text-xs font-medium">
                       <span className="text-slate-700 dark:text-slate-300">{lr.reason}</span>
                       <span className="px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 border border-rose-200">{lr.count}</span>
                     </div>
@@ -158,7 +158,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
           
           {/* STUDENT LIST (5 COLS) */}
           <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-4 space-y-3">
-            <div className="font-heading font-extrabold text-sm text-slate-900 dark:text-white tracking-wider border-b pb-2">
+            <div className="font-heading font-medium text-sm text-slate-900 dark:text-white tracking-wider border-b pb-2">
               Monthly Reports Queue
             </div>
 
@@ -168,12 +168,12 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                 <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search student..." className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-8 pr-3 py-2 text-[13px] font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#5B47D6]" />
               </div>
-              <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-2 text-[13px] font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
+              <select value={programFilter} onChange={(e) => setProgramFilter(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
                 <option>All Programs</option>
                 {programs.map((p) => (<option key={p} value={p}>{p}</option>))}
               </select>
               {months.length > 1 && (
-                <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-2 text-[13px] font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
+                <select value={monthFilter} onChange={(e) => setMonthFilter(e.target.value)} className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-2 text-[13px] font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer">
                   <option>All Months</option>
                   {months.map((m) => (<option key={m} value={m}>{m}</option>))}
                 </select>
@@ -196,15 +196,15 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <div className="font-extrabold text-sm text-slate-900">{rpt.firstName}</div>
+                      <div className="font-medium text-sm text-slate-900">{rpt.firstName}</div>
                       <div className="text-xs text-[#6B7185] font-medium">{rpt.program} · {rpt.month}</div>
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-100 text-emerald-700">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-700">
                       Trend: {rpt.gradeTrend.toUpperCase()}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs pt-2 mt-2 border-t border-slate-100 font-bold">
+                  <div className="flex items-center justify-between text-xs pt-2 mt-2 border-t border-slate-100 font-medium">
                     <span className="text-slate-500">Trend: <strong className="text-emerald-600">{rpt.gradeTrend.toUpperCase()}</strong></span>
                     <span className="text-purple-600">{rpt.testsConductedCount} Tests Conducted</span>
                   </div>
@@ -213,10 +213,10 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
             </div>
 
             {/* PAGINATION */}
-            <div className="flex items-center justify-between gap-2 pt-2 border-t text-[13px] font-bold text-slate-600">
+            <div className="flex items-center justify-between gap-2 pt-2 border-t text-[13px] font-medium text-slate-600">
               <div className="flex items-center gap-1.5">
                 <span className="font-medium text-slate-500">Per page</span>
-                <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} className="bg-white border rounded-lg px-2 py-1 font-bold text-slate-700 focus:outline-none cursor-pointer">
+                <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))} className="bg-white border rounded-lg px-2 py-1 font-medium text-slate-700 focus:outline-none cursor-pointer">
                   {[10, 20, 50, 100].map((n) => (<option key={n} value={n}>{n}</option>))}
                 </select>
               </div>
@@ -256,26 +256,26 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                   <div className="flex items-center gap-3">
                     <img src="/logo-light.png" alt="Thinkerzz" className="h-9 w-auto object-contain brightness-0 invert" />
                     <div>
-                      <div className="text-2xl font-extrabold leading-none">Thinkerzz</div>
+                      <div className="text-2xl font-medium leading-none">Thinkerzz</div>
                       <div className="text-[11px] font-semibold uppercase tracking-widest text-purple-200 mt-1">Monthly Progress Report</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-lg font-extrabold leading-tight">{selectedReport.firstName}</div>
+                    <div className="text-lg font-medium leading-tight">{selectedReport.firstName}</div>
                     <div className="text-[11px] font-semibold text-purple-200">{selectedReport.program} · {selectedReport.month}</div>
                   </div>
                 </div>
               </div>
               <div className="flex justify-between items-center border-b pb-4">
                 <div>
-                  <h3 className="font-heading font-extrabold text-xl text-slate-900 dark:text-white">
+                  <h3 className="font-heading font-medium text-xl text-slate-900 dark:text-white">
                     Monthly Report Preview - {selectedReport.firstName}
                   </h3>
                   <p className="text-xs text-[#6B7185] font-medium">{selectedReport.month} Academic Summary</p>
                 </div>
                 <button
                   onClick={() => handleGenerateReportDraft(selectedReport)}
-                  className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-extrabold text-xs rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer"
+                  className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl shadow-md flex items-center gap-1.5 cursor-pointer"
                 >
                   <Eye className="w-4 h-4 text-purple-200" />
                   <span>Preview Draft</span>
@@ -285,26 +285,26 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
               {/* ASSEMBLED FACTS (PRESERVED MATH) */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
                 <div className="p-3 bg-blue-50 rounded-2xl border border-blue-200">
-                  <div className="text-xs font-bold text-blue-700 uppercase">Attendance</div>
-                  <div className="font-heading font-extrabold text-xl text-blue-700 mt-1">{selectedReport.attendancePct}%</div>
+                  <div className="text-xs font-medium text-blue-700 uppercase">Attendance</div>
+                  <div className="font-heading font-medium text-xl text-blue-700 mt-1">{selectedReport.attendancePct}%</div>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200">
-                  <div className="text-xs font-bold text-slate-500 uppercase">Topics Covered</div>
-                  <div className="font-heading font-extrabold text-xl text-slate-900 mt-1">{selectedReport.topicsCovered.length}</div>
+                  <div className="text-xs font-medium text-slate-500 uppercase">Topics Covered</div>
+                  <div className="font-heading font-medium text-xl text-slate-900 mt-1">{selectedReport.topicsCovered.length}</div>
                 </div>
                 <div className="p-3 bg-purple-50 rounded-2xl border border-purple-200">
-                  <div className="text-xs font-bold text-[#5B47D6] uppercase">Tests Conducted</div>
-                  <div className="font-heading font-extrabold text-xl text-[#5B47D6] mt-1">{selectedReport.testsConductedCount}</div>
+                  <div className="text-xs font-medium text-[#5B47D6] uppercase">Tests Conducted</div>
+                  <div className="font-heading font-medium text-xl text-[#5B47D6] mt-1">{selectedReport.testsConductedCount}</div>
                 </div>
                 <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-200">
-                  <div className="text-xs font-bold text-emerald-700 uppercase">Grade Trend</div>
-                  <div className="font-heading font-extrabold text-xl text-emerald-600 mt-1">{selectedReport.gradeTrend.toUpperCase()}</div>
+                  <div className="text-xs font-medium text-emerald-700 uppercase">Grade Trend</div>
+                  <div className="font-heading font-medium text-xl text-emerald-600 mt-1">{selectedReport.gradeTrend.toUpperCase()}</div>
                 </div>
               </div>
 
               {/* THIS MONTH AT A GLANCE (quick summary of what we did) */}
               <div className="rounded-2xl border border-[#5B47D6]/20 bg-[#5B47D6]/5 p-4">
-                <div className="flex items-center gap-2 font-extrabold text-xs text-[#5B47D6] uppercase tracking-wider mb-1.5">
+                <div className="flex items-center gap-2 font-medium text-xs text-[#5B47D6] uppercase tracking-wider mb-1.5">
                   <CalendarCheck className="w-4 h-4" />
                   <span>This Month at a Glance</span>
                 </div>
@@ -318,10 +318,10 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
 
               {/* TOPICS COVERED LIST */}
               <div className="space-y-1 text-xs">
-                <div className="font-extrabold text-slate-900 uppercase">Topics Covered This Month</div>
+                <div className="font-medium text-slate-900 uppercase">Topics Covered This Month</div>
                 <div className="flex flex-wrap gap-2 pt-1">
                   {selectedReport.topicsCovered.map((t, idx) => (
-                    <span key={idx} className="px-3 py-1 bg-slate-100 text-slate-800 font-bold rounded-xl border border-slate-200">
+                    <span key={idx} className="px-3 py-1 bg-slate-100 text-slate-800 font-medium rounded-xl border border-slate-200">
                       {t}
                     </span>
                   ))}
@@ -330,7 +330,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
 
               {/* PHRASED REPORT OUTPUT */}
               <div className="space-y-2 pt-3 border-t">
-                <div className="flex justify-between items-center font-extrabold text-xs text-slate-900 uppercase">
+                <div className="flex justify-between items-center font-medium text-xs text-slate-900 uppercase">
                   <span>Report Draft Body</span>
                   <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 no-print">
                     No Raw Scores Included
@@ -354,7 +354,7 @@ export function ReportsClient({ initialReports, initialFunnel }: { initialReport
                 <span className="text-xs text-slate-400 font-medium">Dispatch is automatic - the month-end cron enqueues &amp; emails this report to parents.</span>
                 <button
                   onClick={() => window.print()}
-                  className="px-4 py-2 border rounded-xl font-bold text-xs cursor-pointer hover:bg-slate-50 transition-colors"
+                  className="px-4 py-2 border rounded-xl font-medium text-xs cursor-pointer hover:bg-slate-50 transition-colors"
                 >
                   Print Report
                 </button>

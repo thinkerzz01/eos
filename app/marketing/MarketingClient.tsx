@@ -131,7 +131,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
         {/* HEADER */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
-            <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-[#5B47D6]" />
               <span>Marketing & Source Performance</span>
             </h1>
@@ -150,30 +150,30 @@ export function MarketingClient({ data }: { data: MarketingData }) {
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 my-6">
               <div className="flex items-center justify-between">
-                <h3 className="font-heading font-extrabold text-lg text-slate-900 dark:text-white">Record Ad Spend</h3>
+                <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Record Ad Spend</h3>
                 <button onClick={() => setShowSpend(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
               <p className="text-xs text-[#6B7185]">Adds to the channel&apos;s total spend so cost-per-student and ROI can be computed.</p>
               <div className="space-y-3 text-sm">
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Channel</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Channel</label>
                   <select value={spChannel} onChange={(e) => setSpChannel(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
                     {AD_CHANNELS.map((c) => (<option key={c} value={c}>{MARKETING_CHANNEL_LABEL[c] ?? c}</option>))}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Amount (PKR)</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Amount (PKR)</label>
                   <input type="number" value={spAmount} onChange={(e) => setSpAmount(e.target.value)} placeholder="e.g. 15000" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl font-mono focus:outline-none focus:border-[#5B47D6]" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Month</label>
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Month</label>
                   <input type="date" value={spMonth} onChange={(e) => setSpMonth(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
                 </div>
                 {spError && <p className="text-xs font-semibold text-rose-600">{spError}</p>}
               </div>
               <div className="flex justify-end gap-2">
-                <button onClick={() => setShowSpend(false)} className="px-4 py-2 border rounded-xl font-bold text-xs text-slate-600 dark:text-slate-300">Cancel</button>
-                <button onClick={handleRecordSpend} disabled={spSaving} className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-bold rounded-xl shadow-sm">
+                <button onClick={() => setShowSpend(false)} className="px-4 py-2 border rounded-xl font-medium text-xs text-slate-600 dark:text-slate-300">Cancel</button>
+                <button onClick={handleRecordSpend} disabled={spSaving} className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium rounded-xl shadow-sm">
                   {spSaving ? 'Saving…' : 'Record Spend'}
                 </button>
               </div>
@@ -199,7 +199,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
 
           <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-3 py-1.5">
             <span className="text-[11px] text-[#6B7185] block font-medium">Source</span>
-            <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]">
+            <select value={sourceFilter} onChange={(e) => setSourceFilter(e.target.value)} className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]">
               <option>All Sources</option>
               {MARKETING_SOURCE_ORDER.map((k) => (<option key={k} value={MARKETING_SOURCE_LABEL[k]}>{MARKETING_SOURCE_LABEL[k]}</option>))}
             </select>
@@ -207,35 +207,35 @@ export function MarketingClient({ data }: { data: MarketingData }) {
 
           <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-3 py-1.5">
             <span className="text-[11px] text-[#6B7185] block font-medium">Conversion</span>
-            <select value={conv} onChange={(e) => setConv(e.target.value as any)} className="bg-transparent font-bold text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]">
+            <select value={conv} onChange={(e) => setConv(e.target.value as any)} className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-[13px]">
               <option value="all">All Leads</option>
               <option value="converted">Converted Only</option>
               <option value="not">Not Converted</option>
             </select>
           </div>
 
-          <button onClick={reset} className="ml-auto text-[13px] font-bold text-[#5B47D6] hover:underline flex items-center gap-1">
+          <button onClick={reset} className="ml-auto text-[13px] font-medium text-[#5B47D6] hover:underline flex items-center gap-1">
             <RotateCcw className="w-3.5 h-3.5" /> Reset
           </button>
         </div>
 
         {/* SUMMARY */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center font-bold">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 text-center font-medium">
           <div className="p-4 bg-white dark:bg-slate-900 border rounded-2xl space-y-1">
             <div className="text-slate-500 text-[13px]">Total Leads</div>
-            <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white">{totalLeads}</div>
+            <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white">{totalLeads}</div>
           </div>
           <div className="p-4 bg-white dark:bg-slate-900 border rounded-2xl space-y-1">
             <div className="text-slate-500 text-[13px]">Converted (Won)</div>
-            <div className="font-heading font-extrabold text-2xl text-emerald-600">{totalWon}</div>
+            <div className="font-heading font-medium text-2xl text-emerald-600">{totalWon}</div>
           </div>
           <div className="p-4 bg-white dark:bg-slate-900 border rounded-2xl space-y-1">
             <div className="text-slate-500 text-[13px]">Overall Conversion</div>
-            <div className="font-heading font-extrabold text-2xl text-purple-600">{overallConv}%</div>
+            <div className="font-heading font-medium text-2xl text-purple-600">{overallConv}%</div>
           </div>
           <div className="p-4 bg-white dark:bg-slate-900 border rounded-2xl space-y-1">
             <div className="text-slate-500 text-[13px]">Ad Spend</div>
-            <div className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white">{totalSpend > 0 ? `PKR ${totalSpend.toLocaleString()}` : '-'}</div>
+            <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white">{totalSpend > 0 ? `PKR ${totalSpend.toLocaleString()}` : '-'}</div>
           </div>
         </div>
 
@@ -244,7 +244,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse min-w-[720px]">
               <thead>
-                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-extrabold text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
+                <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
                   <th className="py-3.5 px-3">Source</th>
                   <th className="py-3.5 px-3">Leads</th>
                   <th className="py-3.5 px-3">Converted</th>
@@ -259,7 +259,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
                 ) : (
                   stats.map((r) => (
                     <tr key={r.key} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3.5 px-3 font-bold text-slate-900 dark:text-slate-100">{r.source}</td>
+                      <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{r.source}</td>
                       <td className="py-3.5 px-3 font-semibold text-slate-900 dark:text-slate-100">{r.leads}</td>
                       <td className="py-3.5 px-3 font-semibold text-emerald-600">{r.won}</td>
                       <td className="py-3.5 px-3 font-semibold text-purple-600">{r.conversionPct}%</td>

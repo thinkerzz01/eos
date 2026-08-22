@@ -116,7 +116,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
+                className="block text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Email Address
               </label>
@@ -141,7 +141,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
+                className="block text-xs font-medium uppercase tracking-wider text-slate-700 dark:text-slate-300 mb-1.5"
               >
                 Password
               </label>
@@ -188,7 +188,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 active:scale-[0.99] shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50"
+              className="w-full flex justify-center items-center gap-2 py-3.5 px-4 border border-transparent rounded-xl text-sm font-medium text-white bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-600 active:scale-[0.99] shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50"
             >
               {loading ? (
                 <span>Authenticating...</span>

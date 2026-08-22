@@ -68,7 +68,7 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
       <header className="bg-white border-b border-[#EBEDF3] py-4 px-6 sticky top-0 z-50 shadow-xs">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
           <img src="/logo-light.png" alt="Thinkerzz" className="h-9 w-auto object-contain" />
-          <div className="text-xs font-bold text-[#5B47D6] tracking-wider uppercase border-l border-slate-200 pl-3">Student Enrollment</div>
+          <div className="text-xs font-medium text-[#5B47D6] tracking-wider uppercase border-l border-slate-200 pl-3">Student Enrollment</div>
         </div>
       </header>
 
@@ -76,17 +76,17 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
         {!done ? (
           <div className="space-y-6">
             <div className="text-center space-y-2 max-w-2xl mx-auto">
-              <span className="px-3.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-extrabold rounded-full inline-flex items-center gap-1.5">
+              <span className="px-3.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full inline-flex items-center gap-1.5">
                 <GraduationCap className="w-3.5 h-3.5" />
                 <span>Welcome to Thinkerzz - Complete Your Enrollment</span>
               </span>
-              <h1 className="font-heading font-extrabold text-3xl text-slate-900 tracking-tight">Enrollment Details</h1>
+              <h1 className="font-heading font-medium text-3xl text-slate-900 tracking-tight">Enrollment Details</h1>
               <p className="text-sm text-[#6B7185] font-medium leading-relaxed">
                 Please fill in the student's details to complete enrollment. Our team will then set up the fee and class schedule.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="bg-white border border-[#EBEDF3] rounded-[24px] p-6 sm:p-8 shadow-xl space-y-4 text-xs font-bold">
+            <form onSubmit={handleSubmit} className="bg-white border border-[#EBEDF3] rounded-[24px] p-6 sm:p-8 shadow-xl space-y-4 text-xs font-medium">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-slate-700 block mb-1">Student Full Name *</label>
@@ -147,7 +147,7 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
               <TurnstileWidget onToken={setTurnstileToken} />
 
               <div className="pt-3 border-t border-slate-100">
-                <button type="submit" disabled={submitting} className="w-full py-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-extrabold text-sm shadow-lg shadow-[#5B47D6]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
+                <button type="submit" disabled={submitting} className="w-full py-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-medium text-sm shadow-lg shadow-[#5B47D6]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
                   <span>{submitting ? 'Submitting...' : 'Complete Enrollment'}</span>
                   {!submitting && <ArrowRight className="w-4 h-4" />}
                 </button>
@@ -159,7 +159,7 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
             <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
             </div>
-            <h2 className="font-heading font-extrabold text-2xl text-slate-900">Enrollment Complete!</h2>
+            <h2 className="font-heading font-medium text-2xl text-slate-900">Enrollment Complete!</h2>
             <p className="text-xs text-[#6B7185] font-medium max-w-md mx-auto">
               Thank you! <strong className="text-slate-900">{studentName}</strong> is now enrolled. Our team will confirm the fee and share the class schedule (with Google Meet links) shortly.
             </p>

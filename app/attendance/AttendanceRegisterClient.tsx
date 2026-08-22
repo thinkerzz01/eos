@@ -89,7 +89,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
         {/* HEADER */}
         <div className="flex flex-col gap-1">
-          <h1 className="font-heading font-extrabold text-2xl text-slate-900 dark:text-white flex items-center gap-2">
+          <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
             <CalendarCheck className="w-6 h-6 text-[#5B47D6]" /> Attendance Register
           </h1>
           <p className="text-sm text-[#6B7185]">Mark a whole day at once, or correct an earlier mark. Saving records attendance and marks each class completed.</p>
@@ -98,7 +98,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
         {/* CONTROLS */}
         <div className="flex flex-col sm:flex-row sm:items-end gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-sm">
           <div>
-            <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Date</label>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Date</label>
             <input
               type="date"
               value={date}
@@ -107,7 +107,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
             />
           </div>
           <div className="relative">
-            <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Teacher</label>
+            <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Teacher</label>
             <select
               value={teacherFilter}
               onChange={(e) => setTeacherFilter(e.target.value)}
@@ -122,14 +122,14 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
             <button
               onClick={markAllPresent}
               disabled={rows.length === 0}
-              className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 flex items-center gap-1.5"
+              className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 flex items-center gap-1.5"
             >
               <Users className="w-4 h-4" /> Mark all present
             </button>
             <button
               onClick={handleSave}
               disabled={saving || rows.length === 0}
-              className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl text-xs font-bold shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+              className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl text-xs font-medium shadow-sm disabled:opacity-50 flex items-center gap-1.5"
             >
               <Check className="w-4 h-4" /> {saving ? 'Saving…' : 'Save Register'}
             </button>
@@ -138,7 +138,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
 
         {/* SUMMARY */}
         <div className="text-xs text-[#6B7185]">
-          <span className="font-bold text-slate-900 dark:text-white">{prettyDate}</span> · {rows.length} class{rows.length === 1 ? '' : 'es'}
+          <span className="font-medium text-slate-900 dark:text-white">{prettyDate}</span> · {rows.length} class{rows.length === 1 ? '' : 'es'}
           {rows.length > 0 && <> · {markedCount} already recorded</>}
         </div>
 
@@ -148,11 +148,11 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-950/60 text-left text-[#6B7185]">
                 <tr>
-                  <th className="py-3 px-4 font-bold">Time</th>
-                  <th className="py-3 px-4 font-bold">Student</th>
-                  <th className="py-3 px-4 font-bold">Subject</th>
-                  <th className="py-3 px-4 font-bold">Teacher</th>
-                  <th className="py-3 px-4 font-bold text-center">Attendance</th>
+                  <th className="py-3 px-4 font-medium">Time</th>
+                  <th className="py-3 px-4 font-medium">Student</th>
+                  <th className="py-3 px-4 font-medium">Subject</th>
+                  <th className="py-3 px-4 font-medium">Teacher</th>
+                  <th className="py-3 px-4 font-medium text-center">Attendance</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -168,7 +168,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                       <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.startAt}</td>
                       <td className="py-3 px-4 font-semibold text-slate-900 dark:text-slate-100">
                         {c.studentName || '—'}
-                        {c.attendanceStatus && <span className="ml-2 text-[10px] font-bold text-emerald-600">✓ recorded</span>}
+                        {c.attendanceStatus && <span className="ml-2 text-[10px] font-medium text-emerald-600">✓ recorded</span>}
                       </td>
                       <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.subject || '—'}</td>
                       <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.teacherName || '—'}</td>
@@ -183,7 +183,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                                 key={m}
                                 type="button"
                                 onClick={() => setMark(c.id, m)}
-                                className={`px-3 py-1 rounded-lg text-xs font-bold border transition-colors ${
+                                className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${
                                   active ? `${activeCls} border-transparent` : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                                 }`}
                               >

@@ -293,6 +293,23 @@ export async function generateMonthlyVouchers(input: {
   return { ok: true, created: inserted?.length ?? rows.length, skipped };
 }
 
+/** Soft-delete several vouchers at once. Admin only (RLS denies Manager on finance). */
+export async function bulkDeleteVouchers(ids: string[]): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No vouchers selected.' };
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('vouchers')
+    .update({ deleted_at: new Date().toISOString() })
+    .in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidateFinance();
+  return { ok: true };
+}
+
 /** Create a new fee voucher for a student. grace_deadline = due_date + 3 days. */
 export async function createVoucher(input: {
   studentId: string;

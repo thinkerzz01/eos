@@ -197,6 +197,24 @@ export async function deleteDemo(demoId: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+/** Soft-delete several demos at once. RLS enforces admin/manager write. */
+export async function bulkDeleteDemos(ids: string[]): Promise<ActionResult> {
+  const clean = (ids ?? []).filter(Boolean);
+  if (clean.length === 0) return { ok: false, error: 'No demos selected.' };
+  const { supabase, user } = await ctx();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('demos')
+    .update({ deleted_at: new Date().toISOString() })
+    .in('id', clean);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/demos');
+  revalidatePath('/');
+  return { ok: true };
+}
+
 export async function recordOutcome(input: {
   demoId: string;
   outcome: 'Won' | 'Lost' | 'No-show' | 'Pending';

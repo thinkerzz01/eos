@@ -1,29 +1,24 @@
 import type { Metadata } from 'next';
 import { headers } from 'next/headers';
-import { Inter, Plus_Jakarta_Sans, DM_Sans } from 'next/font/google';
+import { Nunito, Jost, Inter, Poppins, Lora } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ThemeProvider } from '@/components/ui/ThemeContext';
 import { RoleProvider } from '@/components/ui/RoleContext';
 import { getServerRole } from '@/lib/auth/serverRole';
+import { getTypography } from '@/lib/data/typography';
+import { fontVar, DEFAULT_HEADING_FONT, DEFAULT_BODY_FONT } from '@/lib/fonts';
 
-const inter = Inter({
-  subsets: ['latin'],
-  variable: '--font-inter',
-  display: 'swap',
-});
+// Curated, admin-selectable font set (Settings → Typography). Nunito + Jost are
+// the defaults (headings + body). All variable fonts except Poppins, so each is a
+// single small woff2 (latin subset) - kept deliberately lightweight.
+const nunito = Nunito({ subsets: ['latin'], variable: '--font-nunito', display: 'swap' });
+const jost = Jost({ subsets: ['latin'], variable: '--font-jost', display: 'swap' });
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
+const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-poppins', display: 'swap' });
+const lora = Lora({ subsets: ['latin'], variable: '--font-lora', display: 'swap' });
 
-const plusJakarta = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  variable: '--font-plus-jakarta',
-  display: 'swap',
-});
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  variable: '--font-dmsans',
-  display: 'swap',
-});
+const FONT_VARS = [nunito.variable, jost.variable, inter.variable, poppins.variable, lora.variable].join(' ');
 
 export const metadata: Metadata = {
   title: 'Thinkerzz',
@@ -41,10 +36,18 @@ export default async function RootLayout({
   // CSP nonce set by middleware; applied to the one inline boot script below so
   // it runs under the production nonce-based policy.
   const nonce = headers().get('x-nonce') ?? undefined;
+  // Admin-chosen fonts (Settings → Typography), applied via CSS variables that
+  // globals.css / Tailwind read. Defaults: Nunito headings, Jost body.
+  const typography = await getTypography();
+  const fontStyle = {
+    ['--app-font-heading' as any]: fontVar(typography.headingFont, DEFAULT_HEADING_FONT),
+    ['--app-font-body' as any]: fontVar(typography.bodyFont, DEFAULT_BODY_FONT),
+  } as React.CSSProperties;
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${plusJakarta.variable} ${dmSans.variable}`}
+      className={FONT_VARS}
+      style={fontStyle}
       suppressHydrationWarning
     >
       <body className="font-sans antialiased bg-[#F6F7FB] text-[#171A2B] transition-colors duration-200">
