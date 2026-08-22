@@ -8,6 +8,9 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
+// Never prerender this auth page (it builds a Supabase client at render time).
+export const dynamic = 'force-dynamic';
+
 export default function SetPasswordPage() {
   const router = useRouter();
   const supabase = createClient();

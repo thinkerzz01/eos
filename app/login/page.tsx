@@ -1,5 +1,9 @@
 'use client';
 
+// Auth pages must never be statically prerendered (they build a Supabase client
+// at render time). Force dynamic so the build never tries to prerender them.
+export const dynamic = 'force-dynamic';
+
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
