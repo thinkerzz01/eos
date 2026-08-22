@@ -153,6 +153,46 @@ ALTER TABLE public.orgs
   ADD COLUMN IF NOT EXISTS body_font TEXT;
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-08-22  Database linter hardening (Supabase security lints)
+--     Pins search_path on all 12 SECURITY DEFINER / trigger functions and
+--     revokes RPC EXECUTE on the two trigger helpers. Public-form RPCs and the
+--     current_* RLS helpers are intentionally left callable (see file header).
+--     Full file: supabase/migrations/2026-08-22_linter_hardening.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+DO $$
+DECLARE
+  sig text;
+  sigs text[] := ARRAY[
+    'public.update_updated_at_column()',
+    'public.audit_log_trigger_func()',
+    'public.current_user_role()',
+    'public.current_user_org_id()',
+    'public.current_teacher_id()',
+    'public.current_student_id()',
+    'public.get_open_slots(uuid, date)',
+    'public.get_student_public(uuid)',
+    'public.student_submit_homework(uuid)',
+    'public.create_public_booking(uuid, text, text, text, text, text, text, timestamptz, text, text, text)',
+    'public.submit_enrollment(uuid, text, text, text, text, text, text, text, text, text)',
+    'public.submit_onboarding(uuid, text, text, text, text, text, date, jsonb)'
+  ];
+BEGIN
+  FOREACH sig IN ARRAY sigs LOOP
+    BEGIN
+      EXECUTE format('ALTER FUNCTION %s SET search_path = public, pg_temp', sig);
+    EXCEPTION WHEN undefined_function THEN RAISE NOTICE 'skipped (not found): %', sig;
+    END;
+  END LOOP;
+  FOREACH sig IN ARRAY ARRAY['public.audit_log_trigger_func()','public.update_updated_at_column()'] LOOP
+    BEGIN
+      EXECUTE format('REVOKE EXECUTE ON FUNCTION %s FROM PUBLIC, anon, authenticated', sig);
+    EXCEPTION WHEN undefined_function THEN RAISE NOTICE 'skipped revoke (not found): %', sig;
+    END;
+  END LOOP;
+END $$;
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql
