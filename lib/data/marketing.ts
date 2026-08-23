@@ -18,6 +18,7 @@ export interface SourceStat {
   source: string;
   leads: number;
   won: number;
+  lost?: number;
   conversionPct: number;
   spend: number;
   costPerStudent: number | null; // null = blank until ads (no spend recorded)
@@ -30,6 +31,14 @@ export interface MarketingRawLead {
   source: string; // normalized key (google, facebook, ...)
   status: string; // lead status (won = converted)
   createdISO: string;
+  // Who the lead actually is - so the Marketing tab can be acted on, not just counted.
+  id: string;
+  code: string;
+  name: string;
+  phone: string;
+  city: string;
+  area: string;
+  program: string;
 }
 export interface MarketingData {
   leads: MarketingRawLead[];
@@ -48,7 +57,7 @@ export async function getMarketingData(): Promise<MarketingData> {
   if (!session?.user) return { leads: [], spend: [] };
 
   const [leadsRes, spendRes] = await Promise.all([
-    supabase.from('leads').select('source,status,created_at').is('deleted_at', null),
+    supabase.from('leads').select('id,code,name,phone,city,area,program,source,status,created_at').is('deleted_at', null).order('created_at', { ascending: false }),
     supabase.from('ad_spend').select('channel,amount').is('deleted_at', null),
   ]);
 
@@ -56,6 +65,13 @@ export async function getMarketingData(): Promise<MarketingData> {
     source: (l.source as string) ?? 'google',
     status: (l.status as string) ?? 'new',
     createdISO: l.created_at as string,
+    id: l.id as string,
+    code: (l.code as string) ?? '',
+    name: (l.name as string) ?? '',
+    phone: (l.phone as string) ?? '',
+    city: (l.city as string) ?? '',
+    area: (l.area as string) ?? '',
+    program: (l.program as string) ?? '',
   }));
 
   const spendMap = new Map<string, number>();

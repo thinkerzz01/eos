@@ -17,9 +17,9 @@ export async function GET() {
   const vcard = [
     'BEGIN:VCARD',
     'VERSION:3.0',
-    'N:;Thinkerzz Academy;;;',
-    'FN:Thinkerzz Academy',
-    'ORG:Thinkerzz Academy',
+    'N:;Thinkerzz;;;',
+    'FN:Thinkerzz',
+    'ORG:Thinkerzz',
     `EMAIL;TYPE=INTERNET:${email}`,
     `TEL;TYPE=CELL:+${phone}`,
     `URL:${portal}`,

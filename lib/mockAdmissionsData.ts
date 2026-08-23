@@ -37,6 +37,13 @@ export interface DemoSession {
   status: 'Scheduled' | 'Completed' | 'Cancelled' | 'Reassigned';
   outcome?: 'Won' | 'Lost' | 'No-show' | 'Pending';
   feedback?: string;
+  // Full booking details (from the lead the booking created) - shown in "View Demo".
+  parentEmail?: string;
+  subjects?: string;
+  source?: string;
+  school?: string;
+  city?: string;
+  area?: string;
 }
 
 

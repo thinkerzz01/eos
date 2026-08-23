@@ -28,6 +28,7 @@ import {
   User,
   Shield,
   LogOut,
+  RefreshCw,
 } from 'lucide-react';
 
 interface TopBarProps {
@@ -64,6 +65,36 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
     const t = setInterval(refreshNotifs, 60000);
     return () => clearInterval(t);
   }, [refreshNotifs]);
+
+  // Manual + auto page refresh. router.refresh() re-fetches the server data for
+  // the current page (new leads/demos/etc.) while keeping form state intact.
+  const [refreshing, setRefreshing] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+
+  const doRefresh = useCallback(() => {
+    setRefreshing(true);
+    router.refresh();
+    refreshNotifs();
+    setTimeout(() => setRefreshing(false), 700);
+  }, [router, refreshNotifs]);
+
+  useEffect(() => {
+    try { if (localStorage.getItem('tz_auto_refresh') === '0') setAutoRefresh(false); } catch {}
+  }, []);
+
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const t = setInterval(() => router.refresh(), 30000); // every 30s so new activity appears on its own
+    return () => clearInterval(t);
+  }, [autoRefresh, router]);
+
+  const toggleAuto = () => {
+    setAutoRefresh((v) => {
+      const next = !v;
+      try { localStorage.setItem('tz_auto_refresh', next ? '1' : '0'); } catch {}
+      return next;
+    });
+  };
 
   const openNotif = async (n: MyNotification) => {
     if (!n.read) {
@@ -314,6 +345,17 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
         </div>
         )}
 
+        {/* Refresh (manual) — auto-refresh runs every 30s in the background */}
+        <button
+          onClick={doRefresh}
+          aria-label="Refresh"
+          title={autoRefresh ? 'Refresh now · auto-refresh is on' : 'Refresh now · auto-refresh is off'}
+          className="relative w-9.5 h-9.5 rounded-xl border border-[#EBEDF3] dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-300 flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+        >
+          <RefreshCw className={`w-4.5 h-4.5 ${refreshing ? 'animate-spin' : ''}`} />
+          {autoRefresh && <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" title="Auto-refresh on" />}
+        </button>
+
         {/* Notification Bell */}
         <div className="relative">
           <button
@@ -409,6 +451,16 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
                 <ShieldCheck className="w-3.5 h-3.5 text-[#5B47D6]" />
                 <span>Role: <span className="capitalize text-slate-800 dark:text-slate-200">{role}</span></span>
               </div>
+
+              <button
+                onClick={toggleAuto}
+                className="w-full px-2.5 py-1.5 rounded-lg text-xs font-medium flex items-center justify-between gap-2 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                <span className="flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5 text-[#5B47D6]" /> Auto-refresh</span>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${autoRefresh ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'}`}>
+                  {autoRefresh ? 'On' : 'Off'}
+                </span>
+              </button>
 
               <div className="pt-2 mt-2 border-t border-slate-100 dark:border-slate-800">
                 <button

@@ -42,6 +42,7 @@ export default function PublicBookingPage() {
   const [source, setSource] = useState('');
   const [school, setSchool] = useState('');
   const [city, setCity] = useState('');
+  const [area, setArea] = useState('');
   const [turnstileToken, setTurnstileToken] = useState('');
   const [date, setDate] = useState<string>(todayPKT());
   const [hour12, setHour12] = useState<string>('');
@@ -65,11 +66,12 @@ export default function PublicBookingPage() {
     if (!source) { setError('Please tell us how you found us.'); return; }
     if (!school.trim()) { setError('Please enter the school name.'); return; }
     if (!city.trim()) { setError('Please enter the city / hometown.'); return; }
+    if (!area.trim()) { setError('Please enter your area / town / society.'); return; }
     if (!time) { setError('Please choose a demo time.'); return; }
 
     setSubmitting(true);
     try {
-      const res = await submitPublicBooking({ studentName, parentName, parentPhone, parentEmail, program, subject, source, school, city, date, time, turnstileToken });
+      const res = await submitPublicBooking({ studentName, parentName, parentPhone, parentEmail, program, subject, source, school, city, area, date, time, turnstileToken });
       if (!res.ok) { setError(res.error || 'Something went wrong. Please try again.'); return; }
       setBookingRef(res.ref || 'THM-BOOKING');
       setIsSubmitted(true);
@@ -247,6 +249,11 @@ export default function PublicBookingPage() {
                       <div className="relative"><MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                         <input type="text" required value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Lahore" className={field} /></div>
                     </div>
+                    <div className="sm:col-span-2">
+                      <label className={lbl}>Area / Town / Society <span className="text-rose-500">*</span></label>
+                      <div className="relative"><MapPin className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <input type="text" required value={area} onChange={(e) => setArea(e.target.value)} placeholder="e.g. DHA Phase 5, Gulshan-e-Iqbal, Model Town" className={field} /></div>
+                    </div>
                   </div>
                 </div>
 
@@ -293,7 +300,7 @@ export default function PublicBookingPage() {
             <button
               onClick={() => {
                 setIsSubmitted(false); setStudentName(''); setParentName(''); setParentPhone('');
-                setParentEmail(''); setHour12(''); setMinute('00'); setAmpm('PM'); setSubject(''); setSource(''); setSchool(''); setCity(''); setBookingRef('');
+                setParentEmail(''); setHour12(''); setMinute('00'); setAmpm('PM'); setSubject(''); setSource(''); setSchool(''); setCity(''); setArea(''); setBookingRef('');
               }}
               className="px-6 py-2.5 bg-slate-900 text-white font-medium text-xs rounded-xl hover:bg-slate-800 transition">
               Book Another Demo

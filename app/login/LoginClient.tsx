@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { useToast } from '@/components/ui/Toast';
 import { useTheme } from '@/components/ui/ThemeContext';
@@ -41,8 +41,17 @@ export function LoginClient() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
   const { theme, toggleTheme } = useTheme();
+
+  // Show a note when the user was auto signed-out for inactivity.
+  useEffect(() => {
+    if (searchParams?.get('timeout') === '1') {
+      showToast('You were signed out due to inactivity. Please sign in again.', 'info');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const supabase = createClient();
 
   const handleLogin = async (e: React.FormEvent) => {

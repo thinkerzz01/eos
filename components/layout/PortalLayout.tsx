@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { IdleLogout } from './IdleLogout';
 import { useRole } from '@/components/ui/RoleContext';
 import { UserRole } from '@/components/layout/Sidebar';
 import { Lock, X } from 'lucide-react';
@@ -27,6 +28,9 @@ export function PortalLayout({
 
   return (
     <div className="min-h-screen bg-[#F6F7FB] dark:bg-[#020617] text-[#171A2B] dark:text-slate-100 font-sans grid grid-cols-1 lg:grid-cols-[248px_1fr]">
+      {/* Auto sign-out on inactivity (banking-style session security) */}
+      <IdleLogout />
+
       {/* Desktop Sidebar */}
       <div className="hidden lg:block shrink-0">
         <Sidebar role={role} />

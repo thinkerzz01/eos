@@ -13,6 +13,7 @@ import { assignTeacher, recordOutcome, deleteDemo, createDemo, updateDemo, bulkD
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { useToast } from '@/components/ui/Toast';
 import { downloadCsv } from '@/lib/export/csv';
 import {
   Calendar,
@@ -37,7 +38,43 @@ import {
   Trash2,
   Check,
   FileText,
+  Mail,
+  Copy,
 } from 'lucide-react';
+
+// Normalise a stored phone (e.g. "+92 300 1234567", "0300-1234567") to the
+// digits wa.me expects (Pakistan country code, no plus).
+function waNumber(phone?: string): string {
+  const d = (phone || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.startsWith('92')) return d;
+  if (d.startsWith('0')) return '92' + d.slice(1);
+  if (d.length === 10) return '92' + d; // bare 3001234567
+  return d;
+}
+
+// Short, WhatsApp-formatted announcement for the teacher group. Uses *asterisks*
+// so the important lines render bold in WhatsApp.
+function demoAnnouncement(d: DemoSession): string {
+  const subject = d.subject || d.subjects || '';
+  const fields = [
+    `*Student:* ${d.studentName}`,
+    subject ? `*Subject:* ${subject}` : '',
+    d.program ? `*Program:* ${d.program}` : '',
+    d.scheduledTime ? `*Time:* ${d.scheduledTime}` : '',
+  ].filter(Boolean);
+  return [
+    'Hey Team 👋',
+    '',
+    'A new *demo* has been booked ✨',
+    ...fields,
+    '',
+    'Please check your email for the full booking details.',
+    '',
+    'Regards,',
+    '*Thinkerzz*',
+  ].join('\n');
+}
 
 export function DemosClient({
   initialDemos,
@@ -50,6 +87,17 @@ export function DemosClient({
 }) {
   const { role } = useRole();
   const router = useRouter();
+  const { showToast } = useToast();
+
+  // Copy a ready-to-send booking announcement to paste into the WhatsApp group.
+  const copyDemoMessage = async (d: DemoSession) => {
+    try {
+      await navigator.clipboard.writeText(demoAnnouncement(d));
+      showToast('Message copied — paste it in your WhatsApp group.', 'success');
+    } catch {
+      showToast('Could not copy automatically. Long-press the text to copy.', 'error');
+    }
+  };
   const searchParams = useSearchParams();
   const canManage = role === 'admin' || role === 'manager';
 
@@ -580,6 +628,13 @@ export function DemosClient({
                           >
                             Log Outcome
                           </button>
+                          <button
+                            onClick={() => copyDemoMessage(d)}
+                            title="Copy a WhatsApp announcement for this booking"
+                            className="px-2.5 py-1 bg-[#25D366]/10 text-[#128C4A] dark:text-emerald-300 font-medium text-[13px] rounded-lg border border-[#25D366]/40 hover:bg-[#25D366]/20 cursor-pointer inline-flex items-center gap-1"
+                          >
+                            <Copy className="w-3.5 h-3.5" /> Copy
+                          </button>
                           {canManage && (
                             <RowActionsMenu
                               actions={[
@@ -776,11 +831,20 @@ export function DemosClient({
                 </div>
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t">
-                <button onClick={() => setOutcomeModalDemo(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
-                <button onClick={handleSaveOutcome} disabled={savingOutcome} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">
-                  {savingOutcome ? 'Saving...' : 'Save Demo Outcome'}
+              <div className="flex items-center justify-between gap-2 pt-3 border-t">
+                <button
+                  onClick={() => copyDemoMessage(outcomeModalDemo)}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#25D366]/10 text-[#128C4A] dark:text-emerald-300 border border-[#25D366]/40 text-xs font-medium hover:bg-[#25D366]/20"
+                  title="Copy a WhatsApp announcement for this booking"
+                >
+                  <Copy className="w-4 h-4" /> Copy Message
                 </button>
+                <div className="flex gap-2">
+                  <button onClick={() => setOutcomeModalDemo(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                  <button onClick={handleSaveOutcome} disabled={savingOutcome} className="px-4 py-2 bg-[#5B47D6] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">
+                    {savingOutcome ? 'Saving...' : 'Save Demo Outcome'}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -831,23 +895,31 @@ export function DemosClient({
                 <button onClick={() => setViewDemo(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
               <div className="grid grid-cols-2 gap-3 text-[13px]">
-                {[
+                {([
                   ['Student', viewDemo.studentName],
                   ['Parent', viewDemo.parentName],
                   ['Phone', viewDemo.parentPhone],
-                  ['Program', viewDemo.program || '-'],
-                  ['Subject', viewDemo.subject || '-'],
+                  ['Email', viewDemo.parentEmail],
+                  ['Program', viewDemo.program],
+                  ['Subject', viewDemo.subject],
+                  ['Booked Subjects', viewDemo.subjects],
                   ['Teacher', viewDemo.teacherName || 'Unassigned'],
                   ['Scheduled', viewDemo.scheduledTime],
                   ['Status', viewDemo.status],
                   ['Outcome', viewDemo.outcome || 'Pending'],
+                  ['Source', viewDemo.source],
+                  ['School', viewDemo.school],
+                  ['City', viewDemo.city],
+                  ['Area / Town', viewDemo.area],
                   ['Demo ID', viewDemo.demoId],
-                ].map(([k, v]) => (
-                  <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
-                    <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">{k}</div>
-                    <div className="font-medium text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
-                  </div>
-                ))}
+                ] as [string, string | undefined][])
+                  .filter(([, v]) => v && String(v).trim())
+                  .map(([k, v]) => (
+                    <div key={k} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
+                      <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">{k}</div>
+                      <div className="font-medium text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
+                    </div>
+                  ))}
               </div>
               {viewDemo.feedback && (
                 <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5 text-[13px]">
@@ -855,11 +927,36 @@ export function DemosClient({
                   <div className="font-medium text-slate-800 dark:text-slate-200 mt-0.5">{viewDemo.feedback}</div>
                 </div>
               )}
-              {viewDemo.meetingLink && (
-                <a href={viewDemo.meetingLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 px-3 py-2 text-xs font-medium hover:bg-blue-100">
-                  <Video className="w-4 h-4" /> Join Meet Link
-                </a>
-              )}
+
+              {/* Contact the student / parent directly, then notify the tutor group */}
+              <div className="pt-1">
+                <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185] mb-1.5">Contact & Notify</div>
+                <div className="flex flex-wrap gap-2">
+                  {waNumber(viewDemo.parentPhone) && (
+                    <a href={`https://wa.me/${waNumber(viewDemo.parentPhone)}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 px-3 py-2 text-xs font-medium hover:bg-emerald-100">
+                      <MessageSquare className="w-4 h-4" /> WhatsApp
+                    </a>
+                  )}
+                  {viewDemo.parentPhone && (
+                    <a href={`tel:${viewDemo.parentPhone.replace(/\s/g, '')}`} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 px-3 py-2 text-xs font-medium hover:bg-slate-100">
+                      <Phone className="w-4 h-4" /> Call
+                    </a>
+                  )}
+                  {viewDemo.parentEmail && (
+                    <a href={`mailto:${viewDemo.parentEmail}`} className="inline-flex items-center gap-1.5 rounded-lg bg-slate-50 text-slate-700 border border-slate-200 px-3 py-2 text-xs font-medium hover:bg-slate-100">
+                      <Mail className="w-4 h-4" /> Email
+                    </a>
+                  )}
+                  {viewDemo.meetingLink && (
+                    <a href={viewDemo.meetingLink} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 px-3 py-2 text-xs font-medium hover:bg-blue-100">
+                      <Video className="w-4 h-4" /> Join Meet
+                    </a>
+                  )}
+                  <button onClick={() => copyDemoMessage(viewDemo)} title="Copy a WhatsApp announcement for this booking" className="inline-flex items-center gap-1.5 rounded-lg bg-[#25D366]/10 text-[#128C4A] dark:text-emerald-300 border border-[#25D366]/40 px-3 py-2 text-xs font-medium hover:bg-[#25D366]/20">
+                    <Copy className="w-4 h-4" /> Copy
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}

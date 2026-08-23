@@ -39,6 +39,7 @@ export async function submitPublicBooking(input: {
   source?: string; // "How did you find us?"
   school?: string;
   city?: string;
+  area?: string; // town / society / neighbourhood (finer than city)
   date: string; // YYYY-MM-DD (Pakistan date)
   time: string; // HH:MM (PKT)
   turnstileToken?: string;
@@ -52,6 +53,7 @@ export async function submitPublicBooking(input: {
   const parentPhone = input.parentPhone?.trim();
   const school = input.school?.trim();
   const city = input.city?.trim();
+  const area = input.area?.trim();
 
   if (!studentName || !parentName || !parentPhone) {
     return { ok: false, error: 'Student name, parent name, and phone are required.' };
@@ -101,12 +103,15 @@ export async function submitPublicBooking(input: {
     p_scheduled_at: scheduledAt,
     p_source: source,
   };
-  // Prefer the newer signature that stores school + city (marketing data). If the
-  // booking_school_city migration has not been applied, that overload does not
-  // exist yet, so fall back to the original signature so booking never breaks.
-  let { data, error } = await supabase.rpc('create_public_booking', { ...baseArgs, p_school: school, p_city: city });
-  if (error && /function|does not exist|schema cache|p_school|p_city/i.test(error.message)) {
-    ({ data, error } = await supabase.rpc('create_public_booking', baseArgs));
+  // Prefer the fullest signature (school + city + area). Fall back gracefully if
+  // a migration has not been applied yet, so booking never breaks:
+  //   area+city+school  →  city+school  →  base
+  let { data, error } = await supabase.rpc('create_public_booking', { ...baseArgs, p_school: school, p_city: city, p_area: area });
+  if (error && /function|does not exist|schema cache|p_school|p_city|p_area/i.test(error.message)) {
+    ({ data, error } = await supabase.rpc('create_public_booking', { ...baseArgs, p_school: school, p_city: city }));
+    if (error && /function|does not exist|schema cache|p_school|p_city/i.test(error.message)) {
+      ({ data, error } = await supabase.rpc('create_public_booking', baseArgs));
+    }
   }
 
   if (error) {

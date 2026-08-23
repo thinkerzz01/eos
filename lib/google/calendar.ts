@@ -221,7 +221,7 @@ export function buildClassInvite(opts: {
     lines.push('');
     lines.push('Thank you.');
   }
-  lines.push('Thinkerzz Academy');
+  lines.push('Thinkerzz');
 
   return { summary, description: lines.join('\n') };
 }

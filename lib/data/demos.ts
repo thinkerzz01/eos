@@ -38,7 +38,7 @@ function mapRow(r: any): DemoSession {
   const teacher = one<any>(r.teachers);
   return {
     id: r.id,
-    demoId: `DM-${String(r.id).split('-')[0].toUpperCase()}`,
+    demoId: `DMO-${String(r.id).split('-')[0].toUpperCase()}`,
     leadId: r.lead_id,
     studentName: lead?.name ?? '',
     parentName: lead?.parent_name ?? '',
@@ -54,6 +54,12 @@ function mapRow(r: any): DemoSession {
     status: STATUS_UI[r.status as string] ?? 'Scheduled',
     outcome: r.outcome ? OUTCOME_UI[r.outcome as string] : 'Pending',
     feedback: r.reason ?? '',
+    parentEmail: lead?.email ?? '',
+    subjects: lead?.subjects ?? '',
+    source: lead?.source ?? '',
+    school: lead?.school ?? '',
+    city: lead?.city ?? '',
+    area: lead?.area ?? '',
   };
 }
 
@@ -68,7 +74,7 @@ export async function getDemos(): Promise<DemoSession[]> {
   const { data, error } = await supabase
     .from('demos')
     .select(
-      'id,lead_id,teacher_id,scheduled_at,meeting_link,status,outcome,reason,leads(name,parent_name,phone,program),subjects(name),teachers(name)'
+      'id,lead_id,teacher_id,scheduled_at,meeting_link,status,outcome,reason,leads(name,parent_name,phone,email,program,subjects,source,school,city,area),subjects(name),teachers(name)'
     )
     .is('deleted_at', null)
     .order('scheduled_at', { ascending: true });
