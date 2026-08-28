@@ -1,6 +1,7 @@
 // Homework data-access - RLS-enforced, server-only.
 import { createClient } from '@/lib/supabase/server';
 import type { HomeworkAssignment } from '@/lib/mockAcademicsData';
+import { resolveTeacherNames } from '@/lib/data/teacherNames';
 
 const STATUS_UI: Record<string, HomeworkAssignment['status']> = {
   assigned: 'Assigned',
@@ -20,10 +21,12 @@ const SUBMISSION_UI: Record<string, HomeworkAssignment['submissionStatus']> = {
   graded: 'Graded',
 };
 
-function mapRow(r: any): HomeworkAssignment {
+function mapRow(r: any, teacherNames?: Map<string, string>): HomeworkAssignment {
   const subject = one<any>(r.subjects);
   const teacher = one<any>(r.teachers);
   const student = one<any>(r.students);
+  // Name-only fallback for students/teachers whose RLS blocks the teachers embed.
+  const teacherName = teacherNames?.get(r.teacher_id) ?? teacher?.name ?? '';
   return {
     id: r.id,
     homeworkCode: `HW-${String(r.id).split('-')[0].toUpperCase()}`,
@@ -36,7 +39,7 @@ function mapRow(r: any): HomeworkAssignment {
     assignedDate: r.created_at,
     dueDate: r.deadline,
     dueISO: r.deadline,
-    teacherName: teacher?.name ?? '',
+    teacherName,
     teacherId: r.teacher_id ?? '',
     totalSubmissions: r.status === 'submitted' || r.status === 'graded' ? 1 : 0,
     gradedCount: r.status === 'graded' ? 1 : 0,
@@ -60,5 +63,9 @@ export async function getHomework(): Promise<HomeworkAssignment[]> {
     .order('deadline', { ascending: false });
 
   if (error || !data) return [];
-  return (data as any[]).map(mapRow);
+  const teacherNames = await resolveTeacherNames(
+    supabase,
+    (data as any[]).map((r) => r.teacher_id)
+  );
+  return (data as any[]).map((r) => mapRow(r, teacherNames));
 }

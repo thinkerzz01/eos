@@ -438,9 +438,9 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               <span className="text-xs text-[#6B7185] block font-medium">Temperature</span>
               <select value={selectedTemperature} onChange={(e) => setSelectedTemperature(e.target.value)} className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs">
                 <option value="All Temperatures">All Temperatures</option>
-                <option value="Hot">🔥 Hot</option>
-                <option value="Warm">🟡 Warm</option>
-                <option value="Cold">❄️ Cold</option>
+                <option value="Hot">Hot</option>
+                <option value="Warm">Warm</option>
+                <option value="Cold">Cold</option>
               </select>
             </div>
 
@@ -586,7 +586,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
                         <td className="py-3.5 px-3">
                           <Badge tone={l.temperature === 'Hot' ? 'danger' : l.temperature === 'Warm' ? 'warning' : 'info'}>
-                            {l.temperature === 'Hot' ? '🔥 Hot' : l.temperature === 'Warm' ? '🟡 Warm' : '❄️ Cold'}
+                            {l.temperature === 'Hot' ? 'Hot' : l.temperature === 'Warm' ? 'Warm' : 'Cold'}
                           </Badge>
                         </td>
 
@@ -825,12 +825,12 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 </div>
 
                 <div className="space-y-1 bg-purple-50 p-3 rounded-xl border border-purple-200">
-                  <label className="font-medium text-purple-900 block">Default Target Grade (Locked Policy)</label>
+                  <label className="font-medium text-purple-900 block">Default Target Grade</label>
                   <div className="w-full bg-white border border-purple-300 rounded-lg p-2 font-medium text-purple-900">
-                    A* (Default per Master Plan §4)
+                    A* (default)
                   </div>
                   <p className="text-xs text-purple-700 font-medium mt-1">
-                    Note: Per Master Plan §4, target_grade defaults to A* at enrollment. Assessed grade remains blank until the first test is graded.
+                    Target grade defaults to A* at enrollment. The assessed grade stays blank until the first test is graded.
                   </p>
                 </div>
 

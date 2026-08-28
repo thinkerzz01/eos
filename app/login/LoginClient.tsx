@@ -143,7 +143,7 @@ export function LoginClient() {
         <img src="/logo-light.png" alt="Thinkerzz" className="mx-auto h-11 w-auto object-contain mb-3 dark:hidden" />
         <img src="/logo-dark.png" alt="Thinkerzz" className="mx-auto h-11 w-auto object-contain mb-3 hidden dark:block" />
         <p className="mt-1.5 text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-widest">
-          Operating System & Portal Suite
+          Academy Portal
         </p>
       </div>
 

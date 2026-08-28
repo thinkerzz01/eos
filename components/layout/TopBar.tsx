@@ -38,7 +38,7 @@ interface TopBarProps {
 
 export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
   const { theme, toggleTheme } = useTheme();
-  const { role } = useRole();
+  const { role, name } = useRole();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showQuickMenu, setShowQuickMenu] = useState(false);
   const router = useRouter();
@@ -166,7 +166,16 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
     router.refresh();
   };
 
-  const displayName = role === 'admin' ? 'Admin' : role === 'manager' ? 'Manager' : role === 'teacher' ? 'Teacher' : 'Student';
+  const roleLabel = role === 'admin' ? 'Admin' : role === 'manager' ? 'Manager' : role === 'teacher' ? 'Teacher' : 'Student';
+  // Greet and label people by their real name (from profiles); fall back to the
+  // role label only when the name is not available.
+  const displayName = name?.trim() || roleLabel;
+  const greetingSubtitle =
+    role === 'teacher'
+      ? "Here's your teaching day at Thinkerzz."
+      : role === 'student'
+      ? "Here's your learning summary."
+      : "Here's what's happening at Thinkerzz today.";
 
   return (
     <header className="h-[70px] bg-white dark:bg-[#0F172A] border-b border-[#EBEDF3] dark:border-slate-800 flex items-center justify-between px-4 sm:px-6 sticky top-0 z-30 transition-colors duration-200">
@@ -184,12 +193,11 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
 
         {isDashboard && (
           <div>
-            <h1 className="font-heading font-medium text-slate-900 dark:text-white text-lg sm:text-xl flex items-center gap-1.5 leading-tight">
-              <span>Welcome back, {displayName}!</span>
-              <span>👋</span>
+            <h1 className="font-heading font-medium text-slate-900 dark:text-white text-lg sm:text-xl leading-tight">
+              Welcome back, {displayName}
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium hidden sm:block">
-              Here's what's happening at Thinkerzz today.
+              {greetingSubtitle}
             </p>
           </div>
         )}

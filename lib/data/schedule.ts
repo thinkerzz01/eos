@@ -1,6 +1,7 @@
 // Schedule (class_sessions) data-access - RLS-enforced, server-only.
 import { createClient } from '@/lib/supabase/server';
 import type { ScheduledClass } from '@/lib/mockAcademicsData';
+import { resolveTeacherNames } from '@/lib/data/teacherNames';
 
 const TYPE_UI: Record<string, ScheduledClass['classType']> = {
   class: 'Class',
@@ -30,10 +31,18 @@ function fmtDate(iso: string): string {
   });
 }
 
-function mapRow(r: any, attendance?: Map<string, string>, notes?: Map<string, string>): ScheduledClass {
+function mapRow(
+  r: any,
+  attendance?: Map<string, string>,
+  notes?: Map<string, string>,
+  teacherNames?: Map<string, string>
+): ScheduledClass {
   const subject = one<any>(r.subjects);
   const teacher = one<any>(r.teachers);
   const student = one<any>(r.students);
+  // Prefer the name-only RPC result (works for students/teachers, whose RLS
+  // blocks the teachers embed); fall back to the embed for admin/manager.
+  const teacherName = teacherNames?.get(r.teacher_id) ?? teacher?.name ?? 'Unassigned';
   return {
     id: r.id,
     classCode: `CLS-${String(r.id).split('-')[0].toUpperCase()}`,
@@ -44,7 +53,7 @@ function mapRow(r: any, attendance?: Map<string, string>, notes?: Map<string, st
     program: student?.program ?? '',
     grade: '',
     teacherId: r.teacher_id ?? '',
-    teacherName: teacher?.name ?? 'Unassigned',
+    teacherName,
     classType: TYPE_UI[r.type as string] ?? 'Class',
     startAt: fmtTime(r.start_at),
     endAt: fmtTime(r.end_at),
@@ -100,5 +109,12 @@ export async function getSchedule(): Promise<ScheduledClass[]> {
     if (n.session_id) noteBy.set(n.session_id, n.note);
   }
 
-  return (data as any[]).map((r) => mapRow(r, attBy, noteBy));
+  // Name-only teacher resolution so students/teachers see who takes each class
+  // (their RLS blocks the teachers embed above; this leaks no contact columns).
+  const teacherNames = await resolveTeacherNames(
+    supabase,
+    (data as any[]).map((r) => r.teacher_id)
+  );
+
+  return (data as any[]).map((r) => mapRow(r, attBy, noteBy, teacherNames));
 }

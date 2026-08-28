@@ -340,7 +340,6 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                 placeholder="Search teachers, subjects, programs..."
                 className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-9 pr-8 py-2 text-xs font-medium text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-[#5B47D6]"
               />
-              <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400 bg-slate-200 dark:bg-slate-700 px-1.5 py-0.5 rounded">⌘K</span>
             </div>
 
             {role === 'admin' && (

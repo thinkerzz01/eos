@@ -657,3 +657,30 @@ export async function bulkMarkAttendance(input: {
   if (count === 0) return { ok: false, count, error: firstError ?? 'Could not mark attendance.' };
   return { ok: true, count };
 }
+
+/**
+ * The subjects a student is enrolled in, with the teacher assigned to each
+ * (from student_subjects, created at admission). Powers the scheduling wizard:
+ * picking a student pre-fills their subject + teacher rows so the admin only
+ * sets days & times. RLS-scoped (admin/manager). Returns [] on any error.
+ */
+export async function listStudentEnrollments(
+  studentId: string
+): Promise<{ subjectId: string; teacherId: string }[]> {
+  if (!studentId) return [];
+  const supabase = createClient();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+  if (!session?.user) return [];
+
+  const { data, error } = await supabase
+    .from('student_subjects')
+    .select('subject_id,teacher_id')
+    .eq('student_id', studentId)
+    .is('deleted_at', null);
+  if (error || !data) return [];
+  return (data as any[])
+    .filter((r) => r.subject_id && r.teacher_id)
+    .map((r) => ({ subjectId: r.subject_id as string, teacherId: r.teacher_id as string }));
+}

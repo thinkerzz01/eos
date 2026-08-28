@@ -35,7 +35,11 @@ export function HomeworkClient({
 }) {
   const { role } = useRole();
   const router = useRouter();
-  const canManage = role !== 'student';
+  // Assigning / modifying / deleting homework is staff-only (admin/manager).
+  // Teachers act on their own students' work (grading), like attendance; students
+  // only submit. This keeps the roster of other teachers off a teacher's screen.
+  const canManage = role === 'admin' || role === 'manager';
+  const isStudent = role === 'student';
   const [homeworks, setHomeworks] = useState<HomeworkAssignment[]>(initialHomeworks);
   const [showAddHomeworkModal, setShowAddHomeworkModal] = useState<boolean>(false);
   const [title, setTitle] = useState('');
@@ -358,7 +362,7 @@ export function HomeworkClient({
                       <td className="py-3.5 px-3 text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           <button onClick={() => setViewHw(hw)} title="View" className="w-7 h-7 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center"><Eye className="w-4 h-4" /></button>
-                          {!canManage && hw.submissionStatus === 'Not submitted' && (
+                          {isStudent && hw.submissionStatus === 'Not submitted' && (
                             <button
                               onClick={() => handleSubmitHomework(hw)}
                               disabled={submittingId === hw.id}
@@ -368,8 +372,18 @@ export function HomeworkClient({
                               <span>{submittingId === hw.id ? 'Submitting…' : 'Submit'}</span>
                             </button>
                           )}
-                          {!canManage && hw.submissionStatus !== 'Not submitted' && (
+                          {isStudent && hw.submissionStatus !== 'Not submitted' && (
                             <span className="text-xs font-medium text-emerald-600">✓ {hw.submissionStatus}</span>
+                          )}
+                          {/* Teachers grade their own students' work (no assign/modify/delete). */}
+                          {role === 'teacher' && hw.status !== 'Graded' && (
+                            <button
+                              onClick={() => handleCheck(hw)}
+                              className="h-7 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1.5"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>Grade</span>
+                            </button>
                           )}
                           {canManage && (
                             <RowActionsMenu

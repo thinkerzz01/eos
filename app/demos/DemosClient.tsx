@@ -64,9 +64,9 @@ function demoAnnouncement(d: DemoSession): string {
     d.scheduledTime ? `*Time:* ${d.scheduledTime}` : '',
   ].filter(Boolean);
   return [
-    'Hey Team 👋',
+    'Hey Team ',
     '',
-    'A new *demo* has been booked ✨',
+    'A new *demo* has been booked ',
     ...fields,
     '',
     'Please check your email for the full booking details.',
@@ -246,7 +246,7 @@ export function DemosClient({
       router.refresh();
       alert(
         res.warning
-          ? `Teacher assigned to ${studentName}'s demo.\n\n⚠ ${res.warning}`
+          ? `Teacher assigned to ${studentName}'s demo.\n\n${res.warning}`
           : `Teacher assigned to ${studentName}'s demo.`
       );
     } else if (res.conflict) {
@@ -320,7 +320,7 @@ export function DemosClient({
     if (res.ok) {
       setEditDemo(null);
       router.refresh();
-      if (res.warning) alert(`Demo rescheduled.\n\n⚠ ${res.warning}`);
+      if (res.warning) alert(`Demo rescheduled.\n\n${res.warning}`);
     } else setEdError(res.error ?? 'Failed to reschedule the demo.');
   };
 
@@ -609,7 +609,7 @@ export function DemosClient({
                             title="No Google Calendar invite / Meet link for this demo. Assign a teacher (with student & teacher emails on file) or reconnect Google."
                             className="px-2.5 py-1 bg-amber-50 text-amber-700 font-medium text-xs rounded-lg border border-amber-200 inline-flex items-center gap-1"
                           >
-                            ⚠ No invite
+                            No invite
                           </span>
                         )}
                       </td>
@@ -812,10 +812,10 @@ export function DemosClient({
                     onChange={(e) => setSelectedOutcome(e.target.value as any)}
                     className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900"
                   >
-                    <option value="Won">🟢 Won (Student Ready to Enroll)</option>
-                    <option value="Lost">🔴 Lost (Not Interested)</option>
-                    <option value="No-show">🟡 No-show (Student/Parent Absent)</option>
-                    <option value="Pending">🕒 Pending Decision</option>
+                    <option value="Won">Won (Student Ready to Enroll)</option>
+                    <option value="Lost">Lost (Not Interested)</option>
+                    <option value="No-show">No-show (Student/Parent Absent)</option>
+                    <option value="Pending">Pending Decision</option>
                   </select>
                 </div>
 

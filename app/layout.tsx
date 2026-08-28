@@ -4,7 +4,7 @@ import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast';
 import { ThemeProvider } from '@/components/ui/ThemeContext';
 import { RoleProvider } from '@/components/ui/RoleContext';
-import { getServerRole } from '@/lib/auth/serverRole';
+import { getServerRole, getServerUserName } from '@/lib/auth/serverRole';
 import { getTypography } from '@/lib/data/typography';
 import { fontVar, DEFAULT_HEADING_FONT, DEFAULT_BODY_FONT } from '@/lib/fonts';
 
@@ -31,7 +31,7 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const role = await getServerRole();
+  const [role, userName] = await Promise.all([getServerRole(), getServerUserName()]);
   // Admin-chosen fonts (Settings Typography), applied via CSS variables that
   // globals.css / Tailwind read. Defaults: Nunito headings, Jost body.
   const typography = await getTypography();
@@ -54,7 +54,7 @@ export default async function RootLayout({
           }}
         />
         <ThemeProvider>
-          <RoleProvider role={role}>
+          <RoleProvider role={role} name={userName}>
             <ToastProvider>{children}</ToastProvider>
           </RoleProvider>
         </ThemeProvider>

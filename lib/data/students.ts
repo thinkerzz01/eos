@@ -20,6 +20,7 @@
 import { createClient } from '@/lib/supabase/server';
 import type { Student, EnrolledSubject } from '@/lib/mockStudentsData';
 import { computeHealth, type FeeStatus } from '@/lib/health';
+import { getServerRole } from '@/lib/auth/serverRole';
 
 interface StudentRow {
   id: string;
@@ -195,6 +196,32 @@ function buildAcademics(
   return out;
 }
 
+/**
+ * Strip parent/guardian CONTACT + address PII from a student view-model. Applied
+ * server-side for the `teacher` role so contact details never reach a teacher's
+ * browser at all (defense-in-depth behind the UI hiding). Teachers keep the
+ * academic picture: name, program, subjects, class/attendance/homework metrics.
+ */
+function redactContactForTeacher(s: Student): Student {
+  return {
+    ...s,
+    parentName: '',
+    motherName: '',
+    parentPhone: '',
+    motherPhone: '',
+    parentEmail: '',
+    whatsapp: '',
+    parentRelation: '',
+    lastContact: '',
+    address: '',
+    city: '',
+    emergencyContact: '',
+    // onboardingExtra is a free-form answer blob that can carry contact PII
+    // (emergency numbers, home details) — drop it wholesale for teachers.
+    onboardingExtra: {},
+  };
+}
+
 export async function getStudents(): Promise<Student[]> {
   const supabase = createClient();
 
@@ -237,5 +264,11 @@ export async function getStudents(): Promise<Student[]> {
   ]);
   const acad = buildAcademics(attRes.data ?? [], hwRes.data ?? [], sessRes.data ?? []);
 
-  return (data as StudentRow[]).map((r) => mapRow(r, acad.get(r.id)));
+  const mapped = (data as StudentRow[]).map((r) => mapRow(r, acad.get(r.id)));
+
+  // Teachers only ever see students RLS already scoped to them (their assigned
+  // students). On top of that, hide all parent/guardian contact PII from them.
+  const role = await getServerRole();
+  if (role === 'teacher') return mapped.map(redactContactForTeacher);
+  return mapped;
 }

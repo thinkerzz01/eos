@@ -25,7 +25,25 @@
 SELECT 'demo students (@example.com)' AS what, count(*) FROM public.students WHERE email ILIKE '%@example.com'
 UNION ALL SELECT 'test-login profiles', count(*) FROM public.profiles WHERE email IN ('manager@thinkerzz.com','teacher@thinkerzz.com','student@thinkerzz.com')
 UNION ALL SELECT 'test teachers', count(*) FROM public.teachers WHERE email IN ('teacher@thinkerzz.com')
-UNION ALL SELECT 'test students', count(*) FROM public.students WHERE email IN ('student@thinkerzz.com');
+UNION ALL SELECT 'test students', count(*) FROM public.students WHERE email IN ('student@thinkerzz.com')
+UNION ALL SELECT 'REAL logins with a stale seed name (renamed in STEP 1b, NOT deleted)', count(*)
+  FROM public.profiles p LEFT JOIN public.teachers t ON t.id = p.teacher_id LEFT JOIN public.students s ON s.id = p.student_id
+  WHERE (p.role = 'teacher' AND t.name IS NOT NULL AND p.name <> t.name)
+     OR (p.role = 'student' AND s.name IS NOT NULL AND p.name <> s.name);
+
+
+-- ── STEP 1b — FIX STALE PORTAL NAMES (safe, non-destructive). ──────────────
+-- A profile named "Test Teacher"/"Test Student" is usually a REAL login (linked
+-- by teacher_id/student_id) whose name lagged after you renamed the record. These
+-- rename it to the real name — they NEVER delete a login. Run this always; it is
+-- idempotent and only touches mismatched rows. (Also lives in RUN_THESE_MIGRATIONS.)
+UPDATE public.profiles p SET name = t.name
+FROM public.teachers t
+WHERE p.teacher_id = t.id AND p.role = 'teacher' AND p.name <> t.name;
+
+UPDATE public.profiles p SET name = s.name
+FROM public.students s
+WHERE p.student_id = s.id AND p.role = 'student' AND p.name <> s.name;
 
 
 -- ── STEP 2 — PURGE (destructive). Run ONLY if STEP 1 found demo rows. ──────

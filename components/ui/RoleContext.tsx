@@ -10,18 +10,22 @@ import { UserRole } from '@/components/layout/Sidebar';
 
 interface RoleContextType {
   role: UserRole;
+  // The signed-in user's own display name (from profiles). '' when unknown.
+  name: string;
 }
 
-const RoleContext = createContext<RoleContextType>({ role: 'student' });
+const RoleContext = createContext<RoleContextType>({ role: 'student', name: '' });
 
 export function RoleProvider({
   role,
+  name = '',
   children,
 }: {
   role: UserRole;
+  name?: string;
   children: React.ReactNode;
 }) {
-  return <RoleContext.Provider value={{ role }}>{children}</RoleContext.Provider>;
+  return <RoleContext.Provider value={{ role, name }}>{children}</RoleContext.Provider>;
 }
 
 export function useRole() {

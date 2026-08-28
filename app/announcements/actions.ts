@@ -45,3 +45,22 @@ export async function createAnnouncement(input: {
   revalidatePath('/announcements');
   return { ok: true };
 }
+
+/** Soft-delete an announcement. RLS restricts writes to admin/manager. */
+export async function deleteAnnouncement(id: string): Promise<ActionResult> {
+  if (!id) return { ok: false, error: 'Missing announcement id.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { error } = await supabase
+    .from('announcements')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('id', id);
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath('/announcements');
+  return { ok: true };
+}

@@ -155,11 +155,11 @@ export default function SettingsPage() {
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] p-4 shadow-sm space-y-4">
           <div className="flex items-center gap-2 border-b pb-3 text-xs font-medium flex-wrap">
             {[
-              { id: 'Branding', label: '🏢 Academy Branding & Info' },
-              { id: 'Financial', label: '💰 Fee & Financial Policies' },
-              { id: 'Security', label: '🛡️ Security & Role Matrix' },
-              { id: 'API', label: '🔑 API Secrets & Integrations' },
-              { id: 'Notifications', label: '📢 Notifications & Adapters' },
+              { id: 'Branding', label: 'Academy Branding & Info' },
+              { id: 'Financial', label: 'Fee & Financial Policies' },
+              { id: 'Security', label: 'Security & Role Matrix' },
+              { id: 'API', label: 'API Secrets & Integrations' },
+              { id: 'Notifications', label: 'Notifications & Adapters' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -311,7 +311,7 @@ export default function SettingsPage() {
               <div className="p-4 bg-slate-900 text-white rounded-2xl space-y-2">
                 <div className="flex justify-between items-center text-xs font-medium text-emerald-400">
                   <span>Data Security</span>
-                  <span>🟢 Protected</span>
+                  <span>Protected</span>
                 </div>
                 <div className="text-xs text-slate-300 font-medium">
                   Every record is scoped to your academy, and finance, pay, settings and audit data are limited to the Admin. Access is enforced by the database, not just the screen.

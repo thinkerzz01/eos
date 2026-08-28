@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { AcademyAnnouncement } from '@/lib/mockSupportData';
-import { createAnnouncement } from './actions';
+import { createAnnouncement, deleteAnnouncement } from './actions';
 import {
   MessageSquare,
   Plus,
@@ -17,6 +17,7 @@ import {
   X,
   Send,
   CheckCircle2,
+  Trash2,
 } from 'lucide-react';
 
 export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncements: AcademyAnnouncement[] }) {
@@ -30,6 +31,23 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
 
   // Keep the list in sync when the server refetches after a write (router.refresh()).
   useEffect(() => { setAnnouncements(initialAnnouncements); }, [initialAnnouncements]);
+
+  const canManage = role === 'admin' || role === 'manager';
+
+  const fmtDate = (iso: string): string => {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleString('en-GB', {
+      timeZone: 'Asia/Karachi', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true,
+    });
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (!window.confirm('Delete this announcement? It will be removed for everyone.')) return;
+    const res = await deleteAnnouncement(id);
+    if (res.ok) router.refresh();
+    else alert(res.error ?? 'Failed to delete the announcement.');
+  };
 
   const handleCreateAnnouncement = async () => {
     if (!title || !content) {
@@ -59,10 +77,12 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
             <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Announcements & Broadcasts</span>
+              <span>Announcements</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
-              Broadcast system-wide notices to Students, Parents, and Faculty.
+              {role === 'admin' || role === 'manager'
+                ? 'Post notices for students, parents, and faculty.'
+                : 'Notices from Thinkerzz.'}
             </p>
           </div>
 
@@ -91,9 +111,21 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
                   {anc.isPinned && <Pin className="w-4 h-4 text-[#5B47D6] fill-[#5B47D6]" />}
                   <h3 className="font-heading font-medium text-base text-slate-900 dark:text-white">{anc.title}</h3>
                 </div>
-                <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
-                  Audience: Everyone
-                </span>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="px-2.5 py-0.5 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">
+                    Everyone
+                  </span>
+                  {canManage && (
+                    <button
+                      onClick={() => handleDeleteAnnouncement(anc.id)}
+                      title="Delete announcement"
+                      aria-label="Delete announcement"
+                      className="p-1.5 rounded-lg border border-slate-200 text-slate-500 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <p className="text-xs text-slate-700 dark:text-slate-300 font-medium mt-2 leading-relaxed">
@@ -101,8 +133,8 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
               </p>
 
               <div className="flex justify-between items-center text-xs text-[#6B7185] font-medium pt-3 mt-3 border-t border-slate-100">
-                <span>Published by <strong>{anc.authorName}</strong></span>
-                <span>{anc.publishedDate}</span>
+                <span>Published by <strong>{anc.authorName || 'Thinkerzz'}</strong></span>
+                <span>{fmtDate(anc.publishedDate)}</span>
               </div>
             </div>
           ))}

@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
-import { bulkScheduleClasses, completeClassWithAttendance, createClassSession, updateClassSession, deleteClassSession, rescheduleClass, saveClassNote, bulkDeleteClasses } from './actions';
+import { bulkScheduleClasses, completeClassWithAttendance, createClassSession, updateClassSession, deleteClassSession, rescheduleClass, saveClassNote, bulkDeleteClasses, listStudentEnrollments } from './actions';
 import { downloadCsv } from '@/lib/export/csv';
 import {
   Calendar,
@@ -70,6 +70,7 @@ export function ScheduleClient({
   const [wizType, setWizType] = useState<'Class' | 'Makeup' | 'Test'>('Class');
   const [wizStartDate, setWizStartDate] = useState(todayStr);
   const [wizWeeks, setWizWeeks] = useState(4);
+  const [wizDurCustom, setWizDurCustom] = useState(false); // "Custom" duration picker
   const [wizRows, setWizRows] = useState<WizRow[]>([emptyRow()]);
   const [overlapWarning, setOverlapWarning] = useState<string | null>(null);
   const [scheduling, setScheduling] = useState(false);
@@ -86,8 +87,51 @@ export function ScheduleClient({
   const [scSaving, setScSaving] = useState(false);
   const [scError, setScError] = useState<string | null>(null);
 
+  // A student's enrolled subjects+teachers (from admission). Loaded when a student
+  // is picked in either scheduling modal so the subject/teacher pre-fill instead
+  // of asking the admin to re-select what was already chosen at enrollment.
+  const [scEnrollments, setScEnrollments] = useState<{ subjectId: string; teacherId: string }[]>([]);
+
   const scStudent = students.find((s) => s.id === scStudentId);
-  const scSubjects = scStudent?.program ? subjects.filter((s) => s.program === scStudent.program) : subjects;
+  // The single-class subject list: the student's ENROLLED subjects when we have
+  // them, else all program subjects (so nothing breaks if enrollment is empty).
+  const scEnrolledSubjectIds = new Set(scEnrollments.map((e) => e.subjectId));
+  const scTeacherBySubject = new Map(scEnrollments.map((e) => [e.subjectId, e.teacherId]));
+  const scAllSubjects = scStudent?.program ? subjects.filter((s) => s.program === scStudent.program) : subjects;
+  const scSubjects = scEnrollments.length > 0 ? scAllSubjects.filter((s) => scEnrolledSubjectIds.has(s.id)) : scAllSubjects;
+
+  // Single modal: load the picked student's enrollment, auto-select subject+teacher.
+  useEffect(() => {
+    if (!scStudentId) { setScEnrollments([]); return; }
+    let alive = true;
+    listStudentEnrollments(scStudentId)
+      .then((es) => {
+        if (!alive) return;
+        setScEnrollments(es);
+        if (es.length > 0) { setScSubjectId(es[0].subjectId); setScTeacherId(es[0].teacherId); }
+      })
+      .catch(() => { if (alive) setScEnrollments([]); });
+    return () => { alive = false; };
+  }, [scStudentId]);
+
+  // Timetable wizard: picking a student pre-fills one row per enrolled subject
+  // with its teacher already selected (admin just adds days & times). Falls back
+  // to a single blank row if the student has no recorded enrollment yet.
+  useEffect(() => {
+    if (!wizStudentId) return;
+    let alive = true;
+    listStudentEnrollments(wizStudentId)
+      .then((es) => {
+        if (!alive) return;
+        setWizRows(
+          es.length > 0
+            ? es.map((e) => ({ subjectId: e.subjectId, teacherId: e.teacherId, weekdays: [1, 2, 3, 4, 5], startTime: '', endTime: '' }))
+            : [emptyRow()]
+        );
+      })
+      .catch(() => {});
+    return () => { alive = false; };
+  }, [wizStudentId]);
 
   // Classes default to one hour: picking a start auto-fills end = start + 1h.
   const addOneHour = (hhmm: string): string => {
@@ -120,7 +164,7 @@ export function ScheduleClient({
       setShowSingleModal(false);
       resetSingle();
       router.refresh();
-      alert(res.calendarWarning ? `Class scheduled.\n\n⚠ ${res.calendarWarning}` : 'Class scheduled.');
+      alert(res.calendarWarning ? `Class scheduled.\n\n${res.calendarWarning}` : 'Class scheduled.');
     } else {
       setScError(res.error ?? 'Failed to schedule the class.');
     }
@@ -173,7 +217,7 @@ export function ScheduleClient({
     if (res.ok) {
       setEditClass(null);
       router.refresh();
-      alert(res.calendarWarning ? `Class updated.\n\n⚠ ${res.calendarWarning}` : 'Class updated.');
+      alert(res.calendarWarning ? `Class updated.\n\n${res.calendarWarning}` : 'Class updated.');
     } else {
       setEdError(res.error ?? 'Failed to update the class.');
     }
@@ -187,7 +231,7 @@ export function ScheduleClient({
     setDeletingId(null);
     if (res.ok) {
       router.refresh();
-      if (res.calendarWarning) alert(`Class deleted.\n\n⚠ ${res.calendarWarning}`);
+      if (res.calendarWarning) alert(`Class deleted.\n\n${res.calendarWarning}`);
     } else {
       alert(res.error ?? 'Failed to delete the class.');
     }
@@ -218,7 +262,7 @@ export function ScheduleClient({
     if (res.ok) {
       setRsClass(null);
       router.refresh();
-      alert(res.calendarWarning ? `Class rescheduled. The student has been notified.\n\n⚠ ${res.calendarWarning}` : 'Class rescheduled. The student has been notified.');
+      alert(res.calendarWarning ? `Class rescheduled. The student has been notified.\n\n${res.calendarWarning}` : 'Class rescheduled. The student has been notified.');
     } else {
       setRsError(res.error ?? 'Failed to reschedule the class.');
     }
@@ -298,7 +342,7 @@ export function ScheduleClient({
   const addRow = () => setWizRows((rows) => [...rows, emptyRow()]);
   const removeRow = (i: number) => setWizRows((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
   const resetWizard = () => {
-    setWizStudentId(''); setWizType('Class'); setWizStartDate(todayStr); setWizWeeks(4); setWizRows([emptyRow()]); setOverlapWarning(null);
+    setWizStudentId(''); setWizType('Class'); setWizStartDate(todayStr); setWizWeeks(4); setWizDurCustom(false); setWizRows([emptyRow()]); setOverlapWarning(null);
   };
 
   // Bulk-generate the student's timetable. Teacher time conflicts are skipped by
@@ -319,7 +363,7 @@ export function ScheduleClient({
       resetWizard();
       router.refresh();
       const base = `Scheduled ${res.created} class${res.created === 1 ? '' : 'es'}${res.conflicts ? ` · ${res.conflicts} skipped (teacher time conflict)` : ''}.`;
-      alert(res.calendarWarning ? `${base}\n\n⚠ ${res.calendarWarning}` : base);
+      alert(res.calendarWarning ? `${base}\n\n${res.calendarWarning}` : base);
     } else {
       setOverlapWarning(res.error ?? 'Failed to schedule.');
     }
@@ -385,7 +429,7 @@ export function ScheduleClient({
               <span>Assessments</span>
             </Link>
 
-            {role !== 'student' && (
+            {canManage && (
               <>
                 <button
                   onClick={() => { resetSingle(); setShowSingleModal(true); }}
@@ -473,8 +517,8 @@ export function ScheduleClient({
         {/* SCHEDULE TIMETABLE GRID */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
           
-          {/* CLASSES TIMETABLE LIST (8 COLS) */}
-          <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden flex flex-col justify-between">
+          {/* CLASSES TIMETABLE LIST (full width) */}
+          <div className="lg:col-span-12 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden flex flex-col justify-between">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse min-w-[700px]">
                 <thead>
@@ -484,10 +528,11 @@ export function ScheduleClient({
                         <input type="checkbox" checked={selectedClassIds.length === filteredClasses.length && filteredClasses.length > 0} onChange={toggleSelectAllClasses} className="rounded accent-[#5B47D6]" />
                       </th>
                     )}
-                    <th className="py-3.5 px-3">Time & Room</th>
-                    <th className="py-3.5 px-3">Class Code & Subject</th>
-                    <th className="py-3.5 px-3">Program & Grade</th>
+                    <th className="py-3.5 px-3">Student</th>
+                    <th className="py-3.5 px-3">Time</th>
                     <th className="py-3.5 px-3">Teacher</th>
+                    <th className="py-3.5 px-3">Program</th>
+                    <th className="py-3.5 px-3">Subject</th>
                     <th className="py-3.5 px-3">Type</th>
                     <th className="py-3.5 px-3">Status</th>
                     <th className="py-3.5 px-3 text-center">Action</th>
@@ -509,40 +554,42 @@ export function ScheduleClient({
                             <input type="checkbox" checked={selectedClassIds.includes(cls.id)} onChange={() => toggleSelectClass(cls.id)} className="rounded accent-[#5B47D6]" />
                           </td>
                         )}
+                        <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">
+                          {cls.studentName || '-'}
+                        </td>
+
                         <td className="py-3.5 px-3">
                           <div className="font-medium text-slate-900 dark:text-slate-100">{cls.date}</div>
                           <div className="font-mono text-xs text-[#6B7185]">{cls.startAt} - {cls.endAt}</div>
                         </td>
 
+                        <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">
+                          {cls.teacherName}
+                        </td>
+
+                        <td className="py-3.5 px-3 text-[#6B7185]">
+                          {cls.program}
+                        </td>
+
                         <td className="py-3.5 px-3">
                           <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{cls.subject}</div>
-                          <div className="text-xs text-[#6B7185] font-mono">{cls.classCode}</div>
                           {cls.meetingLink ? (
                             <a
                               href={cls.meetingLink}
                               target="_blank"
                               rel="noreferrer"
-                              className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
+                              className="text-xs font-medium text-[#5B47D6] hover:underline"
                             >
-                              📅 Calendar ✓ · Join
+                              Join
                             </a>
                           ) : (
                             <span
                               title="No Google Calendar invite was sent for this class. Check the student/teacher email or reconnect Google, then reschedule - or add a Meet link manually."
-                              className="mt-1 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200"
+                              className="text-xs text-amber-600 font-medium"
                             >
-                              ⚠ No calendar invite
+                              No invite
                             </span>
                           )}
-                        </td>
-
-                        <td className="py-3.5 px-3">
-                          <div className="font-medium text-slate-900 dark:text-slate-100">{cls.studentName || '-'}</div>
-                          <div className="text-xs text-[#6B7185]">{cls.program}</div>
-                        </td>
-
-                        <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">
-                          {cls.teacherName}
                         </td>
 
                         {/* CLASS TYPE COLUMN (WITH FREE MAKEUP BADGE) */}
@@ -632,22 +679,6 @@ export function ScheduleClient({
             </div>
           </div>
 
-          {/* MAKEUP CLASS INFORMATION CARD (RIGHT 4 COLS) */}
-          <div className="lg:col-span-4 space-y-4">
-            <div className="bg-gradient-to-br from-purple-900 to-[#1D1B48] text-white rounded-[20px] p-5 shadow-lg space-y-3">
-              <div className="flex items-center gap-2 font-heading font-medium text-sm text-purple-200 uppercase tracking-wider">
-                <Clock className="w-4 h-4 text-purple-300" />
-                <span>Makeup Class Invariant Policy</span>
-              </div>
-              <p className="text-xs text-purple-100 leading-relaxed">
-                Per Master Plan §4, a <strong>Makeup Class</strong> replaces a missed session and is <strong>never charged again</strong> to the student's voucher balance.
-              </p>
-              <div className="p-3 bg-white/10 rounded-xl border border-white/15 text-xs font-mono">
-                <div>• Charged: <strong className="text-emerald-300">NO (Free)</strong></div>
-                <div>• Conflict Check: <strong className="text-purple-300">Active (EXCLUDE Constraint)</strong></div>
-              </div>
-            </div>
-          </div>
 
         </div>
 
@@ -745,7 +776,7 @@ export function ScheduleClient({
                   <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Student *</label>
                   <select
                     value={scStudentId}
-                    onChange={(e) => { setScStudentId(e.target.value); setScSubjectId(''); }}
+                    onChange={(e) => { setScStudentId(e.target.value); setScSubjectId(''); setScTeacherId(''); }}
                     className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
                   >
                     <option value="">Select student...</option>
@@ -758,7 +789,13 @@ export function ScheduleClient({
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Subject *</label>
                     <select
                       value={scSubjectId}
-                      onChange={(e) => setScSubjectId(e.target.value)}
+                      onChange={(e) => {
+                        const sid = e.target.value;
+                        setScSubjectId(sid);
+                        // Auto-select the teacher assigned to this subject at enrollment.
+                        const tid = scTeacherBySubject.get(sid);
+                        if (tid) setScTeacherId(tid);
+                      }}
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
                     >
                       <option value="">{scStudentId ? 'Select subject...' : 'Pick a student first'}</option>
@@ -1131,12 +1168,34 @@ export function ScheduleClient({
                   </div>
                   <div>
                     <label className="text-slate-700 dark:text-slate-300 font-medium block mb-1">Generate for</label>
-                    <select value={wizWeeks} onChange={(e) => setWizWeeks(Number(e.target.value))} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium">
+                    <select
+                      value={wizDurCustom ? 'custom' : wizWeeks}
+                      onChange={(e) => {
+                        if (e.target.value === 'custom') { setWizDurCustom(true); }
+                        else { setWizDurCustom(false); setWizWeeks(Number(e.target.value)); }
+                      }}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium"
+                    >
                       <option value={1}>1 week</option>
                       <option value={2}>2 weeks</option>
                       <option value={4}>1 month</option>
                       <option value={8}>2 months</option>
+                      <option value={12}>3 months</option>
+                      <option value="custom">Custom…</option>
                     </select>
+                    {wizDurCustom && (
+                      <div className="mt-2 flex items-center gap-2">
+                        <input
+                          type="number"
+                          min={1}
+                          max={52}
+                          value={wizWeeks}
+                          onChange={(e) => setWizWeeks(Math.max(1, Math.min(52, Number(e.target.value) || 1)))}
+                          className="w-20 bg-slate-50 dark:bg-slate-950 border rounded-xl p-2 text-slate-900 dark:text-slate-100 font-medium"
+                        />
+                        <span className="text-xs text-[#6B7185] font-medium">week(s)</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

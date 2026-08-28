@@ -44,6 +44,140 @@ enrollment). Everything else redirects to `/login`.
 
 ---
 
+## 2026-08-28 · Fix "Test Teacher" greeting + bundle migrations + safe go-live cleanup
+
+- **Root cause**: `seed_roles.sql` created teacher/student portal profiles named
+  "Test Teacher" / "Test Student". Renaming the real teacher/student record left
+  `profiles.name` stale, and the greeting read `profiles.name`.
+- **Code fix** ([serverRole.ts](lib/auth/serverRole.ts)): `getServerUserName()` now
+  resolves a teacher's name via the `teacher_names` RPC and a student's via their
+  own `students` row (authoritative), falling back to `profiles.name` only for
+  admin/manager. A renamed person now shows their real name regardless of a stale
+  profile. `tsc` clean.
+- **One-paste apply**: bundled the two 2026-08-28 RPCs (`teacher_names`,
+  `create_direct_enrollment`) AND the profile-name sync into
+  `supabase/RUN_THESE_MIGRATIONS.sql`, all idempotent — run that one file in the
+  Supabase SQL Editor.
+- **Go-live cleanup** ([PROD_CLEANUP_demo_data.sql](supabase/PROD_CLEANUP_demo_data.sql)):
+  added a STEP 1 inspect count and a **STEP 1b** that RENAMES stale-named real
+  logins to their record name (never deletes them — the "Test Teacher" profile IS
+  the real teacher's login). The existing email-based deletion still removes the
+  genuine `teacher@/student@/manager@thinkerzz.com` test logins.
+
+---
+
+## 2026-08-28 · Scheduling UX, schedule-list redesign, direct enrolment link
+
+`next build` clean (34 routes). Round 3 — admin scheduling + a no-demo enrol path.
+
+**Scheduling wizard now uses the student's enrolment.**
+- New `listStudentEnrollments(studentId)` action reads `student_subjects`. Picking a
+  student in the timetable wizard pre-fills one row per enrolled subject with its
+  teacher already selected (admin just sets days/times); the single-class modal
+  filters the subject list to the student's enrolled subjects and auto-selects the
+  teacher on subject change. "Add subject" still lets the admin add extra rows.
+- "Generate for" gained **3 months** + a **Custom…** option (1–52 weeks input).
+
+**Schedule list redesigned** ([ScheduleClient.tsx](app/schedule/ScheduleClient.tsx)).
+- Columns reordered to **Student · Time · Teacher · Program · Subject · Type ·
+  Status · Action**.
+- Removed the auto class code (CLS-…) from the subject cell (owner adds subject
+  codes manually); the "Calendar ✓" badge is now a plain **Join** link (or "No
+  invite" text) — no icon.
+- Removed the Makeup-policy side card; the table is now **full width**.
+
+**Icons/clutter**: removed the ⌘K badge from the Teachers search (Mac-only glyph).
+
+**Direct enrolment (no demo)** — new public flow for students who enrol without a
+live demo:
+- New SECURITY DEFINER RPC `create_direct_enrollment(...)` (migration
+  `supabase/migrations/2026-08-28_direct_enrollment.sql`) creates the student
+  directly for the academy org (BOOKING_ORG_ID), fee 0 / next-due +30d, dedupes on
+  phone, grants anon.
+- New public page **`/admission`** ([page](app/admission/page.tsx) + [action](app/admission/actions.ts)):
+  collects everything a demo-origin student would have set — **including program +
+  exam session** — behind the Turnstile/rate-limit guard, then provisions the
+  student's portal login. Added to the middleware public-route allowlist.
+- Students tab gained an **"Admission Link"** button (admin/manager) that copies
+  the `/admission` URL to send to a prospective student.
+
+**RUN on the live DB:** `supabase/migrations/2026-08-28_direct_enrollment.sql`
+(and `2026-08-28_portal_visibility.sql` if not already run). Ensure `BOOKING_ORG_ID`
+is set (already used by the demo-booking form).
+
+---
+
+## 2026-08-28 · Role-respecting portals: teacher view, greetings, de-jargon, no emojis
+
+`tsc` clean. Round 2 of the portal cleanup — make each role see only its own content.
+
+- **Teacher Students page** ([StudentsClient.tsx](app/students/StudentsClient.tsx)) now
+  has a dedicated read-only branch (`if (role === 'teacher')`): a simple roster of
+  the teacher's assigned students showing ONLY Student, Program/Grade, Performance
+  Score, Next Class. No admin KPI strip, no fee status, no filters/saved-views/
+  export/import, no add/edit/delete actions. (Admin/manager keep the full screen.)
+- **Greetings personalised.** New `getServerUserName()` (reads `profiles.name`) →
+  passed through `RoleProvider` (context gained `name`). TopBar greets "Welcome
+  back, <name>" with a role-aware subtitle; teacher dashboard hero greets by name.
+- **"Faculty Portal" removed** from the teacher dashboard (badge + title). Student
+  hero badge kept as plain "Student Portal".
+- **Classes scheduling is admin/manager-only.** The "Single Class" / "Schedule
+  Timetable" buttons were `role !== 'student'` (so teachers saw them, incl. a
+  teacher picker listing ALL teachers) → now `canManage`. Also `schedule/page.tsx`
+  no longer ships the student/teacher/subject picker lists to non-staff.
+- **Internal jargon removed / gated.** "Per Master Plan §…", "Invariant Policy",
+  "EXCLUDE Constraint", "Locked" reworded to plain language across assessments,
+  schedule, leads. The CAIE grade-scale and makeup-policy cards are now admin-only
+  (hidden from teacher/student/manager).
+- **"System" wording removed** from user-facing copy: announcements subtitle (was
+  "Broadcast system-wide notices…", now role-aware), login ("Operating System &
+  Portal Suite" → "Academy Portal"), enroll footer, students KPI ("In the system"
+  → "On record"), sidebar group "System" → "Administration".
+- **Emojis removed** app-wide (👋🎓👨‍🏫🔥🟡❄️🟢🔴🕒⭐📅🏢💰🛡️🔑📢⚠✨) from
+  greetings, dropdowns, badges, settings tabs, alerts. Monochrome ✓/✗/→ glyphs kept.
+- **Announcements**: new `deleteAnnouncement` action + admin/manager delete button
+  on each card; the raw ISO date is now formatted; blank "Published by" shows
+  "Thinkerzz" (cross-role author names are RLS-blocked). Use this to remove the
+  leftover "Test Announcement — System Check" row, or run:
+  `update public.announcements set deleted_at = now() where title = 'Test Announcement - System Check';`
+
+---
+
+## 2026-08-28 · Portal privacy: hide contact info from teachers, teacher name-only for students
+
+`tsc` clean. Two-sided privacy hardening on the shared portal.
+
+**Teacher portal — student contact PII hidden.** Teachers already only see their
+own assigned students (RLS `teacher_read_own_students`, via `student_subjects`).
+On top of that:
+- `lib/data/students.ts` now redacts parent/guardian contact + address PII
+  server-side for the `teacher` role (`redactContactForTeacher`) — parent/mother
+  names, phones, email, WhatsApp, address, city, emergency contact, last contact,
+  and the free-form onboarding answer blob. The data never reaches a teacher's
+  browser (defense-in-depth behind the UI hiding).
+- `app/students/StudentsClient.tsx` hides, for non-staff (teacher): the
+  Parent/Guardian column, the WhatsApp/Email/Call actions, the profile-modal
+  contact card + Emergency Contact/City/Address rows, the edit form, and the
+  Add / Import CSV / Export CSV buttons and Edit/Delete/Reset/Pass-Out row menu
+  actions. Teachers get a read-only, contact-free roster (`isStaff` gate).
+
+**Student portal — teacher NAME only (no contact).** The `teachers` table is
+admin/manager-only under RLS, so class/homework rows showed "Unassigned" to
+students. New SECURITY DEFINER RPC `teacher_names(uuid[])` returns id+name only
+(org-scoped, no phone/email). `lib/data/teacherNames.ts` wraps it; `schedule.ts`
+and `homework.ts` use it so students see who takes each class — name only.
+
+**RUN on the live DB:** `supabase/migrations/2026-08-28_portal_visibility.sql`
+(adds the `teacher_names` function). Until it runs, students keep seeing
+"Unassigned"; the teacher-side hiding works without it.
+
+Known gap (pre-existing, not fixed here): the Students "Enrolled Subjects &
+Teachers" column is empty for ALL roles — `getStudents()` leaves
+`enrolledSubjects: []` (Phase 4/5 not wired). Populating it from
+`student_subjects` would give the teacher roster its subject list.
+
+---
+
 ## 2026-08-09 · Strategic sequential IDs (TZ-STU-0001, ...)
 
 `tsc` clean. Display IDs were derived from the random UUID (looked random). Now each

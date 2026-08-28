@@ -1,17 +1,22 @@
 'use client';
 
+// Public DIRECT-ENROLMENT form (no demo, no lead). The admin shares /admission
+// with a prospective student; they fill everything themselves — including program
+// and exam session (which demo-origin students set during booking) — and are
+// enrolled immediately. Mirrors /enroll but has no leadId and creates the student.
 import React, { useState } from 'react';
-import { submitEnrollment } from './actions';
+import { submitDirectEnrollment } from './actions';
 import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 import { ALL_PROGRAMS, EXAM_SESSIONS } from '@/lib/syllabiSeed';
 import { CheckCircle2, GraduationCap, ArrowRight, AlertCircle } from 'lucide-react';
 
-export default function EnrollPage({ params }: { params: { leadId: string } }) {
+export default function AdmissionPage() {
   const [studentName, setStudentName] = useState('');
   const [parentName, setParentName] = useState('');
   const [phone, setPhone] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
   const [email, setEmail] = useState('');
-  const [program, setProgram] = useState('O Level');
+  const [program, setProgram] = useState<string>(ALL_PROGRAMS[0]);
   const [examSession, setExamSession] = useState('');
   const [gender, setGender] = useState('');
   const [city, setCity] = useState('');
@@ -35,11 +40,11 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
     }
     setSubmitting(true);
     try {
-      const res = await submitEnrollment({
-        leadId: params.leadId,
+      const res = await submitDirectEnrollment({
         studentName,
         parentName,
         phone,
+        whatsapp,
         email,
         program,
         examSession,
@@ -68,7 +73,7 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
       <header className="bg-white border-b border-[#EBEDF3] py-4 px-6 sticky top-0 z-50 shadow-xs">
         <div className="max-w-5xl mx-auto flex items-center gap-3">
           <img src="/logo-light.png" alt="Thinkerzz" className="h-9 w-auto object-contain" />
-          <div className="text-xs font-medium text-[#5B47D6] tracking-wider uppercase border-l border-slate-200 pl-3">Student Enrollment</div>
+          <div className="text-xs font-medium text-[#5B47D6] tracking-wider uppercase border-l border-slate-200 pl-3">Student Admission</div>
         </div>
       </header>
 
@@ -78,11 +83,11 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
             <div className="text-center space-y-2 max-w-2xl mx-auto">
               <span className="px-3.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full inline-flex items-center gap-1.5">
                 <GraduationCap className="w-3.5 h-3.5" />
-                <span>Welcome to Thinkerzz - Complete Your Enrollment</span>
+                <span>Welcome to Thinkerzz - Enrol Directly</span>
               </span>
-              <h1 className="font-heading font-medium text-3xl text-slate-900 tracking-tight">Enrollment Details</h1>
+              <h1 className="font-heading font-medium text-3xl text-slate-900 tracking-tight">Admission Form</h1>
               <p className="text-sm text-[#6B7185] font-medium leading-relaxed">
-                Please fill in the student's details to complete enrollment. Our team will then set up the fee and class schedule.
+                Fill in your details to enrol. Our team will then confirm the fee and share your class schedule (with Google Meet links).
               </p>
             </div>
 
@@ -119,8 +124,12 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
                   <input type="text" required value={parentName} onChange={(e) => setParentName(e.target.value)} placeholder="e.g. Mr. Shahzaib Khan" className={input} />
                 </div>
                 <div>
-                  <label className="text-slate-700 block mb-1">WhatsApp Phone *</label>
+                  <label className="text-slate-700 block mb-1">Phone *</label>
                   <input type="text" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+92 300 0000000" className={input} />
+                </div>
+                <div>
+                  <label className="text-slate-700 block mb-1">WhatsApp</label>
+                  <input type="text" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} placeholder="+92 300 0000000" className={input} />
                 </div>
                 <div>
                   <label className="text-slate-700 block mb-1">Email <span className="text-rose-500">*</span></label>
@@ -148,7 +157,7 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
 
               <div className="pt-3 border-t border-slate-100">
                 <button type="submit" disabled={submitting} className="w-full py-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-medium text-sm shadow-lg shadow-[#5B47D6]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
-                  <span>{submitting ? 'Submitting...' : 'Complete Enrollment'}</span>
+                  <span>{submitting ? 'Submitting...' : 'Enrol Now'}</span>
                   {!submitting && <ArrowRight className="w-4 h-4" />}
                 </button>
               </div>
@@ -159,9 +168,9 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
             <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
               <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
             </div>
-            <h2 className="font-heading font-medium text-2xl text-slate-900">Enrollment Complete!</h2>
+            <h2 className="font-heading font-medium text-2xl text-slate-900">Admission Complete!</h2>
             <p className="text-xs text-[#6B7185] font-medium max-w-md mx-auto">
-              Thank you! <strong className="text-slate-900">{studentName}</strong> is now enrolled. Our team will confirm the fee and share the class schedule (with Google Meet links) shortly.
+              Thank you! <strong className="text-slate-900">{studentName}</strong> is now enrolled. Our team will confirm the fee and share the class schedule (with Google Meet links) shortly. Check your email to set your portal password.
             </p>
           </div>
         )}

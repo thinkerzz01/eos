@@ -175,12 +175,13 @@ export function AssessmentsClient({
             </div>
           </div>
 
-          {/* CAIE GRADE SCALE POLICY CARD */}
+          {/* CAIE GRADE SCALE reference — admin only */}
+          {role === 'admin' && (
           <div className="lg:col-span-5 space-y-4">
             <div className="bg-gradient-to-br from-[#0B0E23] to-[#1D2145] text-white rounded-[20px] p-5 shadow-lg space-y-3">
               <div className="flex items-center gap-2 font-heading font-medium text-xs text-purple-300 uppercase tracking-wider">
                 <Award className="w-4 h-4 text-purple-400" />
-                <span>Cambridge / CAIE Locked Grade Scale</span>
+                <span>Cambridge / CAIE Grade Scale</span>
               </div>
               <div className="flex items-center gap-2 flex-wrap text-xs font-medium pt-1">
                 <span className="px-3 py-1 bg-emerald-500 text-white rounded-lg">A* (90-100%)</span>
@@ -192,10 +193,11 @@ export function AssessmentsClient({
                 <span className="px-3 py-1 bg-rose-600 text-white rounded-lg">U (&lt;40%)</span>
               </div>
               <p className="text-xs text-purple-200 leading-relaxed pt-2 border-t border-white/10">
-                Per Master Plan §4: Result Slips show 3 separately labelled items: <strong>Internal Average</strong>, <strong>Assessed Grade</strong>, and <strong>Target Grade (Defaults to A*)</strong>.
+                Result slips show three separately labelled items: <strong>Internal Average</strong>, <strong>Assessed Grade</strong>, and <strong>Target Grade (defaults to A*)</strong>.
               </p>
             </div>
           </div>
+          )}
 
         </div>
 

@@ -118,6 +118,9 @@ interface SavedView {
 export function StudentsClient({ initialStudents }: { initialStudents: Student[] }) {
   const { role } = useRole();
   const { showToast } = useToast();
+  // Staff (admin/manager) may see parent/guardian contact PII and manage records.
+  // Teachers get a view-only, contact-free roster of their assigned students.
+  const isStaff = role === 'admin' || role === 'manager';
 
   // Copy the public onboarding link for a student so the admin can send it (e.g.
   // over WhatsApp). The student opens it to complete their fuller record.
@@ -126,6 +129,19 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
     try {
       await navigator.clipboard.writeText(url);
       showToast('Admission form link copied - send it to the student.', 'success');
+    } catch {
+      showToast(url, 'success');
+    }
+  };
+
+  // Copy the GENERAL direct-admission link (no student needed). Send it to a
+  // prospective student who is enrolling without a demo; they fill everything
+  // (incl. program + exam session) and are enrolled directly.
+  const copyDirectAdmissionLink = async () => {
+    const url = `${window.location.origin}/admission`;
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast('Direct admission link copied - send it to the student.', 'success');
     } catch {
       showToast(url, 'success');
     }
@@ -241,7 +257,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
     if (!newViewName.trim()) return;
     const newView: SavedView = {
       id: `custom-${Date.now()}`,
-      name: `⭐ ${newViewName}`,
+      name: `${newViewName}`,
       status: activeTabStatus,
       program: selectedProgram,
       subject: selectedSubject,
@@ -568,6 +584,105 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
       .toUpperCase();
   };
 
+  // TEACHER VIEW — a read-only roster of the teacher's own assigned students.
+  // Teachers see only academic info (name, program, performance, next class):
+  // no admin KPIs, no parent/contact info, no fees, no filters, no actions.
+  if (role === 'teacher') {
+    return (
+      <PortalLayout title="" subtitle="" allowedRoles={['teacher']}>
+        <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-10">
+          <div className="bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
+            <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white">My Students</h1>
+            <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
+              The students assigned to your classes.
+            </p>
+          </div>
+
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
+            <div className="p-4 border-b border-[#F1F2F7] dark:border-slate-800">
+              <div className="relative max-w-xs">
+                <Search className="w-4 h-4 text-[#9AA0B4] absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search students…"
+                  className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs font-medium text-slate-900 dark:text-slate-100 placeholder-[#9AA0B4] focus:outline-none focus:border-[#5B47D6]"
+                />
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[13px]">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-800/60 text-xs text-[#6B7185]">
+                    <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Student</th>
+                    <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Program / Grade</th>
+                    <th className="py-3.5 px-3 text-center font-medium text-slate-900 dark:text-white">Performance Score</th>
+                    <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Next Class</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800">
+                  {filteredStudents.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-10 text-center text-[#6B7185]">
+                        No students are assigned to you yet.
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredStudents.map((s, idx) => (
+                      <tr key={s.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/40">
+                        <td className="py-3.5 px-3">
+                          <div className="flex items-center gap-3">
+                            <div className={`w-9 h-9 rounded-full font-medium text-xs flex items-center justify-center shrink-0 shadow-sm ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
+                              {getInitials(s.name)}
+                            </div>
+                            <div>
+                              <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{s.name}</div>
+                              <div className="text-xs text-[#6B7185] font-mono mt-0.5">{s.stuId}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-3">
+                          <div className="font-medium text-xs text-slate-900 dark:text-slate-100">{s.program}</div>
+                          <div className="text-xs text-[#6B7185] mt-0.5">{s.grade}</div>
+                        </td>
+                        <td className="py-3.5 px-3 text-center">
+                          <span
+                            className={`inline-block font-medium text-sm font-mono px-3.5 py-1.5 rounded-full border-2 shadow-sm ${
+                              s.performanceScore < 60
+                                ? 'bg-rose-50 border-rose-400 text-rose-600'
+                                : s.performanceScore < 80
+                                ? 'bg-amber-50 border-amber-400 text-amber-600'
+                                : 'bg-emerald-50 border-emerald-400 text-emerald-600'
+                            }`}
+                          >
+                            {s.performanceScore}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-3">
+                          <div className="flex items-start gap-2">
+                            <div className="w-7 h-7 rounded-lg bg-[#EEEBFB] text-[#5B47D6] flex items-center justify-center shrink-0 mt-0.5">
+                              <Calendar className="w-3.5 h-3.5" />
+                            </div>
+                            <div>
+                              <div className="font-medium text-xs text-slate-900 dark:text-slate-100">{s.nextClassTime || '—'}</div>
+                              <div className="text-xs text-[#6B7185] font-medium mt-0.5">{s.nextClassSubject}</div>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </PortalLayout>
+    );
+  }
+
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher']}>
       <div className="space-y-5 text-[#171A2B] max-w-full overflow-x-hidden relative pb-10">
@@ -584,22 +699,26 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
           </div>
 
           <div className="flex items-center gap-2.5 flex-wrap">
-            {(role === 'admin' || role === 'manager') && (
-              <Button variant="primary" onClick={() => setShowOnboard(true)} className="shadow-[#5B47D6]/20">
-                <Plus className="w-4 h-4 stroke-[2.5]" />
-                <span>Add Student</span>
-              </Button>
+            {isStaff && (
+              <>
+                <Button variant="secondary" onClick={copyDirectAdmissionLink}>
+                  <span>Admission Link</span>
+                </Button>
+                <Button variant="primary" onClick={() => setShowOnboard(true)} className="shadow-[#5B47D6]/20">
+                  <Plus className="w-4 h-4 stroke-[2.5]" />
+                  <span>Add Student</span>
+                </Button>
+                <Button variant="secondary" onClick={() => setShowImportModal(true)}>
+                  <Upload className="w-3.5 h-3.5 text-[#5B47D6]" />
+                  <span>Import CSV</span>
+                </Button>
+
+                <Button variant="secondary" onClick={handleExportCsv}>
+                  <Download className="w-3.5 h-3.5 text-[#5B47D6]" />
+                  <span>Export CSV</span>
+                </Button>
+              </>
             )}
-            <Button variant="secondary" onClick={() => setShowImportModal(true)}>
-              <Upload className="w-3.5 h-3.5 text-[#5B47D6]" />
-              <span>Import CSV</span>
-            </Button>
-
-            <Button variant="secondary" onClick={handleExportCsv}>
-              <Download className="w-3.5 h-3.5 text-[#5B47D6]" />
-              <span>Export CSV</span>
-            </Button>
-
           </div>
         </div>
 
@@ -614,7 +733,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
             </div>
             <div className="my-2">
               <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{studentsData.length}</div>
-              <div className="text-xs font-medium text-[#6B7185] mt-1">In the system</div>
+              <div className="text-xs font-medium text-[#6B7185] mt-1">On record</div>
             </div>
             <span className="text-xs font-medium text-[#5B47D6] hover:underline inline-flex items-center gap-0.5">
               View all
@@ -1041,7 +1160,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                     />
                   </th>
                   <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Student</th>
-                  <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Parent / Guardian</th>
+                  {isStaff && <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Parent / Guardian</th>}
                   <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Program / Grade</th>
                   <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Enrolled Subjects & Teachers</th>
                   <th className="py-3.5 px-3 text-center font-medium text-slate-900 dark:text-white">Performance Score</th>
@@ -1054,7 +1173,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px]">
                 {paginatedStudents.length === 0 ? (
                   <tr>
-                    <td colSpan={9} className="py-10 text-center text-[#6B7185]">
+                    <td colSpan={isStaff ? 9 : 8} className="py-10 text-center text-[#6B7185]">
                       No students match the selected filter criteria.
                     </td>
                   </tr>
@@ -1081,10 +1200,12 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           </div>
                         </td>
 
-                        <td className="py-3.5 px-3">
-                          <div className="font-medium text-xs text-slate-900 dark:text-slate-100">{s.parentName}</div>
-                          <div className="text-xs text-[#6B7185] mt-0.5">{s.parentRelation}</div>
-                        </td>
+                        {isStaff && (
+                          <td className="py-3.5 px-3">
+                            <div className="font-medium text-xs text-slate-900 dark:text-slate-100">{s.parentName}</div>
+                            <div className="text-xs text-[#6B7185] mt-0.5">{s.parentRelation}</div>
+                          </td>
+                        )}
 
                         <td className="py-3.5 px-3">
                           <div className="font-medium text-xs text-slate-900 dark:text-slate-100">{s.program}</div>
@@ -1136,23 +1257,27 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
 
                         <td className="py-3.5 px-3 text-center relative row-menu-container">
                           <div className="flex items-center justify-center gap-2">
-                            <a
-                              href={`https://wa.me/${s.parentPhone.replace(/[^0-9]/g, '')}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              title="WhatsApp Parent"
-                              className="w-8 h-8 rounded-xl bg-[#E7F9EE] hover:bg-[#D3F3DE] text-[#12A150] border border-[#BDE8CC] flex items-center justify-center transition-colors"
-                            >
-                              <MessageSquare className="w-4 h-4" />
-                            </a>
+                            {isStaff && (
+                              <>
+                                <a
+                                  href={`https://wa.me/${s.parentPhone.replace(/[^0-9]/g, '')}`}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  title="WhatsApp Parent"
+                                  className="w-8 h-8 rounded-xl bg-[#E7F9EE] hover:bg-[#D3F3DE] text-[#12A150] border border-[#BDE8CC] flex items-center justify-center transition-colors"
+                                >
+                                  <MessageSquare className="w-4 h-4" />
+                                </a>
 
-                            <a
-                              href={`mailto:${s.parentEmail}`}
-                              title="Invoice / Email Parent"
-                              className="w-8 h-8 rounded-xl bg-[#E9F1FE] hover:bg-[#CBE0FE] text-[#2E7BEE] border border-[#CBE0FE] flex items-center justify-center transition-colors"
-                            >
-                              <FileText className="w-4 h-4" />
-                            </a>
+                                <a
+                                  href={`mailto:${s.parentEmail}`}
+                                  title="Invoice / Email Parent"
+                                  className="w-8 h-8 rounded-xl bg-[#E9F1FE] hover:bg-[#CBE0FE] text-[#2E7BEE] border border-[#CBE0FE] flex items-center justify-center transition-colors"
+                                >
+                                  <FileText className="w-4 h-4" />
+                                </a>
+                              </>
+                            )}
 
                             <button
                               onClick={() => { setProfileModalStudent(s); setIsEditMode(false); }}
@@ -1165,12 +1290,12 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                             <RowActionsMenu
                               width={200}
                               actions={[
-                                { label: 'Edit Profile', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => { setProfileModalStudent(s); setEditFormData(s); setIsEditMode(true); } },
+                                { label: 'Edit Profile', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', hidden: !isStaff, onClick: () => { setProfileModalStudent(s); setEditFormData(s); setIsEditMode(true); } },
                                 { label: 'View Profile', icon: <UserCog className="w-3.5 h-3.5" />, onClick: () => setProfileModalStudent(s) },
-                                { label: 'Admission Form', icon: <GraduationCap className="w-3.5 h-3.5" />, tone: 'success', hidden: !(role === 'admin' || role === 'manager'), onClick: () => copyOnboardingLink(s.id) },
-                                { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, hidden: !(role === 'admin' || role === 'manager'), onClick: () => setResetStudent(s) },
-                                { label: 'Pass Out', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: !((role === 'admin' || role === 'manager') && s.status !== 'alumni'), onClick: () => handlePassoutStudent(s) },
-                                { label: 'Delete Student', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', onClick: () => handleDeleteStudent(s.id) },
+                                { label: 'Admission Form', icon: <GraduationCap className="w-3.5 h-3.5" />, tone: 'success', hidden: !isStaff, onClick: () => copyOnboardingLink(s.id) },
+                                { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, hidden: !isStaff, onClick: () => setResetStudent(s) },
+                                { label: 'Pass Out', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: !(isStaff && s.status !== 'alumni'), onClick: () => handlePassoutStudent(s) },
+                                { label: 'Delete Student', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', hidden: !isStaff, onClick: () => handleDeleteStudent(s.id) },
                               ]}
                             />
                           </div>
@@ -1362,33 +1487,37 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                   </div>
 
                   <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      onClick={() => {
-                        setEditFormData(profileModalStudent);
-                        setIsEditMode(!isEditMode);
-                      }}
-                      className={`h-9 px-4 text-xs font-medium rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
-                        isEditMode
-                          ? 'bg-[#5B47D6] text-white'
-                          : 'bg-purple-50 text-[#5B47D6] hover:bg-purple-100 border border-[#D5CEF6]'
-                      }`}
-                    >
-                      <Edit3 className="w-3.5 h-3.5" />
-                      <span>{isEditMode ? 'Close Edit Mode' : 'Edit Profile'}</span>
-                    </button>
+                    {isStaff && (
+                      <>
+                        <button
+                          onClick={() => {
+                            setEditFormData(profileModalStudent);
+                            setIsEditMode(!isEditMode);
+                          }}
+                          className={`h-9 px-4 text-xs font-medium rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer ${
+                            isEditMode
+                              ? 'bg-[#5B47D6] text-white'
+                              : 'bg-purple-50 text-[#5B47D6] hover:bg-purple-100 border border-[#D5CEF6]'
+                          }`}
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                          <span>{isEditMode ? 'Close Edit Mode' : 'Edit Profile'}</span>
+                        </button>
 
-                    <a href={`https://wa.me/${profileModalStudent.parentPhone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="h-9 px-3 bg-[#E7F9EE] text-[#12A150] rounded-xl font-medium text-xs flex items-center gap-1.5 border border-[#BDE8CC]">
-                      <MessageSquare className="w-3.5 h-3.5" />
-                      <span>WhatsApp</span>
-                    </a>
-                    <a href={`tel:${profileModalStudent.parentPhone}`} className="h-9 px-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium text-xs flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5" />
-                      <span>Call</span>
-                    </a>
-                    <a href={`mailto:${profileModalStudent.parentEmail}`} className="h-9 px-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium text-xs flex items-center gap-1.5">
-                      <Mail className="w-3.5 h-3.5" />
-                      <span>Email</span>
-                    </a>
+                        <a href={`https://wa.me/${profileModalStudent.parentPhone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" className="h-9 px-3 bg-[#E7F9EE] text-[#12A150] rounded-xl font-medium text-xs flex items-center gap-1.5 border border-[#BDE8CC]">
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>WhatsApp</span>
+                        </a>
+                        <a href={`tel:${profileModalStudent.parentPhone}`} className="h-9 px-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium text-xs flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Call</span>
+                        </a>
+                        <a href={`mailto:${profileModalStudent.parentEmail}`} className="h-9 px-3 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium text-xs flex items-center gap-1.5">
+                          <Mail className="w-3.5 h-3.5" />
+                          <span>Email</span>
+                        </a>
+                      </>
+                    )}
                     <button onClick={() => { setProfileModalStudent(null); setIsEditMode(false); }} className="w-9 h-9 text-slate-400 hover:text-slate-600 rounded-xl flex items-center justify-center cursor-pointer">
                       <X className="w-5 h-5" />
                     </button>
@@ -1429,7 +1558,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
               <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
                 
                 {/* EDIT PROFILE MODE FORM */}
-                {isEditMode ? (
+                {isEditMode && isStaff ? (
                   <div className="bg-purple-50/50 border-2 border-[#5B47D6]/30 rounded-2xl p-5 space-y-4 text-xs animate-in fade-in mb-6">
                     <div className="flex justify-between items-center border-b border-purple-200 pb-2">
                       <h3 className="font-medium text-[#5B47D6] text-sm flex items-center gap-2">
@@ -1641,6 +1770,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         </div>
                       </div>
 
+                      {isStaff && (
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
                         <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Parent / Guardian</h3>
                         <div className="space-y-4 text-xs sm:text-sm">
@@ -1692,6 +1822,7 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                           </div>
                         </div>
                       </div>
+                      )}
 
                       {/* ADMISSION & ONBOARDING — details collected on the public onboarding form */}
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
@@ -1703,10 +1834,10 @@ export function StudentsClient({ initialStudents }: { initialStudents: Student[]
                         </div>
                         <div className="space-y-2.5 text-xs sm:text-sm">
                           <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">School</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.schoolName || '—'}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Emergency Contact</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.emergencyContact || '—'}</span></div>
+                          {isStaff && <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Emergency Contact</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.emergencyContact || '—'}</span></div>}
                           <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Exam Session</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.examSession || '—'}</span></div>
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">City</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.city || '—'}</span></div>
-                          <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium">Address</span><span className="font-medium text-slate-900 text-right max-w-[60%] truncate" title={profileModalStudent.address || ''}>{profileModalStudent.address || '—'}</span></div>
+                          {isStaff && <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">City</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.city || '—'}</span></div>}
+                          {isStaff && <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium">Address</span><span className="font-medium text-slate-900 text-right max-w-[60%] truncate" title={profileModalStudent.address || ''}>{profileModalStudent.address || '—'}</span></div>}
                         </div>
                       </div>
                     </div>

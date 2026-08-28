@@ -623,7 +623,7 @@ export function VouchersClient({
                         </Badge>
                         {v.needsAdminDecision && (
                           <span className="block text-xs font-medium text-rose-600 mt-1">
-                            ⚠️ Needs Admin Decision
+                            Needs Admin Decision
                           </span>
                         )}
                       </td>

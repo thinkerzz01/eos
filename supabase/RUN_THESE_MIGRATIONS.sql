@@ -242,10 +242,91 @@ CREATE POLICY student_access_own_ticket_messages ON public.ticket_messages FOR A
     SELECT id FROM public.tickets WHERE opened_by = (SELECT auth.uid()) AND deleted_at IS NULL));
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-08-28  Portal visibility — teacher NAME-only lookup
+--     Lets a student/teacher see a teacher's NAME (never phone/email) on their
+--     classes & homework, and lets the portal greet a teacher by their real name.
+--     Full file: supabase/migrations/2026-08-28_portal_visibility.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.teacher_names(ids uuid[])
+RETURNS TABLE (id uuid, name text)
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+    SELECT t.id, t.name
+    FROM public.teachers t
+    WHERE t.id = ANY(ids)
+      AND t.org_id = current_user_org_id()
+      AND t.deleted_at IS NULL;
+$$;
+REVOKE ALL ON FUNCTION public.teacher_names(uuid[]) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.teacher_names(uuid[]) TO authenticated;
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-08-28  Direct enrolment (no demo) — the public /admission form
+--     Creates a student directly (no lead/demo) for the academy org, so a
+--     prospective student can self-enrol after a recorded demo. Fee 0 / next-due
+--     +30d for the admin to finalise. Dedupes on phone.
+--     Full file: supabase/migrations/2026-08-28_direct_enrollment.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.create_direct_enrollment(
+    p_org_id UUID, p_student_name TEXT, p_parent_name TEXT, p_phone TEXT, p_email TEXT,
+    p_program TEXT, p_exam_session TEXT, p_gender TEXT DEFAULT 'female',
+    p_whatsapp TEXT DEFAULT NULL, p_city TEXT DEFAULT NULL, p_address TEXT DEFAULT NULL,
+    p_source TEXT DEFAULT 'walk_in'
+)
+RETURNS UUID
+LANGUAGE plpgsql SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_student_id UUID; v_source TEXT; v_gender TEXT;
+BEGIN
+    IF coalesce(btrim(p_student_name),'')='' OR coalesce(btrim(p_parent_name),'')=''
+       OR coalesce(btrim(p_phone),'')='' OR coalesce(btrim(p_exam_session),'')='' THEN
+        RAISE EXCEPTION 'Student name, parent name, phone and exam session are required.';
+    END IF;
+    IF EXISTS (SELECT 1 FROM public.students WHERE org_id = p_org_id AND phone = p_phone AND deleted_at IS NULL) THEN
+        RAISE EXCEPTION 'A student with this phone number is already enrolled.';
+    END IF;
+    v_source := CASE WHEN p_source IN ('google','facebook','instagram','whatsapp','referral','walk_in') THEN p_source ELSE 'walk_in' END;
+    v_gender := CASE WHEN p_gender IN ('male','female','other') THEN p_gender ELSE 'female' END;
+    INSERT INTO public.students (org_id, name, parent_name, phone, whatsapp, email, address, city,
+        gender, program, exam_session, monthly_fee, next_due_date, fee_status, status, source)
+    VALUES (p_org_id, p_student_name, p_parent_name, p_phone, NULLIF(p_whatsapp,''),
+        NULLIF(p_email,''), NULLIF(p_address,''), NULLIF(p_city,''),
+        v_gender, p_program, p_exam_session, 0, CURRENT_DATE + INTERVAL '30 days', 'due', 'active', v_source)
+    RETURNING id INTO v_student_id;
+    RETURN v_student_id;
+END;
+$$;
+REVOKE ALL ON FUNCTION public.create_direct_enrollment(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.create_direct_enrollment(UUID, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT, TEXT) TO anon, authenticated;
+
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-08-28  Sync stale portal names (fixes the "Test Teacher" greeting)
+--     seed_roles.sql created teacher/student portal profiles named "Test Teacher"
+--     / "Test Student". When you rename the real teacher/student, the profile name
+--     lagged behind. These update ONLY mismatched names to the real record — they
+--     never delete a login. Safe / idempotent.
+-- ─────────────────────────────────────────────────────────────────────────────
+UPDATE public.profiles p SET name = t.name
+FROM public.teachers t
+WHERE p.teacher_id = t.id AND p.role = 'teacher' AND p.name <> t.name;
+
+UPDATE public.profiles p SET name = s.name
+FROM public.students s
+WHERE p.student_id = s.id AND p.role = 'student' AND p.name <> s.name;
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql
 --   [x] 2026-08-14_booking_school_city.sql
 --   [x] 2026-08-15_settings_bank_info.sql
 --   [x] 2026-08-18_class_rescheduled_notif.sql
+--   [x] 2026-08-28_portal_visibility.sql      (block above)
+--   [x] 2026-08-28_direct_enrollment.sql      (block above)
 -- ============================================================================

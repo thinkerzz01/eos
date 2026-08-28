@@ -187,7 +187,7 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
       ],
     },
     {
-      groupLabel: 'System',
+      groupLabel: 'Administration',
       items: [
         {
           label: 'Settings',

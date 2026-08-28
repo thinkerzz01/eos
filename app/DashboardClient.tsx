@@ -45,7 +45,8 @@ export function DashboardClient({
   teacherStats?: TeacherDashboard | null;
   adminData: AdminData;
 }) {
-  const { role } = useRole();
+  const { role, name } = useRole();
+  const firstName = name?.trim() || '';
   const fmtPkr = (n: number) => formatPKR(n);
 
   // DASHBOARD REACTIVE FILTER STATES
@@ -150,8 +151,8 @@ export function DashboardClient({
       <PortalLayout title="" subtitle="" allowedRoles={['student']}>
         <div className="space-y-6 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12 text-xs">
           <div className="bg-gradient-to-r from-[#5B47D6] via-[#7C6BF0] to-[#8B7BF0] text-white p-6 rounded-[24px] shadow-lg">
-            <span className="px-3 py-1 bg-white/20 text-white font-medium text-xs rounded-full">🎓 Student Portal</span>
-            <h1 className="font-heading font-medium text-2xl sm:text-3xl mt-2">{me ? `Welcome, ${me.name}` : 'Welcome to your portal'}</h1>
+            <span className="px-3 py-1 bg-white/20 text-white font-medium text-xs rounded-full">Student Portal</span>
+            <h1 className="font-heading font-medium text-2xl sm:text-3xl mt-2">{firstName ? `Welcome back, ${firstName}` : me ? `Welcome, ${me.name}` : 'Welcome to your portal'}</h1>
             <p className="text-xs text-purple-100 mt-1 font-medium">
               {me?.nextClassSubject
                 ? `Next class: ${me.nextClassSubject}${me.nextClassTime ? ` at ${me.nextClassTime}` : ''}`
@@ -179,8 +180,7 @@ export function DashboardClient({
         <div className="space-y-6 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12 text-xs font-medium">
           <div className="bg-gradient-to-r from-purple-900 to-[#1D1B48] text-white p-6 rounded-[24px] shadow-lg flex justify-between items-center">
             <div>
-              <span className="px-3 py-1 bg-white/20 text-white font-medium text-xs rounded-full">👨‍🏫 Faculty Portal</span>
-              <h1 className="font-heading font-medium text-2xl sm:text-3xl mt-2">Welcome to the Faculty Portal</h1>
+              <h1 className="font-heading font-medium text-2xl sm:text-3xl">{firstName ? `Welcome back, ${firstName}` : 'Welcome back'}</h1>
               <p className="text-xs text-purple-200 mt-1 font-medium">
                 {teacherStats?.nextClass
                   ? `Next class: ${teacherStats.nextClass.label} (${teacherStats.nextClass.time})`
