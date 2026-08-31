@@ -7,7 +7,10 @@ import { VouchersClient } from './VouchersClient';
 
 export const dynamic = 'force-dynamic';
 
+import { requireRole } from '@/lib/auth/requireRole';
+
 export default async function VouchersPage() {
+  await requireRole(['admin']);
   const [vouchers, payments, students] = await Promise.all([
     getVouchers(),
     getPayments(),

@@ -6,6 +6,7 @@
 // record the test itself. RLS decides permission.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 export interface ActionResult {
   ok: boolean;
@@ -54,7 +55,7 @@ export async function recordTest(input: {
     score,
     max_score: maxScore,
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/assessments');
   revalidatePath('/');
@@ -97,7 +98,7 @@ export async function updateTest(input: {
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
   const { error } = await supabase.from('tests').update(patch).eq('id', input.testId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/assessments');
   revalidatePath('/');
@@ -117,7 +118,7 @@ export async function deleteTest(testId: string): Promise<ActionResult> {
     .from('tests')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', testId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/assessments');
   revalidatePath('/');

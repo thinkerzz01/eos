@@ -4,6 +4,7 @@
 // permission (admin + manager may write leads/students; others denied at the DB).
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
 
@@ -86,7 +87,7 @@ export async function logLeadCommunication(input: {
     channel,
     note,
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/leads');
   return { ok: true };
@@ -135,7 +136,7 @@ export async function createLead(input: {
     status: 'new',
     temperature: (input.temperature ?? 'Warm').toLowerCase(),
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/leads');
   revalidatePath('/');
@@ -260,7 +261,7 @@ export async function softDeleteLead(leadId: string): Promise<ActionResult> {
   const { supabase, user, orgId } = await ctx();
   if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
   const { error } = await supabase.from('leads').update({ deleted_at: new Date().toISOString() }).eq('id', leadId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath('/leads');
   revalidatePath('/demos');
   revalidatePath('/');
@@ -295,7 +296,7 @@ export async function markLeadNotConverted(input: {
     .from('leads')
     .update({ status: 'lost', lost_reason: reason })
     .eq('id', input.leadId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/leads');
   revalidatePath('/');
@@ -313,7 +314,7 @@ export async function bulkDeleteLeads(ids: string[]): Promise<ActionResult> {
     .from('leads')
     .update({ deleted_at: new Date().toISOString() })
     .in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/leads');
   revalidatePath('/demos');
@@ -332,7 +333,7 @@ export async function bulkSetLeadStage(ids: string[], stage: string): Promise<Ac
   if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
 
   const { error } = await supabase.from('leads').update({ status: db }).in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/leads');
   revalidatePath('/');
@@ -354,7 +355,7 @@ export async function updateLead(input: {
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
   const { error } = await supabase.from('leads').update(patch).eq('id', input.leadId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/leads');
   revalidatePath('/');

@@ -31,10 +31,15 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [role, userName] = await Promise.all([getServerRole(), getServerUserName()]);
+  // All three share the cached identity read (one profiles query) and run in
+  // parallel, so the layout adds at most an orgs read + a teacher-name lookup.
+  const [role, userName, typography] = await Promise.all([
+    getServerRole(),
+    getServerUserName(),
+    getTypography(),
+  ]);
   // Admin-chosen fonts (Settings Typography), applied via CSS variables that
   // globals.css / Tailwind read. Defaults: Nunito headings, Jost body.
-  const typography = await getTypography();
   const fontStyle = {
     ['--app-font-heading' as any]: fontVar(typography.headingFont, DEFAULT_HEADING_FONT),
     ['--app-font-body' as any]: fontVar(typography.bodyFont, DEFAULT_BODY_FONT),

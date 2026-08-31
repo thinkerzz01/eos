@@ -12,6 +12,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { enqueueNotification } from '@/lib/notifications/enqueue';
 import { revalidatePath } from 'next/cache';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 const METHOD_DB: Record<string, string> = {
   'Bank Transfer': 'bank_transfer',
@@ -70,7 +71,7 @@ export async function updateVoucher(input: {
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
   const { error } = await supabase.from('vouchers').update(patch).eq('id', input.voucherId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidateFinance();
   return { ok: true };
 }
@@ -287,7 +288,7 @@ export async function generateMonthlyVouchers(input: {
   }));
 
   const { data: inserted, error } = await supabase.from('vouchers').insert(rows).select('id');
-  if (error) return { ok: false, created: 0, skipped, error: error.message };
+  if (error) return { ok: false, created: 0, skipped, error: friendlyDbError(error) };
 
   revalidateFinance();
   return { ok: true, created: inserted?.length ?? rows.length, skipped };
@@ -304,7 +305,7 @@ export async function bulkDeleteVouchers(ids: string[]): Promise<ActionResult> {
     .from('vouchers')
     .update({ deleted_at: new Date().toISOString() })
     .in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidateFinance();
   return { ok: true };
@@ -337,7 +338,7 @@ export async function createVoucher(input: {
     grace_deadline: grace.toISOString().slice(0, 10),
     status: 'due',
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidateFinance();
   return { ok: true };

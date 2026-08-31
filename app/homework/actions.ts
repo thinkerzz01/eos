@@ -5,6 +5,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { notifyStudentById } from '@/lib/notifications/inapp';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 export interface ActionResult {
   ok: boolean;
@@ -77,7 +78,7 @@ export async function createHomework(input: {
     deadline: deadlineIso,
     status: 'assigned',
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   // Let the student know (in-app bell) - best-effort.
   await notifyStudentById(profile.org_id, input.studentId, {
@@ -108,7 +109,7 @@ export async function updateHomework(input: {
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
   const { error } = await supabase.from('homework').update(patch).eq('id', input.homeworkId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/homework');
   revalidatePath('/');
@@ -126,7 +127,7 @@ export async function deleteHomework(homeworkId: string): Promise<ActionResult> 
     .from('homework')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', homeworkId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/homework');
   revalidatePath('/');
@@ -145,7 +146,7 @@ export async function bulkDeleteHomework(ids: string[]): Promise<ActionResult> {
     .from('homework')
     .update({ deleted_at: new Date().toISOString() })
     .in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/homework');
   revalidatePath('/');
@@ -226,7 +227,7 @@ export async function gradeHomework(input: {
     .eq('id', input.homeworkId)
     .select('org_id,student_id,title')
     .maybeSingle();
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   // Notify the student their homework was graded (in-app bell) - best-effort.
   if (updated?.org_id && updated?.student_id) {

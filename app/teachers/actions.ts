@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { provisionLogin } from '@/lib/auth/provision';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 export interface ActionResult {
   ok: boolean;
@@ -136,7 +137,7 @@ export async function createTeacher(input: {
     .insert(row)
     .select('id')
     .single();
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   // Persist the teaching subjects/programs (best-effort - never undo the teacher).
   try {
@@ -214,7 +215,7 @@ export async function updateTeacher(input: {
 
   if (Object.keys(patch).length > 0) {
     const { error } = await supabase.from('teachers').update(patch).eq('id', input.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: friendlyDbError(error) };
   }
 
   if (wantsSubjectSync) {
@@ -251,7 +252,7 @@ export async function bulkDeleteTeachers(ids: string[]): Promise<ActionResult> {
     .from('teachers')
     .update({ deleted_at: new Date().toISOString() })
     .in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/teachers');
   revalidatePath('/');
@@ -280,7 +281,7 @@ export async function bulkSetTeacherStatus(ids: string[], status: string): Promi
   if (profile?.role !== 'admin') return { ok: false, error: 'Only an Admin can change teacher status.' };
 
   const { error } = await supabase.from('teachers').update({ status: db }).in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/teachers');
   revalidatePath('/');
@@ -309,7 +310,7 @@ export async function softDeleteTeacher(id: string): Promise<ActionResult> {
     .from('teachers')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/teachers');
   revalidatePath('/');
@@ -345,7 +346,7 @@ export async function markTeacherLeft(input: { id: string; reason: string }): Pr
     .from('teachers')
     .update({ status: 'left', left_at: new Date().toISOString(), leaving_reason: reason })
     .eq('id', input.id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/teachers');
   revalidatePath('/');
@@ -387,7 +388,7 @@ export async function setTeacherPayRate(input: {
     rate_per_class: input.ratePerClass,
     // effective_from defaults to CURRENT_DATE
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/teachers');
   revalidatePath('/teacher-payouts');

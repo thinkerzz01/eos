@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { provisionLogin } from '@/lib/auth/provision';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
 const SOURCES = ['google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in'];
@@ -215,7 +216,7 @@ export async function createStudent(input: CreateStudentInput): Promise<ActionRe
     .select('id')
     .single();
   if (error) {
-    return { ok: false, error: error.message };
+    return { ok: false, error: friendlyDbError(error) };
   }
 
   // Link the enrolled subjects to their teachers (best-effort - never undo the
@@ -319,7 +320,7 @@ export async function bulkCreateStudents(
   }));
 
   const { data, error } = await supabase.from('students').insert(toInsert).select('id');
-  if (error) return { ok: false, inserted: 0, skipped, error: error.message };
+  if (error) return { ok: false, inserted: 0, skipped, error: friendlyDbError(error) };
 
   revalidatePath('/students');
   revalidatePath('/');
@@ -402,7 +403,7 @@ export async function updateStudent(input: {
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
   const { error } = await supabase.from('students').update(patch).eq('id', input.id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/students');
   revalidatePath('/');
@@ -427,7 +428,7 @@ export async function markStudentPassout(id: string): Promise<ActionResult> {
     .from('students')
     .update({ status: 'stopped' })
     .eq('id', id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/students');
   revalidatePath('/');
@@ -448,7 +449,7 @@ export async function bulkDeleteStudents(ids: string[]): Promise<ActionResult> {
     .from('students')
     .update({ deleted_at: new Date().toISOString() })
     .in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/students');
   revalidatePath('/');
@@ -469,7 +470,7 @@ export async function bulkSetFeeStatus(ids: string[], feeStatus: string): Promis
   if (!user) return { ok: false, error: 'You are not signed in.' };
 
   const { error } = await supabase.from('students').update({ fee_status: db }).in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/students');
   revalidatePath('/');
@@ -497,7 +498,7 @@ export async function bulkSetStatus(ids: string[], status: string): Promise<Acti
   if (!user) return { ok: false, error: 'You are not signed in.' };
 
   const { error } = await supabase.from('students').update({ status: db }).in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/students');
   revalidatePath('/');
@@ -517,7 +518,7 @@ export async function bulkSetProgram(ids: string[], program: string): Promise<Ac
   if (!user) return { ok: false, error: 'You are not signed in.' };
 
   const { error } = await supabase.from('students').update({ program }).in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/students');
   revalidatePath('/');
@@ -538,7 +539,7 @@ export async function softDeleteStudent(id: string): Promise<ActionResult> {
     .from('students')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/students');
   revalidatePath('/');

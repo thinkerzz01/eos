@@ -4,6 +4,7 @@
 // Records an actual payment made to a teacher into teacher_payouts.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -49,7 +50,7 @@ export async function recordTeacherPayout(input: {
     reference: input.reference?.trim() || null,
     by_user_id: user.id,
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/teacher-payouts');
   revalidatePath('/');

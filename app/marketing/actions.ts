@@ -6,6 +6,7 @@
 // on ad_spend; everyone else is denied at the DB.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 export interface ActionResult {
   ok: boolean;
@@ -49,7 +50,7 @@ export async function recordAdSpend(input: {
     amount,
     period: input.period,
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/marketing');
   return { ok: true };

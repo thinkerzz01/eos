@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 export interface ActionResult {
   ok: boolean;
@@ -79,10 +80,10 @@ export async function createSubject(input: { name: string; program: string }): P
   if (existing?.id) {
     if (!existing.deleted_at) return { ok: false, error: 'That subject already exists for this program.' };
     const { error } = await supabase.from('subjects').update({ deleted_at: null }).eq('id', existing.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: friendlyDbError(error) };
   } else {
     const { error } = await supabase.from('subjects').insert({ org_id: orgId, name, program: input.program });
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: friendlyDbError(error) };
   }
 
   revalidatePath('/subjects');
@@ -109,7 +110,7 @@ export async function updateSubject(input: { id: string; name?: string; program?
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
   const { error } = await supabase.from('subjects').update(patch).eq('id', input.id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/subjects');
   revalidatePath('/teachers');
@@ -132,7 +133,7 @@ export async function bulkDeleteSubjects(ids: string[]): Promise<ActionResult> {
     .from('subjects')
     .update({ deleted_at: new Date().toISOString() })
     .in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/subjects');
   revalidatePath('/teachers');
@@ -154,7 +155,7 @@ export async function deleteSubject(id: string): Promise<ActionResult> {
     .from('subjects')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/subjects');
   revalidatePath('/teachers');

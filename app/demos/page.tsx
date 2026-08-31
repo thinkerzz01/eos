@@ -6,7 +6,10 @@ import { DemosClient } from './DemosClient';
 
 export const dynamic = 'force-dynamic';
 
+import { requireRole } from '@/lib/auth/requireRole';
+
 export default async function DemosPage() {
+  await requireRole(['admin', 'manager']);
   const [demos, teachers, subjects] = await Promise.all([getDemos(), getTeachers(), getSubjects()]);
   const teacherOptions = teachers.map((t) => ({ id: t.id, name: t.name }));
   return <DemosClient initialDemos={demos} teachers={teacherOptions} subjects={subjects} />;

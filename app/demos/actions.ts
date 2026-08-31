@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { createMeetEvent, calendarReasonText, buildClassInvite, updateCalendarEvent } from '@/lib/google/calendar';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 // Read-only service-role client for looking up invite emails, so the invite
 // never depends on the caller's RLS. Falls back to the session client. See the
@@ -100,7 +101,7 @@ export async function assignTeacher(input: {
     .from('demos')
     .update({ teacher_id: input.teacherId, status: 'scheduled' })
     .eq('id', input.demoId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   // Best-effort: create a Google Meet + calendar invites for the student & teacher.
   // The assignment already succeeded; a calendar miss is reported, not fatal.
@@ -171,7 +172,7 @@ export async function updateDemo(input: {
     .eq('id', input.demoId)
     .select('id,calendar_event_id')
     .single();
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   let warning: string | undefined;
   const eventId = (updated as any)?.calendar_event_id as string | undefined;
@@ -191,7 +192,7 @@ export async function deleteDemo(demoId: string): Promise<ActionResult> {
   const { supabase, user } = await ctx();
   if (!user) return { ok: false, error: 'You are not signed in.' };
   const { error } = await supabase.from('demos').update({ deleted_at: new Date().toISOString() }).eq('id', demoId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
   revalidatePath('/demos');
   revalidatePath('/');
   return { ok: true };
@@ -208,7 +209,7 @@ export async function bulkDeleteDemos(ids: string[]): Promise<ActionResult> {
     .from('demos')
     .update({ deleted_at: new Date().toISOString() })
     .in('id', clean);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/demos');
   revalidatePath('/');
@@ -249,7 +250,7 @@ export async function recordOutcome(input: {
     .from('demos')
     .update({ status, outcome, reason: input.reason?.trim() || null })
     .eq('id', input.demoId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/demos');
   revalidatePath('/');

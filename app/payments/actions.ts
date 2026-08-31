@@ -5,6 +5,7 @@
 // total is DERIVED from the sum of its non-deleted payments, so both stay in sync.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 const METHOD_DB: Record<string, string> = {
   'Bank Transfer': 'bank_transfer',
@@ -53,7 +54,7 @@ export async function updatePayment(input: {
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
   const { error } = await ctx.supabase.from('payments').update(patch).eq('id', input.paymentId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/payments');
   revalidatePath('/vouchers');
@@ -71,7 +72,7 @@ export async function deletePayment(paymentId: string): Promise<ActionResult> {
     .from('payments')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', paymentId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/payments');
   revalidatePath('/vouchers');

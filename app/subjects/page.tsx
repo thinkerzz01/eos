@@ -5,7 +5,10 @@ import { SubjectsClient } from './SubjectsClient';
 
 export const dynamic = 'force-dynamic';
 
+import { requireRole } from '@/lib/auth/requireRole';
+
 export default async function SubjectsPage() {
+  await requireRole(['admin', 'manager']);
   const subjects = await getSubjects();
   return <SubjectsClient initialSubjects={subjects} />;
 }

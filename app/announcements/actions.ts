@@ -6,6 +6,7 @@
 // UI uses, so audience is not persisted here yet - follow-up.
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 export interface ActionResult {
   ok: boolean;
@@ -40,7 +41,7 @@ export async function createAnnouncement(input: {
     body,
     posted_by: user.id,
   });
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/announcements');
   return { ok: true };
@@ -59,7 +60,7 @@ export async function deleteAnnouncement(id: string): Promise<ActionResult> {
     .from('announcements')
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/announcements');
   return { ok: true };

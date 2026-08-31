@@ -11,6 +11,7 @@ import { revalidatePath } from 'next/cache';
 import { createMeetEvent, weeklyRecurrence, calendarReasonText, buildClassInvite, updateCalendarEvent, deleteCalendarEvent } from '@/lib/google/calendar';
 import { enqueueNotification } from '@/lib/notifications/enqueue';
 import { notifyStudentById } from '@/lib/notifications/inapp';
+import { friendlyDbError } from '@/lib/friendlyError';
 
 export interface ActionResult {
   ok: boolean;
@@ -108,7 +109,7 @@ export async function createClassSession(input: {
         error: 'Conflict: this teacher already has a session overlapping that time. Blocked by the overlap constraint.',
       };
     }
-    return { ok: false, error: error.message };
+    return { ok: false, error: friendlyDbError(error) };
   }
 
   // Same calendar behavior as the bulk path: create one Meet + invite for this
@@ -259,7 +260,7 @@ export async function bulkScheduleClasses(input: {
       });
       if (!error) created++;
       else if ((error as any).code === '23P01') conflicts++;
-      else return { ok: false, created, conflicts, error: error.message };
+      else return { ok: false, created, conflicts, error: friendlyDbError(error) };
     }
   }
 
@@ -323,7 +324,7 @@ export async function updateClassSession(input: {
         error: 'Conflict: this teacher already has a session overlapping that time. Blocked by the overlap constraint.',
       };
     }
-    return { ok: false, error: error.message };
+    return { ok: false, error: friendlyDbError(error) };
   }
 
   // Best-effort: move the existing Google Calendar event to the new time.
@@ -375,7 +376,7 @@ export async function deleteClassSession(input: { sessionId: string }): Promise<
     .from('class_sessions')
     .update({ status: 'cancelled', deleted_at: new Date().toISOString() })
     .eq('id', input.sessionId);
-  if (error) return { ok: false, error: error.message };
+  if (error) return { ok: false, error: friendlyDbError(error) };
 
   let calendarWarning: string | undefined;
   const eventId = (row as any)?.calendar_event_id as string | undefined;
@@ -429,7 +430,7 @@ export async function rescheduleClass(input: {
     if ((error as any).code === '23P01') {
       return { ok: false, conflict: true, error: 'Conflict: you already have another session overlapping that time.' };
     }
-    return { ok: false, error: error.message };
+    return { ok: false, error: friendlyDbError(error) };
   }
 
   // Student + subject read with the service role (a teacher cannot always SELECT
@@ -517,7 +518,7 @@ export async function bulkDeleteClasses(input: { sessionIds: string[] }): Promis
     .from('class_sessions')
     .update({ status: 'cancelled', deleted_at: new Date().toISOString() })
     .in('id', ids);
-  if (error) return { ok: false, count: 0, error: error.message };
+  if (error) return { ok: false, count: 0, error: friendlyDbError(error) };
 
   revalidatePath('/schedule');
   revalidatePath('/attendance');
@@ -597,14 +598,14 @@ export async function saveClassNote(input: { sessionId: string; note: string }):
   if (existing?.id) {
     const patch = note ? { note, deleted_at: null } : { deleted_at: new Date().toISOString() };
     const { error } = await supabase.from('class_notes').update(patch).eq('id', existing.id);
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: friendlyDbError(error) };
   } else if (note) {
     const { error } = await supabase.from('class_notes').insert({
       org_id: orgId,
       session_id: input.sessionId,
       note,
     });
-    if (error) return { ok: false, error: error.message };
+    if (error) return { ok: false, error: friendlyDbError(error) };
   }
 
   revalidatePath('/schedule');

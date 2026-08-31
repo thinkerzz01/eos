@@ -4,7 +4,10 @@ import { LeadsClient } from './LeadsClient';
 
 export const dynamic = 'force-dynamic';
 
+import { requireRole } from '@/lib/auth/requireRole';
+
 export default async function LeadsPage() {
+  await requireRole(['admin', 'manager']);
   const leads = await getLeads();
   return <LeadsClient initialLeads={leads} />;
 }
