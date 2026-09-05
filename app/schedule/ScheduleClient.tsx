@@ -9,8 +9,11 @@ import { ScheduledClass } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { bulkScheduleClasses, completeClassWithAttendance, createClassSession, updateClassSession, deleteClassSession, rescheduleClass, saveClassNote, bulkDeleteClasses, listStudentEnrollments } from './actions';
 import { downloadCsv } from '@/lib/export/csv';
+import { ClassCalendar } from './ClassCalendar';
 import {
   Calendar,
+  CalendarDays,
+  List,
   Clock,
   UserCheck,
   Plus,
@@ -44,6 +47,14 @@ export function ScheduleClient({
 }) {
   const { role } = useRole();
   const router = useRouter();
+
+  // LIST vs CALENDAR view. Teachers/students land on the calendar (they just want
+  // to see their own timetable); admin/manager default to the list (they manage
+  // classes there via bulk actions/edit). Both views share the same RLS-scoped
+  // rows and the same filters below.
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>(
+    role === 'teacher' || role === 'student' ? 'calendar' : 'list'
+  );
 
   // LOCAL SCHEDULE STATE STORE (seeded from server, RLS-authorized)
   const [classesList, setClassesList] = useState<ScheduledClass[]>(initialClasses);
@@ -268,6 +279,15 @@ export function ScheduleClient({
     }
   };
 
+  // Open the completion drawer with attendance/note prefilled. Shared by the
+  // list view's "Complete Class" button and the calendar's event detail.
+  const openCompletion = (cls: ScheduledClass) => {
+    const mark = cls.attendanceStatus;
+    setAttendanceChoice(mark === 'late' ? 'Late' : mark === 'absent' ? 'Absent' : 'Present');
+    setClassNoteText(cls.classNote ?? '');
+    setSelectedClassForCompletion(cls);
+  };
+
   const filteredClasses = useMemo(() => {
     return classesList.filter((c) => {
       if (selectedClassType === 'Class' && c.classType !== 'Class') return false;
@@ -405,10 +425,14 @@ export function ScheduleClient({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm">
           <div>
             <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
-              <span>Academic Schedule & Class Completion</span>
+              <span>{role === 'student' || role === 'teacher' ? 'My Classes' : 'Academic Schedule & Class Completion'}</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
-              Manage classes, schedule free makeup sessions, and log attendance & syllabus progress.
+              {role === 'student'
+                ? 'Your upcoming classes and Google Meet links. Switch to the calendar to see your week at a glance.'
+                : role === 'teacher'
+                ? 'Your teaching timetable. Use the calendar to see your week, and complete or reschedule classes.'
+                : 'Manage classes, schedule free makeup sessions, and log attendance & syllabus progress.'}
             </p>
           </div>
 
@@ -452,7 +476,27 @@ export function ScheduleClient({
 
         {/* FILTERS BAR */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] p-4 shadow-sm space-y-3.5">
-          <div className="flex items-center justify-end gap-3 flex-wrap border-b border-[#EBEDF3] dark:border-slate-800 pb-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap border-b border-[#EBEDF3] dark:border-slate-800 pb-3">
+            {/* LIST / CALENDAR VIEW TOGGLE */}
+            <div className="flex items-center gap-1 bg-[#F6F7FB] dark:bg-slate-800 p-1 rounded-xl">
+              <button
+                onClick={() => setViewMode('list')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
+                  viewMode === 'list' ? 'bg-[#5B47D6] text-white shadow-sm' : 'text-[#6B7185] hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                <List className="w-3.5 h-3.5" /> List
+              </button>
+              <button
+                onClick={() => setViewMode('calendar')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all ${
+                  viewMode === 'calendar' ? 'bg-[#5B47D6] text-white shadow-sm' : 'text-[#6B7185] hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+              >
+                <CalendarDays className="w-3.5 h-3.5" /> Calendar
+              </button>
+            </div>
+
             <div className="flex items-center gap-2">
               <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
                 <span className="text-xs text-[#6B7185] block font-medium">Class Type Filter</span>
@@ -485,8 +529,8 @@ export function ScheduleClient({
           </div>
         </div>
 
-        {/* BULK ACTION BAR — appears when classes are selected */}
-        {canManage && selectedClassIds.length > 0 && (
+        {/* BULK ACTION BAR — appears when classes are selected (list view only) */}
+        {viewMode === 'list' && canManage && selectedClassIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
             <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">{selectedClassIds.length} selected</span>
             <span className="text-slate-300 dark:text-slate-600">|</span>
@@ -514,9 +558,20 @@ export function ScheduleClient({
           </div>
         )}
 
-        {/* SCHEDULE TIMETABLE GRID */}
+        {/* SCHEDULE TIMETABLE GRID / CALENDAR — same RLS-scoped rows, two views */}
+        {viewMode === 'calendar' ? (
+          <ClassCalendar
+            classes={filteredClasses}
+            canManage={canManage}
+            role={role}
+            onComplete={openCompletion}
+            onReschedule={openReschedule}
+            onEdit={openEdit}
+            onDelete={handleDeleteClass}
+          />
+        ) : (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-          
+
           {/* CLASSES TIMETABLE LIST (full width) */}
           <div className="lg:col-span-12 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden flex flex-col justify-between">
             <div className="overflow-x-auto">
@@ -626,12 +681,7 @@ export function ScheduleClient({
                           {role !== 'student' ? (
                             <div className="flex items-center justify-center gap-1.5">
                               <button
-                                onClick={() => {
-                                  const mark = cls.attendanceStatus;
-                                  setAttendanceChoice(mark === 'late' ? 'Late' : mark === 'absent' ? 'Absent' : 'Present');
-                                  setClassNoteText(cls.classNote ?? '');
-                                  setSelectedClassForCompletion(cls);
-                                }}
+                                onClick={() => openCompletion(cls)}
                                 className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl shadow-xs transition-all cursor-pointer"
                               >
                                 {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class'}
@@ -681,6 +731,7 @@ export function ScheduleClient({
 
 
         </div>
+        )}
 
         {/* MOBILE-FIRST CLASS COMPLETION DRAWER */}
         {selectedClassForCompletion && (
