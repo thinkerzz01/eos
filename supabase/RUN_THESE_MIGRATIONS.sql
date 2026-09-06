@@ -353,6 +353,32 @@ ALTER SEQUENCE public.demo_no_seq OWNED BY public.demos.demo_no;
 GRANT USAGE ON SEQUENCE public.demo_no_seq TO authenticated;
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-09-06  Teacher roster via classes (fixes "My Students" empty)
+--     A teacher assigned a student by SCHEDULING A CLASS (class_sessions) did not
+--     appear on the teacher's My Students / Assessments tabs (those keyed only on
+--     student_subjects). Broaden both to also match class_sessions.teacher_id.
+--     Still scoped to the teacher's own id. Idempotent (DROP + CREATE).
+-- ─────────────────────────────────────────────────────────────────────────────
+DROP POLICY IF EXISTS teacher_read_own_students ON public.students;
+CREATE POLICY teacher_read_own_students ON public.students FOR SELECT USING (
+    current_user_role() = 'teacher' AND (
+        id IN (SELECT student_id FROM public.student_subjects WHERE teacher_id = current_teacher_id() AND deleted_at IS NULL)
+        OR
+        id IN (SELECT student_id FROM public.class_sessions WHERE teacher_id = current_teacher_id() AND deleted_at IS NULL)
+    )
+);
+
+DROP POLICY IF EXISTS teacher_access_own_tests ON public.tests;
+CREATE POLICY teacher_access_own_tests ON public.tests FOR ALL USING (
+    current_user_role() = 'teacher' AND subject_id IN (
+        SELECT subject_id FROM public.student_subjects WHERE teacher_id = current_teacher_id() AND deleted_at IS NULL
+        UNION
+        SELECT subject_id FROM public.class_sessions WHERE teacher_id = current_teacher_id() AND deleted_at IS NULL
+    )
+);
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql

@@ -762,9 +762,13 @@ CREATE POLICY teacher_read_teachers ON public.teachers FOR SELECT USING (current
 CREATE POLICY student_read_teachers ON public.teachers FOR SELECT USING (current_user_role() = 'student' AND org_id = current_user_org_id());
 
 -- 5.4 RLS Policies: Teacher (Own Students, Own Schedule, Own Homework/Tests, Read Syllabus)
+-- A teacher's roster = students they teach via a subject enrollment OR a
+-- scheduled class (so assigning a student by scheduling a class shows them here).
 CREATE POLICY teacher_read_own_students ON public.students FOR SELECT USING (
-    current_user_role() = 'teacher' AND id IN (
-        SELECT student_id FROM public.student_subjects WHERE teacher_id = current_teacher_id() AND deleted_at IS NULL
+    current_user_role() = 'teacher' AND (
+        id IN (SELECT student_id FROM public.student_subjects WHERE teacher_id = current_teacher_id() AND deleted_at IS NULL)
+        OR
+        id IN (SELECT student_id FROM public.class_sessions WHERE teacher_id = current_teacher_id() AND deleted_at IS NULL)
     )
 );
 
@@ -801,6 +805,8 @@ CREATE POLICY teacher_access_own_homework ON public.homework FOR ALL USING (
 CREATE POLICY teacher_access_own_tests ON public.tests FOR ALL USING (
     current_user_role() = 'teacher' AND subject_id IN (
         SELECT subject_id FROM public.student_subjects WHERE teacher_id = current_teacher_id() AND deleted_at IS NULL
+        UNION
+        SELECT subject_id FROM public.class_sessions WHERE teacher_id = current_teacher_id() AND deleted_at IS NULL
     )
 );
 
