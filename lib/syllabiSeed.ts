@@ -24,8 +24,9 @@ export const LOCAL_BOARD_PROGRAMS = [
   'Inter (12)',
 ] as const;
 
-export const ALL_SUBJECTS = [
-  // CAIE Subjects
+// Subjects grouped by the board/level they belong to, so a picker can show ONLY
+// the subjects relevant to the chosen program (see subjectsForProgram below).
+export const CAIE_SUBJECTS = [
   'Mathematics',
   'Physics',
   'Chemistry',
@@ -34,6 +35,7 @@ export const ALL_SUBJECTS = [
   'Economics',
   'Business Studies',
   'Computer Science',
+  'Information Technology',
   'English (First Language)',
   'English (Second Language)',
   'Additional Mathematics',
@@ -43,7 +45,9 @@ export const ALL_SUBJECTS = [
   'Statistics',
   'Psychology',
   'Sociology',
-  // Matric & Inter Local Board Subjects
+] as const;
+
+export const MATRIC_SUBJECTS = [
   'Physics (Matric)',
   'Chemistry (Matric)',
   'Biology (Matric)',
@@ -53,11 +57,35 @@ export const ALL_SUBJECTS = [
   'Urdu (Compulsory)',
   'Islamiyat (Compulsory)',
   'Pakistan Studies (Compulsory)',
+] as const;
+
+export const INTER_SUBJECTS = [
   'Pre-Medical (Inter)',
   'Pre-Engineering (Inter)',
   'ICS (Computer Science Inter)',
   'I.Com (Commerce Inter)',
+  'English (Compulsory)',
+  'Urdu (Compulsory)',
+  'Islamiyat (Compulsory)',
+  'Pakistan Studies (Compulsory)',
 ] as const;
+
+// Flat master list (deduped) - kept for the places that need every subject
+// (teacher subjects, onboarding fallback, etc.).
+export const ALL_SUBJECTS: string[] = Array.from(
+  new Set<string>([...CAIE_SUBJECTS, ...MATRIC_SUBJECTS, ...INTER_SUBJECTS])
+);
+
+/**
+ * The subjects relevant to a given academic program. O/A Level and IGCSE are CAIE;
+ * Matric and Inter use the local-board lists. Anything unrecognised defaults to
+ * CAIE (the most common). Used to filter the subject picker on the booking form.
+ */
+export function subjectsForProgram(program: string): readonly string[] {
+  if (program.startsWith('Matric')) return MATRIC_SUBJECTS;
+  if (program.startsWith('Inter')) return INTER_SUBJECTS;
+  return CAIE_SUBJECTS;
+}
 
 export const EXAM_SESSIONS = [
   'May/June 2026',

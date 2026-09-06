@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { submitPublicBooking } from './actions';
 import { BookingSuccess } from './BookingSuccess';
 import { TurnstileWidget } from '@/components/security/TurnstileWidget';
-import { ALL_PROGRAMS, ALL_SUBJECTS } from '@/lib/syllabiSeed';
+import { ALL_PROGRAMS, subjectsForProgram } from '@/lib/syllabiSeed';
 import {
   CheckCircle2, ArrowRight, AlertCircle, CalendarDays, BookOpen, Clock,
   User, GraduationCap, Phone, Mail, Search, MessageCircle, Video, ShieldCheck, Star,
@@ -41,7 +41,7 @@ export default function PublicBookingPage() {
   const [parentName, setParentName] = useState('');
   const [parentPhone, setParentPhone] = useState('');
   const [parentEmail, setParentEmail] = useState('');
-  const [program, setProgram] = useState('O Level');
+  const [program, setProgram] = useState<string>(ALL_PROGRAMS[0]);
   const [subject, setSubject] = useState('');
   const [source, setSource] = useState('');
   const [school, setSchool] = useState('');
@@ -176,13 +176,31 @@ export default function PublicBookingPage() {
                         <input type="date" required value={date} min={todayPKT()} onChange={(e) => setDate(e.target.value)} className={field} /></div>
                     </div>
                     <div>
-                      <label className={lbl}>Subject <span className="text-rose-500">*</span></label>
-                      <div className="relative"><BookOpen className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <select required value={subject} onChange={(e) => setSubject(e.target.value)} className={field}>
-                          <option value="">Select A Subject</option>
-                          {ALL_SUBJECTS.map((s) => (<option key={s} value={s}>{s}</option>))}
+                      <label className={lbl}>Academic Program <span className="text-rose-500">*</span></label>
+                      <div className="relative"><GraduationCap className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                        <select
+                          value={program}
+                          onChange={(e) => {
+                            const p = e.target.value;
+                            setProgram(p);
+                            // Keep the subject only if it belongs to the newly chosen program.
+                            if (!subjectsForProgram(p).includes(subject)) setSubject('');
+                          }}
+                          className={field}
+                        >
+                          {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                         </select></div>
                     </div>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className={lbl}>Subject <span className="text-rose-500">*</span></label>
+                    <div className="relative"><BookOpen className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      <select required value={subject} onChange={(e) => setSubject(e.target.value)} className={field}>
+                        <option value="">Select A Subject</option>
+                        {subjectsForProgram(program).map((s) => (<option key={s} value={s}>{s}</option>))}
+                      </select></div>
+                    <p className="mt-1 text-[11px] text-slate-400 font-medium">Only subjects offered for your selected program are shown.</p>
                   </div>
 
                   {/* SUNDAY NOTICE — Sunday stays selectable; we just flag limited availability */}
@@ -190,7 +208,7 @@ export default function PublicBookingPage() {
                     <div className="mt-4 flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
                       <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                       <p className="text-xs font-medium leading-relaxed">
-                        You picked a <strong>Sunday</strong>. Sundays are usually our day off, so tutor availability is limited — but you can still request this slot. We&apos;ll confirm the schedule and a tutor for you before finalising.{' '}
+                        You picked a <strong>Sunday</strong>. Sundays are usually our day off, so tutor availability is limited - but you can still request this slot. We&apos;ll confirm the schedule and a tutor for you before finalizing.{' '}
                         <a
                           href={`https://wa.me/${HELP_WA}`}
                           target="_blank"
@@ -237,13 +255,6 @@ export default function PublicBookingPage() {
                       <label className={lbl}>Student Full Name <span className="text-rose-500">*</span></label>
                       <div className="relative"><User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                         <input type="text" required value={studentName} onChange={(e) => setStudentName(e.target.value)} placeholder="e.g. Hamza Ali Khan" className={field} /></div>
-                    </div>
-                    <div>
-                      <label className={lbl}>Academic Program <span className="text-rose-500">*</span></label>
-                      <div className="relative"><GraduationCap className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <select value={program} onChange={(e) => setProgram(e.target.value)} className={field}>
-                          {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
-                        </select></div>
                     </div>
                     <div>
                       <label className={lbl}>Parent / Guardian Name <span className="text-rose-500">*</span></label>
