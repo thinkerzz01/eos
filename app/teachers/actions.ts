@@ -7,6 +7,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { provisionLogin } from '@/lib/auth/provision';
+import { findEmailAccountOwner, emailTakenMessage } from '@/lib/auth/emailUniqueness';
 import { friendlyDbError } from '@/lib/friendlyError';
 
 export interface ActionResult {
@@ -120,6 +121,10 @@ export async function createTeacher(input: {
     return { ok: false, error: 'Only an Admin can add teachers and set capacity.' };
   }
 
+  // One email = one account: reject if a teacher/student already uses this email.
+  const emailOwner = await findEmailAccountOwner(profile.org_id, email);
+  if (emailOwner) return { ok: false, error: emailTakenMessage(emailOwner) };
+
   const row: Record<string, any> = {
     org_id: profile.org_id,
     name,
@@ -211,6 +216,12 @@ export async function updateTeacher(input: {
   const wantsSubjectSync = input.subjects !== undefined || input.programs !== undefined;
   if (Object.keys(patch).length === 0 && !wantsSubjectSync) {
     return { ok: false, error: 'Nothing to update.' };
+  }
+
+  // If the email is changing, it must not collide with another teacher/student.
+  if (patch.email) {
+    const emailOwner = await findEmailAccountOwner(profile.org_id, patch.email, { teacherId: input.id });
+    if (emailOwner) return { ok: false, error: emailTakenMessage(emailOwner) };
   }
 
   if (Object.keys(patch).length > 0) {

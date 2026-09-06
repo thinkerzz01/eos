@@ -8,6 +8,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { provisionLogin } from '@/lib/auth/provision';
+import { findEmailAccountOwner, emailTakenMessage } from '@/lib/auth/emailUniqueness';
 import { friendlyDbError } from '@/lib/friendlyError';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
@@ -185,6 +186,10 @@ export async function createStudent(input: CreateStudentInput): Promise<ActionRe
   if (!profile?.org_id) {
     return { ok: false, error: 'No organisation profile found for your account.' };
   }
+
+  // One email = one account: reject if a teacher/student already uses this email.
+  const emailOwner = await findEmailAccountOwner(profile.org_id, input.email);
+  if (emailOwner) return { ok: false, error: emailTakenMessage(emailOwner) };
 
   const row: Record<string, any> = {
     org_id: profile.org_id,
@@ -384,6 +389,12 @@ export async function updateStudent(input: {
     const e = input.email.trim();
     if (!isValidEmail(e)) {
       return { ok: false, error: 'Enter a valid email - class calendar invites are sent to it.' };
+    }
+    // The new email must not collide with another teacher/student account.
+    const { data: stu } = await supabase.from('students').select('org_id').eq('id', input.id).maybeSingle();
+    if ((stu as any)?.org_id) {
+      const emailOwner = await findEmailAccountOwner((stu as any).org_id, e, { studentId: input.id });
+      if (emailOwner) return { ok: false, error: emailTakenMessage(emailOwner) };
     }
     patch.email = e;
   }

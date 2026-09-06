@@ -15,6 +15,7 @@ import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { sendViaResend } from '@/lib/notifications/resend';
 import { renderEmailHtml } from '@/lib/notifications/emailLayout';
+import { findEmailAccountOwner, emailTakenMessage } from '@/lib/auth/emailUniqueness';
 
 export interface ProvisionResult {
   ok: boolean;
@@ -58,6 +59,16 @@ export async function provisionLogin(opts: {
 }): Promise<ProvisionResult> {
   const email = opts.email?.trim().toLowerCase();
   if (!email) return { ok: true, skipped: true }; // no email -> cannot invite; not an error
+
+  // BACKSTOP: refuse to create/link a login for an email that already belongs to
+  // a DIFFERENT teacher or student. Every provisioning path (teacher add, student
+  // enrol, admission) funnels through here, so this is the one place that reliably
+  // stops a teacher and a student ending up on the same Auth user / login.
+  const owner = await findEmailAccountOwner(opts.orgId, email, {
+    teacherId: opts.teacherId,
+    studentId: opts.studentId,
+  });
+  if (owner) return { ok: false, error: emailTakenMessage(owner) };
 
   let admin;
   try {
