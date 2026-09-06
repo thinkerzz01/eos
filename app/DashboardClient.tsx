@@ -47,12 +47,14 @@ export function DashboardClient({
   teacherStats,
   adminData,
   studentClasses = [],
+  teacherClasses = [],
 }: {
   initialStudents: Student[];
   metrics?: DashboardMetrics;
   teacherStats?: TeacherDashboard | null;
   adminData: AdminData;
   studentClasses?: ScheduledClass[];
+  teacherClasses?: ScheduledClass[];
 }) {
   const { role, name } = useRole();
   const firstName = name?.trim() || '';
@@ -243,6 +245,21 @@ export function DashboardClient({
                 );
               })}
             </div>
+          </div>
+
+          {/* MY CLASS CALENDAR — the teacher's own classes (RLS-scoped) */}
+          <div>
+            <h2 className="font-heading font-medium text-lg text-slate-900 dark:text-white mb-3">My Class Calendar</h2>
+            <ClassCalendar
+              classes={teacherClasses}
+              canManage={false}
+              role="teacher"
+              readOnly
+              onComplete={() => {}}
+              onReschedule={() => {}}
+              onEdit={() => {}}
+              onDelete={() => {}}
+            />
           </div>
         </div>
       </PortalLayout>

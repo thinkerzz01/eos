@@ -18,12 +18,14 @@ export default async function DashboardPage() {
   // not twice.
   const role = await getServerRole();
   const isStaff = role === 'admin' || role === 'manager';
-  const [students, teacherStats, adminData, studentClasses] = await Promise.all([
+  const [students, teacherStats, adminData, studentClasses, teacherClasses] = await Promise.all([
     role === 'student' ? getStudents() : Promise.resolve([]),
     role === 'teacher' ? getTeacherDashboard() : Promise.resolve(null),
     isStaff ? getAdminDashboard() : Promise.resolve(EMPTY_ADMIN_DATA),
-    // The student dashboard shows their own class calendar (RLS scopes the rows).
+    // Student + teacher dashboards each show their own class calendar (RLS scopes
+    // the rows to the signed-in person).
     role === 'student' ? getSchedule() : Promise.resolve([]),
+    role === 'teacher' ? getSchedule() : Promise.resolve([]),
   ]);
 
   return (
@@ -32,6 +34,7 @@ export default async function DashboardPage() {
       teacherStats={teacherStats}
       adminData={adminData}
       studentClasses={studentClasses}
+      teacherClasses={teacherClasses}
     />
   );
 }

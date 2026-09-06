@@ -155,6 +155,7 @@ export function ClassCalendar({
   onReschedule,
   onEdit,
   onDelete,
+  readOnly = false,
 }: {
   classes: ScheduledClass[];
   canManage: boolean;
@@ -163,6 +164,8 @@ export function ClassCalendar({
   onReschedule: (cls: ScheduledClass) => void;
   onEdit: (cls: ScheduledClass) => void;
   onDelete: (cls: ScheduledClass) => void;
+  // Dashboard glance: show details + Join only, no management actions.
+  readOnly?: boolean;
 }) {
   const [view, setView] = useState<ViewKind>('month');
   // Anchor is a UTC-midnight calendar date; the grid is derived from it.
@@ -280,6 +283,7 @@ export function ClassCalendar({
           cls={selected}
           canManage={canManage}
           role={role}
+          readOnly={readOnly}
           onClose={() => setSelected(null)}
           onComplete={onComplete}
           onReschedule={onReschedule}
@@ -514,6 +518,7 @@ function EventDetail({
   cls,
   canManage,
   role,
+  readOnly,
   onClose,
   onComplete,
   onReschedule,
@@ -523,6 +528,7 @@ function EventDetail({
   cls: ScheduledClass;
   canManage: boolean;
   role: string;
+  readOnly?: boolean;
   onClose: () => void;
   onComplete: (c: ScheduledClass) => void;
   onReschedule: (c: ScheduledClass) => void;
@@ -533,7 +539,7 @@ function EventDetail({
     onClose();
     fn(cls);
   };
-  const canAct = role !== 'student';
+  const canAct = !readOnly && role !== 'student';
   const isOpen = cls.status !== 'Completed' && cls.status !== 'Cancelled';
 
   return (
