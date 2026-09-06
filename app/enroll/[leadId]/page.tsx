@@ -1,68 +1,64 @@
-'use client';
+// Public enrollment page. SERVER component: it looks the lead up by the id in the
+// link BEFORE rendering anything, so it can (a) pre-fill the form with the family's
+// booking data and (b) refuse a link whose id is invalid, deleted, or already
+// enrolled - instead of the old behaviour of showing a blank form for ANY url.
+//
+// The id in the url is an unguessable UUID and is the capability to enrol this
+// lead; we read the row with the service-role client (the page is anonymous) and
+// gate on the same rules the submit routine enforces (exists + not yet converted).
+import { createAdminClient } from '@/lib/supabase/admin';
+import { EnrollForm, type EnrollInitial } from './EnrollForm';
+import { AlertCircle, MessageCircle } from 'lucide-react';
 
-import React, { useState } from 'react';
-import { submitEnrollment } from './actions';
-import { TurnstileWidget } from '@/components/security/TurnstileWidget';
-import { ALL_PROGRAMS, EXAM_SESSIONS } from '@/lib/syllabiSeed';
-import { CheckCircle2, GraduationCap, ArrowRight, AlertCircle } from 'lucide-react';
+export const dynamic = 'force-dynamic';
 
-export default function EnrollPage({ params }: { params: { leadId: string } }) {
-  const [studentName, setStudentName] = useState('');
-  const [parentName, setParentName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [email, setEmail] = useState('');
-  const [program, setProgram] = useState('O Level');
-  const [examSession, setExamSession] = useState('');
-  const [gender, setGender] = useState('');
-  const [city, setCity] = useState('');
-  const [address, setAddress] = useState('');
+const HELP_WA = (process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP || '923262324477').replace(/\D/g, '');
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
-  const [done, setDone] = useState(false);
-  const [turnstileToken, setTurnstileToken] = useState('');
+type Gate =
+  | { kind: 'ok'; initial: EnrollInitial }
+  | { kind: 'invalid' }
+  | { kind: 'enrolled' };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    if (!studentName || !parentName || !phone || !examSession) {
-      setError('Please fill in the student name, parent name, phone, and exam session.');
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
-      setError('A valid email is required - your class calendar invites are sent to it.');
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const res = await submitEnrollment({
-        leadId: params.leadId,
-        studentName,
-        parentName,
-        phone,
-        email,
-        program,
-        examSession,
-        gender,
-        city,
-        address,
-        turnstileToken,
-      });
-      if (!res.ok) {
-        setError(res.error || 'Something went wrong. Please try again.');
-        return;
-      }
-      setDone(true);
-    } catch {
-      setError('A network error occurred. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
+async function resolveLead(leadId: string): Promise<Gate> {
+  // A tampered / malformed id is never a valid link.
+  if (!UUID_RE.test(leadId)) return { kind: 'invalid' };
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch {
+    // No service-role key -> we cannot verify the lead; treat as invalid rather
+    // than showing a blank form we cannot trust.
+    return { kind: 'invalid' };
+  }
+
+  const { data, error } = await admin
+    .from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .is('deleted_at', null)
+    .maybeSingle();
+
+  if (error || !data) return { kind: 'invalid' };
+  const r = data as any;
+  if (r.converted_student_id) return { kind: 'enrolled' };
+
+  return {
+    kind: 'ok',
+    initial: {
+      studentName: r.name ?? '',
+      parentName: r.parent_name ?? '',
+      phone: r.phone ?? '',
+      email: r.email ?? '',
+      program: r.program ?? '',
+      city: r.city ?? '',
+      // The booking captures "area" (town/society); seed it into the address field.
+      address: r.area ?? '',
+    },
   };
+}
 
-  const input =
-    'w-full bg-[#F8F9FD] border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 focus:outline-none focus:border-[#5B47D6]';
-
+function Chrome({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[#F8F9FD] text-[#171A2B] font-sans flex flex-col justify-between">
       <header className="bg-white border-b border-[#EBEDF3] py-4 px-6 sticky top-0 z-50 shadow-xs">
@@ -71,105 +67,55 @@ export default function EnrollPage({ params }: { params: { leadId: string } }) {
           <div className="text-xs font-medium text-[#5B47D6] tracking-wider uppercase border-l border-slate-200 pl-3">Student Enrollment</div>
         </div>
       </header>
-
-      <main className="max-w-3xl mx-auto px-4 py-8 flex-1 w-full">
-        {!done ? (
-          <div className="space-y-6">
-            <div className="text-center space-y-2 max-w-2xl mx-auto">
-              <span className="px-3.5 py-1 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full inline-flex items-center gap-1.5">
-                <GraduationCap className="w-3.5 h-3.5" />
-                <span>Welcome to Thinkerzz - Complete Your Enrollment</span>
-              </span>
-              <h1 className="font-heading font-medium text-3xl text-slate-900 tracking-tight">Enrollment Details</h1>
-              <p className="text-sm text-[#6B7185] font-medium leading-relaxed">
-                Please fill in the student's details to complete enrollment. Our team will then set up the fee and class schedule.
-              </p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="bg-white border border-[#EBEDF3] rounded-[24px] p-6 sm:p-8 shadow-xl space-y-4 text-xs font-medium">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-slate-700 block mb-1">Student Full Name *</label>
-                  <input type="text" required value={studentName} onChange={(e) => setStudentName(e.target.value)} placeholder="e.g. Hamza Khan" className={input} />
-                </div>
-                <div>
-                  <label className="text-slate-700 block mb-1">Gender</label>
-                  <select value={gender} onChange={(e) => setGender(e.target.value)} className={input}>
-                    <option value="">Select...</option>
-                    <option value="male">Male</option>
-                    <option value="female">Female</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-slate-700 block mb-1">Academic Program *</label>
-                  <select value={program} onChange={(e) => setProgram(e.target.value)} className={input}>
-                    {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-slate-700 block mb-1">Exam Session *</label>
-                  <select required value={examSession} onChange={(e) => setExamSession(e.target.value)} className={input}>
-                    <option value="">Select...</option>
-                    {EXAM_SESSIONS.map((s) => (<option key={s} value={s}>{s}</option>))}
-                  </select>
-                </div>
-                <div>
-                  <label className="text-slate-700 block mb-1">Parent / Guardian Name *</label>
-                  <input type="text" required value={parentName} onChange={(e) => setParentName(e.target.value)} placeholder="e.g. Mr. Shahzaib Khan" className={input} />
-                </div>
-                <div>
-                  <label className="text-slate-700 block mb-1">WhatsApp Phone *</label>
-                  <input type="text" required value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+92 300 0000000" className={input} />
-                </div>
-                <div>
-                  <label className="text-slate-700 block mb-1">Email <span className="text-rose-500">*</span></label>
-                  <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="parent@gmail.com" className={input} />
-                  <p className="text-[11px] text-slate-400 mt-1">Class calendar invites are sent here.</p>
-                </div>
-                <div>
-                  <label className="text-slate-700 block mb-1">City</label>
-                  <input type="text" value={city} onChange={(e) => setCity(e.target.value)} placeholder="e.g. Lahore" className={input} />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="text-slate-700 block mb-1">Address</label>
-                  <input type="text" value={address} onChange={(e) => setAddress(e.target.value)} placeholder="House / street / area" className={input} />
-                </div>
-              </div>
-
-              {error && (
-                <div className="flex items-start gap-2 p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700">
-                  <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                  <span>{error}</span>
-                </div>
-              )}
-
-              <TurnstileWidget onToken={setTurnstileToken} />
-
-              <div className="pt-3 border-t border-slate-100">
-                <button type="submit" disabled={submitting} className="w-full py-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-medium text-sm shadow-lg shadow-[#5B47D6]/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50">
-                  <span>{submitting ? 'Submitting...' : 'Complete Enrollment'}</span>
-                  {!submitting && <ArrowRight className="w-4 h-4" />}
-                </button>
-              </div>
-            </form>
-          </div>
-        ) : (
-          <div className="bg-white border border-[#EBEDF3] rounded-[24px] p-8 shadow-xl text-center space-y-5 max-w-xl mx-auto">
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
-            </div>
-            <h2 className="font-heading font-medium text-2xl text-slate-900">Enrollment Complete!</h2>
-            <p className="text-xs text-[#6B7185] font-medium max-w-md mx-auto">
-              Thank you! <strong className="text-slate-900">{studentName}</strong> is now enrolled. Our team will confirm the fee and share the class schedule (with Google Meet links) shortly.
-            </p>
-          </div>
-        )}
-      </main>
-
+      <main className="max-w-3xl mx-auto px-4 py-8 flex-1 w-full">{children}</main>
       <footer className="border-t border-[#EBEDF3] py-4 text-center text-xs text-slate-400 font-medium">
         Thinkerzz · All rights reserved.
       </footer>
     </div>
+  );
+}
+
+function Notice({ title, body }: { title: string; body: string }) {
+  const wa = HELP_WA ? `https://wa.me/${HELP_WA}` : '';
+  return (
+    <div className="bg-white border border-[#EBEDF3] rounded-[24px] p-8 shadow-xl text-center space-y-4 max-w-xl mx-auto mt-6">
+      <div className="w-16 h-16 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+        <AlertCircle className="w-9 h-9" />
+      </div>
+      <h2 className="font-heading font-medium text-2xl text-slate-900">{title}</h2>
+      <p className="text-sm text-[#6B7185] font-medium max-w-md mx-auto leading-relaxed">{body}</p>
+      {wa && (
+        <a
+          href={wa}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-5 py-2.5 transition"
+        >
+          <MessageCircle className="w-4 h-4" /> Contact us on WhatsApp
+        </a>
+      )}
+    </div>
+  );
+}
+
+export default async function EnrollPage({ params }: { params: { leadId: string } }) {
+  const gate = await resolveLead(params.leadId);
+
+  return (
+    <Chrome>
+      {gate.kind === 'ok' ? (
+        <EnrollForm leadId={params.leadId} initial={gate.initial} />
+      ) : gate.kind === 'enrolled' ? (
+        <Notice
+          title="Already Enrolled"
+          body="This student has already completed enrollment. If you think this is a mistake, please contact the academy."
+        />
+      ) : (
+        <Notice
+          title="Invalid or Expired Link"
+          body="This enrollment link is not valid. Please use the exact link the academy sent you, or contact us and we'll share a fresh one."
+        />
+      )}
+    </Chrome>
   );
 }
