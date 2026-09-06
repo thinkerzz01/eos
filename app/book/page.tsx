@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { submitPublicBooking } from './actions';
+import { BookingSuccess } from './BookingSuccess';
 import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 import { ALL_PROGRAMS, ALL_SUBJECTS } from '@/lib/syllabiSeed';
 import {
@@ -11,6 +12,9 @@ import {
 } from 'lucide-react';
 
 const HELP_WA = (process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP || '923262324477').replace(/\D/g, '');
+// "Back to Home" target on the success screen. Set NEXT_PUBLIC_ACADEMY_WEBSITE
+// to the public marketing site; falls back to the academy domain.
+const HOME_URL = process.env.NEXT_PUBLIC_ACADEMY_WEBSITE || 'https://thinkerzz.com';
 const HOW_FOUND = ['Google', 'Facebook', 'Instagram', 'WhatsApp', 'Referral', 'Walk-in'];
 const HOURS_12 = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
 const MINUTES = ['00', '15', '30', '45'];
@@ -85,6 +89,14 @@ export default function PublicBookingPage() {
   const prettyDate = date
     ? new Date(`${date}T00:00:00+05:00`).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Karachi' })
     : '';
+
+  // Sundays are usually the academy's day off, so tutor availability is limited.
+  // We DON'T block the date - we just warn the family and point them to WhatsApp
+  // to confirm a tutor before they rely on a Sunday slot. Weekday is read in PKT
+  // so it matches the timezone the demo is scheduled in.
+  const isSunday = date
+    ? new Date(`${date}T00:00:00+05:00`).toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Karachi' }) === 'Sunday'
+    : false;
 
   const field = 'w-full bg-white border border-slate-200 rounded-xl pl-10 pr-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#5B47D6] focus:ring-2 focus:ring-[#5B47D6]/15 transition';
   const plain = 'w-full bg-white border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#5B47D6] focus:ring-2 focus:ring-[#5B47D6]/15 transition';
@@ -172,6 +184,24 @@ export default function PublicBookingPage() {
                         </select></div>
                     </div>
                   </div>
+
+                  {/* SUNDAY NOTICE — Sunday stays selectable; we just flag limited availability */}
+                  {isSunday && (
+                    <div className="mt-4 flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                      <p className="text-xs font-medium leading-relaxed">
+                        You picked a <strong>Sunday</strong>. Sundays are usually our day off, so tutor availability is limited — but you can still request this slot. We&apos;ll confirm the schedule and a tutor for you before finalising.{' '}
+                        <a
+                          href={`https://wa.me/${HELP_WA}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 underline font-semibold text-emerald-700 hover:text-emerald-800"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" /> Confirm availability on WhatsApp
+                        </a>
+                      </p>
+                    </div>
+                  )}
 
                   <div className="mt-4">
                     <label className={lbl}><span className="inline-flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" /> Preferred Time (Pakistan Time) <span className="text-rose-500">*</span></span></label>
@@ -275,37 +305,26 @@ export default function PublicBookingPage() {
             </div>
           </>
         ) : (
-          /* SUCCESS */
-          <div className="bg-white border border-slate-200 rounded-3xl p-8 sm:p-10 shadow-lg text-center space-y-5 max-w-xl mx-auto mt-6 animate-in zoom-in-95">
-            <div className="w-20 h-20 bg-gradient-to-tr from-emerald-400 to-emerald-600 text-white rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/25">
-              <CheckCircle2 className="w-11 h-11 stroke-[2.5]" />
-            </div>
-            <div className="space-y-2">
-              <h2 className="font-heading font-medium text-3xl text-slate-900">Demo Booked!</h2>
-              <p className="text-sm text-slate-600 font-medium max-w-md mx-auto">
-                Thank you, <strong className="text-slate-900">{parentName}</strong>! Your free demo for <strong className="text-slate-900">{studentName}</strong> is booked.
-              </p>
-            </div>
-            <div className="p-4 bg-[#5B47D6]/5 border border-[#5B47D6]/15 rounded-2xl space-y-1.5">
-              <div className="text-[#5B47D6] text-xs uppercase tracking-wider font-medium">Booking Reference</div>
-              <div className="font-mono text-2xl text-[#5B47D6] font-medium">{bookingRef}</div>
-              <div className="text-slate-600 text-xs font-medium pt-1">
-                {prettyDate}{time && <> at <strong>{prettyTime(time)} PKT</strong></>}{subject && <> for <strong>{subject}</strong></>}
-              </div>
-            </div>
-            <div className="flex items-center justify-center gap-2 text-sm text-slate-500 font-medium">
-              <MessageCircle className="w-4 h-4 text-emerald-600" />
-              We will send your Google Meet link to <strong className="text-slate-700">&nbsp;{parentPhone}</strong>&nbsp; on WhatsApp shortly.
-            </div>
-            <button
-              onClick={() => {
-                setIsSubmitted(false); setStudentName(''); setParentName(''); setParentPhone('');
-                setParentEmail(''); setHour12(''); setMinute('00'); setAmpm('PM'); setSubject(''); setSource(''); setSchool(''); setCity(''); setArea(''); setBookingRef('');
-              }}
-              className="px-6 py-2.5 bg-slate-900 text-white font-medium text-xs rounded-xl hover:bg-slate-800 transition">
-              Book Another Demo
-            </button>
-          </div>
+          /* SUCCESS — premium, animated confirmation experience */
+          <BookingSuccess
+            bookingRef={bookingRef}
+            studentName={studentName}
+            parentName={parentName}
+            parentPhone={parentPhone}
+            subject={subject}
+            program={program}
+            prettyDate={prettyDate}
+            timeLabel={time ? `${prettyTime(time)} (PKT)` : ''}
+            dateISO={date}
+            time24={time}
+            durationMinutes={30}
+            helpWa={HELP_WA}
+            homeUrl={HOME_URL}
+            onBookAnother={() => {
+              setIsSubmitted(false); setStudentName(''); setParentName(''); setParentPhone('');
+              setParentEmail(''); setHour12(''); setMinute('00'); setAmpm('PM'); setSubject(''); setSource(''); setSchool(''); setCity(''); setArea(''); setBookingRef('');
+            }}
+          />
         )}
       </main>
 
