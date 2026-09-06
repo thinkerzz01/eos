@@ -556,3 +556,72 @@ export async function softDeleteStudent(id: string): Promise<ActionResult> {
   revalidatePath('/');
   return { ok: true };
 }
+
+/**
+ * Assign (or reassign) a teacher + subjects to an EXISTING student, writing the
+ * student_subjects enrollment links that power the teacher's roster. Admin/manager
+ * only. Idempotent per subject: an existing link for a subject has its teacher
+ * updated; a new subject is inserted. This is how you assign an already-enrolled
+ * student (e.g. one who came from a won demo) to a teacher after creation.
+ */
+export async function assignStudentSubjects(input: {
+  studentId: string;
+  enrollments: { subjectId: string; teacherId: string }[];
+}): Promise<ActionResult> {
+  if (!input.studentId) return { ok: false, error: 'Missing student.' };
+  const clean = (input.enrollments ?? []).filter((e) => e?.subjectId?.trim() && e?.teacherId?.trim());
+  if (clean.length === 0) return { ok: false, error: 'Pick at least one subject and a teacher.' };
+
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('org_id,role')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!profile?.org_id) return { ok: false, error: 'No organisation profile found.' };
+  if (profile.role !== 'admin' && profile.role !== 'manager') {
+    return { ok: false, error: 'Only an Admin or Manager can assign teachers to students.' };
+  }
+
+  // Existing (non-deleted) links for this student, so we update vs insert.
+  const { data: existing } = await supabase
+    .from('student_subjects')
+    .select('id,subject_id,teacher_id')
+    .eq('student_id', input.studentId)
+    .is('deleted_at', null);
+  const bySubject = new Map<string, { id: string; teacher_id: string }>();
+  for (const r of (existing as any[]) ?? []) bySubject.set(r.subject_id, { id: r.id, teacher_id: r.teacher_id });
+
+  const toInsert: Record<string, any>[] = [];
+  for (const e of clean) {
+    const cur = bySubject.get(e.subjectId);
+    if (cur) {
+      if (cur.teacher_id !== e.teacherId) {
+        const { error } = await supabase.from('student_subjects').update({ teacher_id: e.teacherId }).eq('id', cur.id);
+        if (error) return { ok: false, error: friendlyDbError(error) };
+      }
+    } else {
+      toInsert.push({
+        org_id: profile.org_id,
+        student_id: input.studentId,
+        subject_id: e.subjectId,
+        teacher_id: e.teacherId,
+        target_grade: 'A*',
+      });
+    }
+  }
+  if (toInsert.length) {
+    const { error } = await supabase.from('student_subjects').insert(toInsert);
+    if (error) return { ok: false, error: friendlyDbError(error) };
+  }
+
+  revalidatePath('/students');
+  revalidatePath('/');
+  return { ok: true };
+}

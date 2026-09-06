@@ -117,7 +117,9 @@ function mapRow(r: StudentRow, acad?: StudentAcademics): Student {
     testsPct: 0,
     assignmentsPct: 0,
     masteryPct: 0,
-    performanceScore: 0,
+    // A simple, real performance proxy from attendance + homework once the
+    // student has attended at least one class; 0 (no data) before that.
+    performanceScore: completedClasses > 0 ? Math.round((attendancePct + homeworkPct) / 2) : 0,
     feeStatus,
     feeDateText: r.next_due_date,
     nextClassTime: '',
@@ -256,15 +258,71 @@ export async function getStudents(): Promise<Student[]> {
 
   if (error || !data) return [];
 
-  // Compute academics for the health score from the real tables (all RLS-scoped).
-  const [attRes, hwRes, sessRes] = await Promise.all([
+  // Compute academics + subjects + next class from the real tables (all
+  // RLS-scoped, so a teacher only ever sees their own students' rows).
+  const [attRes, hwRes, sessRes, ssRes] = await Promise.all([
     supabase.from('attendance').select('student_id,status').is('deleted_at', null),
     supabase.from('homework').select('student_id,status').is('deleted_at', null),
-    supabase.from('class_sessions').select('student_id').eq('status', 'completed').is('deleted_at', null),
+    supabase
+      .from('class_sessions')
+      .select('student_id,start_at,status,meeting_link,subjects(name)')
+      .is('deleted_at', null)
+      .order('start_at', { ascending: true }),
+    supabase.from('student_subjects').select('student_id,subjects(name)').is('deleted_at', null),
   ]);
-  const acad = buildAcademics(attRes.data ?? [], hwRes.data ?? [], sessRes.data ?? []);
+
+  const embedName = (rel: any): string =>
+    (Array.isArray(rel) ? rel[0]?.name : rel?.name) ?? '';
+
+  const sessions = (sessRes.data as any[]) ?? [];
+  const completed = sessions.filter((r) => r.status === 'completed').map((r) => ({ student_id: r.student_id }));
+  const acad = buildAcademics(attRes.data ?? [], hwRes.data ?? [], completed);
+
+  // Subjects the student is taught (by this viewer's scope) = subject enrollments
+  // + any scheduled/held classes. Next class = the earliest upcoming scheduled one.
+  const now = Date.now();
+  const subjectsByStudent = new Map<string, Set<string>>();
+  const nextByStudent = new Map<string, { time: string; subject: string }>();
+  const addSubject = (sid: string, name: string) => {
+    if (!sid || !name) return;
+    const set = subjectsByStudent.get(sid) ?? new Set<string>();
+    set.add(name);
+    subjectsByStudent.set(sid, set);
+  };
+  const fmtNext = (iso: string): string =>
+    new Date(iso).toLocaleString('en-GB', {
+      weekday: 'short', day: 'numeric', month: 'short',
+      hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Karachi',
+    });
+  for (const r of sessions) {
+    const name = embedName(r.subjects);
+    addSubject(r.student_id, name);
+    if (r.status === 'scheduled' && r.start_at && new Date(r.start_at).getTime() >= now) {
+      const prev = nextByStudent.get(r.student_id);
+      if (!prev || new Date(r.start_at).getTime() < new Date(prev.time).getTime()) {
+        // Store ISO temporarily in `time` for comparison, then format below.
+        nextByStudent.set(r.student_id, { time: r.start_at, subject: name });
+      }
+    }
+  }
+  for (const r of (ssRes.data as any[]) ?? []) addSubject(r.student_id, embedName(r.subjects));
 
   const mapped = (data as StudentRow[]).map((r) => mapRow(r, acad.get(r.id)));
+
+  for (const s of mapped) {
+    const subs = Array.from(subjectsByStudent.get(s.id) ?? []);
+    if (subs.length) {
+      s.enrolledSubjects = subs.map((name) => ({
+        subject: name, teacherName: '', assessedGrade: '', targetGrade: 'A*',
+        avgScore: 0, assignments: '', quizScore: 0, status: 'Good', trend: 'stable',
+      }));
+    }
+    const nx = nextByStudent.get(s.id);
+    if (nx) {
+      s.nextClassTime = fmtNext(nx.time);
+      s.nextClassSubject = nx.subject;
+    }
+  }
 
   // Teachers only ever see students RLS already scoped to them (their assigned
   // students). On top of that, hide all parent/guardian contact PII from them.
