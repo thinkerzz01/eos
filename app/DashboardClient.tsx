@@ -199,17 +199,6 @@ export function DashboardClient({
     return (
       <PortalLayout title="" subtitle="" allowedRoles={['teacher']}>
         <div className="space-y-6 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12 text-xs font-medium">
-          <div className="bg-gradient-to-r from-purple-900 to-[#1D1B48] text-white p-6 rounded-[24px] shadow-lg flex justify-between items-center">
-            <div>
-              <h1 className="font-heading font-medium text-2xl sm:text-3xl">{firstName ? `Welcome back, ${firstName}` : 'Welcome back'}</h1>
-              {teacherStats?.nextClass && (
-                <p className="text-xs text-purple-200 mt-1 font-medium">
-                  Next class: {teacherStats.nextClass.label} ({teacherStats.nextClass.time})
-                </p>
-              )}
-            </div>
-          </div>
-
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             {[
               { label: 'Classes Today', value: String(teacherStats?.classesToday ?? 0) },
