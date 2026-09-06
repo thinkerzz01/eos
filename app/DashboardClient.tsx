@@ -14,6 +14,11 @@ import type { ScheduledClass } from '@/lib/mockAcademicsData';
 import { ClassCalendar } from './schedule/ClassCalendar';
 import {
   Calendar,
+  CalendarCheck,
+  GraduationCap,
+  ClipboardList,
+  Megaphone,
+  ChevronRight,
   AlertTriangle,
   UserPlus,
   UserCheck,
@@ -197,11 +202,11 @@ export function DashboardClient({
           <div className="bg-gradient-to-r from-purple-900 to-[#1D1B48] text-white p-6 rounded-[24px] shadow-lg flex justify-between items-center">
             <div>
               <h1 className="font-heading font-medium text-2xl sm:text-3xl">{firstName ? `Welcome back, ${firstName}` : 'Welcome back'}</h1>
-              <p className="text-xs text-purple-200 mt-1 font-medium">
-                {teacherStats?.nextClass
-                  ? `Next class: ${teacherStats.nextClass.label} (${teacherStats.nextClass.time})`
-                  : 'Your classes and reviews appear here once you are assigned students.'}
-              </p>
+              {teacherStats?.nextClass && (
+                <p className="text-xs text-purple-200 mt-1 font-medium">
+                  Next class: {teacherStats.nextClass.label} ({teacherStats.nextClass.time})
+                </p>
+              )}
             </div>
           </div>
 
@@ -217,6 +222,38 @@ export function DashboardClient({
                 <div className="font-heading font-medium text-3xl text-slate-900">{k.value}</div>
               </div>
             ))}
+          </div>
+
+          {/* QUICK NAVIGATION — jump straight to a teacher tab */}
+          <div>
+            <div className="text-xs text-slate-500 uppercase font-medium mb-3">Quick actions</div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+              {[
+                { href: '/students', label: 'My Students', icon: GraduationCap },
+                { href: '/schedule', label: 'Classes', icon: Calendar },
+                { href: '/attendance', label: 'Attendance', icon: CalendarCheck },
+                { href: '/homework', label: 'Homework', icon: FileText },
+                { href: '/assessments', label: 'Assessments', icon: ClipboardList },
+                { href: '/announcements', label: 'Announcements', icon: Megaphone },
+              ].map((n) => {
+                const Icon = n.icon;
+                return (
+                  <Link
+                    key={n.href}
+                    href={n.href}
+                    className="group bg-white border border-[#EBEDF3] dark:bg-slate-900 dark:border-slate-800 rounded-2xl p-4 shadow-sm hover:border-[#5B47D6]/40 hover:shadow-md transition-all flex flex-col gap-2"
+                  >
+                    <span className="w-9 h-9 rounded-xl bg-[#5B47D6]/10 text-[#5B47D6] flex items-center justify-center">
+                      <Icon className="w-5 h-5" />
+                    </span>
+                    <span className="flex items-center justify-between text-slate-800 dark:text-slate-100 font-medium">
+                      {n.label}
+                      <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-[#5B47D6] transition-colors" />
+                    </span>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         </div>
       </PortalLayout>
