@@ -38,7 +38,12 @@ function mapRow(r: any): DemoSession {
   const teacher = one<any>(r.teachers);
   return {
     id: r.id,
-    demoId: `DMO-${String(r.id).split('-')[0].toUpperCase()}`,
+    // Sequential, human-friendly reference: DM-000001. Falls back to the old
+    // UUID-derived code only if demo_no is somehow absent (pre-migration row).
+    demoId:
+      r.demo_no != null
+        ? `DM-${String(r.demo_no).padStart(6, '0')}`
+        : `DMO-${String(r.id).split('-')[0].toUpperCase()}`,
     leadId: r.lead_id,
     studentName: lead?.name ?? '',
     parentName: lead?.parent_name ?? '',
@@ -74,7 +79,7 @@ export async function getDemos(): Promise<DemoSession[]> {
   const { data, error } = await supabase
     .from('demos')
     .select(
-      'id,lead_id,teacher_id,scheduled_at,meeting_link,status,outcome,reason,leads(name,parent_name,phone,email,program,subjects,source,school,city,area),subjects(name),teachers(name)'
+      'id,demo_no,lead_id,teacher_id,scheduled_at,meeting_link,status,outcome,reason,leads(name,parent_name,phone,email,program,subjects,source,school,city,area),subjects(name),teachers(name)'
     )
     .is('deleted_at', null)
     .order('scheduled_at', { ascending: true });

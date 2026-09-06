@@ -321,6 +321,38 @@ FROM public.students s
 WHERE p.student_id = s.id AND p.role = 'student' AND p.name <> s.name;
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-09-06  Sequential demo numbers: DMO-<hex>  ->  DM-000001
+--     Adds demos.demo_no (a real running counter via a sequence), renumbers
+--     existing demos from 1 in creation order (the "reset"), and auto-numbers new
+--     demos via the column DEFAULT. Each demo's number is STABLE. Idempotent.
+-- ─────────────────────────────────────────────────────────────────────────────
+CREATE SEQUENCE IF NOT EXISTS public.demo_no_seq;
+
+ALTER TABLE public.demos ADD COLUMN IF NOT EXISTS demo_no BIGINT;
+
+WITH ordered AS (
+    SELECT id, ROW_NUMBER() OVER (ORDER BY created_at, id) AS rn
+    FROM public.demos
+)
+UPDATE public.demos d
+SET demo_no = o.rn
+FROM ordered o
+WHERE d.id = o.id AND d.demo_no IS NULL;
+
+SELECT setval(
+    'public.demo_no_seq',
+    COALESCE((SELECT MAX(demo_no) FROM public.demos), 0) + 1,
+    false
+);
+
+ALTER TABLE public.demos ALTER COLUMN demo_no SET DEFAULT nextval('public.demo_no_seq');
+ALTER TABLE public.demos ALTER COLUMN demo_no SET NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS demos_demo_no_key ON public.demos (demo_no);
+ALTER SEQUENCE public.demo_no_seq OWNED BY public.demos.demo_no;
+GRANT USAGE ON SEQUENCE public.demo_no_seq TO authenticated;
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql

@@ -311,12 +311,17 @@ CREATE TABLE IF NOT EXISTS public.lead_communications (
     deleted_at TIMESTAMPTZ NULL
 );
 
+-- Human-friendly, sequential demo numbers (DM-000001, DM-000002, ...). See
+-- migrations/2026-09-06_demo_sequential_no.sql for the notes + reset/backfill.
+CREATE SEQUENCE IF NOT EXISTS public.demo_no_seq;
+
 CREATE TABLE IF NOT EXISTS public.demos (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     org_id UUID NOT NULL REFERENCES public.orgs(id),
     lead_id UUID NOT NULL REFERENCES public.leads(id) ON DELETE CASCADE,
     subject_id UUID NULL REFERENCES public.subjects(id),
     teacher_id UUID NULL REFERENCES public.teachers(id),
+    demo_no BIGINT NOT NULL DEFAULT nextval('public.demo_no_seq') UNIQUE,
     scheduled_at TIMESTAMPTZ NOT NULL,
     meeting_link TEXT,
     calendar_event_id TEXT, -- Google Calendar event id (for Meet link + calendar invites)
@@ -327,6 +332,8 @@ CREATE TABLE IF NOT EXISTS public.demos (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     deleted_at TIMESTAMPTZ NULL
 );
+ALTER SEQUENCE public.demo_no_seq OWNED BY public.demos.demo_no;
+GRANT USAGE ON SEQUENCE public.demo_no_seq TO authenticated;
 
 -- 2.7 Academics & Scheduling
 CREATE TABLE IF NOT EXISTS public.class_sessions (
