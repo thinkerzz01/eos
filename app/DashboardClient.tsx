@@ -10,6 +10,8 @@ import { useRole } from '@/components/ui/RoleContext';
 import { Student } from '@/lib/mockStudentsData';
 import type { DashboardMetrics } from '@/lib/data/dashboard';
 import type { TeacherDashboard } from '@/lib/data/teacherDashboard';
+import type { ScheduledClass } from '@/lib/mockAcademicsData';
+import { ClassCalendar } from './schedule/ClassCalendar';
 import {
   Calendar,
   AlertTriangle,
@@ -39,11 +41,13 @@ export function DashboardClient({
   metrics,
   teacherStats,
   adminData,
+  studentClasses = [],
 }: {
   initialStudents: Student[];
   metrics?: DashboardMetrics;
   teacherStats?: TeacherDashboard | null;
   adminData: AdminData;
+  studentClasses?: ScheduledClass[];
 }) {
   const { role, name } = useRole();
   const firstName = name?.trim() || '';
@@ -138,13 +142,11 @@ export function DashboardClient({
       ? [
           { label: 'My Attendance Rate', value: `${Math.round(me.attendancePct)}%` },
           { label: 'Homework On-Time', value: `${Math.round(me.homeworkPct)}%` },
-          { label: 'Health', value: me.healthBand },
           { label: 'Fee Voucher Status', value: me.feeStatus },
         ]
       : [
           { label: 'My Attendance Rate', value: '-' },
           { label: 'Homework On-Time', value: '-' },
-          { label: 'Health', value: '-' },
           { label: 'Fee Voucher Status', value: '-' },
         ];
     return (
@@ -160,13 +162,27 @@ export function DashboardClient({
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 font-medium">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-medium">
             {studentTiles.map((k) => (
               <div key={k.label} className="bg-white border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
                 <div className="text-xs text-slate-500 uppercase">{k.label}</div>
                 <div className="font-heading font-medium text-3xl text-slate-900">{k.value}</div>
               </div>
             ))}
+          </div>
+
+          {/* MY CLASS CALENDAR — same role-scoped rows as the Classes tab */}
+          <div>
+            <h2 className="font-heading font-medium text-lg text-slate-900 dark:text-white mb-3">My Class Calendar</h2>
+            <ClassCalendar
+              classes={studentClasses}
+              canManage={false}
+              role="student"
+              onComplete={() => {}}
+              onReschedule={() => {}}
+              onEdit={() => {}}
+              onDelete={() => {}}
+            />
           </div>
         </div>
       </PortalLayout>
