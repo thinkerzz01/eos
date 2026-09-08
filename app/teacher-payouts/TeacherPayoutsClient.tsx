@@ -303,7 +303,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
       {/* PAY TEACHER MODAL */}
       {payTeacher && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setPayTeacher(null)}>
-          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Pay {payTeacher.teacherName}</h3>
               <button onClick={() => setPayTeacher(null)}><X className="w-4 h-4 text-slate-400" /></button>
@@ -342,7 +342,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
       {/* VIEW DETAILS MODAL */}
       {viewPayout && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setViewPayout(null)}>
-          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b pb-3">
               <div>
                 <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">{viewPayout.teacherName}</h3>
@@ -380,7 +380,7 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
       {/* SET PER-CLASS RATE MODAL */}
       {rateTeacher && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setRateTeacher(null)}>
-          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b pb-3">
               <div>
                 <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Set Per-Class Rate</h3>

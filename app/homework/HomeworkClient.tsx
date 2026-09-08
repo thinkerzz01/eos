@@ -409,7 +409,7 @@ export function HomeworkClient({
         {/* VIEW MODAL */}
         {viewHw && (
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-3 my-6 text-sm">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-3 my-6 text-sm">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Homework Details</h3>
                 <button onClick={() => setViewHw(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
@@ -439,7 +439,7 @@ export function HomeworkClient({
         {/* EDIT MODAL */}
         {editHw && (
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 my-6 text-sm">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 my-6 text-sm">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Modify Homework</h3>
                 <button onClick={() => setEditHw(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
@@ -468,7 +468,7 @@ export function HomeworkClient({
         {/* ADD HOMEWORK MODAL */}
         {showAddHomeworkModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 border rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="bg-white dark:bg-slate-900 border rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
                 <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Assign New Homework</h3>
                 <button onClick={() => setShowAddHomeworkModal(false)}><X className="w-4 h-4 text-slate-400" /></button>

@@ -736,7 +736,7 @@ export function ScheduleClient({
         {/* MOBILE-FIRST CLASS COMPLETION DRAWER */}
         {selectedClassForCompletion && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-5">
               <div className="flex justify-between items-center border-b pb-3.5">
                 <div>
                   <h3 className="font-heading font-medium text-slate-900 dark:text-white text-lg">
@@ -811,7 +811,7 @@ export function ScheduleClient({
         {/* SINGLE-CLASS MODAL (one class at one date/time) */}
         {showSingleModal && (
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 my-6 text-sm">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 my-6 text-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Add a Single Class</h3>
@@ -942,7 +942,7 @@ export function ScheduleClient({
         {/* EDIT SINGLE CLASS MODAL */}
         {editClass && (
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 my-6 text-sm">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 my-6 text-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Edit Class</h3>
@@ -1055,7 +1055,7 @@ export function ScheduleClient({
         {/* TEACHER RESCHEDULE MODAL */}
         {rsClass && (
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 my-6 text-sm">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 my-6 text-sm">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Reschedule Class</h3>
@@ -1111,7 +1111,7 @@ export function ScheduleClient({
         {/* SCHEDULE WIZARD MODAL */}
         {showAddClassModal && (
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-3xl w-full shadow-2xl space-y-5 my-6 text-sm">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-5 my-6 text-sm">
               <div className="flex justify-between items-start border-b pb-4">
                 <div>
                   <h3 className="font-heading font-medium text-slate-900 dark:text-white text-xl">Schedule a Student's Classes</h3>

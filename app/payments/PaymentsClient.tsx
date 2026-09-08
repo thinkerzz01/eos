@@ -329,7 +329,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
       {/* EDIT RECEIPT MODAL */}
       {editRcpt && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setEditRcpt(null)}>
-          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-center border-b pb-3">
               <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Edit Receipt - {editRcpt.receiptNo}</h3>
               <button onClick={() => setEditRcpt(null)}><X className="w-4 h-4 text-slate-400" /></button>
@@ -379,7 +379,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
             }
           `}</style>
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setReceipt(null)}>
-            <div id="receipt-print-area" className="bg-white rounded-3xl max-w-sm w-full shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+            <div id="receipt-print-area" className="bg-white rounded-3xl max-w-sm w-full max-h-[90vh] overflow-y-auto shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
               <div className="p-6 space-y-4 text-slate-900 text-[14px]">
                 <div className="flex items-center gap-3 border-b border-slate-200 pb-3">
                   <div className="w-11 h-11 rounded-xl bg-[#5B47D6] text-white flex items-center justify-center font-medium text-lg">T</div>

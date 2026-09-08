@@ -192,11 +192,13 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
         )}
 
         {isDashboard && (
-          <div>
-            <h1 className="font-heading font-medium text-slate-900 dark:text-white text-lg sm:text-xl leading-tight">
+          // Hidden on phones so the long name doesn't crowd the toolbar icons; the
+          // dashboard hero already greets by name there.
+          <div className="hidden sm:block min-w-0">
+            <h1 className="font-heading font-medium text-slate-900 dark:text-white text-lg sm:text-xl leading-tight truncate">
               Welcome back, {displayName}
             </h1>
-            <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium hidden sm:block">
+            <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium">
               {greetingSubtitle}
             </p>
           </div>

@@ -1409,7 +1409,7 @@ export function StudentsClient({
         {/* IMPORT CSV MODAL */}
         {showImportModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-5 relative">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-5 relative">
               <div className="flex justify-between items-center border-b pb-3.5">
                 <div className="flex items-center gap-2.5">
                   <div className="w-9 h-9 rounded-xl bg-[#EEEBFB] text-[#5B47D6] flex items-center justify-center">
@@ -1511,7 +1511,7 @@ export function StudentsClient({
         {/* SAVE VIEW MODAL */}
         {showSaveViewModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
                 <h3 className="font-medium text-slate-900 dark:text-white text-base">Save Current Filters as View</h3>
                 <button onClick={() => setShowSaveViewModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
@@ -1539,7 +1539,7 @@ export function StudentsClient({
         {/* 100% MATCHING 6-TAB PROFILE MODAL (FULL RESPONSIVE VERIFIED) */}
         {profileModalStudent && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl shadow-2xl max-w-6xl w-full h-[92vh] sm:h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 relative">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl max-h-[90vh] overflow-y-auto shadow-2xl max-w-6xl w-full h-[92vh] sm:h-[90vh] flex flex-col overflow-hidden animate-in zoom-in-95 relative">
               
               {/* STICKY MODAL HEADER */}
               <div className="shrink-0 bg-white dark:bg-slate-900 p-4 sm:p-6 border-b border-[#EBEDF3] dark:border-slate-800 space-y-3 z-20">
@@ -2204,7 +2204,7 @@ export function StudentsClient({
       {/* ASSIGN TEACHER & SUBJECTS MODAL */}
       {assignStudent && (
         <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 my-6 text-sm">
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 my-6 text-sm">
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Assign Teacher &amp; Subjects</h3>

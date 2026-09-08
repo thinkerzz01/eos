@@ -177,7 +177,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
         {/* AD SPEND MODAL */}
         {showSpend && (
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4 my-6">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 my-6">
               <div className="flex items-center justify-between">
                 <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Record Ad Spend</h3>
                 <button onClick={() => setShowSpend(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>

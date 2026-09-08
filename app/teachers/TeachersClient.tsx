@@ -872,7 +872,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
       {/* EDIT TEACHER MODAL */}
       {editTeacher && (
         <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-4 my-6 text-sm">
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 my-6 text-sm">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Edit Teacher</h3>
@@ -976,7 +976,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
       {/* TEACHER LEFT THE ACADEMY MODAL */}
       {leaveTeacher && (
         <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
-          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-2xl space-y-4 my-6 text-sm">
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4 my-6 text-sm">
             <div className="flex items-center justify-between">
               <div>
                 <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Record teacher leaving</h3>

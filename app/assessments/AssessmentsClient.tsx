@@ -204,7 +204,7 @@ export function AssessmentsClient({
         {/* OFFICIAL RESULT SLIP MODAL */}
         {showResultSlipModal && selectedAssessmentForSlip && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-xl w-full shadow-2xl space-y-5">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-5">
               
               {/* RESULT SLIP HEADER */}
               <div className="flex justify-between items-start border-b pb-4">
@@ -314,7 +314,7 @@ export function AssessmentsClient({
         {/* RECORD TEST MODAL */}
         {showRecordModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
               <div className="flex justify-between items-center border-b pb-3">
                 <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Record Test</h3>
                 <button onClick={() => setShowRecordModal(false)}><X className="w-4 h-4 text-slate-400" /></button>
