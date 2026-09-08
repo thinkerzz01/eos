@@ -433,6 +433,36 @@ FROM (VALUES
 WHERE s.name = m.name AND (s.code IS NULL OR s.code = '');
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-09-08  Programs: A Level (A1)/(A2) -> AS / A2, add Edexcel
+--     Widens the program CHECK on every program table to the new set AND renames
+--     old A-Level rows. Run this as ONE block (drop CHECK -> rename -> add CHECK)
+--     — renaming before widening the CHECK is what errored with 23514.
+--     Full file: supabase/migrations/2026-09-08_programs_as_a2_edexcel.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+DO $$
+DECLARE
+    t TEXT;
+    tables TEXT[] := ARRAY['students', 'leads', 'subjects', 'syllabus_templates', 'announcement_targets'];
+    new_check CONSTANT TEXT :=
+      'program IN (''O Level (O1)'', ''O Level (O2)'', ''AS'', ''A2'', ''IGCSE'', '
+      || '''Edexcel IGCSE'', ''Edexcel AS'', ''Edexcel A2'', '
+      || '''Matric (9)'', ''Matric (10)'', ''Inter (11)'', ''Inter (12)'')';
+BEGIN
+    FOREACH t IN ARRAY tables LOOP
+        EXECUTE format('ALTER TABLE public.%I DROP CONSTRAINT IF EXISTS %I', t, t || '_program_check');
+        EXECUTE format($f$
+            UPDATE public.%I SET program = CASE program
+                WHEN 'A Level (A1)' THEN 'AS'
+                WHEN 'A Level (A2)' THEN 'A2'
+                ELSE program END
+            WHERE program IN ('A Level (A1)', 'A Level (A2)')
+        $f$, t);
+        EXECUTE format('ALTER TABLE public.%I ADD CONSTRAINT %I CHECK (%s)', t, t || '_program_check', new_check);
+    END LOOP;
+END $$;
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql
