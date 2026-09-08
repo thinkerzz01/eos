@@ -21,6 +21,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
   // Add form
   const [addName, setAddName] = useState('');
   const [addProgram, setAddProgram] = useState<string>(ALL_PROGRAMS[0]);
+  const [addCode, setAddCode] = useState('');
   const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
@@ -28,6 +29,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
   const [editing, setEditing] = useState<SubjectOption | null>(null);
   const [edName, setEdName] = useState('');
   const [edProgram, setEdProgram] = useState('');
+  const [edCode, setEdCode] = useState('');
   const [edSaving, setEdSaving] = useState(false);
   const [edError, setEdError] = useState<string | null>(null);
 
@@ -50,21 +52,21 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
     setAddError(null);
     if (!addName.trim()) { setAddError('Enter a subject name.'); return; }
     setAdding(true);
-    const res = await createSubject({ name: addName, program: addProgram });
+    const res = await createSubject({ name: addName, program: addProgram, code: addCode });
     setAdding(false);
-    if (res.ok) { setAddName(''); router.refresh(); }
+    if (res.ok) { setAddName(''); setAddCode(''); router.refresh(); }
     else setAddError(res.error ?? 'Failed to add subject.');
   };
 
   const openEdit = (s: SubjectOption) => {
-    setEditing(s); setEdName(s.name); setEdProgram(s.program); setEdError(null);
+    setEditing(s); setEdName(s.name); setEdProgram(s.program); setEdCode(s.code ?? ''); setEdError(null);
   };
   const handleEdit = async () => {
     if (!editing) return;
     setEdError(null);
     if (!edName.trim()) { setEdError('Enter a subject name.'); return; }
     setEdSaving(true);
-    const res = await updateSubject({ id: editing.id, name: edName, program: edProgram });
+    const res = await updateSubject({ id: editing.id, name: edName, program: edProgram, code: edCode });
     setEdSaving(false);
     if (res.ok) { setEditing(null); router.refresh(); }
     else setEdError(res.error ?? 'Failed to update subject.');
@@ -137,6 +139,16 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
               >
                 {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
               </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Code <span className="text-slate-400">(optional)</span></label>
+              <input
+                value={addCode}
+                onChange={(e) => setAddCode(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleAdd(); }}
+                placeholder="e.g. 4024"
+                className="w-full sm:w-28 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+              />
             </div>
             <button
               onClick={handleAdd}
@@ -236,8 +248,8 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
                           className="rounded accent-[#5B47D6]"
                         />
                         <span className="font-medium text-slate-900 dark:text-slate-100 text-sm">{s.name}</span>
-                        {subjectCode(s.name) && (
-                          <span className="text-[11px] font-mono font-medium text-[#5B47D6] bg-[#EEEBFB] dark:bg-[#5B47D6]/15 px-1.5 py-0.5 rounded">{subjectCode(s.name)}</span>
+                        {(s.code || subjectCode(s.name)) && (
+                          <span className="text-[11px] font-mono font-medium text-[#5B47D6] bg-[#EEEBFB] dark:bg-[#5B47D6]/15 px-1.5 py-0.5 rounded">{s.code || subjectCode(s.name)}</span>
                         )}
                       </label>
                       <RowActionsMenu
@@ -271,6 +283,10 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
                 <select value={edProgram} onChange={(e) => setEdProgram(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
                   {ALL_PROGRAMS.map((p) => (<option key={p} value={p}>{p}</option>))}
                 </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Cambridge Code <span className="text-slate-400">(optional)</span></label>
+                <input value={edCode} onChange={(e) => setEdCode(e.target.value)} placeholder="e.g. 4024" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
               </div>
               {edError && <p className="text-xs font-medium text-rose-600">{edError}</p>}
               <div className="flex justify-end gap-2 pt-1">

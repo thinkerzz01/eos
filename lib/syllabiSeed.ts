@@ -124,6 +124,16 @@ export function subjectLabel(name: string): string {
   return code ? `${name} (${code})` : name;
 }
 
+/**
+ * Label for a DB subject row that prefers its admin-set code, falling back to the
+ * standard-code map. Use this for pickers fed by the subjects table so an
+ * admin-edited code shows everywhere.
+ */
+export function labelWithCode(name: string, code?: string | null): string {
+  const c = (code && String(code).trim()) || subjectCode(name);
+  return c ? `${name} (${c})` : name;
+}
+
 export const EXAM_SESSIONS = [
   'May/June 2026',
   'Oct/Nov 2026',

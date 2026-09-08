@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
-import { subjectLabel } from '@/lib/syllabiSeed';
+import { subjectLabel, labelWithCode } from '@/lib/syllabiSeed';
 import { bulkScheduleClasses, completeClassWithAttendance, createClassSession, updateClassSession, deleteClassSession, rescheduleClass, saveClassNote, bulkDeleteClasses, listStudentEnrollments } from './actions';
 import { downloadCsv } from '@/lib/export/csv';
 import { ClassCalendar } from './ClassCalendar';
@@ -896,7 +896,7 @@ export function ScheduleClient({
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
                     >
                       <option value="">{scStudentId ? 'Select subject...' : 'Pick a student first'}</option>
-                      {scSubjects.map((s) => (<option key={s.id} value={s.id}>{subjectLabel(s.name)}</option>))}
+                      {scSubjects.map((s) => (<option key={s.id} value={s.id}>{labelWithCode(s.name, s.code)}</option>))}
                     </select>
                   </div>
                   <div>
@@ -1009,7 +1009,7 @@ export function ScheduleClient({
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
                     >
                       <option value="">Select subject...</option>
-                      {edSubjects.map((s) => (<option key={s.id} value={s.id}>{subjectLabel(s.name)}</option>))}
+                      {edSubjects.map((s) => (<option key={s.id} value={s.id}>{labelWithCode(s.name, s.code)}</option>))}
                     </select>
                   </div>
                   <div>
@@ -1205,7 +1205,7 @@ export function ScheduleClient({
                         <label className="text-[11px] text-[#6B7185] font-medium block mb-1">Subject</label>
                         <select value={r.subjectId} onChange={(e) => updateRow(i, { subjectId: e.target.value })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium">
                           <option value="">Select subject...</option>
-                          {wizSubjects.map((s) => (<option key={s.id} value={s.id}>{subjectLabel(s.name)}</option>))}
+                          {wizSubjects.map((s) => (<option key={s.id} value={s.id}>{labelWithCode(s.name, s.code)}</option>))}
                         </select>
                       </div>
                       <div>

@@ -412,6 +412,27 @@ $$;
 GRANT EXECUTE ON FUNCTION public.get_student_public(UUID) TO anon, authenticated;
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-08-28  Editable subject codes
+--     Adds subjects.code (admin-editable in the Subjects manager, shown in every
+--     picker) and backfills standard O-Level CAIE codes (verified on
+--     cambridgeinternational.org). Only fills blanks — safe to re-run.
+--     Full file: supabase/migrations/2026-08-28_subject_codes.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+ALTER TABLE public.subjects ADD COLUMN IF NOT EXISTS code TEXT;
+UPDATE public.subjects s SET code = m.code
+FROM (VALUES
+    ('Mathematics', '4024'), ('Additional Mathematics', '4037'), ('Physics', '5054'),
+    ('Chemistry', '5070'), ('Biology', '5090'), ('Accounting', '7707'),
+    ('Economics', '2281'), ('Business Studies', '7115'), ('Computer Science', '2210'),
+    ('Information Technology', '0417'), ('English (First Language)', '1123'),
+    ('English (Second Language)', '0510'), ('Islamiyat', '2058'),
+    ('Pakistan Studies', '2059'), ('Urdu', '3247'), ('Statistics', '4040'),
+    ('Psychology', '0490'), ('Sociology', '2251')
+) AS m(name, code)
+WHERE s.name = m.name AND (s.code IS NULL OR s.code = '');
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql

@@ -57,8 +57,9 @@ async function ctx() {
   return { supabase, orgId: (profile?.org_id as string) ?? null, role: (profile?.role as string) ?? null };
 }
 
-export async function createSubject(input: { name: string; program: string }): Promise<ActionResult> {
+export async function createSubject(input: { name: string; program: string; code?: string }): Promise<ActionResult> {
   const name = input.name?.trim();
+  const code = input.code?.trim() || null;
   if (!name) return { ok: false, error: 'Subject name is required.' };
   if (!PROGRAMS.includes(input.program)) return { ok: false, error: 'Pick a valid program.' };
 
@@ -79,10 +80,10 @@ export async function createSubject(input: { name: string; program: string }): P
     .maybeSingle();
   if (existing?.id) {
     if (!existing.deleted_at) return { ok: false, error: 'That subject already exists for this program.' };
-    const { error } = await supabase.from('subjects').update({ deleted_at: null }).eq('id', existing.id);
+    const { error } = await supabase.from('subjects').update({ deleted_at: null, code }).eq('id', existing.id);
     if (error) return { ok: false, error: friendlyDbError(error) };
   } else {
-    const { error } = await supabase.from('subjects').insert({ org_id: orgId, name, program: input.program });
+    const { error } = await supabase.from('subjects').insert({ org_id: orgId, name, program: input.program, code });
     if (error) return { ok: false, error: friendlyDbError(error) };
   }
 
@@ -93,7 +94,7 @@ export async function createSubject(input: { name: string; program: string }): P
   return { ok: true };
 }
 
-export async function updateSubject(input: { id: string; name?: string; program?: string }): Promise<ActionResult> {
+export async function updateSubject(input: { id: string; name?: string; program?: string; code?: string }): Promise<ActionResult> {
   if (!input.id) return { ok: false, error: 'Missing subject id.' };
   const { supabase, orgId, role } = await ctx();
   if (!orgId) return { ok: false, error: 'You are not signed in.' };
@@ -107,6 +108,8 @@ export async function updateSubject(input: { id: string; name?: string; program?
     if (!PROGRAMS.includes(input.program)) return { ok: false, error: 'Pick a valid program.' };
     patch.program = input.program;
   }
+  // Code is editable, including clearing it (empty -> NULL).
+  if (input.code !== undefined) patch.code = input.code.trim() || null;
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
   const { error } = await supabase.from('subjects').update(patch).eq('id', input.id);
