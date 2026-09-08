@@ -7,6 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { AssessmentRecord } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
+import { subjectLabel } from '@/lib/syllabiSeed';
 import { recordTest, updateTest, deleteTest } from './actions';
 import {
   Award,
@@ -358,7 +359,7 @@ export function AssessmentsClient({
                   <label className="text-slate-700 dark:text-slate-300 block mb-1">Subject</label>
                   <select value={tSubject} onChange={(e) => setTSubject(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
                     <option value="">Select...</option>
-                    {subjects.map((s) => (<option key={s.id} value={s.id}>{s.name} ({s.program})</option>))}
+                    {subjects.map((s) => (<option key={s.id} value={s.id}>{subjectLabel(s.name)} · {s.program}</option>))}
                   </select>
                 </div>
                 <div className="grid grid-cols-3 gap-2">

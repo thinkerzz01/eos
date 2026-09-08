@@ -87,6 +87,43 @@ export function subjectsForProgram(program: string): readonly string[] {
   return CAIE_SUBJECTS;
 }
 
+// Standard CAIE subject codes (one per subject; O-Level codes used as the common
+// default per the academy's choice). Matric/Inter subjects have no CAIE code and
+// are intentionally omitted. NOTE: verify these against your exact syllabus
+// variants — some subjects have alternates (e.g. Maths D 4024 vs 4029, Urdu 3247
+// second-language vs 3248 first-language).
+export const SUBJECT_CODES: Record<string, string> = {
+  'Mathematics': '4024',
+  'Additional Mathematics': '4037',
+  'Physics': '5054',
+  'Chemistry': '5070',
+  'Biology': '5090',
+  'Accounting': '7707',
+  'Economics': '2281',
+  'Business Studies': '7115',
+  'Computer Science': '2210',
+  'Information Technology': '0417',
+  'English (First Language)': '1123',
+  'English (Second Language)': '0510',
+  'Islamiyat': '2058',
+  'Pakistan Studies': '2059',
+  'Urdu': '3247',
+  'Statistics': '4040',
+  'Psychology': '0490',
+  'Sociology': '2251',
+};
+
+/** The CAIE code for a subject name, or '' if it has none (Matric/Inter, etc.). */
+export function subjectCode(name: string): string {
+  return SUBJECT_CODES[name] ?? '';
+}
+
+/** Display label for a subject: "Name (Code)" when a code exists, else just "Name". */
+export function subjectLabel(name: string): string {
+  const code = subjectCode(name);
+  return code ? `${name} (${code})` : name;
+}
+
 export const EXAM_SESSIONS = [
   'May/June 2026',
   'Oct/Nov 2026',

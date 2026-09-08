@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { HomeworkAssignment } from '@/lib/mockAcademicsData';
+import { subjectLabel } from '@/lib/syllabiSeed';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { createHomework, gradeHomework, updateHomework, deleteHomework, submitHomework, bulkDeleteHomework } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
@@ -219,7 +220,7 @@ export function HomeworkClient({
             <span className="text-[11px] text-[#6B7185] block font-medium">Subject</span>
             <select value={fSubject} onChange={(e) => setFSubject(e.target.value)} className={selCls}>
               <option>All Subjects</option>
-              {Array.from(new Set(homeworks.map((h) => h.subject).filter(Boolean))).map((s) => (<option key={s} value={s}>{s}</option>))}
+              {Array.from(new Set(homeworks.map((h) => h.subject).filter(Boolean))).map((s) => (<option key={s} value={s}>{subjectLabel(s)}</option>))}
             </select>
           </div>
           <div className={boxCls}>
@@ -533,7 +534,7 @@ export function HomeworkClient({
                     <label className="text-slate-700 dark:text-slate-300 block mb-1">Subject</label>
                     <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
                       <option value="">Select...</option>
-                      {subjects.map((s) => (<option key={s.id} value={s.id}>{s.name} ({s.program})</option>))}
+                      {subjects.map((s) => (<option key={s.id} value={s.id}>{subjectLabel(s.name)} · {s.program}</option>))}
                     </select>
                   </div>
                   <div>

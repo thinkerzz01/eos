@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { DemoSession } from '@/lib/mockAdmissionsData';
 import type { SubjectOption } from '@/lib/data/subjects';
-import { ALL_PROGRAMS, LEAD_SOURCES } from '@/lib/syllabiSeed';
+import { ALL_PROGRAMS, LEAD_SOURCES, subjectLabel } from '@/lib/syllabiSeed';
 import { createClient } from '@/lib/supabase/client';
 import { assignTeacher, recordOutcome, deleteDemo, createDemo, updateDemo, bulkDeleteDemos } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
@@ -700,7 +700,7 @@ export function DemosClient({
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Subject</label>
                     <select value={ndSubjectId} onChange={(e) => setNdSubjectId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]">
                       <option value="">{ndProgram ? 'Select subject...' : 'Any (pick program first)'}</option>
-                      {ndSubjects.map((s) => (<option key={s.id} value={s.id}>{s.name}</option>))}
+                      {ndSubjects.map((s) => (<option key={s.id} value={s.id}>{subjectLabel(s.name)}</option>))}
                     </select>
                   </div>
                 </div>

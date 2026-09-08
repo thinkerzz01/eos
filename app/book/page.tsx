@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { submitPublicBooking } from './actions';
 import { BookingSuccess } from './BookingSuccess';
 import { TurnstileWidget } from '@/components/security/TurnstileWidget';
-import { ALL_PROGRAMS, subjectsForProgram } from '@/lib/syllabiSeed';
+import { ALL_PROGRAMS, subjectsForProgram, subjectLabel } from '@/lib/syllabiSeed';
 import {
   CheckCircle2, ArrowRight, AlertCircle, CalendarDays, BookOpen, Clock,
   User, GraduationCap, Phone, Mail, Search, MessageCircle, Video, ShieldCheck, Star,
@@ -198,7 +198,7 @@ export default function PublicBookingPage() {
                     <div className="relative"><BookOpen className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                       <select required value={subject} onChange={(e) => setSubject(e.target.value)} className={field}>
                         <option value="">Select A Subject</option>
-                        {subjectsForProgram(program).map((s) => (<option key={s} value={s}>{s}</option>))}
+                        {subjectsForProgram(program).map((s) => (<option key={s} value={s}>{subjectLabel(s)}</option>))}
                       </select></div>
                     <p className="mt-1 text-[11px] text-slate-400 font-medium">Only subjects offered for your selected program are shown.</p>
                   </div>

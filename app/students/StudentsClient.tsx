@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { useToast } from '@/components/ui/Toast';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
-import { ALL_PROGRAMS, EXAM_SESSIONS } from '@/lib/syllabiSeed';
+import { ALL_PROGRAMS, EXAM_SESSIONS, subjectLabel } from '@/lib/syllabiSeed';
 import { bulkCreateStudents, updateStudent, softDeleteStudent, markStudentPassout, bulkDeleteStudents, bulkSetFeeStatus, bulkSetStatus, bulkSetProgram, assignStudentSubjects } from './actions';
 import { listStudentEnrollments } from '../schedule/actions';
 import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
@@ -2271,7 +2271,7 @@ export function StudentsClient({
                       className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium"
                     >
                       <option value="">Select subject…</option>
-                      {assignSubjectOptions.map((sub) => (<option key={sub.id} value={sub.id}>{sub.name}</option>))}
+                      {assignSubjectOptions.map((sub) => (<option key={sub.id} value={sub.id}>{subjectLabel(sub.name)}</option>))}
                     </select>
                   </div>
                   <div>
