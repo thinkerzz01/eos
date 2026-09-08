@@ -79,6 +79,10 @@ export default function OnboardingPage({ params }: { params: { studentId: string
         setParentName(ctx.parentName ?? '');
         setParentWhatsapp(ctx.phone ?? '');
         setParentEmail(ctx.email ?? '');
+        // Also carried from the demo booking so the family doesn't retype them.
+        if (ctx.city) setCity(ctx.city);
+        if (ctx.school) setSchool(ctx.school);
+        if (ctx.subjects) setSubjects(ctx.subjects);
         setAlreadyDone(!!ctx.alreadyDone);
       }
       setLoading(false);

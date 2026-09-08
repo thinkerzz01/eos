@@ -14,6 +14,9 @@ export interface OnboardingContext {
   parentName?: string;
   phone?: string;
   email?: string;
+  city?: string;
+  school?: string;
+  subjects?: string;
   alreadyDone?: boolean;
   error?: string;
 }
@@ -32,6 +35,11 @@ export async function getOnboardingContext(studentId: string): Promise<Onboardin
     parentName: row.parent_name ?? '',
     phone: row.phone ?? '',
     email: row.email ?? '',
+    // Carried from the demo booking (see get_student_public); may be absent on
+    // older students or if the migration hasn't been applied yet.
+    city: row.city ?? '',
+    school: row.school ?? '',
+    subjects: row.subjects ?? '',
     alreadyDone: !!row.onboarding_done,
   };
 }

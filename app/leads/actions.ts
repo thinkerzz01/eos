@@ -164,7 +164,7 @@ export async function convertLead(input: {
 
   const { data: lead } = await supabase
     .from('leads')
-    .select('id,name,parent_name,phone,email,program,source,status')
+    .select('id,name,parent_name,phone,email,program,source,status,school,city,subjects')
     .eq('id', input.leadId)
     .is('deleted_at', null)
     .maybeSingle();
@@ -196,6 +196,16 @@ export async function convertLead(input: {
       status: 'active',
       fee_status: 'due', // flipped to 'paid' below once the first payment is recorded
       source: (lead as any).source ?? 'walk_in',
+      // Carry the family's booking details forward so the onboarding link
+      // pre-fills them (city on the student row; school/subjects seeded into
+      // onboarding_data). onboarding_completed_at stays NULL -> still "not done".
+      city: (lead as any).city ?? null,
+      onboarding_data: (() => {
+        const pf: Record<string, string> = {};
+        if ((lead as any).school) pf.school = (lead as any).school;
+        if ((lead as any).subjects) pf.subjects = (lead as any).subjects;
+        return Object.keys(pf).length ? pf : null;
+      })(),
     })
     .select('id')
     .single();

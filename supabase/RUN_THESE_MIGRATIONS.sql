@@ -379,6 +379,39 @@ CREATE POLICY teacher_access_own_tests ON public.tests FOR ALL USING (
 );
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-08-28  Onboarding pre-fill from the demo booking
+--     convertLead now carries the family's booking city/school/subjects onto the
+--     new student; this widens get_student_public so the /onboarding link pre-fills
+--     them too (returned only while onboarding isn't completed — PII-safe).
+--     Full file: supabase/migrations/2026-08-28_onboarding_prefill_from_demo.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+DROP FUNCTION IF EXISTS public.get_student_public(UUID);
+CREATE FUNCTION public.get_student_public(p_student_id UUID)
+RETURNS TABLE (
+    name TEXT, program TEXT, exam_session TEXT,
+    parent_name TEXT, phone TEXT, email TEXT,
+    city TEXT, school TEXT, subjects TEXT,
+    onboarding_done BOOLEAN
+)
+LANGUAGE sql STABLE SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+    SELECT
+        s.name, s.program, s.exam_session,
+        CASE WHEN s.onboarding_completed_at IS NULL THEN s.parent_name ELSE NULL END,
+        CASE WHEN s.onboarding_completed_at IS NULL THEN s.phone ELSE NULL END,
+        CASE WHEN s.onboarding_completed_at IS NULL THEN s.email ELSE NULL END,
+        CASE WHEN s.onboarding_completed_at IS NULL THEN s.city ELSE NULL END,
+        CASE WHEN s.onboarding_completed_at IS NULL THEN (s.onboarding_data ->> 'school') ELSE NULL END,
+        CASE WHEN s.onboarding_completed_at IS NULL THEN (s.onboarding_data ->> 'subjects') ELSE NULL END,
+        (s.onboarding_completed_at IS NOT NULL)
+    FROM public.students s
+    WHERE s.id = p_student_id AND s.deleted_at IS NULL;
+$$;
+GRANT EXECUTE ON FUNCTION public.get_student_public(UUID) TO anon, authenticated;
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql
