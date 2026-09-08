@@ -797,7 +797,7 @@ export function StudentsClient({
         </div>
 
         {/* 7 KPI CARDS STRIP */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
             <div className="flex items-center gap-2">
               <div className="w-7.5 h-7.5 rounded-lg bg-[#EEEBFB] text-[#5B47D6] flex items-center justify-center">
