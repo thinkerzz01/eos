@@ -129,7 +129,7 @@ export function AssessmentsClient({
               Recent Conducted Assessments
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-left text-sm border-collapse min-w-[500px]">
                 <thead>
                   <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -172,6 +172,28 @@ export function AssessmentsClient({
                   ))}
                 </tbody>
               </table>
+            </div>
+
+            {/* MOBILE CARD LIST (phones) */}
+            <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+              {assessments.length === 0 ? (
+                <div className="py-8 text-center text-[#6B7185] text-sm">No assessments yet.</div>
+              ) : (
+                assessments.map((ast) => (
+                  <div key={ast.id} className="p-4 flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">{ast.testTitle}</div>
+                      <div className="text-xs text-[#6B7185] truncate">{ast.subject} · {ast.dateConducted} · {ast.totalMarks} marks</div>
+                    </div>
+                    <button
+                      onClick={() => { setSelectedAssessmentForSlip(ast); setShowResultSlipModal(true); }}
+                      className="shrink-0 px-3 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl"
+                    >
+                      Result Slip
+                    </button>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

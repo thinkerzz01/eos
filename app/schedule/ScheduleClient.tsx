@@ -574,7 +574,7 @@ export function ScheduleClient({
 
           {/* CLASSES TIMETABLE LIST (full width) */}
           <div className="lg:col-span-12 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden flex flex-col justify-between">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-left text-sm border-collapse min-w-[700px]">
                 <thead>
                   <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -726,6 +726,51 @@ export function ScheduleClient({
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* MOBILE CARD LIST (phones) — same rows as the table above */}
+            <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+              {filteredClasses.length === 0 ? (
+                <div className="py-8 text-center text-[#6B7185] text-sm">No scheduled classes match the filter criteria.</div>
+              ) : (
+                filteredClasses.map((cls) => (
+                  <div key={cls.id} className="p-4 space-y-2.5">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{cls.subject || 'Class'}</div>
+                        <div className="text-xs text-[#6B7185] truncate">{cls.studentName || '-'}{cls.program ? ` · ${cls.program}` : ''}</div>
+                      </div>
+                      <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${cls.status === 'Live' ? 'bg-emerald-100 text-emerald-700' : cls.status === 'Completed' ? 'bg-slate-200 text-slate-700' : 'bg-blue-50 text-blue-600'}`}>{cls.status}</span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                      <span className="font-medium text-slate-700 dark:text-slate-200">{cls.date}, {cls.startAt} - {cls.endAt}</span>
+                      <span className="text-[#6B7185]">{cls.teacherName}</span>
+                      <span className={`px-2 py-0.5 rounded-full font-medium ${cls.classType === 'Makeup' ? 'bg-purple-100 text-purple-700' : cls.classType === 'Test' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>{cls.classType}{!cls.isCharged && ' (Free)'}</span>
+                      {cls.meetingLink ? (
+                        <a href={cls.meetingLink} target="_blank" rel="noreferrer" className="text-[#5B47D6] font-medium">Join</a>
+                      ) : (
+                        <span className="text-amber-600 font-medium">No invite</span>
+                      )}
+                    </div>
+                    {role !== 'student' && (
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <button onClick={() => openCompletion(cls)} className="flex-1 min-w-[130px] px-3 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl">
+                          {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class'}
+                        </button>
+                        {cls.status !== 'Completed' && cls.status !== 'Cancelled' && (
+                          <button onClick={() => openReschedule(cls)} className="px-3 py-2 bg-amber-50 text-amber-700 font-medium text-xs rounded-xl border border-amber-200">Reschedule</button>
+                        )}
+                        {canManage && (
+                          <>
+                            <button onClick={() => openEdit(cls)} aria-label="Edit class" className="p-2 rounded-lg border border-slate-200 text-slate-600"><Pencil className="w-4 h-4" /></button>
+                            <button onClick={() => handleDeleteClass(cls)} disabled={deletingId === cls.id} aria-label="Delete class" className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:text-rose-600 disabled:opacity-50"><Trash2 className="w-4 h-4" /></button>
+                          </>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

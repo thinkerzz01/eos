@@ -664,7 +664,7 @@ export function StudentsClient({
               </div>
             </div>
 
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-left text-[13px]">
                 <thead>
                   <tr className="bg-slate-50 dark:bg-slate-800/60 text-xs text-[#6B7185]">
@@ -750,6 +750,49 @@ export function StudentsClient({
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* MOBILE CARD LIST (phones) */}
+            <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+              {filteredStudents.length === 0 ? (
+                <div className="py-10 text-center text-[#6B7185] text-sm">No students are assigned to you yet.</div>
+              ) : (
+                filteredStudents.map((s, idx) => (
+                  <div key={s.id} className="p-4 space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-9 h-9 rounded-full font-medium text-xs flex items-center justify-center shrink-0 shadow-sm ${AVATAR_COLORS[idx % AVATAR_COLORS.length]}`}>
+                          {getInitials(s.name)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">{s.name}</div>
+                          <div className="text-xs text-[#6B7185]">{s.program}{s.grade ? ` · ${s.grade}` : ''}</div>
+                        </div>
+                      </div>
+                      <span
+                        className={`shrink-0 font-medium text-sm font-mono px-3 py-1 rounded-full border-2 ${
+                          s.performanceScore < 60 ? 'bg-rose-50 border-rose-400 text-rose-600'
+                          : s.performanceScore < 80 ? 'bg-amber-50 border-amber-400 text-amber-600'
+                          : 'bg-emerald-50 border-emerald-400 text-emerald-600'}`}
+                      >
+                        {s.performanceScore}
+                      </span>
+                    </div>
+                    {s.enrolledSubjects.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {s.enrolledSubjects.map((sub) => (
+                          <span key={sub.subject} className="px-2 py-0.5 rounded-full bg-[#EEEBFB] text-[#5B47D6] text-[11px] font-medium">{sub.subject}</span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-[#6B7185]">
+                      <Calendar className="w-3.5 h-3.5 text-[#5B47D6]" />
+                      <span className="font-medium text-slate-800 dark:text-slate-200">{s.nextClassTime || 'No upcoming class'}</span>
+                      {s.nextClassSubject && <span>· {s.nextClassSubject}</span>}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
