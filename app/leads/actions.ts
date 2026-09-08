@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { friendlyDbError } from '@/lib/friendlyError';
 
-const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
+const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE', 'Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -173,7 +173,7 @@ export async function convertLead(input: {
   if (!ENROLLABLE_PROGRAMS.includes((lead as any).program)) {
     return {
       ok: false,
-      error: 'This lead’s program is not a CAIE program (O/A Level, IGCSE), so it cannot be enrolled as a student.',
+      error: 'This lead’s program is not one of the academy’s programs, so it cannot be enrolled as a student.',
     };
   }
 

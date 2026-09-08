@@ -7,16 +7,22 @@
 export const ALL_PROGRAMS = [
   'O Level (O1)',
   'O Level (O2)',
-  'A Level (A1)',
-  'A Level (A2)',
+  'AS',
+  'A2',
   'IGCSE',
+  'Edexcel IGCSE',
+  'Edexcel AS',
+  'Edexcel A2',
   'Matric (9)',
   'Matric (10)',
   'Inter (11)',
   'Inter (12)',
 ] as const;
 
-export const CAIE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE'] as const;
+// Cambridge (CAIE) programs.
+export const CAIE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE'] as const;
+// Edexcel (Pearson) programs.
+export const EDEXCEL_PROGRAMS = ['Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2'] as const;
 export const LOCAL_BOARD_PROGRAMS = [
   'Matric (9)',
   'Matric (10)',

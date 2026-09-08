@@ -11,7 +11,7 @@ import { provisionLogin } from '@/lib/auth/provision';
 import { findEmailAccountOwner, emailTakenMessage } from '@/lib/auth/emailUniqueness';
 import { friendlyDbError } from '@/lib/friendlyError';
 
-const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
+const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE', 'Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
 const SOURCES = ['google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in'];
 
 // A student email is REQUIRED at creation: it is the address Google Calendar
@@ -157,7 +157,7 @@ export async function createStudent(input: CreateStudentInput): Promise<ActionRe
     return { ok: false, error: 'A valid email is required - class calendar invites are sent to it.' };
   }
   if (!ENROLLABLE_PROGRAMS.includes(input.program)) {
-    return { ok: false, error: 'Program must be a CAIE program (O Level, A Level, or IGCSE).' };
+    return { ok: false, error: 'Please choose one of the academy’s programs.' };
   }
   if (!input.exam_session?.trim()) {
     return { ok: false, error: 'Exam session is required.' };
@@ -305,7 +305,7 @@ export async function bulkCreateStudents(
       ok: false,
       inserted: 0,
       skipped,
-      error: 'No valid rows - each needs a name, a parent name, a valid email, a phone, and a CAIE program (O/A Level, IGCSE).',
+      error: 'No valid rows - each needs a name, a parent name, a valid email, a phone, and one of the academy’s programs.',
     };
   }
 
@@ -377,7 +377,7 @@ export async function updateStudent(input: {
   if (input.parentPhone?.trim()) patch.phone = input.parentPhone.trim();
   if (input.program) {
     if (!ENROLLABLE_PROGRAMS.includes(input.program)) {
-      return { ok: false, error: 'Program must be a CAIE program (O Level, A Level, or IGCSE).' };
+      return { ok: false, error: 'Please choose one of the academy’s programs.' };
     }
     patch.program = input.program;
   }

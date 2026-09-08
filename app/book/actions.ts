@@ -13,7 +13,7 @@ import { sendViaResend } from '@/lib/notifications/resend';
 import { renderBookingConfirmationEmail } from '@/lib/notifications/bookingConfirmationEmail';
 
 // Programs the leads table accepts (program CHECK). Anything else is stored NULL.
-const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
+const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE', 'Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
 
 // "How did you find us?" label -> DB source enum.
 const SOURCE_MAP: Record<string, string> = {
