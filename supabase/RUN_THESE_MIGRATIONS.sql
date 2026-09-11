@@ -463,6 +463,47 @@ BEGIN
 END $$;
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-09-11  Expand Cambridge subject catalog (+ codes)
+--     Adds the full O Level / AS & A Level subject set to every org across the
+--     Cambridge programs, with default codes. Idempotent. Requires the programs
+--     migration (AS/A2 in the CHECK) to have run first.
+--     Full file: supabase/migrations/2026-09-11_more_subjects.sql
+-- ─────────────────────────────────────────────────────────────────────────────
+ALTER TABLE public.subjects ADD COLUMN IF NOT EXISTS code TEXT;
+DO $$
+DECLARE
+    v_org UUID; prog TEXT; rec RECORD;
+    progs TEXT[] := ARRAY['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE'];
+BEGIN
+    FOR v_org IN SELECT id FROM public.orgs LOOP
+        FOREACH prog IN ARRAY progs LOOP
+            FOR rec IN SELECT * FROM (VALUES
+                ('Mathematics','4024'), ('Additional Mathematics','4037'), ('Further Mathematics','9231'),
+                ('Statistics','4040'), ('Physics','5054'), ('Chemistry','5070'), ('Biology','5090'),
+                ('Combined Science','5129'), ('Marine Science','9693'), ('Environmental Management','5014'),
+                ('Computer Science','2210'), ('Information Technology','0417'), ('Accounting','7707'),
+                ('Economics','2281'), ('Business','7081'), ('Business Studies','7115'), ('Commerce','7100'),
+                ('Geography','2217'), ('History','2147'), ('Sociology','2251'), ('Psychology','0490'),
+                ('Law','9084'), ('Global Perspectives','2069'), ('Global Perspectives & Research','9239'),
+                ('Thinking Skills','9694'), ('English (First Language)','1123'), ('English (Second Language)','0510'),
+                ('Literature in English','2010'), ('English General Paper','8021'), ('Urdu','3247'),
+                ('Arabic','3180'), ('Islamiyat','2058'), ('Islamic Studies','2068'), ('Pakistan Studies','2059'),
+                ('Art & Design','6090'), ('Design & Technology','9705'), ('Media Studies','9607'),
+                ('Drama','9482'), ('Music','9483'), ('Sport & Physical Education','9395'),
+                ('Food & Nutrition','6065'), ('Fashion & Textiles','6130')
+            ) AS s(name, code) LOOP
+                IF NOT EXISTS (SELECT 1 FROM public.subjects WHERE org_id=v_org AND name=rec.name AND program=prog AND deleted_at IS NULL) THEN
+                    INSERT INTO public.subjects (org_id, name, program, code) VALUES (v_org, rec.name, prog, rec.code);
+                ELSE
+                    UPDATE public.subjects SET code=rec.code WHERE org_id=v_org AND name=rec.name AND program=prog AND deleted_at IS NULL AND (code IS NULL OR code='');
+                END IF;
+            END LOOP;
+        END LOOP;
+    END LOOP;
+END $$;
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql
