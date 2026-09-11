@@ -547,6 +547,16 @@ BEGIN
 END $$;
 
 
+-- ─────────────────────────────────────────────────────────────────────────────
+-- [ ] 2026-09-11  Per-level subject codes (run AFTER the two subject seeds above)
+--     Sets the CORRECT code per (subject, program): O Level 4024, IGCSE 0580,
+--     AS/A2 9709, Edexcel IGCSE 4MA1, Edexcel AS XMA01, Edexcel A2 YMA01, etc.
+--     Fixes the earlier O-Level-code-everywhere and fills Edexcel IAL.
+--     Full file: supabase/migrations/2026-09-11_per_level_codes.sql — paste that
+--     file's body here (6 UPDATE groups). Kept as a separate file to stay legible.
+-- ─────────────────────────────────────────────────────────────────────────────
+
+
 -- ============================================================================
 -- Already run earlier (kept for reference — safe to re-run, all idempotent):
 --   [x] 2026-08-14_teacher_leaving.sql

@@ -217,23 +217,84 @@ export const EDEXCEL_IGCSE_CODES: Record<string, string> = {
   'Arabic': '4AA1',
 };
 
-/** The CAIE code for a subject name, or '' if it has none (Matric/Inter, etc.). */
+// Cambridge IGCSE syllabus codes (0-prefixed; the mainstream syllabus per subject,
+// not the 9-1 UK variants). From the official IGCSE subject catalog.
+export const IGCSE_CODES: Record<string, string> = {
+  'Mathematics': '0580', 'Additional Mathematics': '0606', 'Physics': '0625',
+  'Chemistry': '0620', 'Biology': '0610', 'Combined Science': '0653',
+  'Marine Science': '0697', 'Environmental Management': '0680',
+  'Computer Science': '0478', 'Information Technology': '0417',
+  'Accounting': '0452', 'Economics': '0455', 'Business': '0264', 'Business Studies': '0450',
+  'Commerce': '0715', 'Geography': '0460', 'History': '0470', 'Sociology': '0495',
+  'Global Perspectives': '0457', 'English (First Language)': '0500',
+  'English (Second Language)': '0510', 'Literature in English': '0475',
+  'Islamiyat': '0493', 'Pakistan Studies': '0448', 'Urdu': '0539', 'Arabic': '0508',
+  'Art & Design': '0400', 'Design & Technology': '0445', 'Drama': '0411',
+  'Music': '0410', 'Food & Nutrition': '0648',
+};
+
+// Cambridge AS & A Level syllabus codes (9-prefixed; 8-prefixed = AS-only). From
+// the official AS & A Level subject catalog.
+export const A_LEVEL_CODES: Record<string, string> = {
+  'Mathematics': '9709', 'Further Mathematics': '9231', 'Physics': '9702',
+  'Chemistry': '9701', 'Biology': '9700', 'Marine Science': '9693',
+  'Environmental Management': '8291', 'Computer Science': '9618',
+  'Information Technology': '9626', 'Accounting': '9706', 'Economics': '9708',
+  'Business': '9609', 'Geography': '9696', 'History': '9489', 'Sociology': '9699',
+  'Psychology': '9990', 'Law': '9084', 'Global Perspectives & Research': '9239',
+  'Thinking Skills': '9694', 'English (First Language)': '9093',
+  'Literature in English': '9695', 'English General Paper': '8021',
+  'Urdu': '9676', 'Arabic': '9680', 'Islamic Studies': '9488',
+  'Art & Design': '9479', 'Design & Technology': '9705', 'Media Studies': '9607',
+  'Drama': '9482', 'Music': '9483', 'Sport & Physical Education': '9395',
+};
+
+// Edexcel International Advanced Level cash-in codes. IAS = X-prefix, IAL = Y-prefix.
+// Verified pattern (Business YBS11 / Accounting YAC11); a few unit suffixes (01 vs
+// 11) may vary by spec version — verify vs the Pearson IAL information manual.
+export const EDEXCEL_IAS_CODES: Record<string, string> = {
+  'Mathematics': 'XMA01', 'Further Mathematics': 'XFM01', 'Physics': 'XPH11',
+  'Chemistry': 'XCH11', 'Biology': 'XBI11', 'Economics': 'XEC11', 'Business': 'XBS11',
+  'Accounting': 'XAC11', 'Information Technology': 'XIT01', 'Psychology': 'XPY01',
+  'Law': 'XLA01', 'Geography': 'XGE01', 'History': 'XHI01',
+  'English (First Language)': 'XEN01', 'Literature in English': 'XET01',
+};
+export const EDEXCEL_IAL_CODES: Record<string, string> = {
+  'Mathematics': 'YMA01', 'Further Mathematics': 'YFM01', 'Physics': 'YPH11',
+  'Chemistry': 'YCH11', 'Biology': 'YBI11', 'Economics': 'YEC11', 'Business': 'YBS11',
+  'Accounting': 'YAC11', 'Information Technology': 'YIT01', 'Psychology': 'YPY01',
+  'Law': 'YLA01', 'Geography': 'YGE01', 'History': 'YHI01',
+  'English (First Language)': 'YEN01', 'Literature in English': 'YET01',
+};
+
+/** The default (Cambridge O-Level) code for a subject name, or '' if none. */
 export function subjectCode(name: string): string {
   return SUBJECT_CODES[name] ?? '';
 }
 
 /**
- * The default code for a subject GIVEN the program's board:
- *   - Edexcel IGCSE  -> Edexcel Int GCSE code (4MA1 …)
- *   - Edexcel AS/A2  -> '' (IAL codes are unit-based; set per subject in the
- *                          Subjects manager)
- *   - everything else -> the Cambridge (CAIE) default code
- * Used so a picker shows the right board's code, not a Cambridge code for Edexcel.
+ * The correct code for a subject GIVEN the program's board AND level:
+ *   O Level (O1/O2) -> Cambridge O Level (4024 …)
+ *   IGCSE           -> Cambridge IGCSE (0580 …)
+ *   AS / A2         -> Cambridge AS & A Level (9709 …)
+ *   Edexcel IGCSE   -> Edexcel Int GCSE (4MA1 …)
+ *   Edexcel AS      -> Edexcel IAS (XMA01 …)
+ *   Edexcel A2      -> Edexcel IAL (YMA01 …)
+ *   Matric / Inter  -> '' (local boards, no CAIE/Edexcel code)
+ * Returns '' when the level doesn't offer the subject (so no wrong code shows).
  */
 export function codeForProgram(name: string, program?: string): string {
-  if (program === 'Edexcel IGCSE') return EDEXCEL_IGCSE_CODES[name] ?? '';
-  if (program && program.startsWith('Edexcel')) return ''; // Edexcel AS/A2 (IAL)
-  return subjectCode(name);
+  switch (program) {
+    case 'IGCSE': return IGCSE_CODES[name] ?? '';
+    case 'AS':
+    case 'A2': return A_LEVEL_CODES[name] ?? '';
+    case 'Edexcel IGCSE': return EDEXCEL_IGCSE_CODES[name] ?? '';
+    case 'Edexcel AS': return EDEXCEL_IAS_CODES[name] ?? '';
+    case 'Edexcel A2': return EDEXCEL_IAL_CODES[name] ?? '';
+    case 'O Level (O1)':
+    case 'O Level (O2)': return subjectCode(name);
+    default: return subjectCode(name); // unknown -> O-Level default (Matric/Inter -> '')
+  }
 }
 
 /** Board-aware label: "Name (Code)" using the program's board code, else "Name". */
