@@ -7,6 +7,7 @@
 // status 'needs_teacher') for exactly one org. The org is fixed per deployment
 // via BOOKING_ORG_ID - a single academy owns the public form.
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { guardPublicSubmit } from '@/lib/publicFormGuard';
 import { notifyStaff } from '@/lib/notifications/inapp';
 import { sendViaResend } from '@/lib/notifications/resend';
@@ -125,7 +126,20 @@ export async function submitPublicBooking(input: {
   }
 
   const leadId = typeof data === 'string' ? data : '';
-  const ref = leadId ? `THM-${leadId.slice(0, 8).toUpperCase()}` : 'THM-BOOKING';
+  // Use the lead's proper sequential code (TZ-LEAD-000X) as the booking reference
+  // so it matches what the team sees in the admin. The page is anon (RLS blocks
+  // reading leads), so fetch the code with the service-role client; fall back to a
+  // UUID-derived handle if it isn't available.
+  let ref = leadId ? `THM-${leadId.slice(0, 8).toUpperCase()}` : 'THM-BOOKING';
+  if (leadId) {
+    try {
+      const admin = createAdminClient();
+      const { data: leadRow } = await admin.from('leads').select('code').eq('id', leadId).maybeSingle();
+      if ((leadRow as any)?.code) ref = (leadRow as any).code as string;
+    } catch {
+      /* keep the fallback reference */
+    }
+  }
 
   // Alert the academy team (in-app bell) that a new booking arrived - best-effort.
   await notifyStaff(orgId, {

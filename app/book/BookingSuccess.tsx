@@ -219,10 +219,10 @@ export function BookingSuccess(props: BookingSuccessProps) {
                     onClick={() => setCalOpen((v) => !v)}
                     aria-haspopup="menu"
                     aria-expanded={calOpen}
-                    className="tz-press inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:border-[#5B47D6]/40 hover:text-[#5B47D6] transition"
+                    className="tz-press inline-flex items-center gap-2 rounded-xl bg-[#5B47D6] hover:bg-[#4F3DC7] px-4 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#5B47D6]/30 transition"
                   >
                     <CalendarPlus className="w-4 h-4" /> Add to Calendar
-                    <ChevronDown className={`w-3.5 h-3.5 transition-transform ${calOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-4 h-4 transition-transform ${calOpen ? 'rotate-180' : ''}`} />
                   </button>
                   {calOpen && (
                     <div role="menu" className="absolute right-0 z-20 mt-1.5 w-52 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl">
