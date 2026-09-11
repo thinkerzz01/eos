@@ -266,15 +266,35 @@ export async function convertLead(input: {
 }
 
 /** Soft-delete a lead (admin action). RLS enforces admin/manager write. */
+// Deleting a lead also removes its demo(s), so a fake demo doesn't linger in the
+// Demos/Marketing tabs. Best-effort. NOTE: we do NOT auto-delete a converted
+// student here — that could wipe a real, active student; remove the student from
+// the Students tab instead (which cascades back to its lead + demo).
+async function cascadeDeleteDemosForLeads(
+  supabase: ReturnType<typeof createClient>,
+  leadIds: string[]
+): Promise<void> {
+  try {
+    await supabase.from('demos').update({ deleted_at: new Date().toISOString() }).in('lead_id', leadIds);
+  } catch {
+    /* best-effort */
+  }
+}
+
+function revalidateAcademyData(): void {
+  for (const p of ['/leads', '/demos', '/marketing', '/reports', '/students', '/']) {
+    revalidatePath(p);
+  }
+}
+
 export async function softDeleteLead(leadId: string): Promise<ActionResult> {
   if (!leadId) return { ok: false, error: 'Missing lead id.' };
   const { supabase, user, orgId } = await ctx();
   if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
   const { error } = await supabase.from('leads').update({ deleted_at: new Date().toISOString() }).eq('id', leadId);
   if (error) return { ok: false, error: friendlyDbError(error) };
-  revalidatePath('/leads');
-  revalidatePath('/demos');
-  revalidatePath('/');
+  await cascadeDeleteDemosForLeads(supabase, [leadId]);
+  revalidateAcademyData();
   return { ok: true };
 }
 
@@ -326,9 +346,8 @@ export async function bulkDeleteLeads(ids: string[]): Promise<ActionResult> {
     .in('id', clean);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
-  revalidatePath('/leads');
-  revalidatePath('/demos');
-  revalidatePath('/');
+  await cascadeDeleteDemosForLeads(supabase, clean);
+  revalidateAcademyData();
   return { ok: true };
 }
 

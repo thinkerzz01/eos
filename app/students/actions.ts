@@ -447,6 +447,39 @@ export async function markStudentPassout(id: string): Promise<ActionResult> {
 }
 
 /** Soft-delete several students at once. RLS enforces admin/manager. */
+// Deleting a student should also remove the LEAD it converted from (and that
+// lead's demos), so the record disappears from Marketing / Leads / Demos too —
+// otherwise a deleted student still shows up as a lead there. This lets the team
+// wipe test/fake data everywhere in one action. Soft-delete (recoverable),
+// best-effort — a failure here never blocks the student delete.
+async function cascadeDeleteForStudents(
+  supabase: ReturnType<typeof createClient>,
+  studentIds: string[]
+): Promise<void> {
+  try {
+    const now = new Date().toISOString();
+    const { data: leads } = await supabase
+      .from('leads')
+      .select('id')
+      .in('converted_student_id', studentIds)
+      .is('deleted_at', null);
+    const leadIds = ((leads as any[]) ?? []).map((l) => l.id).filter(Boolean);
+    if (leadIds.length === 0) return;
+    await supabase.from('demos').update({ deleted_at: now }).in('lead_id', leadIds);
+    await supabase.from('leads').update({ deleted_at: now }).in('id', leadIds);
+  } catch {
+    /* cascade is best-effort - the student is already removed */
+  }
+}
+
+// Refresh every tab that reads students / leads / demos so a delete syncs across
+// the whole app (dashboard, marketing, leads, demos, reports, schedule).
+function revalidateAcademyData(): void {
+  for (const p of ['/students', '/', '/marketing', '/leads', '/demos', '/reports', '/schedule']) {
+    revalidatePath(p);
+  }
+}
+
 export async function bulkDeleteStudents(ids: string[]): Promise<ActionResult> {
   const clean = (ids ?? []).filter(Boolean);
   if (clean.length === 0) return { ok: false, error: 'No students selected.' };
@@ -462,8 +495,8 @@ export async function bulkDeleteStudents(ids: string[]): Promise<ActionResult> {
     .in('id', clean);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
-  revalidatePath('/students');
-  revalidatePath('/');
+  await cascadeDeleteForStudents(supabase, clean);
+  revalidateAcademyData();
   return { ok: true };
 }
 
@@ -552,8 +585,8 @@ export async function softDeleteStudent(id: string): Promise<ActionResult> {
     .eq('id', id);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
-  revalidatePath('/students');
-  revalidatePath('/');
+  await cascadeDeleteForStudents(supabase, [id]);
+  revalidateAcademyData();
   return { ok: true };
 }
 
