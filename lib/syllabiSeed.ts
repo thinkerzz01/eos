@@ -187,9 +187,59 @@ export const SUBJECT_CODES: Record<string, string> = {
   'Fashion & Textiles': '6130',     // O Level
 };
 
+// Edexcel International GCSE spec codes (verify vs the Pearson Int GCSE info
+// manual). Edexcel International A Level (IAL) is unit-based (WMA11, WCH11, …) and
+// its per-subject qualification codes are set in the Subjects manager instead of
+// hard-coded here.
+export const EDEXCEL_IGCSE_CODES: Record<string, string> = {
+  'Mathematics': '4MA1',
+  'Additional Mathematics': '4PM1',   // Further Pure Mathematics
+  'Further Mathematics': '4PM1',
+  'Physics': '4PH1',
+  'Chemistry': '4CH1',
+  'Biology': '4BI1',
+  'Combined Science': '4SD0',          // Science (Double Award)
+  'Computer Science': '4CP0',
+  'Information Technology': '4IT1',
+  'Accounting': '4AC1',
+  'Economics': '4EC1',
+  'Business': '4BS1',
+  'Business Studies': '4BS1',
+  'Commerce': '4CM1',
+  'Geography': '4GE1',
+  'History': '4HI1',
+  'English (First Language)': '4EA1',
+  'English (Second Language)': '4EB1',
+  'Literature in English': '4ET1',
+  'Islamiyat': '4IS1',
+  'Pakistan Studies': '4PA1',
+  'Urdu': '4UR0',
+  'Arabic': '4AA1',
+};
+
 /** The CAIE code for a subject name, or '' if it has none (Matric/Inter, etc.). */
 export function subjectCode(name: string): string {
   return SUBJECT_CODES[name] ?? '';
+}
+
+/**
+ * The default code for a subject GIVEN the program's board:
+ *   - Edexcel IGCSE  -> Edexcel Int GCSE code (4MA1 …)
+ *   - Edexcel AS/A2  -> '' (IAL codes are unit-based; set per subject in the
+ *                          Subjects manager)
+ *   - everything else -> the Cambridge (CAIE) default code
+ * Used so a picker shows the right board's code, not a Cambridge code for Edexcel.
+ */
+export function codeForProgram(name: string, program?: string): string {
+  if (program === 'Edexcel IGCSE') return EDEXCEL_IGCSE_CODES[name] ?? '';
+  if (program && program.startsWith('Edexcel')) return ''; // Edexcel AS/A2 (IAL)
+  return subjectCode(name);
+}
+
+/** Board-aware label: "Name (Code)" using the program's board code, else "Name". */
+export function labelForProgram(name: string, program?: string): string {
+  const c = codeForProgram(name, program);
+  return c ? `${name} (${c})` : name;
 }
 
 /** Display label for a subject: "Name (Code)" when a code exists, else just "Name". */
