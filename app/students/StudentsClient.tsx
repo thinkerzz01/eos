@@ -662,17 +662,17 @@ export function StudentsClient({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search students…"
-                  className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 text-xs font-medium text-slate-900 dark:text-slate-100 placeholder-[#9AA0B4] focus:outline-none focus:border-[#5B47D6]"
+                  className="w-full bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl pl-9 pr-3 py-2 text-sm font-medium text-slate-900 dark:text-slate-100 placeholder-[#9AA0B4] focus:outline-none focus:border-[#5B47D6]"
                 />
               </div>
             </div>
 
             <div className="overflow-x-auto hidden md:block">
-              <table className="w-full text-left text-[13px]">
+              <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="bg-slate-50 dark:bg-slate-800/60 text-xs text-[#6B7185]">
+                  <tr className="bg-slate-50 dark:bg-slate-800/60 text-[13px] text-[#6B7185]">
                     <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Student</th>
-                    <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Program / Grade</th>
+                    <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Program</th>
                     <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Subjects</th>
                     <th className="py-3.5 px-3 text-center font-medium text-slate-900 dark:text-white">Performance</th>
                     <th className="py-3.5 px-3 font-medium text-slate-900 dark:text-white">Next Class</th>
@@ -694,20 +694,21 @@ export function StudentsClient({
                               {getInitials(s.name)}
                             </div>
                             <div>
-                              <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{s.name}</div>
-                              <div className="text-xs text-[#6B7185] font-mono mt-0.5">{s.stuId}</div>
+                              <div className="font-medium text-[15px] text-slate-900 dark:text-slate-100">{s.name}</div>
                             </div>
                           </div>
                         </td>
                         <td className="py-3.5 px-3">
-                          <div className="font-medium text-xs text-slate-900 dark:text-slate-100">{s.program}</div>
-                          <div className="text-xs text-[#6B7185] mt-0.5">{s.grade}</div>
+                          <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{s.program}</div>
+                          {s.grade && s.grade !== s.program && (
+                            <div className="text-xs text-[#6B7185] mt-0.5">{s.grade}</div>
+                          )}
                         </td>
                         <td className="py-3.5 px-3">
                           {s.enrolledSubjects.length > 0 ? (
                             <div className="flex flex-wrap gap-1 max-w-[220px]">
                               {s.enrolledSubjects.map((sub) => (
-                                <span key={sub.subject} className="px-2 py-0.5 rounded-full bg-[#EEEBFB] text-[#5B47D6] text-[11px] font-medium">
+                                <span key={sub.subject} className="px-2.5 py-0.5 rounded-full bg-[#EEEBFB] text-[#5B47D6] text-xs font-medium">
                                   {sub.subject}
                                 </span>
                               ))}
@@ -735,7 +736,7 @@ export function StudentsClient({
                               <Calendar className="w-3.5 h-3.5" />
                             </div>
                             <div>
-                              <div className="font-medium text-xs text-slate-900 dark:text-slate-100">{s.nextClassTime || 'No upcoming class'}</div>
+                              <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{s.nextClassTime || 'No upcoming class'}</div>
                               {s.nextClassSubject && (
                                 <div className="text-xs text-[#6B7185] font-medium mt-0.5">{s.nextClassSubject}</div>
                               )}
@@ -768,8 +769,8 @@ export function StudentsClient({
                           {getInitials(s.name)}
                         </div>
                         <div className="min-w-0">
-                          <div className="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">{s.name}</div>
-                          <div className="text-xs text-[#6B7185]">{s.program}{s.grade ? ` · ${s.grade}` : ''}</div>
+                          <div className="font-medium text-[15px] text-slate-900 dark:text-slate-100 truncate">{s.name}</div>
+                          <div className="text-xs text-[#6B7185]">{s.program}{s.grade && s.grade !== s.program ? ` · ${s.grade}` : ''}</div>
                         </div>
                       </div>
                       <span
