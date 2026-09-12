@@ -326,6 +326,9 @@ export function AssessmentsClient({
                     {selectedAssessmentForSlip.subjectCode ? <span className="text-slate-500"> ({selectedAssessmentForSlip.subjectCode})</span> : null}
                     {selectedAssessmentForSlip.program ? <span className="text-slate-500"> · {selectedAssessmentForSlip.program}</span> : null}
                   </div>
+                  {selectedAssessmentForSlip.testTitle && (
+                    <div className="text-sm font-medium text-slate-700 mt-0.5 break-words">{selectedAssessmentForSlip.testTitle}</div>
+                  )}
                   <div className="text-xs text-slate-500 mt-0.5 font-medium">
                     {(() => { const d = new Date(selectedAssessmentForSlip.dateConducted); return isNaN(d.getTime()) ? selectedAssessmentForSlip.dateConducted : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); })()}
                     {selectedAssessmentForSlip.grades.length === 1 ? ` · Candidate: ${selectedAssessmentForSlip.grades[0].studentName || 'Student'}` : ` · ${selectedAssessmentForSlip.grades.length} candidates`}
