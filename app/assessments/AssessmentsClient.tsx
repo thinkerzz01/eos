@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
@@ -9,6 +9,7 @@ import { AssessmentRecord } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { labelWithCode } from '@/lib/syllabiSeed';
 import { recordTest, updateTest, deleteTest } from './actions';
+import { listStudentEnrollments } from '@/app/schedule/actions';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import {
@@ -81,6 +82,30 @@ export function AssessmentsClient({
   const [tMax, setTMax] = useState('100');
   const [recording, setRecording] = useState(false);
 
+  // When a student is picked, load their enrolled subjects and limit the Subject
+  // dropdown to those. For a teacher this is RLS-scoped to the subjects THEY teach
+  // that student; for admin/manager it's the student's whole enrollment. `null`
+  // means "not loaded yet" so we don't flash an empty list.
+  const [enrollSubjectIds, setEnrollSubjectIds] = useState<string[] | null>(null);
+  useEffect(() => {
+    if (!tStudent) { setEnrollSubjectIds(null); return; }
+    let alive = true;
+    setEnrollSubjectIds(null);
+    listStudentEnrollments(tStudent)
+      .then((es) => {
+        if (!alive) return;
+        const ids = Array.from(new Set(es.map((e) => e.subjectId)));
+        setEnrollSubjectIds(ids);
+        setTSubject((cur) => (ids.length === 1 ? ids[0] : ids.includes(cur) ? cur : ''));
+      })
+      .catch(() => { if (alive) setEnrollSubjectIds([]); });
+    return () => { alive = false; };
+  }, [tStudent]);
+  const tSubjectOptions = useMemo(
+    () => (enrollSubjectIds ? subjects.filter((s) => enrollSubjectIds.includes(s.id)) : []),
+    [subjects, enrollSubjectIds]
+  );
+
   const handleRecordTest = async () => {
     if (!tName || !tStudent || !tSubject || !tDate || !tScore) {
       showToast('Test name, student, subject, date, and score are required.', 'error');
@@ -138,7 +163,7 @@ export function AssessmentsClient({
               <table className="w-full text-left text-sm border-collapse min-w-[500px]">
                 <thead>
                   <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
-                    <th className="py-3.5 px-3">Test Title & Code</th>
+                    <th className="py-3.5 px-3">Test Title</th>
                     <th className="py-3.5 px-3">Subject & Date</th>
                     <th className="py-3.5 px-3">Total Marks</th>
                     <th className="py-3.5 px-3 text-center">Result Slip</th>
@@ -150,7 +175,6 @@ export function AssessmentsClient({
                     <tr key={ast.id} className="hover:bg-slate-50 transition-colors">
                       <td className="py-3.5 px-3">
                         <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{ast.testTitle}</div>
-                        <div className="text-xs text-[#6B7185] font-mono">{ast.testCode}</div>
                       </td>
 
                       <td className="py-3.5 px-3">
@@ -361,9 +385,16 @@ export function AssessmentsClient({
                 </div>
                 <div>
                   <label className="text-slate-700 dark:text-slate-300 block mb-1">Subject</label>
-                  <select value={tSubject} onChange={(e) => setTSubject(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
-                    <option value="">Select...</option>
-                    {subjects.map((s) => (<option key={s.id} value={s.id}>{labelWithCode(s.name, s.code)} · {s.program}</option>))}
+                  <select
+                    value={tSubject}
+                    onChange={(e) => setTSubject(e.target.value)}
+                    disabled={!tStudent || enrollSubjectIds === null}
+                    className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 disabled:opacity-60"
+                  >
+                    <option value="">
+                      {!tStudent ? 'Pick a student first' : enrollSubjectIds === null ? 'Loading subjects…' : tSubjectOptions.length === 0 ? 'No subjects assigned to this student' : 'Select...'}
+                    </option>
+                    {tSubjectOptions.map((s) => (<option key={s.id} value={s.id}>{labelWithCode(s.name, s.code)} · {s.program}</option>))}
                   </select>
                 </div>
                 <div className="grid grid-cols-3 gap-2">

@@ -8,6 +8,7 @@ import { HomeworkAssignment } from '@/lib/mockAcademicsData';
 import { subjectLabel, labelWithCode } from '@/lib/syllabiSeed';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { createHomework, gradeHomework, updateHomework, deleteHomework, submitHomework, bulkDeleteHomework } from './actions';
+import { listStudentEnrollments } from '@/app/schedule/actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -57,6 +58,29 @@ export function HomeworkClient({
   const [assigning, setAssigning] = useState(false);
 
   useEffect(() => { setHomeworks(initialHomeworks); }, [initialHomeworks]);
+
+  // Scope the Subject picker to the chosen student's enrollment. For a teacher
+  // that's RLS-limited to the subjects THEY teach that student; admins get the
+  // student's whole enrollment. `null` = not loaded yet.
+  const [enrollSubjectIds, setEnrollSubjectIds] = useState<string[] | null>(null);
+  useEffect(() => {
+    if (!studentId) { setEnrollSubjectIds(null); return; }
+    let alive = true;
+    setEnrollSubjectIds(null);
+    listStudentEnrollments(studentId)
+      .then((es) => {
+        if (!alive) return;
+        const ids = Array.from(new Set(es.map((e) => e.subjectId)));
+        setEnrollSubjectIds(ids);
+        setSubjectId((cur) => (ids.length === 1 ? ids[0] : ids.includes(cur) ? cur : ''));
+      })
+      .catch(() => { if (alive) setEnrollSubjectIds([]); });
+    return () => { alive = false; };
+  }, [studentId]);
+  const hwSubjectOptions = useMemo(
+    () => (enrollSubjectIds ? subjects.filter((s) => enrollSubjectIds.includes(s.id)) : []),
+    [subjects, enrollSubjectIds]
+  );
 
   // FILTERS (one per column + a search bar)
   const [search, setSearch] = useState('');
@@ -541,9 +565,16 @@ export function HomeworkClient({
                 <div className={`grid gap-2 ${canManage ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <div>
                     <label className="text-slate-700 dark:text-slate-300 block mb-1">Subject</label>
-                    <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
-                      <option value="">Select...</option>
-                      {subjects.map((s) => (<option key={s.id} value={s.id}>{labelWithCode(s.name, s.code)} · {s.program}</option>))}
+                    <select
+                      value={subjectId}
+                      onChange={(e) => setSubjectId(e.target.value)}
+                      disabled={!studentId || enrollSubjectIds === null}
+                      className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 disabled:opacity-60"
+                    >
+                      <option value="">
+                        {!studentId ? 'Pick a student first' : enrollSubjectIds === null ? 'Loading subjects…' : hwSubjectOptions.length === 0 ? 'No subjects assigned to this student' : 'Select...'}
+                      </option>
+                      {hwSubjectOptions.map((s) => (<option key={s.id} value={s.id}>{labelWithCode(s.name, s.code)} · {s.program}</option>))}
                     </select>
                   </div>
                   {canManage && (
