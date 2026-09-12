@@ -6,9 +6,13 @@
 // surfaced on the Result Slip, not invented here.
 import { createClient } from '@/lib/supabase/server';
 import type { AssessmentRecord } from '@/lib/mockAcademicsData';
+import { codeForProgram } from '@/lib/syllabiSeed';
 
 type Grade = 'A*' | 'A' | 'B' | 'C' | 'D' | 'E' | 'U';
 
+// Cambridge (CAIE) grade from a percentage - the standard indicative A-Level
+// boundaries used for internal monthly tests (real session thresholds vary per
+// series). Kept in sync with gradeFromPct/CAIE_BOUNDARIES in AssessmentsClient.
 function internalGrade(score: number, maxScore: number): Grade {
   const pct = maxScore > 0 ? (score / maxScore) * 100 : 0;
   if (pct >= 90) return 'A*';
@@ -34,7 +38,7 @@ export async function getAssessments(): Promise<AssessmentRecord[]> {
 
   const { data, error } = await supabase
     .from('tests')
-    .select('id,student_id,name,date,score,max_score,students(name),subjects(name)')
+    .select('id,student_id,name,date,score,max_score,students(name),subjects(name,program,code)')
     .is('deleted_at', null)
     .order('date', { ascending: false });
 
@@ -43,7 +47,11 @@ export async function getAssessments(): Promise<AssessmentRecord[]> {
   // Group rows into one AssessmentRecord per (test name + date + subject).
   const groups = new Map<string, AssessmentRecord>();
   for (const r of data as any[]) {
-    const subjectName = one<any>(r.subjects)?.name ?? '';
+    const subj = one<any>(r.subjects);
+    const subjectName = subj?.name ?? '';
+    const subjectProgram = subj?.program ?? '';
+    // Prefer the subject row's stored syllabus code; else derive it per board/level.
+    const subjectCode = subj?.code || codeForProgram(subjectName, subjectProgram) || '';
     const studentName = one<any>(r.students)?.name ?? '';
     const key = `${r.name}__${r.date}__${subjectName}`;
     let rec = groups.get(key);
@@ -53,7 +61,8 @@ export async function getAssessments(): Promise<AssessmentRecord[]> {
         testCode: `TST-${String(r.id).split('-')[0].toUpperCase()}`,
         testTitle: r.name,
         subject: subjectName,
-        program: '',
+        subjectCode,
+        program: subjectProgram,
         dateConducted: r.date,
         totalMarks: Number(r.max_score || 100),
         teacherName: '',

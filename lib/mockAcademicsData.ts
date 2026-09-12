@@ -57,6 +57,7 @@ export interface AssessmentRecord {
   testCode: string;
   testTitle: string;
   subject: string;
+  subjectCode?: string; // Cambridge syllabus code, e.g. 9709
   program: string;
   dateConducted: string;
   totalMarks: number;
