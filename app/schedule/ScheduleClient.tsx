@@ -26,6 +26,7 @@ import {
   BookOpen,
   Users,
   ChevronDown,
+  ChevronRight,
   RotateCcw,
   FileText,
   SlidersHorizontal,
@@ -65,6 +66,12 @@ export function ScheduleClient({
   const [selectedClassType, setSelectedClassType] = useState<string>('All Types');
   const [selectedSubjectFilter, setSelectedSubjectFilter] = useState<string>('All Subjects');
   const [searchQuery, setSearchQuery] = useState<string>('');
+  // Date window for the LIST view. Recurring timetables make the flat list run to
+  // dozens of near-identical rows, so we default to "upcoming" (today onward) and
+  // let the user widen it. The calendar view ignores this (it navigates by month).
+  const [dateRange, setDateRange] = useState<'upcoming' | 'week' | 'month' | 'past' | 'all'>('upcoming');
+  // Which recurring series (student+subject+teacher+time) are expanded in the list.
+  const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
 
   // MOBILE CLASS COMPLETION DRAWER
   const [selectedClassForCompletion, setSelectedClassForCompletion] = useState<ScheduledClass | null>(null);
@@ -309,18 +316,111 @@ export function ScheduleClient({
     });
   }, [classesList, selectedClassType, selectedSubjectFilter, searchQuery]);
 
+  // Shift a YYYY-MM-DD date by n days, staying in Pakistan time.
+  const addDaysPkt = (base: string, n: number) => {
+    const d = new Date(`${base}T00:00:00+05:00`);
+    d.setDate(d.getDate() + n);
+    return d.toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+  };
+  const weekEnd = useMemo(() => addDaysPkt(todayStr, 6), [todayStr]);
+  const monthEnd = useMemo(() => addDaysPkt(todayStr, 30), [todayStr]);
+
+  // The LIST view narrows filteredClasses to the chosen date window (calendar view
+  // is unaffected - it has its own month navigation). YYYY-MM-DD strings compare
+  // correctly with < / >=, so no Date maths is needed for the range test.
+  const listClasses = useMemo(() => {
+    if (dateRange === 'all') return filteredClasses;
+    return filteredClasses.filter((c) => {
+      const d = isoToPktDate(c.startAtISO);
+      if (dateRange === 'upcoming') return d >= todayStr;
+      if (dateRange === 'past') return d < todayStr;
+      if (dateRange === 'week') return d >= todayStr && d <= weekEnd;
+      if (dateRange === 'month') return d >= todayStr && d <= monthEnd;
+      return true;
+    });
+  }, [filteredClasses, dateRange, todayStr, weekEnd, monthEnd]);
+
+  // Collapse recurring sessions into ONE "series" row each. A series is the same
+  // student + subject + teacher + time slot + type (e.g. "Ali · Maths · 7-8pm ·
+  // Mon-Fri"); every date in it becomes a child row you can expand. A one-off
+  // class is a series of size 1 and renders as a normal single row.
+  type ClassSeries = {
+    key: string;
+    sessions: ScheduledClass[];
+    sample: ScheduledClass;
+    count: number;
+    weekdayLabel: string;
+    next?: ScheduledClass;
+    doneCount: number;
+  };
+  const WD_ORDER = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const dowShort = (iso?: string) =>
+    iso ? new Date(iso).toLocaleDateString('en-US', { timeZone: 'Asia/Karachi', weekday: 'short' }) : '';
+  const seriesList = useMemo<ClassSeries[]>(() => {
+    const map = new Map<string, ScheduledClass[]>();
+    listClasses.forEach((c) => {
+      const key = [c.studentId ?? c.studentName, c.subjectId ?? c.subject, c.teacherId ?? c.teacherName, c.startAt, c.endAt, c.classType].join('|');
+      const bucket = map.get(key);
+      if (bucket) bucket.push(c);
+      else map.set(key, [c]);
+    });
+    const out: ClassSeries[] = [];
+    Array.from(map.entries()).forEach(([key, sessions]) => {
+      sessions.sort((a, b) => isoToPktDate(a.startAtISO).localeCompare(isoToPktDate(b.startAtISO)));
+      const daySet = new Set(sessions.map((s) => dowShort(s.startAtISO)));
+      const present = WD_ORDER.filter((d) => daySet.has(d));
+      // Contiguous run of 3+ (e.g. Mon-Fri) is shown as a range; otherwise listed.
+      let weekdayLabel = present.join(', ');
+      if (present.length >= 3) {
+        const startIdx = WD_ORDER.indexOf(present[0]);
+        const contiguous = present.every((d, i) => WD_ORDER[startIdx + i] === d);
+        if (contiguous) weekdayLabel = `${present[0]}–${present[present.length - 1]}`;
+      }
+      const next = sessions.find((s) => isoToPktDate(s.startAtISO) >= todayStr) ?? sessions[sessions.length - 1];
+      const doneCount = sessions.filter((s) => s.status === 'Completed').length;
+      out.push({ key, sessions, sample: sessions[0], count: sessions.length, weekdayLabel, next, doneCount });
+    });
+    // Order the list by each series' next (or last) class date, soonest first.
+    out.sort((a, b) => isoToPktDate(a.next?.startAtISO).localeCompare(isoToPktDate(b.next?.startAtISO)));
+    return out;
+  }, [listClasses, todayStr]);
+
+  const toggleSeries = (key: string) =>
+    setExpandedSeries((prev) => {
+      const n = new Set(prev);
+      n.has(key) ? n.delete(key) : n.add(key);
+      return n;
+    });
+
+  const handleDeleteSeries = async (s: ClassSeries) => {
+    const ids = s.sessions.map((x) => x.id);
+    if (!confirm(`Delete all ${ids.length} "${s.sample.subject}" classes for ${s.sample.studentName || 'this student'} (${s.sample.startAt}–${s.sample.endAt})? They are cancelled and removed from the timetable. This is logged.`)) return;
+    setBulkBusy(true);
+    const res = await bulkDeleteClasses({ sessionIds: ids });
+    setBulkBusy(false);
+    if (res.ok) { setSelectedClassIds((prev) => prev.filter((id) => !ids.includes(id))); router.refresh(); }
+    else alert(res.error ?? 'Failed to delete the series.');
+  };
+
   // BULK SELECTION on the class list (admin/manager; teachers see their own via RLS).
   const [selectedClassIds, setSelectedClassIds] = useState<string[]>([]);
   const [bulkBusy, setBulkBusy] = useState(false);
   const toggleSelectAllClasses = () => {
-    if (selectedClassIds.length === filteredClasses.length) setSelectedClassIds([]);
-    else setSelectedClassIds(filteredClasses.map((c) => c.id));
+    if (selectedClassIds.length === listClasses.length) setSelectedClassIds([]);
+    else setSelectedClassIds(listClasses.map((c) => c.id));
   };
   const toggleSelectClass = (id: string) => {
     setSelectedClassIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   };
+  // Select / clear every session in one recurring series at once.
+  const toggleSelectSeries = (ids: string[]) => {
+    setSelectedClassIds((prev) => {
+      const all = ids.every((id) => prev.includes(id));
+      return all ? prev.filter((id) => !ids.includes(id)) : Array.from(new Set([...prev, ...ids]));
+    });
+  };
   const bulkExportClasses = () => {
-    const rows = filteredClasses.filter((c) => selectedClassIds.includes(c.id));
+    const rows = listClasses.filter((c) => selectedClassIds.includes(c.id));
     downloadCsv(
       'Thinkerzz_Classes',
       ['Class Code', 'Date', 'Time', 'Subject', 'Student', 'Teacher', 'Type', 'Status'],
@@ -418,6 +518,107 @@ export function ScheduleClient({
     }
   };
 
+  // One class row for the list table. `child` renders it as an indented member of
+  // an expanded recurring series (date-led, muted student cell). Single one-off
+  // classes reuse this with `child` unset.
+  const renderRow = (cls: ScheduledClass, child = false) => (
+    <tr key={cls.id} className={`transition-colors ${child ? 'bg-slate-50/60 dark:bg-slate-800/30 hover:bg-slate-100/70' : 'hover:bg-slate-50'}`}>
+      {canManage && (
+        <td className={`py-3.5 px-3 text-center ${child ? 'pl-8' : ''}`} onClick={(e) => e.stopPropagation()}>
+          <input type="checkbox" checked={selectedClassIds.includes(cls.id)} onChange={() => toggleSelectClass(cls.id)} className="rounded accent-[#5B47D6]" />
+        </td>
+      )}
+      <td className={`py-3.5 px-3 ${child ? 'pl-6 text-[#6B7185]' : 'font-medium text-slate-900 dark:text-slate-100'}`}>
+        {child ? <span className="text-slate-400">↳</span> : (cls.studentName || '-')}
+      </td>
+      <td className="py-3.5 px-3">
+        <div className="font-medium text-slate-900 dark:text-slate-100">{cls.date}</div>
+        <div className="font-mono text-xs text-[#6B7185]">{cls.startAt} - {cls.endAt}</div>
+      </td>
+      <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{cls.teacherName}</td>
+      <td className="py-3.5 px-3 text-[#6B7185]">{cls.program}</td>
+      <td className="py-3.5 px-3">
+        <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{cls.subject}</div>
+        {cls.meetingLink ? (
+          <a href={cls.meetingLink} target="_blank" rel="noreferrer" className="text-xs font-medium text-[#5B47D6] hover:underline">Join</a>
+        ) : (
+          <span title="No Google Calendar invite was sent for this class. Check the student/teacher email or reconnect Google, then reschedule - or add a Meet link manually." className="text-xs text-amber-600 font-medium">No invite</span>
+        )}
+      </td>
+      <td className="py-3.5 px-3">
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${cls.classType === 'Makeup' ? 'bg-purple-100 text-purple-700 border border-purple-200' : cls.classType === 'Test' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-blue-100 text-blue-700'}`}>
+          <span>{cls.classType}</span>
+          {!cls.isCharged && <span className="text-xs text-purple-900 bg-white px-1 rounded font-medium">(Free)</span>}
+        </span>
+      </td>
+      <td className="py-3.5 px-3">
+        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${cls.status === 'Live' ? 'bg-emerald-100 text-emerald-700' : cls.status === 'Completed' ? 'bg-slate-200 text-slate-700' : 'bg-blue-50 text-blue-600'}`}>{cls.status}</span>
+      </td>
+      <td className="py-3.5 px-3">
+        {role !== 'student' ? (
+          <div className="flex items-center justify-center gap-1.5">
+            <button onClick={() => openCompletion(cls)} className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl shadow-xs transition-all cursor-pointer">
+              {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class'}
+            </button>
+            {cls.status !== 'Completed' && cls.status !== 'Cancelled' && (
+              <button onClick={() => openReschedule(cls)} className="px-2.5 py-1.5 bg-amber-50 text-amber-700 font-medium text-xs rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer">Reschedule</button>
+            )}
+            {canManage && (
+              <>
+                <button onClick={() => openEdit(cls)} title="Edit class" aria-label="Edit class" className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-[#5B47D6] transition-colors"><Pencil className="w-4 h-4" /></button>
+                <button onClick={() => handleDeleteClass(cls)} disabled={deletingId === cls.id} title="Delete class" aria-label="Delete class" className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors disabled:opacity-50"><Trash2 className="w-4 h-4" /></button>
+              </>
+            )}
+          </div>
+        ) : (
+          <span className="text-slate-400 text-xs font-medium">-</span>
+        )}
+      </td>
+    </tr>
+  );
+
+  // One class card for the mobile list. `child` renders the collapsed member of
+  // an expanded series (date-led, indented).
+  const renderCard = (cls: ScheduledClass, child = false) => (
+    <div key={cls.id} className={`p-4 space-y-2.5 ${child ? 'pl-7 bg-slate-50/60 dark:bg-slate-800/30' : ''}`}>
+      <div className="flex items-start justify-between gap-2">
+        <div className="min-w-0">
+          <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{child ? cls.date : (cls.subject || 'Class')}</div>
+          <div className="text-xs text-[#6B7185] truncate">{child ? `${cls.startAt} - ${cls.endAt}` : `${cls.studentName || '-'}${cls.program ? ` · ${cls.program}` : ''}`}</div>
+        </div>
+        <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${cls.status === 'Live' ? 'bg-emerald-100 text-emerald-700' : cls.status === 'Completed' ? 'bg-slate-200 text-slate-700' : 'bg-blue-50 text-blue-600'}`}>{cls.status}</span>
+      </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+        {!child && <span className="font-medium text-slate-700 dark:text-slate-200">{cls.date}, {cls.startAt} - {cls.endAt}</span>}
+        <span className="text-[#6B7185]">{cls.teacherName}</span>
+        <span className={`px-2 py-0.5 rounded-full font-medium ${cls.classType === 'Makeup' ? 'bg-purple-100 text-purple-700' : cls.classType === 'Test' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>{cls.classType}{!cls.isCharged && ' (Free)'}</span>
+        {cls.meetingLink ? (
+          <a href={cls.meetingLink} target="_blank" rel="noreferrer" className="text-[#5B47D6] font-medium">Join</a>
+        ) : (
+          <span className="text-amber-600 font-medium">No invite</span>
+        )}
+      </div>
+      {role !== 'student' && (
+        <div className="flex flex-wrap items-center gap-2 pt-1">
+          <button onClick={() => openCompletion(cls)} className="flex-1 min-w-[130px] px-3 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl">
+            {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class'}
+          </button>
+          {cls.status !== 'Completed' && cls.status !== 'Cancelled' && (
+            <button onClick={() => openReschedule(cls)} className="px-3 py-2 bg-amber-50 text-amber-700 font-medium text-xs rounded-xl border border-amber-200">Reschedule</button>
+          )}
+          {canManage && (
+            <>
+              <button onClick={() => openEdit(cls)} aria-label="Edit class" className="p-2 rounded-lg border border-slate-200 text-slate-600"><Pencil className="w-4 h-4" /></button>
+              <button onClick={() => handleDeleteClass(cls)} disabled={deletingId === cls.id} aria-label="Delete class" className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:text-rose-600 disabled:opacity-50"><Trash2 className="w-4 h-4" /></button>
+            </>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  const colCount = canManage ? 9 : 8;
+
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher', 'student']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
@@ -498,7 +699,23 @@ export function ScheduleClient({
               </button>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              {viewMode === 'list' && (
+                <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
+                  <span className="text-xs text-[#6B7185] block font-medium">Show</span>
+                  <select
+                    value={dateRange}
+                    onChange={(e) => setDateRange(e.target.value as typeof dateRange)}
+                    className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
+                  >
+                    <option value="upcoming">Upcoming (today on)</option>
+                    <option value="week">Next 7 days</option>
+                    <option value="month">Next 30 days</option>
+                    <option value="past">Past classes</option>
+                    <option value="all">All dates</option>
+                  </select>
+                </div>
+              )}
               <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-2.5 py-1 text-xs">
                 <span className="text-xs text-[#6B7185] block font-medium">Class Type Filter</span>
                 <select
@@ -581,7 +798,7 @@ export function ScheduleClient({
                   <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
                     {canManage && (
                       <th className="py-3.5 px-3 w-[36px] text-center">
-                        <input type="checkbox" checked={selectedClassIds.length === filteredClasses.length && filteredClasses.length > 0} onChange={toggleSelectAllClasses} className="rounded accent-[#5B47D6]" />
+                        <input type="checkbox" checked={selectedClassIds.length === listClasses.length && listClasses.length > 0} onChange={toggleSelectAllClasses} className="rounded accent-[#5B47D6]" />
                       </th>
                     )}
                     <th className="py-3.5 px-3">Student</th>
@@ -596,134 +813,69 @@ export function ScheduleClient({
                 </thead>
 
                 <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
-                  {filteredClasses.length === 0 ? (
+                  {seriesList.length === 0 ? (
                     <tr>
-                      <td colSpan={canManage ? 8 : 7} className="py-8 text-center text-[#6B7185]">
-                        No scheduled classes match the filter criteria.
+                      <td colSpan={colCount} className="py-8 text-center text-[#6B7185]">
+                        No classes in this view. Try widening the “Show” range above.
                       </td>
                     </tr>
                   ) : (
-                    filteredClasses.map((cls) => (
-                      <tr key={cls.id} className="hover:bg-slate-50 transition-colors">
-                        {canManage && (
-                          <td className="py-3.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
-                            <input type="checkbox" checked={selectedClassIds.includes(cls.id)} onChange={() => toggleSelectClass(cls.id)} className="rounded accent-[#5B47D6]" />
-                          </td>
-                        )}
-                        <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">
-                          {cls.studentName || '-'}
-                        </td>
+                    seriesList.map((s) => {
+                      // A one-off class (or a single leftover in this window) shows as a plain row.
+                      if (s.count === 1) return renderRow(s.sample);
 
-                        <td className="py-3.5 px-3">
-                          <div className="font-medium text-slate-900 dark:text-slate-100">{cls.date}</div>
-                          <div className="font-mono text-xs text-[#6B7185]">{cls.startAt} - {cls.endAt}</div>
-                        </td>
-
-                        <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">
-                          {cls.teacherName}
-                        </td>
-
-                        <td className="py-3.5 px-3 text-[#6B7185]">
-                          {cls.program}
-                        </td>
-
-                        <td className="py-3.5 px-3">
-                          <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{cls.subject}</div>
-                          {cls.meetingLink ? (
-                            <a
-                              href={cls.meetingLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-xs font-medium text-[#5B47D6] hover:underline"
-                            >
-                              Join
-                            </a>
-                          ) : (
-                            <span
-                              title="No Google Calendar invite was sent for this class. Check the student/teacher email or reconnect Google, then reschedule - or add a Meet link manually."
-                              className="text-xs text-amber-600 font-medium"
-                            >
-                              No invite
-                            </span>
-                          )}
-                        </td>
-
-                        {/* CLASS TYPE COLUMN (WITH FREE MAKEUP BADGE) */}
-                        <td className="py-3.5 px-3">
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${
-                              cls.classType === 'Makeup'
-                                ? 'bg-purple-100 text-purple-700 border border-purple-200'
-                                : cls.classType === 'Test'
-                                ? 'bg-amber-100 text-amber-700 border border-amber-200'
-                                : 'bg-blue-100 text-blue-700'
-                            }`}
-                          >
-                            <span>{cls.classType}</span>
-                            {!cls.isCharged && <span className="text-xs text-purple-900 bg-white px-1 rounded font-medium">(Free)</span>}
-                          </span>
-                        </td>
-
-                        <td className="py-3.5 px-3">
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              cls.status === 'Live'
-                                ? 'bg-emerald-100 text-emerald-700'
-                                : cls.status === 'Completed'
-                                ? 'bg-slate-200 text-slate-700'
-                                : 'bg-blue-50 text-blue-600'
-                            }`}
-                          >
-                            {cls.status}
-                          </span>
-                        </td>
-
-                        <td className="py-3.5 px-3">
-                          {role !== 'student' ? (
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                onClick={() => openCompletion(cls)}
-                                className="px-3 py-1.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl shadow-xs transition-all cursor-pointer"
-                              >
-                                {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class'}
-                              </button>
-                              {/* Teacher / manager / admin can reschedule a missed or upcoming class - the student is auto-notified */}
-                              {cls.status !== 'Completed' && cls.status !== 'Cancelled' && (
-                                <button
-                                  onClick={() => openReschedule(cls)}
-                                  className="px-2.5 py-1.5 bg-amber-50 text-amber-700 font-medium text-xs rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer"
-                                >
-                                  Reschedule
+                      const open = expandedSeries.has(s.key);
+                      const ids = s.sessions.map((x) => x.id);
+                      const allSelected = ids.every((id) => selectedClassIds.includes(id));
+                      return (
+                        <React.Fragment key={s.key}>
+                          {/* SERIES SUMMARY ROW — collapses a recurring timetable into one line */}
+                          <tr className="bg-[#FAFAFE] dark:bg-slate-800/40 hover:bg-[#F3F1FC] dark:hover:bg-slate-800/70 transition-colors cursor-pointer" onClick={() => toggleSeries(s.key)}>
+                            {canManage && (
+                              <td className="py-3.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                                <input type="checkbox" checked={allSelected} onChange={() => toggleSelectSeries(ids)} className="rounded accent-[#5B47D6]" />
+                              </td>
+                            )}
+                            <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">
+                              <div className="flex items-center gap-1.5">
+                                {open ? <ChevronDown className="w-4 h-4 text-[#5B47D6]" /> : <ChevronRight className="w-4 h-4 text-[#6B7185]" />}
+                                <span>{s.sample.studentName || '-'}</span>
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-3">
+                              <div className="font-mono text-xs text-slate-900 dark:text-slate-100">{s.sample.startAt} - {s.sample.endAt}</div>
+                              <div className="text-xs text-[#6B7185]">{s.weekdayLabel}</div>
+                            </td>
+                            <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{s.sample.teacherName}</td>
+                            <td className="py-3.5 px-3 text-[#6B7185]">{s.sample.program}</td>
+                            <td className="py-3.5 px-3 font-medium text-sm text-slate-900 dark:text-slate-100">{s.sample.subject}</td>
+                            <td className="py-3.5 px-3">
+                              <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium inline-flex items-center gap-1 ${s.sample.classType === 'Makeup' ? 'bg-purple-100 text-purple-700 border border-purple-200' : s.sample.classType === 'Test' ? 'bg-amber-100 text-amber-700 border border-amber-200' : 'bg-blue-100 text-blue-700'}`}>
+                                <span>{s.sample.classType}</span>
+                                {!s.sample.isCharged && <span className="text-xs text-purple-900 bg-white px-1 rounded font-medium">(Free)</span>}
+                              </span>
+                            </td>
+                            <td className="py-3.5 px-3">
+                              <div className="text-slate-900 dark:text-slate-100 font-medium">{s.count} classes</div>
+                              <div className="text-xs text-[#6B7185]">
+                                {s.doneCount > 0 && `${s.doneCount} done · `}next {s.next?.date ?? '-'}
+                              </div>
+                            </td>
+                            <td className="py-3.5 px-3">
+                              <div className="flex items-center justify-center gap-1.5" onClick={(e) => e.stopPropagation()}>
+                                <button onClick={() => toggleSeries(s.key)} className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-[#5B47D6] text-[#5B47D6] hover:bg-[#5B47D6]/5 font-medium text-xs rounded-xl transition-all cursor-pointer">
+                                  {open ? 'Hide' : `View ${s.count}`}
                                 </button>
-                              )}
-                              {canManage && (
-                                <>
-                                  <button
-                                    onClick={() => openEdit(cls)}
-                                    title="Edit class"
-                                    aria-label="Edit class"
-                                    className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-[#5B47D6] transition-colors"
-                                  >
-                                    <Pencil className="w-4 h-4" />
-                                  </button>
-                                  <button
-                                    onClick={() => handleDeleteClass(cls)}
-                                    disabled={deletingId === cls.id}
-                                    title="Delete class"
-                                    aria-label="Delete class"
-                                    className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors disabled:opacity-50"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </button>
-                                </>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-slate-400 text-xs font-medium">-</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))
+                                {canManage && (
+                                  <button onClick={() => handleDeleteSeries(s)} disabled={bulkBusy} title="Delete whole series" aria-label="Delete whole series" className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors disabled:opacity-50"><Trash2 className="w-4 h-4" /></button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                          {open && s.sessions.map((cls) => renderRow(cls, true))}
+                        </React.Fragment>
+                      );
+                    })
                   )}
                 </tbody>
               </table>
@@ -731,46 +883,30 @@ export function ScheduleClient({
 
             {/* MOBILE CARD LIST (phones) — same rows as the table above */}
             <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
-              {filteredClasses.length === 0 ? (
-                <div className="py-8 text-center text-[#6B7185] text-sm">No scheduled classes match the filter criteria.</div>
+              {seriesList.length === 0 ? (
+                <div className="py-8 text-center text-[#6B7185] text-sm">No classes in this view. Try widening the “Show” range above.</div>
               ) : (
-                filteredClasses.map((cls) => (
-                  <div key={cls.id} className="p-4 space-y-2.5">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{cls.subject || 'Class'}</div>
-                        <div className="text-xs text-[#6B7185] truncate">{cls.studentName || '-'}{cls.program ? ` · ${cls.program}` : ''}</div>
-                      </div>
-                      <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${cls.status === 'Live' ? 'bg-emerald-100 text-emerald-700' : cls.status === 'Completed' ? 'bg-slate-200 text-slate-700' : 'bg-blue-50 text-blue-600'}`}>{cls.status}</span>
+                seriesList.map((s) => {
+                  if (s.count === 1) return renderCard(s.sample);
+                  const open = expandedSeries.has(s.key);
+                  return (
+                    <div key={s.key}>
+                      {/* SERIES SUMMARY CARD */}
+                      <button onClick={() => toggleSeries(s.key)} className="w-full text-left p-4 flex items-center justify-between gap-2 bg-[#FAFAFE] dark:bg-slate-800/40">
+                        <div className="min-w-0">
+                          <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{s.sample.subject} · {s.sample.studentName || '-'}</div>
+                          <div className="text-xs text-[#6B7185] truncate">{s.sample.startAt}-{s.sample.endAt} · {s.weekdayLabel} · {s.count} classes{s.doneCount > 0 ? ` · ${s.doneCount} done` : ''}</div>
+                          <div className="text-xs text-[#6B7185] truncate">{s.sample.teacherName} · next {s.next?.date ?? '-'}</div>
+                        </div>
+                        <span className="shrink-0 flex items-center gap-1 text-xs font-medium text-[#5B47D6]">
+                          {open ? 'Hide' : `View ${s.count}`}
+                          {open ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+                        </span>
+                      </button>
+                      {open && <div className="divide-y divide-[#F1F2F7] dark:divide-slate-800">{s.sessions.map((cls) => renderCard(cls, true))}</div>}
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
-                      <span className="font-medium text-slate-700 dark:text-slate-200">{cls.date}, {cls.startAt} - {cls.endAt}</span>
-                      <span className="text-[#6B7185]">{cls.teacherName}</span>
-                      <span className={`px-2 py-0.5 rounded-full font-medium ${cls.classType === 'Makeup' ? 'bg-purple-100 text-purple-700' : cls.classType === 'Test' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>{cls.classType}{!cls.isCharged && ' (Free)'}</span>
-                      {cls.meetingLink ? (
-                        <a href={cls.meetingLink} target="_blank" rel="noreferrer" className="text-[#5B47D6] font-medium">Join</a>
-                      ) : (
-                        <span className="text-amber-600 font-medium">No invite</span>
-                      )}
-                    </div>
-                    {role !== 'student' && (
-                      <div className="flex flex-wrap items-center gap-2 pt-1">
-                        <button onClick={() => openCompletion(cls)} className="flex-1 min-w-[130px] px-3 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white font-medium text-xs rounded-xl">
-                          {cls.status === 'Completed' ? 'View Attendance' : 'Complete Class'}
-                        </button>
-                        {cls.status !== 'Completed' && cls.status !== 'Cancelled' && (
-                          <button onClick={() => openReschedule(cls)} className="px-3 py-2 bg-amber-50 text-amber-700 font-medium text-xs rounded-xl border border-amber-200">Reschedule</button>
-                        )}
-                        {canManage && (
-                          <>
-                            <button onClick={() => openEdit(cls)} aria-label="Edit class" className="p-2 rounded-lg border border-slate-200 text-slate-600"><Pencil className="w-4 h-4" /></button>
-                            <button onClick={() => handleDeleteClass(cls)} disabled={deletingId === cls.id} aria-label="Delete class" className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:text-rose-600 disabled:opacity-50"><Trash2 className="w-4 h-4" /></button>
-                          </>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
