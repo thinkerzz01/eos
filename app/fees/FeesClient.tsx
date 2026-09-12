@@ -174,10 +174,13 @@ export function FeesClient({
                     <div className="font-medium text-xl leading-tight">Thinkerzz</div>
                     <div className="text-xs text-purple-200 font-medium uppercase tracking-widest">Fee Voucher</div>
                   </div>
-                  <div className="ml-auto text-right">
-                    <div className="text-[11px] text-purple-200">Voucher</div>
-                    <div className="font-mono font-medium text-sm">{view.voucher_no || '—'}</div>
-                  </div>
+                  {/* Voucher ID is an internal reference: shown to admin, hidden from the student's voucher/print. */}
+                  {isAdmin && (
+                    <div className="ml-auto text-right">
+                      <div className="text-[11px] text-purple-200">Voucher</div>
+                      <div className="font-mono font-medium text-sm">{view.voucher_no || '—'}</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Amount headline */}
