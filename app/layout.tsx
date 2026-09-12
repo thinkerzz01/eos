@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Nunito, Jost, Inter, Poppins, Lora } from 'next/font/google';
 import './globals.css';
 import { ToastProvider } from '@/components/ui/Toast';
+import { ConfirmProvider } from '@/components/ui/ConfirmDialog';
 import { ThemeProvider } from '@/components/ui/ThemeContext';
 import { RoleProvider } from '@/components/ui/RoleContext';
 import { getServerRole, getServerUserName } from '@/lib/auth/serverRole';
@@ -60,7 +61,9 @@ export default async function RootLayout({
         />
         <ThemeProvider>
           <RoleProvider role={role} name={userName}>
-            <ToastProvider>{children}</ToastProvider>
+            <ToastProvider>
+              <ConfirmProvider>{children}</ConfirmProvider>
+            </ToastProvider>
           </RoleProvider>
         </ThemeProvider>
       </body>

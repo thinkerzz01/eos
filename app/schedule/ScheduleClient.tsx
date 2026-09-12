@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { subjectLabel, labelWithCode } from '@/lib/syllabiSeed';
@@ -50,6 +51,7 @@ export function ScheduleClient({
 }) {
   const { role } = useRole();
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const router = useRouter();
 
   // LIST vs CALENDAR view. Teachers/students land on the calendar (they just want
@@ -248,7 +250,7 @@ export function ScheduleClient({
 
   const handleDeleteClass = async (cls: ScheduledClass) => {
     const when = `${cls.date}, ${cls.startAt}`;
-    if (!window.confirm(`Delete this class?\n\n${cls.subject} - ${cls.studentName || 'student'}\n${when}\n\nThis cancels the class and its calendar invite. This cannot be undone.`)) return;
+    if (!(await confirm({ title: 'Delete this class?', message: `${cls.subject} - ${cls.studentName || 'student'}\n${when}\n\nThis cancels the class and its calendar invite. This cannot be undone.`, confirmLabel: 'Delete class' }))) return;
     setDeletingId(cls.id);
     const res = await deleteClassSession({ sessionId: cls.id });
     setDeletingId(null);
@@ -400,7 +402,7 @@ export function ScheduleClient({
 
   const handleDeleteSeries = async (s: ClassSeries) => {
     const ids = s.sessions.map((x) => x.id);
-    if (!confirm(`Delete all ${ids.length} "${s.sample.subject}" classes for ${s.sample.studentName || 'this student'} (${s.sample.startAt}–${s.sample.endAt})? They are cancelled and removed from the timetable. This is logged.`)) return;
+    if (!(await confirm({ title: `Delete all ${ids.length} classes?`, message: `Every "${s.sample.subject}" class for ${s.sample.studentName || 'this student'} (${s.sample.startAt}–${s.sample.endAt}) is cancelled and removed from the timetable. This is logged.`, confirmLabel: 'Delete series' }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteClasses({ sessionIds: ids });
     setBulkBusy(false);
@@ -435,7 +437,7 @@ export function ScheduleClient({
   };
   const handleBulkDeleteClasses = async () => {
     if (selectedClassIds.length === 0) return;
-    if (!confirm(`Delete ${selectedClassIds.length} selected class${selectedClassIds.length === 1 ? '' : 'es'}? They are cancelled and removed from the timetable. This is logged.`)) return;
+    if (!(await confirm({ title: `Delete ${selectedClassIds.length} class${selectedClassIds.length === 1 ? '' : 'es'}?`, message: 'They are cancelled and removed from the timetable. This is logged.', confirmLabel: 'Delete' }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteClasses({ sessionIds: selectedClassIds });
     setBulkBusy(false);
