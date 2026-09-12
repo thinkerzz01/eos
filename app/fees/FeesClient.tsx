@@ -7,7 +7,7 @@ import { useRole } from '@/components/ui/RoleContext';
 import { DataTable } from '@/components/ui/DataTable';
 import { Badge } from '@/components/ui/Badge';
 import type { PaymentInfo } from '@/lib/config/paymentInfo';
-import { Eye, X, Printer, ChevronDown } from 'lucide-react';
+import { Eye, Printer, ChevronDown } from 'lucide-react';
 
 export interface VoucherRow {
   id: string;
@@ -144,7 +144,7 @@ export function FeesClient({
         emptyDescription="There are no fee vouchers matching these filters."
       />
 
-      {/* VOUCHER DETAIL / PRINT */}
+      {/* VOUCHER DETAIL / PRINT — same branded design as the admin voucher slip */}
       {view && (
         <>
           <style>{`
@@ -160,60 +160,71 @@ export function FeesClient({
                 position: absolute; left: 0; top: 0; width: 100%;
                 max-width: 100% !important; max-height: none !important;
                 box-shadow: none !important; border: none !important; overflow: visible !important;
-                padding: 32px !important; border-radius: 0 !important;
+                border-radius: 0 !important;
               }
             }
           `}</style>
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in" onClick={() => setView(null)}>
-            <div id="fee-voucher-print" className="bg-white text-slate-900 rounded-3xl p-6 sm:p-7 w-full max-w-md max-h-[90vh] overflow-y-auto shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="font-heading font-semibold text-lg">Fee Voucher</div>
-                  <div className="text-xs text-slate-500 mt-0.5">{view.student_name || 'Student'}</div>
-                </div>
-                <button onClick={() => setView(null)} className="print:hidden p-1.5 rounded-lg hover:bg-slate-100"><X className="w-5 h-5 text-slate-400" /></button>
-              </div>
-
-              <div className="rounded-2xl border border-slate-200 p-4 flex items-center justify-between gap-3">
-                <div>
-                  <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">Amount Due</div>
-                  <div className="font-mono font-bold text-2xl text-slate-900 mt-0.5">PKR {view.amount.toLocaleString()}</div>
-                </div>
-                <Badge tone={statusTone(view.status)}>{prettyStatus(view.status)}</Badge>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 text-[13px]">
-                {[
-                  ['Billing period', view.periodLabel],
-                  ['Due date', view.due_date],
-                  ['Grace deadline', view.grace_deadline],
-                  ['Status', prettyStatus(view.status)],
-                ].map(([k, v]) => (
-                  <div key={k} className="rounded-xl bg-slate-50 border border-slate-200 p-2.5">
-                    <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500">{k}</div>
-                    <div className="font-medium text-slate-900 mt-0.5 break-words">{v}</div>
+            <div id="fee-voucher-print" className="bg-white rounded-3xl p-0 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="p-7 space-y-5 text-slate-900 text-[15px]">
+                {/* Colored branded header */}
+                <div className="flex items-center gap-3 rounded-2xl bg-[#5B47D6] text-white px-5 py-4">
+                  <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center font-medium text-lg">T</div>
+                  <div>
+                    <div className="font-medium text-xl leading-tight">Thinkerzz</div>
+                    <div className="text-xs text-purple-200 font-medium uppercase tracking-widest">Fee Voucher</div>
                   </div>
-                ))}
-              </div>
-
-              {paymentInfo && (
-                <div className="rounded-2xl border border-slate-200 bg-slate-50 p-3 text-[13px]">
-                  <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500 mb-1">How to pay</div>
-                  <div className="space-y-0.5 text-slate-700">
-                    {paymentInfo.bankTitle && <div>Bank Title: <span className="font-medium text-slate-900">{paymentInfo.bankTitle}</span></div>}
-                    {paymentInfo.bankAccountNo && <div>Account No: <span className="font-mono text-slate-900">{paymentInfo.bankAccountNo}</span></div>}
-                    {paymentInfo.bankIban && <div>IBAN: <span className="font-mono text-slate-900">{paymentInfo.bankIban}</span></div>}
-                    {paymentInfo.wallet && <div>Mobile Wallet: <span className="font-medium text-slate-900">{paymentInfo.wallet}</span></div>}
+                  <div className="ml-auto text-right">
+                    <div className="text-[11px] text-purple-200">Voucher</div>
+                    <div className="font-mono font-medium text-sm">{view.voucher_no || '—'}</div>
                   </div>
                 </div>
-              )}
 
-              <p className="text-xs text-slate-400">After paying, share your receipt with the academy so your voucher is marked paid.</p>
+                {/* Amount headline */}
+                <div className="rounded-2xl border-2 border-[#5B47D6]/20 bg-[#5B47D6]/5 p-4 text-center">
+                  <div className="text-xs font-medium uppercase tracking-widest text-[#5B47D6]">Amount To Pay</div>
+                  <div className="font-heading font-medium text-4xl text-slate-900 mt-1">PKR {view.amount.toLocaleString()}</div>
+                  <div className="text-[13px] font-medium text-slate-500 mt-1">Due by {view.due_date}</div>
+                </div>
 
-              <div className="flex justify-end pt-1">
-                <button onClick={() => window.print()} className="print:hidden inline-flex items-center gap-2 bg-[#0F172A] hover:bg-[#0b1120] text-white font-medium text-sm rounded-xl px-4 py-2.5">
+                <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-[14px] font-medium">
+                  <div className="text-slate-500">Student</div><div className="text-right">{view.student_name || '-'}</div>
+                  <div className="text-slate-500">Billing Period</div><div className="text-right">{view.periodLabel}</div>
+                  <div className="text-slate-500">Grace Deadline</div><div className="text-right">{view.grace_deadline}</div>
+                  <div className="text-slate-500">Status</div><div className="text-right">{prettyStatus(view.status)}</div>
+                </div>
+
+                {paymentInfo && (paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban || paymentInfo.wallet) && (
+                  <div className="space-y-2.5">
+                    {(paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban) && (
+                      <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
+                        <div className="font-medium text-[#5B47D6] mb-1 uppercase tracking-wide text-xs">Bank Transfer</div>
+                        <div className="space-y-0.5 text-slate-700">
+                          {paymentInfo.bankTitle && <div>Title: <span className="font-medium">{paymentInfo.bankTitle}</span></div>}
+                          {paymentInfo.bankAccountNo && <div>Account No: <span className="font-mono">{paymentInfo.bankAccountNo}</span></div>}
+                          {paymentInfo.bankIban && <div>IBAN: <span className="font-mono">{paymentInfo.bankIban}</span></div>}
+                        </div>
+                      </div>
+                    )}
+                    {paymentInfo.wallet && (
+                      <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
+                        <div className="font-medium text-[#12A150] mb-1 uppercase tracking-wide text-xs">JazzCash / Mobile Wallet</div>
+                        <div className="text-slate-700"><span className="font-medium">{paymentInfo.wallet}</span></div>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                <div className="text-center text-[11px] text-slate-400 font-medium pt-1 border-t border-slate-100">
+                  Please share the payment receipt after paying. Thank you. · Thinkerzz
+                </div>
+              </div>
+
+              <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50 print:hidden">
+                <button onClick={() => window.print()} className="flex-1 inline-flex items-center justify-center gap-2 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl">
                   <Printer className="w-4 h-4" /> Print Voucher
                 </button>
+                <button onClick={() => setView(null)} className="px-3 py-2 border border-slate-300 font-medium text-xs rounded-xl">Close</button>
               </div>
             </div>
           </div>
