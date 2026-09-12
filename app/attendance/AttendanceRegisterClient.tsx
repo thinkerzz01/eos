@@ -13,7 +13,7 @@ import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import { bulkMarkAttendance, clearAttendance } from '@/app/schedule/actions';
 import { downloadCsv } from '@/lib/export/csv';
-import { CalendarCheck, Check, Users, ChevronDown, ClipboardList, ListChecks, Download, Upload, Search, Trash2, X } from 'lucide-react';
+import { CalendarCheck, Check, Users, ChevronDown, ClipboardList, ListChecks, Download, Upload, Search, Trash2, X, RotateCcw } from 'lucide-react';
 
 type Mark = 'Present' | 'Late' | 'Absent';
 
@@ -131,7 +131,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
     setClearingId(null);
     if (res.ok) {
       router.refresh();
-      showToast('Attendance mark deleted.', 'success');
+      showToast('Attendance mark deleted', 'success', { description: 'The class is reopened as not completed.' });
     } else {
       showToast(res.error ?? 'Failed to delete the mark.', 'error');
     }
@@ -237,9 +237,14 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
     if (res.ok) {
       setChoices({});
       router.refresh();
-      showToast(`Attendance saved for ${res.count} class${res.count === 1 ? '' : 'es'}.`, 'success');
+      showToast('Attendance saved', 'success', {
+        description: `Attendance for ${res.count} class${res.count === 1 ? '' : 'es'} was recorded.`,
+      });
     } else {
-      showToast(res.error ?? 'Failed to save attendance.', 'error');
+      showToast('Couldn’t save attendance', 'error', {
+        description: res.error ?? 'Something went wrong. Please try again.',
+        action: { label: 'Try again', icon: <RotateCcw className="w-3.5 h-3.5" />, onClick: handleSave },
+      });
     }
   };
 
@@ -300,8 +305,12 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
       }
       if (items.length === 0) { showToast(`No rows applied${skipped ? ` · ${skipped} skipped` : ''}. Check the Class ID and Attendance values.`, 'error'); return; }
       const res = await bulkMarkAttendance({ items });
-      if (res.ok) { router.refresh(); showToast(`Imported ${res.count} mark${res.count === 1 ? '' : 's'}${skipped ? ` · ${skipped} skipped` : ''}.`, 'success'); }
-      else showToast(res.error ?? 'Import failed.', 'error');
+      if (res.ok) {
+        router.refresh();
+        showToast('Import complete', 'success', {
+          description: `${res.count} mark${res.count === 1 ? '' : 's'} imported${skipped ? ` · ${skipped} row${skipped === 1 ? '' : 's'} skipped` : ''}.`,
+        });
+      } else showToast('Import failed', 'error', { description: res.error ?? 'Please check the file and try again.' });
     } catch {
       showToast('Could not read that file. Please upload a CSV.', 'error');
     } finally {
