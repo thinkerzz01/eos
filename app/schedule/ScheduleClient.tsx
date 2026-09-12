@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
+import { useToast } from '@/components/ui/Toast';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { subjectLabel, labelWithCode } from '@/lib/syllabiSeed';
@@ -48,6 +49,7 @@ export function ScheduleClient({
   subjects: SubjectOption[];
 }) {
   const { role } = useRole();
+  const { showToast } = useToast();
   const router = useRouter();
 
   // LIST vs CALENDAR view. Teachers/students land on the calendar (they just want
@@ -183,7 +185,8 @@ export function ScheduleClient({
       setShowSingleModal(false);
       resetSingle();
       router.refresh();
-      alert(res.calendarWarning ? `Class scheduled.\n\n${res.calendarWarning}` : 'Class scheduled.');
+      showToast('Class scheduled.', 'success');
+      if (res.calendarWarning) showToast(res.calendarWarning, 'info');
     } else {
       setScError(res.error ?? 'Failed to schedule the class.');
     }
@@ -236,7 +239,8 @@ export function ScheduleClient({
     if (res.ok) {
       setEditClass(null);
       router.refresh();
-      alert(res.calendarWarning ? `Class updated.\n\n${res.calendarWarning}` : 'Class updated.');
+      showToast('Class updated.', 'success');
+      if (res.calendarWarning) showToast(res.calendarWarning, 'info');
     } else {
       setEdError(res.error ?? 'Failed to update the class.');
     }
@@ -250,9 +254,10 @@ export function ScheduleClient({
     setDeletingId(null);
     if (res.ok) {
       router.refresh();
-      if (res.calendarWarning) alert(`Class deleted.\n\n${res.calendarWarning}`);
+      showToast('Class deleted.', 'success');
+      if (res.calendarWarning) showToast(res.calendarWarning, 'info');
     } else {
-      alert(res.error ?? 'Failed to delete the class.');
+      showToast(res.error ?? 'Failed to delete the class.', 'error');
     }
   };
 
@@ -281,7 +286,8 @@ export function ScheduleClient({
     if (res.ok) {
       setRsClass(null);
       router.refresh();
-      alert(res.calendarWarning ? `Class rescheduled. The student has been notified.\n\n${res.calendarWarning}` : 'Class rescheduled. The student has been notified.');
+      showToast('Class rescheduled. The student has been notified.', 'success');
+      if (res.calendarWarning) showToast(res.calendarWarning, 'info');
     } else {
       setRsError(res.error ?? 'Failed to reschedule the class.');
     }
@@ -399,7 +405,7 @@ export function ScheduleClient({
     const res = await bulkDeleteClasses({ sessionIds: ids });
     setBulkBusy(false);
     if (res.ok) { setSelectedClassIds((prev) => prev.filter((id) => !ids.includes(id))); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the series.');
+    else showToast(res.error ?? 'Failed to delete the series.', 'error');
   };
 
   // BULK SELECTION on the class list (admin/manager; teachers see their own via RLS).
@@ -434,7 +440,7 @@ export function ScheduleClient({
     const res = await bulkDeleteClasses({ sessionIds: selectedClassIds });
     setBulkBusy(false);
     if (res.ok) { setSelectedClassIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the selected classes.');
+    else showToast(res.error ?? 'Failed to delete the selected classes.', 'error');
   };
 
   // Split students into "new" (no class sessions yet) vs "already scheduled".
@@ -484,7 +490,8 @@ export function ScheduleClient({
       resetWizard();
       router.refresh();
       const base = `Scheduled ${res.created} class${res.created === 1 ? '' : 'es'}${res.conflicts ? ` · ${res.conflicts} skipped (teacher time conflict)` : ''}.`;
-      alert(res.calendarWarning ? `${base}\n\n${res.calendarWarning}` : base);
+      showToast(base, 'success');
+      if (res.calendarWarning) showToast(res.calendarWarning, 'info');
     } else {
       setOverlapWarning(res.error ?? 'Failed to schedule.');
     }
@@ -492,7 +499,7 @@ export function ScheduleClient({
 
   const handleSaveClassCompletion = async () => {
     if (!selectedClassForCompletion) return;
-    if (!selectedClassForCompletion.studentId) { alert('This session has no linked student.'); return; }
+    if (!selectedClassForCompletion.studentId) { showToast('This session has no linked student.', 'error'); return; }
     const wasCompleted = selectedClassForCompletion.status === 'Completed';
 
     setSavingCompletion(true);
@@ -512,9 +519,9 @@ export function ScheduleClient({
       setAttendanceChoice('Present');
       setClassNoteText('');
       router.refresh();
-      alert(wasCompleted ? 'Attendance updated.' : 'Class completed and attendance recorded.');
+      showToast(wasCompleted ? 'Attendance updated.' : 'Class completed and attendance recorded.', 'success');
     } else {
-      alert(res.error ?? 'Failed to save.');
+      showToast(res.error ?? 'Failed to save.', 'error');
     }
   };
 
