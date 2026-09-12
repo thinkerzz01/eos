@@ -45,6 +45,10 @@ function mapRow(r: any, teacherNames?: Map<string, string>): HomeworkAssignment 
     gradedCount: r.status === 'graded' ? 1 : 0,
     submissionStatus: SUBMISSION_UI[r.status as string] ?? 'Not submitted',
     status: STATUS_UI[r.status as string] ?? 'Assigned',
+    description: r.description ?? '',
+    score: r.score ?? null,
+    maxScore: r.max_score ?? null,
+    feedback: r.feedback ?? '',
   };
 }
 
@@ -56,11 +60,16 @@ export async function getHomework(): Promise<HomeworkAssignment[]> {
   const user = session?.user;
   if (!user) return [];
 
-  const { data, error } = await supabase
-    .from('homework')
-    .select('id,title,deadline,status,score,created_at,student_id,subject_id,teacher_id,subjects(name),teachers(name),students(name)')
-    .is('deleted_at', null)
-    .order('deadline', { ascending: false });
+  const FULL = 'id,title,description,deadline,status,score,max_score,feedback,created_at,student_id,subject_id,teacher_id,subjects(name),teachers(name),students(name)';
+  const BASE = 'id,title,deadline,status,score,created_at,student_id,subject_id,teacher_id,subjects(name),teachers(name),students(name)';
+  const run = (cols: string) =>
+    supabase.from('homework').select(cols).is('deleted_at', null).order('deadline', { ascending: false });
+  let { data, error }: { data: any[] | null; error: any } = await run(FULL);
+  // Fall back gracefully if the description/grading columns migration hasn't run
+  // yet, so the list never breaks during a deploy.
+  if (error && /column|does not exist|description|max_score|feedback/i.test(error.message ?? '')) {
+    ({ data, error } = await run(BASE));
+  }
 
   if (error || !data) return [];
   const teacherNames = await resolveTeacherNames(

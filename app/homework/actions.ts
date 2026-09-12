@@ -41,6 +41,7 @@ export async function createHomework(input: {
   subjectId: string;
   teacherId: string;
   title: string;
+  description?: string;
   deadline: string; // YYYY-MM-DD (PKT)
 }): Promise<ActionResult> {
   const title = input.title?.trim();
@@ -82,6 +83,7 @@ export async function createHomework(input: {
     subject_id: input.subjectId,
     teacher_id: teacherId,
     title,
+    description: input.description?.trim() || null,
     deadline: deadlineIso,
     status: 'assigned',
   });
@@ -103,6 +105,7 @@ export async function createHomework(input: {
 export async function updateHomework(input: {
   homeworkId: string;
   title?: string;
+  description?: string;
   deadline?: string; // YYYY-MM-DD (PKT)
 }): Promise<ActionResult> {
   if (!input.homeworkId) return { ok: false, error: 'Missing homework id.' };
@@ -112,6 +115,7 @@ export async function updateHomework(input: {
 
   const patch: Record<string, any> = {};
   if (input.title?.trim()) patch.title = input.title.trim();
+  if (input.description !== undefined) patch.description = input.description.trim() || null;
   if (input.deadline) patch.deadline = new Date(`${input.deadline}T23:59:00+05:00`).toISOString();
   if (Object.keys(patch).length === 0) return { ok: false, error: 'Nothing to update.' };
 
@@ -220,6 +224,8 @@ export async function submitHomework(input: { homeworkId: string }): Promise<Act
 export async function gradeHomework(input: {
   homeworkId: string;
   score?: number;
+  maxScore?: number;
+  feedback?: string;
 }): Promise<ActionResult> {
   const supabase = createClient();
   const gate = await requireStaff(supabase);
@@ -227,6 +233,8 @@ export async function gradeHomework(input: {
 
   const patch: Record<string, any> = { status: 'graded' };
   if (input.score != null && !Number.isNaN(input.score)) patch.score = input.score;
+  if (input.maxScore != null && !Number.isNaN(input.maxScore)) patch.max_score = input.maxScore;
+  if (input.feedback !== undefined) patch.feedback = input.feedback.trim() || null;
 
   const { data: updated, error } = await supabase
     .from('homework')

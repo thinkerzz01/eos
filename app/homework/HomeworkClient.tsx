@@ -51,11 +51,44 @@ export function HomeworkClient({
   const [homeworks, setHomeworks] = useState<HomeworkAssignment[]>(initialHomeworks);
   const [showAddHomeworkModal, setShowAddHomeworkModal] = useState<boolean>(false);
   const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
   const [subjectId, setSubjectId] = useState('');
   const [studentId, setStudentId] = useState('');
   const [teacherId, setTeacherId] = useState('');
   const [deadline, setDeadline] = useState('');
   const [assigning, setAssigning] = useState(false);
+
+  // GRADE MODAL (enter an actual mark + optional feedback when checking work)
+  const [gradeHw, setGradeHw] = useState<HomeworkAssignment | null>(null);
+  const [gScore, setGScore] = useState('');
+  const [gMax, setGMax] = useState('100');
+  const [gFeedback, setGFeedback] = useState('');
+  const [grading, setGrading] = useState(false);
+  const openGrade = (hw: HomeworkAssignment) => {
+    setGradeHw(hw);
+    setGScore(hw.score != null ? String(hw.score) : '');
+    setGMax(hw.maxScore != null ? String(hw.maxScore) : '100');
+    setGFeedback(hw.feedback ?? '');
+  };
+  const handleSubmitGrade = async () => {
+    if (!gradeHw) return;
+    if (gScore.trim() === '' || Number.isNaN(Number(gScore))) { showToast('Enter a score.', 'error'); return; }
+    setGrading(true);
+    const res = await gradeHomework({
+      homeworkId: gradeHw.id,
+      score: Number(gScore),
+      maxScore: Number(gMax) || 100,
+      feedback: gFeedback,
+    });
+    setGrading(false);
+    if (res.ok) {
+      setGradeHw(null);
+      router.refresh();
+      showToast('Homework graded', 'success', { description: `${gradeHw.studentName || 'Student'} · ${gScore}/${Number(gMax) || 100}` });
+    } else {
+      showToast(res.error ?? 'Failed to grade.', 'error');
+    }
+  };
 
   useEffect(() => { setHomeworks(initialHomeworks); }, [initialHomeworks]);
 
@@ -135,11 +168,11 @@ export function HomeworkClient({
       return;
     }
     setAssigning(true);
-    const res = await createHomework({ studentId, subjectId, teacherId, title, deadline });
+    const res = await createHomework({ studentId, subjectId, teacherId, title, description, deadline });
     setAssigning(false);
     if (res.ok) {
       setShowAddHomeworkModal(false);
-      setTitle(''); setStudentId(''); setSubjectId(''); setTeacherId(''); setDeadline('');
+      setTitle(''); setDescription(''); setStudentId(''); setSubjectId(''); setTeacherId(''); setDeadline('');
       router.refresh();
     } else {
       showToast(res.error ?? 'Failed to assign homework.', 'error');
@@ -152,28 +185,25 @@ export function HomeworkClient({
   const isoToPktDate = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }) : '');
   const [editHw, setEditHw] = useState<HomeworkAssignment | null>(null);
   const [edTitle, setEdTitle] = useState('');
+  const [edDescription, setEdDescription] = useState('');
   const [edDeadline, setEdDeadline] = useState('');
   const [edSaving, setEdSaving] = useState(false);
   const [edError, setEdError] = useState<string | null>(null);
 
   const openEdit = (hw: HomeworkAssignment) => {
-    setEditHw(hw); setEdTitle(hw.title); setEdDeadline(isoToPktDate(hw.dueISO)); setEdError(null);
+    setEditHw(hw); setEdTitle(hw.title); setEdDescription(hw.description ?? ''); setEdDeadline(isoToPktDate(hw.dueISO)); setEdError(null);
   };
   const handleUpdate = async () => {
     if (!editHw) return;
     setEdError(null);
     if (!edTitle.trim()) { setEdError('Title is required.'); return; }
     setEdSaving(true);
-    const res = await updateHomework({ homeworkId: editHw.id, title: edTitle, deadline: edDeadline || undefined });
+    const res = await updateHomework({ homeworkId: editHw.id, title: edTitle, description: edDescription, deadline: edDeadline || undefined });
     setEdSaving(false);
     if (res.ok) { setEditHw(null); router.refresh(); }
     else setEdError(res.error ?? 'Failed to update the homework.');
   };
-  const handleCheck = async (hw: HomeworkAssignment) => {
-    const res = await gradeHomework({ homeworkId: hw.id });
-    if (res.ok) router.refresh();
-    else showToast(res.error ?? 'Failed to grade.', 'error');
-  };
+  const handleCheck = (hw: HomeworkAssignment) => openGrade(hw);
   const handleDelete = async (hw: HomeworkAssignment) => {
     if (!(await confirm({ title: 'Delete this homework?', message: `Delete homework "${hw.title}"? This removes it from the list.`, confirmLabel: 'Delete', danger: true }))) return;
     const res = await deleteHomework(hw.id);
@@ -392,7 +422,12 @@ export function HomeworkClient({
                         <Badge tone={hw.submissionStatus === 'Graded' ? 'success' : hw.submissionStatus === 'Submitted' ? 'info' : 'neutral'}>{hw.submissionStatus}</Badge>
                       </td>
                       <td className="py-3.5 px-3">
-                        <Badge tone={hw.status === 'Graded' ? 'success' : 'brand'}>{hw.status}</Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge tone={hw.status === 'Graded' ? 'success' : 'brand'}>{hw.status}</Badge>
+                          {hw.status === 'Graded' && hw.score != null && (
+                            <span className="font-mono text-xs font-medium text-emerald-700 dark:text-emerald-400">{hw.score}{hw.maxScore != null ? `/${hw.maxScore}` : ''}</span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3.5 px-3 text-center">
                         <div className="flex items-center justify-center gap-1.5">
@@ -451,7 +486,12 @@ export function HomeworkClient({
                       <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{hw.title}</div>
                       <div className="text-xs text-[#6B7185] truncate">{hw.subject || '-'}{hw.studentName ? ` · ${hw.studentName}` : ''}</div>
                     </div>
-                    <Badge tone={hw.status === 'Graded' ? 'success' : 'brand'}>{hw.status}</Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge tone={hw.status === 'Graded' ? 'success' : 'brand'}>{hw.status}</Badge>
+                      {hw.status === 'Graded' && hw.score != null && (
+                        <span className="font-mono text-xs font-medium text-emerald-700 dark:text-emerald-400">{hw.score}{hw.maxScore != null ? `/${hw.maxScore}` : ''}</span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                     <span className="text-slate-700 dark:text-slate-200">Due: <span className="text-rose-600 font-medium">{fdate(hw.dueISO)}</span></span>
@@ -484,6 +524,42 @@ export function HomeworkClient({
           <div className="p-3 bg-slate-50 border-t text-[13px] font-medium text-slate-600">Showing {filtered.length} of {homeworks.length} homework</div>
         </div>
 
+        {/* GRADE MODAL — enter an actual mark + optional feedback */}
+        {gradeHw && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
+              <div className="flex justify-between items-start border-b pb-3">
+                <div>
+                  <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Grade Homework</h3>
+                  <p className="text-xs text-[#6B7185] mt-0.5">{gradeHw.title} · {gradeHw.studentName || 'Student'}</p>
+                </div>
+                <button onClick={() => setGradeHw(null)}><X className="w-4 h-4 text-slate-400" /></button>
+              </div>
+              <div className="space-y-3 text-xs font-medium">
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-slate-700 dark:text-slate-300 block mb-1">Score</label>
+                    <input type="number" value={gScore} onChange={(e) => setGScore(e.target.value)} placeholder="e.g. 85" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono text-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="text-slate-700 dark:text-slate-300 block mb-1">Out of</label>
+                    <input type="number" value={gMax} onChange={(e) => setGMax(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono text-slate-900 dark:text-slate-100" />
+                  </div>
+                </div>
+                <div>
+                  <label className="text-slate-700 dark:text-slate-300 block mb-1">Feedback <span className="text-slate-400 font-medium normal-case">(optional)</span></label>
+                  <textarea value={gFeedback} onChange={(e) => setGFeedback(e.target.value)} rows={3} placeholder="What was good, what to improve…" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 resize-y" />
+                </div>
+                <p className="text-[11px] text-[#6B7185]">Saving marks this homework Graded and records the score. The student is notified.</p>
+              </div>
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button onClick={() => setGradeHw(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleSubmitGrade} disabled={grading} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{grading ? 'Saving…' : 'Save Grade'}</button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* VIEW MODAL */}
         {viewHw && (
           <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
@@ -502,6 +578,7 @@ export function HomeworkClient({
                   ['Due', fdate(viewHw.dueISO)],
                   ['Submission', viewHw.submissionStatus || '-'],
                   ['Status', viewHw.status],
+                  ['Score', viewHw.score != null ? `${viewHw.score}${viewHw.maxScore != null ? ` / ${viewHw.maxScore}` : ''}` : '—'],
                 ].map(([k, v]) => (
                   <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
                     <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">{k}</div>
@@ -509,6 +586,18 @@ export function HomeworkClient({
                   </div>
                 ))}
               </div>
+              {viewHw.description && (
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Description</div>
+                  <div className="text-slate-800 dark:text-slate-200 mt-0.5 whitespace-pre-line break-words">{viewHw.description}</div>
+                </div>
+              )}
+              {viewHw.feedback && (
+                <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 p-2.5">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-400">Teacher feedback</div>
+                  <div className="text-slate-800 dark:text-slate-200 mt-0.5 whitespace-pre-line break-words">{viewHw.feedback}</div>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -525,6 +614,10 @@ export function HomeworkClient({
                 <div>
                   <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Title</label>
                   <input value={edTitle} onChange={(e) => setEdTitle(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
+                </div>
+                <div>
+                  <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Description <span className="text-slate-400 font-medium normal-case">(optional)</span></label>
+                  <textarea value={edDescription} onChange={(e) => setEdDescription(e.target.value)} rows={3} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6] resize-y" />
                 </div>
                 <div>
                   <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Deadline</label>
@@ -554,6 +647,10 @@ export function HomeworkClient({
                 <div>
                   <label className="text-slate-700 dark:text-slate-300 block mb-1">Homework Title</label>
                   <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Vectors & Calculus Worksheet" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+                </div>
+                <div>
+                  <label className="text-slate-700 dark:text-slate-300 block mb-1">Description <span className="text-slate-400 font-medium normal-case">(optional)</span></label>
+                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} placeholder="Full instructions: questions, pages, what to submit…" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 resize-y" />
                 </div>
                 <div>
                   <label className="text-slate-700 dark:text-slate-300 block mb-1">Student</label>

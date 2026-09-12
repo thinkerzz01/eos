@@ -44,6 +44,10 @@ export interface HomeworkAssignment {
   gradedCount: number;
   submissionStatus?: 'Not submitted' | 'Submitted' | 'Graded';
   status: 'Assigned' | 'Graded' | 'Closed';
+  description?: string;
+  score?: number | null;
+  maxScore?: number | null;
+  feedback?: string;
 }
 
 export interface AssessmentRecord {
