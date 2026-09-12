@@ -118,7 +118,7 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
           label: 'Attendance',
           href: '/attendance',
           icon: CalendarCheck,
-          allowedRoles: ['admin', 'manager', 'teacher'],
+          allowedRoles: ['admin', 'manager', 'teacher', 'student'],
         },
         {
           label: 'Homework',

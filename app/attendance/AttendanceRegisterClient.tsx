@@ -79,8 +79,8 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
   const subjects = useMemo(() => Array.from(new Set(initialClasses.map((c) => c.subject).filter(Boolean))).sort(), [initialClasses]);
   const byId = useMemo(() => new Map(initialClasses.map((c) => [c.id, c])), [initialClasses]);
 
-  // Visible register rows. Date is optional (blank = all dates). All dates are
-  // sorted newest-first; a single chosen day is sorted by start time.
+  // Visible register rows. Date is optional (blank = all dates). Always sorted
+  // chronologically (earliest first) so the timetable reads top-to-bottom.
   const rows = useMemo(() => {
     const q = regSearch.trim().toLowerCase();
     const list = initialClasses
@@ -92,9 +92,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
       .filter((c) => regSubject === 'All Subjects' || c.subject === regSubject)
       .filter((c) => regStatus === 'all' || (regStatus === 'recorded' ? !!c.attendanceStatus : !c.attendanceStatus))
       .filter((c) => !q || (c.studentName ?? '').toLowerCase().includes(q) || (c.subject ?? '').toLowerCase().includes(q) || (c.teacherName ?? '').toLowerCase().includes(q));
-    return list.sort((a, b) =>
-      date ? (a.startAtISO ?? '').localeCompare(b.startAtISO ?? '') : (b.startAtISO ?? '').localeCompare(a.startAtISO ?? '')
-    );
+    return list.sort((a, b) => (a.startAtISO ?? '').localeCompare(b.startAtISO ?? ''));
   }, [initialClasses, date, teacherFilter, regStudent, regProgram, regSubject, regStatus, regSearch]);
 
   // The mark shown for a row: the unsaved choice if any, else the recorded mark.
