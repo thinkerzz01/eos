@@ -60,6 +60,42 @@ function pktToIso(date: string, time: string): string {
   return new Date(`${date}T${time}:00+05:00`).toISOString();
 }
 
+// Ensure a student_subjects enrollment exists for (student, subject, teacher).
+// Scheduling a class is how a student "gets" a subject in practice, but the
+// enrollment link (which powers the teacher's subject picker for homework/tests,
+// the roster, grades and health) was only ever written at admission. We create it
+// here so scheduling always wires the enrollment. Best-effort: never fail a
+// schedule because of this sync. RLS decides permission (admin/manager here).
+async function ensureEnrollment(
+  supabase: ReturnType<typeof createClient>,
+  orgId: string,
+  studentId: string,
+  subjectId: string,
+  teacherId: string
+): Promise<void> {
+  try {
+    if (!studentId || !subjectId || !teacherId) return;
+    const { data: existing } = await supabase
+      .from('student_subjects')
+      .select('id')
+      .eq('student_id', studentId)
+      .eq('subject_id', subjectId)
+      .is('deleted_at', null)
+      .limit(1)
+      .maybeSingle();
+    if (existing?.id) return;
+    await supabase.from('student_subjects').insert({
+      org_id: orgId,
+      student_id: studentId,
+      subject_id: subjectId,
+      teacher_id: teacherId,
+      target_grade: 'A*',
+    });
+  } catch {
+    /* best-effort: enrollment sync must never block scheduling */
+  }
+}
+
 export async function createClassSession(input: {
   studentId: string;
   subjectId: string;
@@ -111,6 +147,10 @@ export async function createClassSession(input: {
     }
     return { ok: false, error: friendlyDbError(error) };
   }
+
+  // Wire the enrollment link so this subject shows up on the teacher's roster and
+  // in their homework/test subject picker.
+  await ensureEnrollment(supabase, orgId, input.studentId, input.subjectId, input.teacherId);
 
   // Same calendar behavior as the bulk path: create one Meet + invite for this
   // single class, read emails with the service role, record any failure.
@@ -211,6 +251,9 @@ export async function bulkScheduleClasses(input: {
       occ.push({ startIso, endIso });
     }
     if (occ.length === 0) continue;
+
+    // Wire the enrollment link for this subject+teacher (see ensureEnrollment).
+    await ensureEnrollment(supabase, orgId, input.studentId, r.subjectId, r.teacherId);
 
     // One recurring Google Meet + calendar series per subject (best-effort). The
     // same Meet link is shared by every session in the series. A failure is NOT
