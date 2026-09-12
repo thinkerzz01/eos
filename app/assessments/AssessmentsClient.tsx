@@ -8,6 +8,7 @@ import { useRole } from '@/components/ui/RoleContext';
 import { AssessmentRecord } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { labelWithCode } from '@/lib/syllabiSeed';
+import { Logo } from '@/components/ui/Logo';
 import { recordTest, updateTest, deleteTest } from './actions';
 import { listStudentEnrollments } from '@/app/schedule/actions';
 import { useToast } from '@/components/ui/Toast';
@@ -273,8 +274,8 @@ export function AssessmentsClient({
               {/* RESULT SLIP HEADER */}
               <div className="flex justify-between items-start border-b pb-4">
                 <div>
-                  <div className="font-heading font-medium text-xl text-slate-900 dark:text-white">THINKERZZ</div>
-                  <div className="text-xs text-[#5B47D6] font-medium">OFFICIAL CAIE RESULT SLIP</div>
+                  <Logo variant="light" size="md" showTagline={true} />
+                  <div className="text-xs text-[#5B47D6] font-medium mt-2">OFFICIAL CAIE RESULT SLIP</div>
                   <div className="text-sm font-medium text-slate-900 dark:text-slate-100 mt-1.5">
                     {selectedAssessmentForSlip.subject}
                     {selectedAssessmentForSlip.subjectCode ? <span className="text-slate-500"> ({selectedAssessmentForSlip.subjectCode})</span> : null}
@@ -289,25 +290,15 @@ export function AssessmentsClient({
                   computed from the real grades on this assessment. */}
               {(() => {
                 const total = selectedAssessmentForSlip.totalMarks || 100;
-                const pcts = selectedAssessmentForSlip.grades.map((g) => (g.marksObtained / total) * 100);
+                const pcts = selectedAssessmentForSlip.grades.map((g) => (g.marksObtained / ((g.maxScore ?? total) || 100)) * 100);
                 const avg = pcts.length ? pcts.reduce((a, b) => a + b, 0) / pcts.length : 0;
                 const assessed = pcts.length ? gradeFromPct(avg) : '-';
+                const many = selectedAssessmentForSlip.grades.length > 1;
                 return (
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div className="p-3 bg-slate-50 border border-slate-200 rounded-2xl">
-                      <div className="text-xs font-medium text-slate-500 uppercase">Internal Average</div>
-                      <div className="font-heading font-medium text-xl text-slate-900 mt-1">{avg.toFixed(1)}%</div>
-                    </div>
-
-                    <div className="p-3 bg-purple-50 border border-purple-200 rounded-2xl">
-                      <div className="text-xs font-medium text-[#5B47D6] uppercase">Assessed Grade</div>
-                      <div className="font-heading font-medium text-2xl text-[#5B47D6] mt-1">{assessed}</div>
-                    </div>
-
-                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-2xl">
-                      <div className="text-xs font-medium text-emerald-700 uppercase">Target Grade</div>
-                      <div className="font-heading font-medium text-2xl text-emerald-600 mt-1">-</div>
-                    </div>
+                  <div className="rounded-2xl bg-[#F3F1FC] dark:bg-[#5B47D6]/15 border border-[#E4DFF8] dark:border-[#5B47D6]/25 p-5 text-center">
+                    <div className="text-xs font-medium text-[#5B47D6] uppercase tracking-wide">{many ? 'Class Assessed Grade' : 'Assessed Grade'}</div>
+                    <div className="font-heading font-semibold text-5xl text-[#5B47D6] mt-1 leading-none">{assessed}</div>
+                    <div className="text-[11px] text-[#6B7185] mt-2">Cambridge (CAIE) scale</div>
                   </div>
                 );
               })()}
@@ -319,7 +310,6 @@ export function AssessmentsClient({
                     <tr>
                       <th className="p-2.5">Student Name</th>
                       <th className="p-2.5">Marks Obtained</th>
-                      <th className="p-2.5 text-center">Percentage</th>
                       <th className="p-2.5 text-center">Assessed Grade</th>
                       {canManageTests && <th className="p-2.5 text-center print:hidden">Edit</th>}
                     </tr>
@@ -342,9 +332,6 @@ export function AssessmentsClient({
                           ) : (
                             <>{g.marksObtained} / {g.maxScore ?? selectedAssessmentForSlip.totalMarks}</>
                           )}
-                        </td>
-                        <td className="p-2.5 text-center font-mono text-slate-700 dark:text-slate-300">
-                          {(() => { const mx = (g.maxScore ?? selectedAssessmentForSlip.totalMarks) || 100; return mx > 0 ? Math.round((g.marksObtained / mx) * 100) : 0; })()}%
                         </td>
                         <td className="p-2.5 text-center">
                           <span className="px-2 py-0.5 bg-purple-100 text-[#5B47D6] font-medium rounded-md">
@@ -372,15 +359,16 @@ export function AssessmentsClient({
                 </table>
               </div>
 
-              {/* CAIE GRADE KEY */}
+              {/* CAIE GRADE SCALE */}
               <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 p-3">
-                <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500 mb-1.5">Cambridge (CAIE) grade boundaries · indicative</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {CAIE_BOUNDARIES.map((b, i) => (
-                    <span key={b.grade} className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-medium text-slate-700 dark:text-slate-300">
-                      <span className="text-slate-900 dark:text-slate-100 font-semibold">{b.grade}</span> {i === CAIE_BOUNDARIES.length - 1 ? `< ${CAIE_BOUNDARIES[i - 1].min}%` : `≥ ${b.min}%`}
+                <div className="text-[11px] font-medium uppercase tracking-wide text-slate-500 mb-1.5">Cambridge (CAIE) grade scale</div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {CAIE_BOUNDARIES.map((b) => (
+                    <span key={b.grade} className="px-2.5 py-0.5 rounded-md bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-[11px] font-semibold text-slate-800 dark:text-slate-200">
+                      {b.grade}
                     </span>
                   ))}
+                  <span className="text-[11px] text-slate-500 ml-1">A* highest · U ungraded</span>
                 </div>
               </div>
 
@@ -454,7 +442,7 @@ export function AssessmentsClient({
                   return (
                     <div className="flex items-center justify-between rounded-xl bg-[#F3F1FC] dark:bg-[#5B47D6]/15 border border-[#E4DFF8] dark:border-[#5B47D6]/25 px-3 py-2">
                       <span className="text-[11px] font-medium uppercase tracking-wide text-[#5B47D6]">CAIE grade</span>
-                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">{pct}% · Grade {grade}</span>
+                      <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">Grade {grade}</span>
                     </div>
                   );
                 })()}
