@@ -4,15 +4,16 @@
 // class_session is one student, so a "day register" is the list of that day's
 // sessions with a quick Present/Late/Absent per row + a "mark all present" bulk.
 // Prefilled from the already-recorded mark so it doubles as a correction view.
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
+import { useRole } from '@/components/ui/RoleContext';
 import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import { bulkMarkAttendance, clearAttendance } from '@/app/schedule/actions';
 import { downloadCsv } from '@/lib/export/csv';
-import { CalendarCheck, Check, Users, ChevronDown, ClipboardList, ListChecks, Download, Search, Trash2 } from 'lucide-react';
+import { CalendarCheck, Check, Users, ChevronDown, ClipboardList, ListChecks, Download, Upload, Search, Trash2, X } from 'lucide-react';
 
 type Mark = 'Present' | 'Late' | 'Absent';
 
@@ -26,11 +27,13 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
   const { showToast } = useToast();
   const { confirm } = useConfirm();
   const [clearingId, setClearingId] = useState<string | null>(null);
+  const { role } = useRole();
+  const canSeeTeacherFilter = role === 'admin' || role === 'manager'; // a single teacher only sees themselves
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Every day (PKT) that actually has a class, sorted. Used to pick a sensible
-  // default date and to offer quick-jumps when the chosen day is empty - so the
-  // register never opens on a blank weekend and looks broken.
+  // Every day (PKT) that actually has a class, sorted - used for the empty-day
+  // quick-jump chips when a specific date is picked.
   const classDates = useMemo(
     () =>
       Array.from(
@@ -44,22 +47,21 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
     [initialClasses]
   );
 
-  // Default to today if today has classes; else the most recent past day with
-  // classes; else the next upcoming day with classes; else today.
-  const defaultDate = useMemo(() => {
-    if (classDates.length === 0) return today;
-    if (classDates.includes(today)) return today;
-    const past = classDates.filter((d) => d < today);
-    if (past.length) return past[past.length - 1];
-    return classDates[0];
-  }, [classDates, today]);
-
-  const [date, setDate] = useState(defaultDate);
+  // Register shows ALL dates by default; picking a date narrows to that day.
+  const [date, setDate] = useState('');
   const [teacherFilter, setTeacherFilter] = useState('All Teachers');
+  const [regStudent, setRegStudent] = useState('All Students');
+  const [regProgram, setRegProgram] = useState('All Programs');
+  const [regSubject, setRegSubject] = useState('All Subjects');
+  const [regSearch, setRegSearch] = useState('');
+  const [regStatus, setRegStatus] = useState<'all' | 'recorded' | 'unmarked'>('all');
+  // Only rows the user explicitly changes live here, so "Save" never rewrites
+  // untouched history even when every date is on screen.
   const [choices, setChoices] = useState<Record<string, Mark>>({});
   const [saving, setSaving] = useState(false);
+  const [importing, setImporting] = useState(false);
 
-  // REGISTER (mark a day) vs HISTORY (running log of every recorded mark).
+  // REGISTER (mark) vs HISTORY (running log of every recorded mark).
   const [view, setView] = useState<'register' | 'history'>('register');
   const [histTeacher, setHistTeacher] = useState('All Teachers');
   const [histStudent, setHistStudent] = useState('All Students');
@@ -67,34 +69,37 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
   const [histRange, setHistRange] = useState<'all' | 'week' | 'month'>('all');
   const [histSearch, setHistSearch] = useState('');
 
-  // Distinct teachers present in the data (for the filter).
+  // Distinct teachers / programs / subjects present in the data (for filters).
   const teachers = useMemo(() => {
     const set = new Map<string, string>();
     for (const c of initialClasses) if (c.teacherId) set.set(c.teacherId, c.teacherName || 'Unassigned');
     return Array.from(set.entries()).map(([id, name]) => ({ id, name })).sort((a, b) => a.name.localeCompare(b.name));
   }, [initialClasses]);
+  const programs = useMemo(() => Array.from(new Set(initialClasses.map((c) => c.program).filter(Boolean))).sort(), [initialClasses]);
+  const subjects = useMemo(() => Array.from(new Set(initialClasses.map((c) => c.subject).filter(Boolean))).sort(), [initialClasses]);
+  const byId = useMemo(() => new Map(initialClasses.map((c) => [c.id, c])), [initialClasses]);
 
-  // Sessions on the chosen day (optionally one teacher), excluding cancelled.
+  // Visible register rows. Date is optional (blank = all dates). All dates are
+  // sorted newest-first; a single chosen day is sorted by start time.
   const rows = useMemo(() => {
-    return initialClasses
+    const q = regSearch.trim().toLowerCase();
+    const list = initialClasses
       .filter((c) => c.status !== 'Cancelled')
-      .filter((c) => isoToPktDate(c.startAtISO) === date)
+      .filter((c) => !date || isoToPktDate(c.startAtISO) === date)
       .filter((c) => teacherFilter === 'All Teachers' || c.teacherName === teacherFilter)
-      .sort((a, b) => (a.startAtISO ?? '').localeCompare(b.startAtISO ?? ''));
-  }, [initialClasses, date, teacherFilter]);
+      .filter((c) => regStudent === 'All Students' || c.studentName === regStudent)
+      .filter((c) => regProgram === 'All Programs' || c.program === regProgram)
+      .filter((c) => regSubject === 'All Subjects' || c.subject === regSubject)
+      .filter((c) => regStatus === 'all' || (regStatus === 'recorded' ? !!c.attendanceStatus : !c.attendanceStatus))
+      .filter((c) => !q || (c.studentName ?? '').toLowerCase().includes(q) || (c.subject ?? '').toLowerCase().includes(q) || (c.teacherName ?? '').toLowerCase().includes(q));
+    return list.sort((a, b) =>
+      date ? (a.startAtISO ?? '').localeCompare(b.startAtISO ?? '') : (b.startAtISO ?? '').localeCompare(a.startAtISO ?? '')
+    );
+  }, [initialClasses, date, teacherFilter, regStudent, regProgram, regSubject, regStatus, regSearch]);
 
-  // Seed the per-row choice from the recorded mark (or Present) whenever the
-  // visible set changes.
-  useEffect(() => {
-    setChoices((prev) => {
-      const next: Record<string, Mark> = {};
-      for (const c of rows) {
-        next[c.id] = prev[c.id] ?? MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? 'Present';
-      }
-      return next;
-    });
-  }, [rows]);
-
+  // The mark shown for a row: the unsaved choice if any, else the recorded mark.
+  const shownMark = (c: ScheduledClass): Mark | '' => choices[c.id] ?? MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '';
+  const dirtyCount = Object.keys(choices).length;
   const setMark = (id: string, m: Mark) => setChoices((p) => ({ ...p, [id]: m }));
 
   // Changing a mark that is ALREADY recorded asks for confirmation first, so a
@@ -133,9 +138,11 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
       showToast(res.error ?? 'Failed to delete the mark.', 'error');
     }
   };
+  // Marks only the currently-visible UNMARKED classes present (leaves already
+  // recorded ones untouched); still needs Save to persist.
   const markAllPresent = () => setChoices((p) => {
     const next = { ...p };
-    for (const c of rows) next[c.id] = 'Present';
+    for (const c of rows) if (!c.attendanceStatus && !next[c.id]) next[c.id] = 'Present';
     return next;
   });
 
@@ -213,22 +220,104 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
   const markBadgeCls = (status?: string) =>
     status === 'present' ? 'bg-emerald-100 text-emerald-700' : status === 'late' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700';
 
+  // Persist ONLY the rows the user changed (dirty tracking), so showing every
+  // date never risks rewriting untouched attendance.
   const handleSave = async () => {
-    if (rows.length === 0) return;
+    const items = Object.entries(choices)
+      .map(([id, attendance]) => {
+        const c = byId.get(id);
+        return c && c.studentId ? { sessionId: id, studentId: c.studentId, attendance } : null;
+      })
+      .filter(Boolean) as { sessionId: string; studentId: string; attendance: Mark }[];
+    if (items.length === 0) {
+      showToast('No changes to save. Tap Present/Late/Absent on the classes you want to mark.', 'info');
+      return;
+    }
     setSaving(true);
-    const res = await bulkMarkAttendance({
-      items: rows
-        .filter((c) => c.studentId)
-        .map((c) => ({ sessionId: c.id, studentId: c.studentId as string, attendance: choices[c.id] ?? 'Present' })),
-    });
+    const res = await bulkMarkAttendance({ items });
     setSaving(false);
     if (res.ok) {
+      setChoices({});
       router.refresh();
       showToast(`Attendance saved for ${res.count} class${res.count === 1 ? '' : 'es'}.`, 'success');
     } else {
       showToast(res.error ?? 'Failed to save attendance.', 'error');
     }
   };
+
+  // Export the visible register (includes a Class ID so an edited file can be
+  // re-imported to apply marks reliably).
+  const exportRegister = () => {
+    if (rows.length === 0) { showToast('Nothing to export for these filters.', 'info'); return; }
+    downloadCsv(
+      'Thinkerzz_Attendance_Register',
+      ['Class ID', 'Date', 'Time', 'Student', 'Program', 'Subject', 'Teacher', 'Attendance'],
+      rows.map((c) => [c.id, c.date, `${c.startAt} - ${c.endAt}`, c.studentName ?? '', c.program ?? '', c.subject ?? '', c.teacherName ?? '', shownMark(c) || ''])
+    );
+  };
+
+  // Minimal RFC-4180-ish CSV parser (handles quotes, commas, CRLF).
+  const parseCsv = (text: string): string[][] => {
+    const out: string[][] = [];
+    let row: string[] = [], field = '', inQ = false;
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+      if (inQ) {
+        if (ch === '"') { if (text[i + 1] === '"') { field += '"'; i++; } else inQ = false; }
+        else field += ch;
+      } else if (ch === '"') inQ = true;
+      else if (ch === ',') { row.push(field); field = ''; }
+      else if (ch === '\n') { row.push(field); out.push(row); row = []; field = ''; }
+      else if (ch !== '\r') field += ch;
+    }
+    if (field.length || row.length) { row.push(field); out.push(row); }
+    return out;
+  };
+  const normalizeMark = (s: string): Mark | null => {
+    const v = s.trim().toLowerCase();
+    return v === 'present' ? 'Present' : v === 'late' ? 'Late' : v === 'absent' ? 'Absent' : null;
+  };
+  // Import an exported register CSV and apply its marks by Class ID.
+  const handleImportFile = async (file: File) => {
+    setImporting(true);
+    try {
+      const text = await file.text();
+      const grid = parseCsv(text).filter((r) => r.some((cell) => cell.trim() !== ''));
+      if (grid.length < 2) { showToast('That file has no rows to import.', 'error'); return; }
+      const header = grid[0].map((h) => h.trim().toLowerCase());
+      const idIdx = header.indexOf('class id');
+      const markIdx = header.indexOf('attendance');
+      if (idIdx === -1 || markIdx === -1) {
+        showToast('CSV needs a "Class ID" and an "Attendance" column. Export first, edit, then import.', 'error');
+        return;
+      }
+      const items: { sessionId: string; studentId: string; attendance: Mark }[] = [];
+      let skipped = 0;
+      for (const r of grid.slice(1)) {
+        const id = (r[idIdx] ?? '').trim();
+        const mark = normalizeMark(r[markIdx] ?? '');
+        const c = id ? byId.get(id) : undefined;
+        if (c && c.studentId && mark) items.push({ sessionId: id, studentId: c.studentId, attendance: mark });
+        else skipped++;
+      }
+      if (items.length === 0) { showToast(`No rows applied${skipped ? ` · ${skipped} skipped` : ''}. Check the Class ID and Attendance values.`, 'error'); return; }
+      const res = await bulkMarkAttendance({ items });
+      if (res.ok) { router.refresh(); showToast(`Imported ${res.count} mark${res.count === 1 ? '' : 's'}${skipped ? ` · ${skipped} skipped` : ''}.`, 'success'); }
+      else showToast(res.error ?? 'Import failed.', 'error');
+    } catch {
+      showToast('Could not read that file. Please upload a CSV.', 'error');
+    } finally {
+      setImporting(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
+  const clearRegFilters = () => {
+    setDate(''); setTeacherFilter('All Teachers'); setRegStudent('All Students');
+    setRegProgram('All Programs'); setRegSubject('All Subjects'); setRegStatus('all'); setRegSearch('');
+  };
+  const regFiltersActive = !!date || teacherFilter !== 'All Teachers' || regStudent !== 'All Students' ||
+    regProgram !== 'All Programs' || regSubject !== 'All Subjects' || regStatus !== 'all' || regSearch.trim() !== '';
 
   const prettyDate = date
     ? new Date(`${date}T12:00:00+05:00`).toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' })
@@ -245,7 +334,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
             </h1>
             <p className="text-sm text-[#6B7185]">
               {view === 'register'
-                ? 'Mark a whole day at once, or correct an earlier mark. Saving records attendance and marks each class completed.'
+                ? 'All classes across every date. Tap Present/Late/Absent on the ones you want, then Save — only the classes you touch are written.'
                 : 'Every recorded attendance mark across all dates. Filter, review, or export it.'}
             </p>
           </div>
@@ -269,50 +358,126 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
         {view === 'register' && (
         <>
         {/* CONTROLS */}
-        <div className="flex flex-col sm:flex-row sm:items-end gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-sm">
-          <div>
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Date</label>
-            <input
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]"
-            />
+        <div className="flex flex-col gap-3 bg-white dark:bg-slate-900 p-4 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-sm">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="relative flex-1 min-w-[170px]">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Search</label>
+              <Search className="w-4 h-4 absolute left-3 bottom-2.5 text-slate-400 pointer-events-none" />
+              <input
+                value={regSearch}
+                onChange={(e) => setRegSearch(e.target.value)}
+                placeholder="Student, subject or teacher…"
+                className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-9 pr-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Date (optional)</label>
+              <div className="flex items-center gap-1">
+                <input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  className="bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm px-3 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                />
+                {date && (
+                  <button onClick={() => setDate('')} title="Show all dates" aria-label="Show all dates" className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-slate-800 dark:hover:text-slate-200">
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+            {canSeeTeacherFilter && (
+              <div className="relative">
+                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Teacher</label>
+                <select value={teacherFilter} onChange={(e) => setTeacherFilter(e.target.value)} className="appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-3 pr-8 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
+                  <option>All Teachers</option>
+                  {teachers.map((t) => (<option key={t.id} value={t.name}>{t.name}</option>))}
+                </select>
+                <ChevronDown className="w-4 h-4 absolute right-2.5 bottom-2.5 text-slate-400 pointer-events-none" />
+              </div>
+            )}
+            <div className="relative">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Student</label>
+              <select value={regStudent} onChange={(e) => setRegStudent(e.target.value)} className="appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-3 pr-8 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
+                <option>All Students</option>
+                {students.map((s) => (<option key={s} value={s}>{s}</option>))}
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-2.5 bottom-2.5 text-slate-400 pointer-events-none" />
+            </div>
+            <div className="relative">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Program</label>
+              <select value={regProgram} onChange={(e) => setRegProgram(e.target.value)} className="appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-3 pr-8 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
+                <option>All Programs</option>
+                {programs.map((p) => (<option key={p} value={p}>{p}</option>))}
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-2.5 bottom-2.5 text-slate-400 pointer-events-none" />
+            </div>
+            <div className="relative">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Subject</label>
+              <select value={regSubject} onChange={(e) => setRegSubject(e.target.value)} className="appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-3 pr-8 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
+                <option>All Subjects</option>
+                {subjects.map((s) => (<option key={s} value={s}>{s}</option>))}
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-2.5 bottom-2.5 text-slate-400 pointer-events-none" />
+            </div>
+            <div className="relative">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Status</label>
+              <select value={regStatus} onChange={(e) => setRegStatus(e.target.value as typeof regStatus)} className="appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-3 pr-8 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
+                <option value="all">All classes</option>
+                <option value="recorded">Recorded only</option>
+                <option value="unmarked">Unmarked only</option>
+              </select>
+              <ChevronDown className="w-4 h-4 absolute right-2.5 bottom-2.5 text-slate-400 pointer-events-none" />
+            </div>
+            {regFiltersActive && (
+              <button onClick={clearRegFilters} className="px-3 py-2 text-xs font-medium text-[#5B47D6] hover:underline">Reset filters</button>
+            )}
           </div>
-          <div className="relative">
-            <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Teacher</label>
-            <select
-              value={teacherFilter}
-              onChange={(e) => setTeacherFilter(e.target.value)}
-              className="appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-3 pr-8 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]"
-            >
-              <option>All Teachers</option>
-              {teachers.map((t) => (<option key={t.id} value={t.name}>{t.name}</option>))}
-            </select>
-            <ChevronDown className="w-4 h-4 absolute right-2.5 bottom-2.5 text-slate-400 pointer-events-none" />
-          </div>
-          <div className="sm:ml-auto flex items-center gap-2">
+
+          {/* ACTIONS */}
+          <div className="flex flex-wrap items-center gap-2 border-t border-[#EBEDF3] dark:border-slate-800 pt-3">
             <button
               onClick={markAllPresent}
               disabled={rows.length === 0}
               className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 flex items-center gap-1.5"
             >
-              <Users className="w-4 h-4" /> Mark all present
+              <Users className="w-4 h-4" /> Mark visible unmarked present
             </button>
             <button
-              onClick={handleSave}
-              disabled={saving || rows.length === 0}
-              className="px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl text-xs font-medium shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+              onClick={exportRegister}
+              className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center gap-1.5"
             >
-              <Check className="w-4 h-4" /> {saving ? 'Saving…' : 'Save Register'}
+              <Download className="w-4 h-4" /> Export
+            </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={importing}
+              className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Upload className="w-4 h-4" /> {importing ? 'Importing…' : 'Import'}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) handleImportFile(f); }}
+            />
+            <button
+              onClick={handleSave}
+              disabled={saving || dirtyCount === 0}
+              className="sm:ml-auto px-5 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl text-xs font-medium shadow-sm disabled:opacity-50 flex items-center gap-1.5"
+            >
+              <Check className="w-4 h-4" /> {saving ? 'Saving…' : dirtyCount > 0 ? `Save ${dirtyCount} change${dirtyCount === 1 ? '' : 's'}` : 'Save Register'}
             </button>
           </div>
         </div>
 
         {/* SUMMARY */}
         <div className="text-xs text-[#6B7185]">
-          <span className="font-medium text-slate-900 dark:text-white">{prettyDate}</span> · {rows.length} class{rows.length === 1 ? '' : 'es'}
-          {rows.length > 0 && <> · {markedCount} already recorded</>}
+          <span className="font-medium text-slate-900 dark:text-white">{date ? prettyDate : 'All dates'}</span> · {rows.length} class{rows.length === 1 ? '' : 'es'}
+          {rows.length > 0 && <> · {markedCount} recorded</>}
+          {dirtyCount > 0 && <> · <span className="text-[#5B47D6] font-medium">{dirtyCount} unsaved</span></>}
         </div>
 
         {/* REGISTER TABLE */}
@@ -335,8 +500,8 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                 {rows.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-12 text-center text-[#6B7185]">
-                      <div>No classes on this day{teacherFilter !== 'All Teachers' ? ' for this teacher' : ''}.</div>
-                      {nearbyDates.length > 0 && (
+                      <div>{date ? 'No classes on this day' : 'No classes'} match these filters.</div>
+                      {date && nearbyDates.length > 0 && (
                         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                           <span className="text-xs">Jump to a day with classes:</span>
                           {nearbyDates.map((d) => (
@@ -367,7 +532,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                       <td className="py-3 px-4">
                         <div className="flex gap-1.5 justify-center">
                           {(['Present', 'Late', 'Absent'] as const).map((m) => {
-                            const active = (choices[c.id] ?? 'Present') === m;
+                            const active = shownMark(c) === m;
                             const activeCls =
                               m === 'Present' ? 'bg-emerald-600 text-white' : m === 'Late' ? 'bg-amber-500 text-white' : 'bg-rose-600 text-white';
                             return (
@@ -411,8 +576,8 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
           <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
             {rows.length === 0 ? (
               <div className="py-12 text-center text-[#6B7185] text-sm">
-                <div>No classes on this day{teacherFilter !== 'All Teachers' ? ' for this teacher' : ''}.</div>
-                {nearbyDates.length > 0 && (
+                <div>{date ? 'No classes on this day' : 'No classes'} match these filters.</div>
+                {date && nearbyDates.length > 0 && (
                   <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
                     <span className="text-xs">Jump to a day with classes:</span>
                     {nearbyDates.map((d) => (
@@ -445,7 +610,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                   </div>
                   <div className="flex gap-1.5">
                     {(['Present', 'Late', 'Absent'] as const).map((m) => {
-                      const active = (choices[c.id] ?? 'Present') === m;
+                      const active = shownMark(c) === m;
                       const activeCls = m === 'Present' ? 'bg-emerald-600 text-white' : m === 'Late' ? 'bg-amber-500 text-white' : 'bg-rose-600 text-white';
                       return (
                         <button
@@ -500,14 +665,16 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                 </select>
                 <ChevronDown className="w-4 h-4 absolute right-2.5 bottom-2.5 text-slate-400 pointer-events-none" />
               </div>
-              <div className="relative">
-                <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Teacher</label>
-                <select value={histTeacher} onChange={(e) => setHistTeacher(e.target.value)} className="appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-3 pr-8 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
-                  <option>All Teachers</option>
-                  {teachers.map((t) => (<option key={t.id} value={t.name}>{t.name}</option>))}
-                </select>
-                <ChevronDown className="w-4 h-4 absolute right-2.5 bottom-2.5 text-slate-400 pointer-events-none" />
-              </div>
+              {canSeeTeacherFilter && (
+                <div className="relative">
+                  <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Teacher</label>
+                  <select value={histTeacher} onChange={(e) => setHistTeacher(e.target.value)} className="appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-3 pr-8 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
+                    <option>All Teachers</option>
+                    {teachers.map((t) => (<option key={t.id} value={t.name}>{t.name}</option>))}
+                  </select>
+                  <ChevronDown className="w-4 h-4 absolute right-2.5 bottom-2.5 text-slate-400 pointer-events-none" />
+                </div>
+              )}
               <div className="relative">
                 <label className="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">Mark</label>
                 <select value={histMark} onChange={(e) => setHistMark(e.target.value as typeof histMark)} className="appearance-none bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm pl-3 pr-8 py-2 rounded-xl focus:outline-none focus:border-[#5B47D6]">
