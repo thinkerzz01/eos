@@ -23,7 +23,34 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
   const router = useRouter();
   const { showToast } = useToast();
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
-  const [date, setDate] = useState(today);
+
+  // Every day (PKT) that actually has a class, sorted. Used to pick a sensible
+  // default date and to offer quick-jumps when the chosen day is empty - so the
+  // register never opens on a blank weekend and looks broken.
+  const classDates = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          initialClasses
+            .filter((c) => c.status !== 'Cancelled')
+            .map((c) => isoToPktDate(c.startAtISO))
+            .filter(Boolean)
+        )
+      ).sort(),
+    [initialClasses]
+  );
+
+  // Default to today if today has classes; else the most recent past day with
+  // classes; else the next upcoming day with classes; else today.
+  const defaultDate = useMemo(() => {
+    if (classDates.length === 0) return today;
+    if (classDates.includes(today)) return today;
+    const past = classDates.filter((d) => d < today);
+    if (past.length) return past[past.length - 1];
+    return classDates[0];
+  }, [classDates, today]);
+
+  const [date, setDate] = useState(defaultDate);
   const [teacherFilter, setTeacherFilter] = useState('All Teachers');
   const [choices, setChoices] = useState<Record<string, Mark>>({});
   const [saving, setSaving] = useState(false);
@@ -64,6 +91,16 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
   });
 
   const markedCount = rows.filter((c) => c.attendanceStatus).length;
+
+  // When the chosen day has no classes, offer the nearest days that do (up to two
+  // before, two after) as one-tap chips.
+  const nearbyDates = useMemo(() => {
+    const before = classDates.filter((d) => d < date).slice(-2);
+    const after = classDates.filter((d) => d > date).slice(0, 2);
+    return [...before, ...after];
+  }, [classDates, date]);
+  const chipLabel = (d: string) =>
+    new Date(`${d}T12:00:00+05:00`).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short' });
 
   const handleSave = async () => {
     if (rows.length === 0) return;
@@ -161,7 +198,21 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                 {rows.length === 0 ? (
                   <tr>
                     <td colSpan={5} className="py-12 text-center text-[#6B7185]">
-                      No classes on this day{teacherFilter !== 'All Teachers' ? ' for this teacher' : ''}.
+                      <div>No classes on this day{teacherFilter !== 'All Teachers' ? ' for this teacher' : ''}.</div>
+                      {nearbyDates.length > 0 && (
+                        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                          <span className="text-xs">Jump to a day with classes:</span>
+                          {nearbyDates.map((d) => (
+                            <button
+                              key={d}
+                              onClick={() => setDate(d)}
+                              className="px-3 py-1 rounded-lg text-xs font-medium border border-[#5B47D6]/30 text-[#5B47D6] hover:bg-[#5B47D6]/5 transition-colors"
+                            >
+                              {chipLabel(d)}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ) : (
@@ -205,7 +256,23 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
           {/* MOBILE CARD LIST (phones) */}
           <div className="md:hidden divide-y divide-slate-100 dark:divide-slate-800">
             {rows.length === 0 ? (
-              <div className="py-12 text-center text-[#6B7185] text-sm">No classes on this day{teacherFilter !== 'All Teachers' ? ' for this teacher' : ''}.</div>
+              <div className="py-12 text-center text-[#6B7185] text-sm">
+                <div>No classes on this day{teacherFilter !== 'All Teachers' ? ' for this teacher' : ''}.</div>
+                {nearbyDates.length > 0 && (
+                  <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+                    <span className="text-xs">Jump to a day with classes:</span>
+                    {nearbyDates.map((d) => (
+                      <button
+                        key={d}
+                        onClick={() => setDate(d)}
+                        className="px-3 py-1 rounded-lg text-xs font-medium border border-[#5B47D6]/30 text-[#5B47D6] hover:bg-[#5B47D6]/5 transition-colors"
+                      >
+                        {chipLabel(d)}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
             ) : (
               rows.map((c) => (
                 <div key={c.id} className="p-4 space-y-2.5">
