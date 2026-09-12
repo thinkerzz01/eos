@@ -11,6 +11,8 @@ import { recordPayment, issueRefund, adminFeeDecision, createVoucher, updateVouc
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { downloadCsv } from '@/lib/export/csv';
 import {
   Receipt,
@@ -96,6 +98,8 @@ export function VouchersClient({
 }) {
   const { role } = useRole();
   const router = useRouter();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   // LOCAL VOUCHER & PAYMENT STORES (seeded from server, RLS-authorized)
   const [vouchersList, setVouchersList] = useState<FeeVoucher[]>(initialVouchers);
@@ -120,7 +124,7 @@ export function VouchersClient({
       setShowGenerate(false);
       setGenDueDate('');
       router.refresh();
-      alert(`${res.created} voucher${res.created === 1 ? '' : 's'} generated for ${monthLabelPKT(genDueDate)}` + (res.skipped ? ` · ${res.skipped} skipped (already invoiced or no fee set).` : '.'));
+      showToast(`${res.created} voucher${res.created === 1 ? '' : 's'} generated for ${monthLabelPKT(genDueDate)}` + (res.skipped ? ` · ${res.skipped} skipped (already invoiced or no fee set).` : '.'), 'success');
     } else {
       setGenError(res.error ?? 'Failed to generate vouchers.');
     }
@@ -225,13 +229,14 @@ export function VouchersClient({
       setPartialPayVoucher(null);
       setPayAmountInput('');
       router.refresh();
-      alert(
+      showToast(
         res.fullyPaid
           ? 'Voucher marked as PAID.'
-          : `Payment recorded. Voucher remains Due with a running balance of PKR ${(res.balance ?? 0).toLocaleString()}.`
+          : `Payment recorded. Voucher remains Due with a running balance of PKR ${(res.balance ?? 0).toLocaleString()}.`,
+        'success'
       );
     } else {
-      alert(res.error ?? 'Failed to record payment.');
+      showToast(res.error ?? 'Failed to record payment.', 'error');
     }
   };
 
@@ -252,9 +257,9 @@ export function VouchersClient({
       setRefundAmountInput('');
       setRefundReason('');
       router.refresh();
-      alert(`Refund of PKR ${refundNum.toLocaleString()} issued as an audited negative payment.`);
+      showToast(`Refund of PKR ${refundNum.toLocaleString()} issued as an audited negative payment.`, 'success');
     } else {
-      alert(res.error ?? 'Failed to issue refund.');
+      showToast(res.error ?? 'Failed to issue refund.', 'error');
     }
   };
 
@@ -266,19 +271,19 @@ export function VouchersClient({
     if (res.ok) {
       setDecisionVoucher(null);
       router.refresh();
-      alert(`Admin decision recorded and audited: ${choice}.`);
+      showToast(`Admin decision recorded and audited: ${choice}.`, 'success');
     } else {
-      alert(res.error ?? 'Failed to record decision.');
+      showToast(res.error ?? 'Failed to record decision.', 'error');
     }
   };
 
   // HANDLE CREATE VOUCHER (persists via server action, RLS-enforced)
   const handleCreateVoucher = async () => {
     const amountNum = parseFloat(newAmount);
-    if (!newStudentId) { alert('Please select a student.'); return; }
-    if (isNaN(amountNum) || amountNum <= 0) { alert('Please enter a valid fee amount.'); return; }
-    if (!newPaidDate) { alert('Please select the date the fee was paid.'); return; }
-    if (!newDueDate) { alert('Please select a next due date.'); return; }
+    if (!newStudentId) { showToast('Please select a student.', 'error'); return; }
+    if (isNaN(amountNum) || amountNum <= 0) { showToast('Please enter a valid fee amount.', 'error'); return; }
+    if (!newPaidDate) { showToast('Please select the date the fee was paid.', 'error'); return; }
+    if (!newDueDate) { showToast('Please select a next due date.', 'error'); return; }
 
     setCreating(true);
     const res = await createVoucher({
@@ -296,9 +301,9 @@ export function VouchersClient({
       setNewAmount('');
       setNewDueDate('');
       router.refresh();
-      alert('Voucher created successfully.');
+      showToast('Voucher created successfully.', 'success');
     } else {
-      alert(res.error ?? 'Failed to create voucher.');
+      showToast(res.error ?? 'Failed to create voucher.', 'error');
     }
   };
 
@@ -317,12 +322,12 @@ export function VouchersClient({
   };
   const handleBulkDeleteVouchers = async () => {
     if (selectedVoucherIds.length === 0) return;
-    if (!confirm(`Delete ${selectedVoucherIds.length} selected voucher${selectedVoucherIds.length === 1 ? '' : 's'}? This removes them from the list.`)) return;
+    if (!(await confirm({ title: 'Delete selected vouchers?', message: `Delete ${selectedVoucherIds.length} selected voucher${selectedVoucherIds.length === 1 ? '' : 's'}? This removes them from the list.`, confirmLabel: 'Delete', danger: true }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteVouchers(selectedVoucherIds);
     setBulkBusy(false);
     if (res.ok) { setSelectedVoucherIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the selected vouchers.');
+    else showToast(res.error ?? 'Failed to delete the selected vouchers.', 'error');
   };
   const handleBulkExportVouchers = () => {
     const rows = vouchersList.filter((v) => selectedVoucherIds.includes(v.id));

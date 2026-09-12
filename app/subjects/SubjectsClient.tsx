@@ -10,11 +10,15 @@ import type { SubjectOption } from '@/lib/data/subjects';
 import { ALL_PROGRAMS, subjectCode } from '@/lib/syllabiSeed';
 import { createSubject, updateSubject, deleteSubject, bulkDeleteSubjects } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { downloadCsv } from '@/lib/export/csv';
 import { BookOpen, Plus, Edit3, Trash2, Check, X, Search, FileText } from 'lucide-react';
 
 export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOption[] }) {
   const router = useRouter();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [programFilter, setProgramFilter] = useState('All Programs');
   const [query, setQuery] = useState('');
 
@@ -72,10 +76,10 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
     else setEdError(res.error ?? 'Failed to update subject.');
   };
   const handleDelete = async (s: SubjectOption) => {
-    if (!confirm(`Delete "${s.name}" (${s.program})?\n\nIt is removed from the pickers. Past classes/homework that used it are kept.`)) return;
+    if (!(await confirm({ title: `Delete "${s.name}" (${s.program})?`, message: 'It is removed from the pickers. Past classes/homework that used it are kept.', confirmLabel: 'Delete', danger: true }))) return;
     const res = await deleteSubject(s.id);
     if (res.ok) router.refresh();
-    else alert(res.error ?? 'Failed to delete subject.');
+    else showToast(res.error ?? 'Failed to delete subject.', 'error');
   };
 
   // BULK SELECTION STATE + handlers (checked rows across all program groups)
@@ -92,12 +96,12 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
   };
   const handleBulkDeleteSubjects = async () => {
     if (selectedSubjectIds.length === 0) return;
-    if (!confirm(`Delete ${selectedSubjectIds.length} selected subject${selectedSubjectIds.length === 1 ? '' : 's'}?\n\nThey are removed from the pickers. Past classes/homework that used them are kept.`)) return;
+    if (!(await confirm({ title: `Delete ${selectedSubjectIds.length} selected subject${selectedSubjectIds.length === 1 ? '' : 's'}?`, message: 'They are removed from the pickers. Past classes/homework that used them are kept.', confirmLabel: 'Delete', danger: true }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteSubjects(selectedSubjectIds);
     setBulkBusy(false);
     if (res.ok) { setSelectedSubjectIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the selected subjects.');
+    else showToast(res.error ?? 'Failed to delete the selected subjects.', 'error');
   };
   const handleBulkExportSubjects = () => {
     const rows = initialSubjects.filter((s) => selectedSubjectIds.includes(s.id));

@@ -9,6 +9,8 @@ import { downloadCsv } from '@/lib/export/csv';
 import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
@@ -114,6 +116,8 @@ const AVATAR_COLORS = [
 export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[] }) {
   const { role } = useRole();
   const router = useRouter();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   // LOCAL TEACHERS DATA STORE (seeded from server, RLS-authorized)
   const [teachersList, setTeachersList] = useState<Teacher[]>(initialTeachers);
@@ -230,9 +234,9 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
   };
 
   const handleDeleteTeacher = async (t: Teacher) => {
-    if (!confirm(`Delete ${t.name}? This removes them from the teacher list. This action is logged.`)) return;
+    if (!(await confirm({ title: `Delete ${t.name}?`, message: 'This removes them from the teacher list. This action is logged.', confirmLabel: 'Delete', danger: true }))) return;
     const res = await softDeleteTeacher(t.id);
-    if (!res.ok) { alert(res.error ?? 'Failed to delete the teacher.'); return; }
+    if (!res.ok) { showToast(res.error ?? 'Failed to delete the teacher.', 'error'); return; }
     router.refresh();
   };
 
@@ -293,16 +297,16 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
     const res = await bulkSetTeacherStatus(selectedTeacherIds, status);
     setBulkBusy(false);
     if (res.ok) { setSelectedTeacherIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to update status.');
+    else showToast(res.error ?? 'Failed to update status.', 'error');
   };
   const handleBulkDeleteTeachers = async () => {
     if (selectedTeacherIds.length === 0) return;
-    if (!confirm(`Delete ${selectedTeacherIds.length} selected teacher${selectedTeacherIds.length === 1 ? '' : 's'}? This removes them from the list and is logged.`)) return;
+    if (!(await confirm({ title: `Delete ${selectedTeacherIds.length} selected teacher${selectedTeacherIds.length === 1 ? '' : 's'}?`, message: 'This removes them from the list and is logged.', confirmLabel: 'Delete', danger: true }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteTeachers(selectedTeacherIds);
     setBulkBusy(false);
     if (res.ok) { setSelectedTeacherIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the selected teachers.');
+    else showToast(res.error ?? 'Failed to delete the selected teachers.', 'error');
   };
 
   const getInitials = (name: string) => {

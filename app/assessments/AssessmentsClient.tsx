@@ -9,6 +9,8 @@ import { AssessmentRecord } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { labelWithCode } from '@/lib/syllabiSeed';
 import { recordTest, updateTest, deleteTest } from './actions';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import {
   Award,
   Plus,
@@ -40,6 +42,8 @@ export function AssessmentsClient({
 }) {
   const { role } = useRole();
   const router = useRouter();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [assessments, setAssessments] = useState<AssessmentRecord[]>(initialAssessments);
   const [selectedAssessmentForSlip, setSelectedAssessmentForSlip] = useState<AssessmentRecord | null>(initialAssessments[0] ?? null);
   const [showResultSlipModal, setShowResultSlipModal] = useState<boolean>(false);
@@ -58,13 +62,13 @@ export function AssessmentsClient({
     const res = await updateTest({ testId: editTestId, score: Number(egScore), maxScore: max });
     setEgBusy(false);
     if (res.ok) { setEditTestId(null); setShowResultSlipModal(false); router.refresh(); }
-    else alert(res.error ?? 'Failed to update the score.');
+    else showToast(res.error ?? 'Failed to update the score.', 'error');
   };
   const deleteGrade = async (testId: string, studentName: string) => {
-    if (!confirm(`Delete ${studentName}'s score for this test? This cannot be undone.`)) return;
+    if (!(await confirm({ title: 'Delete this score?', message: `Delete ${studentName}'s score for this test? This cannot be undone.`, confirmLabel: 'Delete', danger: true }))) return;
     const res = await deleteTest(testId);
     if (res.ok) { setShowResultSlipModal(false); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the score.');
+    else showToast(res.error ?? 'Failed to delete the score.', 'error');
   };
 
   // RECORD TEST MODAL
@@ -79,7 +83,7 @@ export function AssessmentsClient({
 
   const handleRecordTest = async () => {
     if (!tName || !tStudent || !tSubject || !tDate || !tScore) {
-      alert('Test name, student, subject, date, and score are required.');
+      showToast('Test name, student, subject, date, and score are required.', 'error');
       return;
     }
     setRecording(true);
@@ -93,7 +97,7 @@ export function AssessmentsClient({
       setTStudent(''); setTSubject(''); setTName(''); setTDate(''); setTScore(''); setTMax('100');
       router.refresh();
     } else {
-      alert(res.error ?? 'Failed to record test.');
+      showToast(res.error ?? 'Failed to record test.', 'error');
     }
   };
 

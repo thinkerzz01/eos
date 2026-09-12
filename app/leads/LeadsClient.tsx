@@ -11,6 +11,8 @@ import { createLead, convertLead, updateLead, softDeleteLead, markLeadNotConvert
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { downloadCsv } from '@/lib/export/csv';
 import {
   Users,
@@ -44,6 +46,8 @@ import {
 
 export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   const { role } = useRole();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   // LOCAL LEADS STATE (seeded from server, RLS-authorized)
   const [leadsList, setLeadsList] = useState<Lead[]>(initialLeads);
@@ -84,7 +88,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       const c = await listLeadCommunications(selectedLeadDrawer.id);
       setComms(c);
     } else {
-      alert(res.error ?? 'Failed to log the note.');
+      showToast(res.error ?? 'Failed to log the note.', 'error');
     }
   };
 
@@ -181,7 +185,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   // ADD LEAD (persists via server action, RLS-enforced)
   const handleAddNewLead = async () => {
     if (!newLeadData.parentName || !newLeadData.studentName) {
-      alert('Student name and parent name are required.');
+      showToast('Student name and parent name are required.', 'error');
       return;
     }
     setAddingLead(true);
@@ -213,19 +217,19 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       });
       router.refresh();
     } else {
-      alert(res.error ?? 'Failed to add lead.');
+      showToast(res.error ?? 'Failed to add lead.', 'error');
     }
   };
 
   // CONVERT LEAD -> STUDENT (creates a real student, links + marks Won)
   const handleDeleteLead = async (leadId: string, name: string) => {
-    if (!confirm(`Delete lead "${name}"? This removes it from the pipeline.`)) return;
+    if (!(await confirm({ title: `Delete lead "${name}"?`, message: 'This removes it from the pipeline.', confirmLabel: 'Delete', danger: true }))) return;
     const res = await softDeleteLead(leadId);
     if (res.ok) {
       setSelectedLeadDrawer(null);
       router.refresh();
     } else {
-      alert(res.error ?? 'Failed to delete lead.');
+      showToast(res.error ?? 'Failed to delete lead.', 'error');
     }
   };
 
@@ -264,12 +268,12 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   };
   const handleBulkDeleteLeads = async () => {
     if (selectedLeadIds.length === 0) return;
-    if (!confirm(`Delete ${selectedLeadIds.length} selected lead${selectedLeadIds.length === 1 ? '' : 's'}? This removes them from the pipeline.`)) return;
+    if (!(await confirm({ title: `Delete ${selectedLeadIds.length} selected lead${selectedLeadIds.length === 1 ? '' : 's'}?`, message: 'This removes them from the pipeline.', confirmLabel: 'Delete', danger: true }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteLeads(selectedLeadIds);
     setBulkBusy(false);
     if (res.ok) { setSelectedLeadIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the selected leads.');
+    else showToast(res.error ?? 'Failed to delete the selected leads.', 'error');
   };
   const handleBulkLeadStage = async (stage: string) => {
     if (selectedLeadIds.length === 0 || !stage) return;
@@ -277,7 +281,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
     const res = await bulkSetLeadStage(selectedLeadIds, stage);
     setBulkBusy(false);
     if (res.ok) { setSelectedLeadIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to update stage.');
+    else showToast(res.error ?? 'Failed to update stage.', 'error');
   };
   const handleBulkExportLeads = () => {
     const rows = leadsList.filter((l) => selectedLeadIds.includes(l.id));
@@ -291,9 +295,9 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   const handleConvertLeadToStudent = async () => {
     if (!convertModalLead) return;
     const feeNum = parseFloat(convertFee);
-    if (!convertSession.trim()) { alert('Please enter the exam session.'); return; }
-    if (isNaN(feeNum) || feeNum <= 0) { alert('Please enter a valid monthly fee.'); return; }
-    if (!convertPaidDate) { alert('Please select the date the first fee was paid.'); return; }
+    if (!convertSession.trim()) { showToast('Please enter the exam session.', 'error'); return; }
+    if (isNaN(feeNum) || feeNum <= 0) { showToast('Please enter a valid monthly fee.', 'error'); return; }
+    if (!convertPaidDate) { showToast('Please select the date the first fee was paid.', 'error'); return; }
 
     setConverting(true);
     const res = await convertLead({
@@ -313,11 +317,11 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       setConvertPaidDate('');
       setConvertMethod('Bank Transfer');
       router.refresh();
-      alert(res.warning
+      showToast(res.warning
         ? `${name} was enrolled. Note: ${res.warning}`
-        : `${name} was enrolled - first month recorded as paid, next fee due in 30 days.`);
+        : `${name} was enrolled - first month recorded as paid, next fee due in 30 days.`, 'success');
     } else {
-      alert(res.error ?? 'Failed to convert lead.');
+      showToast(res.error ?? 'Failed to convert lead.', 'error');
     }
   };
 
@@ -683,7 +687,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       onChange={async (e) => {
                         const res = await updateLead({ leadId: selectedLeadDrawer.id, stage: e.target.value });
                         if (res.ok) router.refresh();
-                        else alert(res.error ?? 'Failed to update.');
+                        else showToast(res.error ?? 'Failed to update.', 'error');
                       }}
                       className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100"
                     >
@@ -699,7 +703,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       onChange={async (e) => {
                         const res = await updateLead({ leadId: selectedLeadDrawer.id, temperature: e.target.value });
                         if (res.ok) router.refresh();
-                        else alert(res.error ?? 'Failed to update.');
+                        else showToast(res.error ?? 'Failed to update.', 'error');
                       }}
                       className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100"
                     >

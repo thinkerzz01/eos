@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
 import { ALL_PROGRAMS, EXAM_SESSIONS, labelWithCode } from '@/lib/syllabiSeed';
 import { bulkCreateStudents, updateStudent, softDeleteStudent, markStudentPassout, bulkDeleteStudents, bulkSetFeeStatus, bulkSetStatus, bulkSetProgram, assignStudentSubjects } from './actions';
@@ -127,6 +128,7 @@ export function StudentsClient({
 }) {
   const { role } = useRole();
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   // Staff (admin/manager) may see parent/guardian contact PII and manage records.
   // Teachers get a view-only, contact-free roster of their assigned students.
   const isStaff = role === 'admin' || role === 'manager';
@@ -341,7 +343,7 @@ export function StudentsClient({
       dob: editFormData.dob,
     });
     if (!res.ok) {
-      alert(res.error ?? 'Failed to save changes.');
+      showToast(res.error ?? 'Failed to save changes.', 'error');
       return;
     }
     // Reflect the edit locally, then refetch the authoritative row from the DB.
@@ -351,10 +353,10 @@ export function StudentsClient({
   };
 
   const handleDeleteStudent = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this student record? This action will be logged.')) return;
+    if (!(await confirm({ title: 'Delete this student?', message: 'This deletes the student record. This action will be logged.', confirmLabel: 'Delete', danger: true }))) return;
     const res = await softDeleteStudent(id);
     if (!res.ok) {
-      alert(res.error ?? 'Failed to delete student.');
+      showToast(res.error ?? 'Failed to delete student.', 'error');
       return;
     }
     if (profileModalStudent?.id === id) setProfileModalStudent(null);
@@ -363,10 +365,10 @@ export function StudentsClient({
 
   // MARK A STUDENT AS PASSED OUT (alumni) - keeps the record, drops them from active.
   const handlePassoutStudent = async (s: Student) => {
-    if (!confirm(`Mark ${s.name} as passed out?\n\nThey move to Alumni / Passout and leave the active roster. You can reactivate them later from Edit Profile.`)) return;
+    if (!(await confirm({ title: `Mark ${s.name} as passed out?`, message: 'They move to Alumni / Passout and leave the active roster. You can reactivate them later from Edit Profile.', confirmLabel: 'Mark passed out', danger: false }))) return;
     const res = await markStudentPassout(s.id);
     if (!res.ok) {
-      alert(res.error ?? 'Failed to mark the student as passed out.');
+      showToast(res.error ?? 'Failed to mark the student as passed out.', 'error');
       return;
     }
     router.refresh();
@@ -474,14 +476,15 @@ export function StudentsClient({
       setImportedFileName(null);
       setShowImportModal(false);
       router.refresh();
-      alert(
+      showToast(
         `Imported ${res.inserted} student${res.inserted === 1 ? '' : 's'}.` +
           (res.skipped ? ` Skipped ${res.skipped} (missing name/parent or non-CAIE program).` : '') +
-          ' Fee and exam session default to 0 / "To be set" - edit each student to complete.'
+          ' Fee and exam session default to 0 / "To be set" - edit each student to complete.',
+        'success'
       );
       return;
     }
-    alert(res.error ?? 'Import failed.');
+    showToast(res.error ?? 'Import failed.', 'error');
     return;
   };
 
@@ -573,12 +576,12 @@ export function StudentsClient({
   const [bulkBusy, setBulkBusy] = useState(false);
   const handleBulkDelete = async () => {
     if (selectedStudentIds.length === 0) return;
-    if (!confirm(`Delete ${selectedStudentIds.length} selected student${selectedStudentIds.length === 1 ? '' : 's'}? This removes them from the roster and is logged.`)) return;
+    if (!(await confirm({ title: `Delete ${selectedStudentIds.length} selected student${selectedStudentIds.length === 1 ? '' : 's'}?`, message: 'This removes them from the roster and is logged.', confirmLabel: 'Delete', danger: true }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteStudents(selectedStudentIds);
     setBulkBusy(false);
     if (res.ok) { setSelectedStudentIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the selected students.');
+    else showToast(res.error ?? 'Failed to delete the selected students.', 'error');
   };
   const handleBulkFeeStatus = async (feeStatus: string) => {
     if (selectedStudentIds.length === 0 || !feeStatus) return;
@@ -586,7 +589,7 @@ export function StudentsClient({
     const res = await bulkSetFeeStatus(selectedStudentIds, feeStatus);
     setBulkBusy(false);
     if (res.ok) { setSelectedStudentIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to update fee status.');
+    else showToast(res.error ?? 'Failed to update fee status.', 'error');
   };
   const handleBulkStatus = async (status: string) => {
     if (selectedStudentIds.length === 0 || !status) return;
@@ -594,16 +597,16 @@ export function StudentsClient({
     const res = await bulkSetStatus(selectedStudentIds, status);
     setBulkBusy(false);
     if (res.ok) { setSelectedStudentIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to update status.');
+    else showToast(res.error ?? 'Failed to update status.', 'error');
   };
   const handleBulkProgram = async (program: string) => {
     if (selectedStudentIds.length === 0 || !program) return;
-    if (!confirm(`Change program to "${program}" for ${selectedStudentIds.length} student${selectedStudentIds.length === 1 ? '' : 's'}?`)) return;
+    if (!(await confirm({ title: `Change program to "${program}"?`, message: `This applies to ${selectedStudentIds.length} selected student${selectedStudentIds.length === 1 ? '' : 's'}.`, confirmLabel: 'Change program', danger: false }))) return;
     setBulkBusy(true);
     const res = await bulkSetProgram(selectedStudentIds, program);
     setBulkBusy(false);
     if (res.ok) { setSelectedStudentIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to update program.');
+    else showToast(res.error ?? 'Failed to update program.', 'error');
   };
 
   const handleExportCsv = () => {

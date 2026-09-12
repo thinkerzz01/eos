@@ -10,6 +10,8 @@ import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { updatePayment, deletePayment } from './actions';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { downloadCsv } from '@/lib/export/csv';
 import {
   Receipt,
@@ -41,6 +43,8 @@ function humanDate(iso: string): string {
 export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTransaction[] }) {
   const { role } = useRole();
   const router = useRouter();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [payments] = useState<PaymentTransaction[]>(initialPayments);
   const [receipt, setReceipt] = useState<PaymentTransaction | null>(null);
 
@@ -72,10 +76,10 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
     else setEdError(res.error ?? 'Failed to update the receipt.');
   };
   const handleDelete = async (p: PaymentTransaction) => {
-    if (!confirm(`Delete receipt ${p.receiptNo} for ${p.studentName}? The linked voucher's paid total will drop accordingly.`)) return;
+    if (!(await confirm({ title: 'Delete this receipt?', message: `Delete receipt ${p.receiptNo} for ${p.studentName}? The linked voucher's paid total will drop accordingly.`, confirmLabel: 'Delete', danger: true }))) return;
     const res = await deletePayment(p.id);
     if (res.ok) router.refresh();
-    else alert(res.error ?? 'Failed to delete the receipt.');
+    else showToast(res.error ?? 'Failed to delete the receipt.', 'error');
   };
 
   // FILTERS

@@ -7,6 +7,8 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { AcademyAnnouncement } from '@/lib/mockSupportData';
 import { createAnnouncement, deleteAnnouncement } from './actions';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import {
   MessageSquare,
   Plus,
@@ -23,6 +25,8 @@ import {
 export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncements: AcademyAnnouncement[] }) {
   const { role } = useRole();
   const router = useRouter();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const [announcements, setAnnouncements] = useState<AcademyAnnouncement[]>(initialAnnouncements);
   const [showAddModal, setShowAddModal] = useState<boolean>(false);
   const [title, setTitle] = useState('');
@@ -43,15 +47,15 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
   };
 
   const handleDeleteAnnouncement = async (id: string) => {
-    if (!window.confirm('Delete this announcement? It will be removed for everyone.')) return;
+    if (!(await confirm({ title: 'Delete this announcement?', message: 'It will be removed for everyone.', confirmLabel: 'Delete', danger: true }))) return;
     const res = await deleteAnnouncement(id);
     if (res.ok) router.refresh();
-    else alert(res.error ?? 'Failed to delete the announcement.');
+    else showToast(res.error ?? 'Failed to delete the announcement.', 'error');
   };
 
   const handleCreateAnnouncement = async () => {
     if (!title || !content) {
-      alert('Title and body are required.');
+      showToast('Title and body are required.', 'error');
       return;
     }
     setPosting(true);
@@ -64,7 +68,7 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
       setContent('');
       router.refresh();
     } else {
-      alert(res.error ?? 'Failed to post announcement.');
+      showToast(res.error ?? 'Failed to post announcement.', 'error');
     }
   };
 

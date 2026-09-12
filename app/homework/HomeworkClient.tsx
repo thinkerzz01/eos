@@ -11,6 +11,8 @@ import { createHomework, gradeHomework, updateHomework, deleteHomework, submitHo
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { downloadCsv } from '@/lib/export/csv';
 import {
   Plus,
@@ -36,6 +38,8 @@ export function HomeworkClient({
 }) {
   const { role } = useRole();
   const router = useRouter();
+  const { showToast } = useToast();
+  const { confirm } = useConfirm();
   // Assigning / modifying / deleting homework is staff-only (admin/manager).
   // Teachers act on their own students' work (grading), like attendance; students
   // only submit. This keeps the roster of other teachers off a teacher's screen.
@@ -96,7 +100,7 @@ export function HomeworkClient({
 
   const handleAddHomework = async () => {
     if (!title || !studentId || !subjectId || !teacherId || !deadline) {
-      alert('Title, student, subject, teacher, and deadline are all required.');
+      showToast('Title, student, subject, teacher, and deadline are all required.', 'error');
       return;
     }
     setAssigning(true);
@@ -107,7 +111,7 @@ export function HomeworkClient({
       setTitle(''); setStudentId(''); setSubjectId(''); setTeacherId(''); setDeadline('');
       router.refresh();
     } else {
-      alert(res.error ?? 'Failed to assign homework.');
+      showToast(res.error ?? 'Failed to assign homework.', 'error');
     }
   };
 
@@ -137,21 +141,21 @@ export function HomeworkClient({
   const handleCheck = async (hw: HomeworkAssignment) => {
     const res = await gradeHomework({ homeworkId: hw.id });
     if (res.ok) router.refresh();
-    else alert(res.error ?? 'Failed to grade.');
+    else showToast(res.error ?? 'Failed to grade.', 'error');
   };
   const handleDelete = async (hw: HomeworkAssignment) => {
-    if (!confirm(`Delete homework "${hw.title}"? This removes it from the list.`)) return;
+    if (!(await confirm({ title: 'Delete this homework?', message: `Delete homework "${hw.title}"? This removes it from the list.`, confirmLabel: 'Delete', danger: true }))) return;
     const res = await deleteHomework(hw.id);
     if (res.ok) router.refresh();
-    else alert(res.error ?? 'Failed to delete.');
+    else showToast(res.error ?? 'Failed to delete.', 'error');
   };
   const [submittingId, setSubmittingId] = useState<string | null>(null);
   const handleSubmitHomework = async (hw: HomeworkAssignment) => {
     setSubmittingId(hw.id);
     const res = await submitHomework({ homeworkId: hw.id });
     setSubmittingId(null);
-    if (res.ok) { if (res.warning) alert(res.warning); router.refresh(); }
-    else alert(res.error ?? 'Failed to submit.');
+    if (res.ok) { if (res.warning) showToast(res.warning, 'info'); router.refresh(); }
+    else showToast(res.error ?? 'Failed to submit.', 'error');
   };
 
   // BULK SELECTION STATE + handlers (staff only; operate on the filtered view)
@@ -166,12 +170,12 @@ export function HomeworkClient({
   };
   const handleBulkDeleteHw = async () => {
     if (selectedHwIds.length === 0) return;
-    if (!confirm(`Delete ${selectedHwIds.length} selected homework${selectedHwIds.length === 1 ? '' : 's'}? This removes them from the list.`)) return;
+    if (!(await confirm({ title: `Delete ${selectedHwIds.length} selected homework${selectedHwIds.length === 1 ? '' : 's'}?`, message: 'This removes them from the list.', confirmLabel: 'Delete', danger: true }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteHomework(selectedHwIds);
     setBulkBusy(false);
     if (res.ok) { setSelectedHwIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the selected homework.');
+    else showToast(res.error ?? 'Failed to delete the selected homework.', 'error');
   };
   const fdateShort = (iso?: string) => (iso ? new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }) : '');
   const handleBulkExportHw = () => {

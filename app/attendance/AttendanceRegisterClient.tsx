@@ -7,6 +7,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
+import { useToast } from '@/components/ui/Toast';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
 import { bulkMarkAttendance } from '@/app/schedule/actions';
 import { CalendarCheck, Check, Users, ChevronDown } from 'lucide-react';
@@ -20,6 +21,7 @@ const MARK_FROM_STATUS: Record<string, Mark> = { present: 'Present', late: 'Late
 
 export function AttendanceRegisterClient({ initialClasses }: { initialClasses: ScheduledClass[] }) {
   const router = useRouter();
+  const { showToast } = useToast();
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
   const [date, setDate] = useState(today);
   const [teacherFilter, setTeacherFilter] = useState('All Teachers');
@@ -74,9 +76,9 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
     setSaving(false);
     if (res.ok) {
       router.refresh();
-      alert(`Attendance saved for ${res.count} class${res.count === 1 ? '' : 'es'}.`);
+      showToast(`Attendance saved for ${res.count} class${res.count === 1 ? '' : 'es'}.`, 'success');
     } else {
-      alert(res.error ?? 'Failed to save attendance.');
+      showToast(res.error ?? 'Failed to save attendance.', 'error');
     }
   };
 

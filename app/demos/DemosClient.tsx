@@ -14,6 +14,7 @@ import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { downloadCsv } from '@/lib/export/csv';
 import {
   Calendar,
@@ -88,6 +89,7 @@ export function DemosClient({
   const { role } = useRole();
   const router = useRouter();
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
 
   // Copy a ready-to-send booking announcement to paste into the WhatsApp group.
   const copyDemoMessage = async (d: DemoSession) => {
@@ -173,7 +175,7 @@ export function DemosClient({
       setShowNewDemo(false);
       resetNewDemo();
       router.refresh();
-      alert('Demo created. Assign a teacher to send the Google Meet invite.');
+      showToast('Demo created. Assign a teacher to send the Google Meet invite.', 'success');
     } else {
       setNdError(res.error ?? 'Failed to create the demo.');
     }
@@ -244,11 +246,8 @@ export function DemosClient({
       setAssignModalDemo(null);
       setSelectedTeacherId('');
       router.refresh();
-      alert(
-        res.warning
-          ? `Teacher assigned to ${studentName}'s demo.\n\n${res.warning}`
-          : `Teacher assigned to ${studentName}'s demo.`
-      );
+      showToast(`Teacher assigned to ${studentName}'s demo.`, 'success');
+      if (res.warning) showToast(res.warning, 'info');
     } else if (res.conflict) {
       setConflictErrorMessage(res.error ?? 'Scheduling conflict - assignment blocked.');
     } else {
@@ -278,18 +277,18 @@ export function DemosClient({
       if (won && leadId) {
         setEnrollLink(`${window.location.origin}/enroll/${leadId}`);
       } else {
-        alert(`Demo outcome saved: ${selectedOutcome}.`);
+        showToast(`Demo outcome saved: ${selectedOutcome}.`, 'success');
       }
     } else {
-      alert(res.error ?? 'Failed to save outcome.');
+      showToast(res.error ?? 'Failed to save outcome.', 'error');
     }
   };
 
   const handleDeleteDemo = async (d: DemoSession) => {
-    if (!confirm(`Delete the demo for ${d.studentName}? This removes it from the list.`)) return;
+    if (!(await confirm({ title: 'Delete this demo?', message: `Delete the demo for ${d.studentName}? This removes it from the list.`, confirmLabel: 'Delete', danger: true }))) return;
     const res = await deleteDemo(d.id);
     if (res.ok) router.refresh();
-    else alert(res.error ?? 'Failed to delete demo.');
+    else showToast(res.error ?? 'Failed to delete demo.', 'error');
   };
 
   // View / Edit(reschedule)
@@ -320,7 +319,7 @@ export function DemosClient({
     if (res.ok) {
       setEditDemo(null);
       router.refresh();
-      if (res.warning) alert(`Demo rescheduled.\n\n${res.warning}`);
+      if (res.warning) { showToast('Demo rescheduled.', 'success'); showToast(res.warning, 'info'); }
     } else setEdError(res.error ?? 'Failed to reschedule the demo.');
   };
 
@@ -339,12 +338,12 @@ export function DemosClient({
   };
   const handleBulkDeleteDemos = async () => {
     if (selectedDemoIds.length === 0) return;
-    if (!confirm(`Delete ${selectedDemoIds.length} selected demo${selectedDemoIds.length === 1 ? '' : 's'}? This removes them from the list.`)) return;
+    if (!(await confirm({ title: `Delete ${selectedDemoIds.length} selected demo${selectedDemoIds.length === 1 ? '' : 's'}?`, message: 'This removes them from the list.', confirmLabel: 'Delete', danger: true }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteDemos(selectedDemoIds);
     setBulkBusy(false);
     if (res.ok) { setSelectedDemoIds([]); router.refresh(); }
-    else alert(res.error ?? 'Failed to delete the selected demos.');
+    else showToast(res.error ?? 'Failed to delete the selected demos.', 'error');
   };
   const handleBulkExportDemos = () => {
     const rows = demosList.filter((d) => selectedDemoIds.includes(d.id));

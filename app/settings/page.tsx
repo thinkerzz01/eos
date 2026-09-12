@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
+import { useToast } from '@/components/ui/Toast';
 import { createClient } from '@/lib/supabase/client';
 import { saveSettings, sendTestEmail } from './actions';
 import { FONT_OPTIONS, DEFAULT_HEADING_FONT, DEFAULT_BODY_FONT } from '@/lib/fonts';
@@ -26,6 +27,7 @@ import {
 
 export default function SettingsPage() {
   const { role } = useRole();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<'Branding' | 'Financial' | 'Security' | 'API' | 'Notifications'>('Branding');
 
   // FORM STATES
@@ -119,10 +121,10 @@ export default function SettingsPage() {
     const res = await saveSettings({ academyName, academicYear, gracePeriodDays, bankTitle, bankAccountNo, bankIban, walletInfo, headingFont, bodyFont });
     setSaving(false);
     if (res.ok) {
-      alert('Settings saved (academy name, academic year, grace-period days persisted).');
+      showToast('Settings saved (academy name, academic year, grace-period days persisted).', 'success');
       router.refresh();
     } else {
-      alert(res.error ?? 'Failed to save settings.');
+      showToast(res.error ?? 'Failed to save settings.', 'error');
     }
   };
 
