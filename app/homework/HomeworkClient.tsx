@@ -653,45 +653,39 @@ export function HomeworkClient({
                 <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Homework Details</h3>
                 <button onClick={() => setViewHw(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
-              <div className="grid grid-cols-2 gap-3 text-[13px]">
-                {[
-                  ['Title', viewHw.title],
-                  ['Student', viewHw.studentName || '-'],
-                  ['Subject', viewHw.subject || '-'],
-                  ['Teacher', viewHw.teacherName || '-'],
-                  ['Assigned', fdate(viewHw.assignedDate)],
-                  ['Due', fdate(viewHw.dueISO)],
-                  ['Submission', viewHw.submittedAt ? `Submitted ${fdate(viewHw.submittedAt)}${viewHw.submittedLate ? ' · late' : ''}` : 'Not submitted'],
-                  ['Status', viewHw.status],
-                ].map(([k, v]) => (
-                  <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
-                    <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">{k}</div>
-                    <div className="font-medium text-slate-900 dark:text-slate-100 mt-0.5 break-words">{v}</div>
-                  </div>
-                ))}
+              {/* TITLE */}
+              <div>
+                <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Homework Title</div>
+                <div className="text-lg font-semibold text-slate-900 dark:text-white mt-0.5 break-words">{viewHw.title}</div>
               </div>
+
+              {/* TASK / DESCRIPTION */}
+              <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3">
+                <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Task / Instructions</div>
+                <div className="text-slate-800 dark:text-slate-200 mt-1 whitespace-pre-line break-words">{viewHw.description || 'No task details were added.'}</div>
+              </div>
+
+              {/* STUDENT'S COMMENTS */}
+              {viewHw.submissionNote && (
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Student's Comments</div>
+                  <div className="text-slate-800 dark:text-slate-200 mt-1 whitespace-pre-line break-words">{viewHw.submissionNote}</div>
+                </div>
+              )}
+
+              {/* GRADE (when graded) */}
               {viewHw.status === 'Graded' && pctOf(viewHw) != null && (
                 <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3">
                   <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185] mb-1.5">Grade</div>
                   {renderGradeBar(viewHw, { full: true })}
                 </div>
               )}
-              {viewHw.description && (
-                <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
-                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Task / Instructions</div>
-                  <div className="text-slate-800 dark:text-slate-200 mt-0.5 whitespace-pre-line break-words">{viewHw.description}</div>
-                </div>
-              )}
-              {viewHw.submissionNote && (
-                <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
-                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Student's submission note</div>
-                  <div className="text-slate-800 dark:text-slate-200 mt-0.5 whitespace-pre-line break-words">{viewHw.submissionNote}</div>
-                </div>
-              )}
+
+              {/* TEACHER FEEDBACK */}
               {viewHw.feedback && (
-                <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 p-2.5">
-                  <div className="text-[11px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-400">Teacher feedback</div>
-                  <div className="text-slate-800 dark:text-slate-200 mt-0.5 whitespace-pre-line break-words">{viewHw.feedback}</div>
+                <div className="rounded-xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 p-3">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-emerald-700 dark:text-emerald-400">Teacher Feedback</div>
+                  <div className="text-slate-800 dark:text-slate-200 mt-1 whitespace-pre-line break-words">{viewHw.feedback}</div>
                 </div>
               )}
             </div>
