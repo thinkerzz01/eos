@@ -47,6 +47,9 @@ export function HomeworkClient({
   const canManage = role === 'admin' || role === 'manager';
   // Teachers can assign homework too (as themselves); editing/deleting stays staff-only.
   const canAssign = canManage || role === 'teacher';
+  // Teachers can also modify/regrade/delete their OWN homework (RLS enforces
+  // teacher_id = them); admins/managers can do all. Students never.
+  const canModify = canManage || role === 'teacher';
   const isStudent = role === 'student';
   const [homeworks, setHomeworks] = useState<HomeworkAssignment[]>(initialHomeworks);
   const [showAddHomeworkModal, setShowAddHomeworkModal] = useState<boolean>(false);
@@ -456,8 +459,8 @@ export function HomeworkClient({
                           {isStudent && hw.submissionStatus !== 'Not submitted' && (
                             <span className="text-xs font-medium text-emerald-600">✓ {hw.submissionStatus}</span>
                           )}
-                          {/* Teachers grade their own students' work (no assign/modify/delete). */}
-                          {role === 'teacher' && hw.status !== 'Graded' && (
+                          {/* Quick grade for ungraded work; full menu (regrade/edit/delete) below. */}
+                          {canModify && hw.status !== 'Graded' && (
                             <button
                               onClick={() => handleCheck(hw)}
                               className="h-7 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1.5"
@@ -466,12 +469,12 @@ export function HomeworkClient({
                               <span>Grade</span>
                             </button>
                           )}
-                          {canManage && (
+                          {canModify && (
                             <RowActionsMenu
                               actions={[
                                 { label: 'View', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setViewHw(hw) },
-                                { label: 'Modify', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEdit(hw) },
-                                { label: 'Check (Grade)', icon: <CheckCircle2 className="w-3.5 h-3.5" />, tone: 'success', hidden: hw.status === 'Graded', onClick: () => handleCheck(hw) },
+                                { label: hw.status === 'Graded' ? 'Regrade' : 'Grade', icon: <CheckCircle2 className="w-3.5 h-3.5" />, tone: 'success', onClick: () => handleCheck(hw) },
+                                { label: 'Edit', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEdit(hw) },
                                 { label: 'Delete', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', onClick: () => handleDelete(hw) },
                               ]}
                             />
@@ -512,15 +515,10 @@ export function HomeworkClient({
                     {isStudent && hw.submissionStatus === 'Not submitted' && (
                       <button onClick={() => handleSubmitHomework(hw)} disabled={submittingId === hw.id} className="flex-1 min-w-[110px] px-3 py-2 rounded-xl bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium flex items-center justify-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" />{submittingId === hw.id ? 'Submitting…' : 'Submit'}</button>
                     )}
-                    {role === 'teacher' && hw.status !== 'Graded' && (
-                      <button onClick={() => handleCheck(hw)} className="flex-1 min-w-[110px] px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center justify-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Grade</button>
-                    )}
-                    {canManage && (
+                    {canModify && (
                       <>
-                        <button onClick={() => openEdit(hw)} className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 dark:text-slate-200 text-xs font-medium flex items-center gap-1.5"><Edit3 className="w-3.5 h-3.5" /> Modify</button>
-                        {hw.status !== 'Graded' && (
-                          <button onClick={() => handleCheck(hw)} className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> Grade</button>
-                        )}
+                        <button onClick={() => handleCheck(hw)} className="flex-1 min-w-[110px] px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center justify-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" /> {hw.status === 'Graded' ? 'Regrade' : 'Grade'}</button>
+                        <button onClick={() => openEdit(hw)} className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 dark:text-slate-200 text-xs font-medium flex items-center gap-1.5"><Edit3 className="w-3.5 h-3.5" /> Edit</button>
                         <button onClick={() => handleDelete(hw)} className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:text-rose-600"><Trash2 className="w-4 h-4" /></button>
                       </>
                     )}
