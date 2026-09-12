@@ -49,6 +49,7 @@ function mapRow(r: any, teacherNames?: Map<string, string>, hasSubmittedAt = tru
     status: STATUS_UI[r.status as string] ?? 'Assigned',
     submittedAt,
     submittedLate,
+    submissionNote: r.submission_note ?? '',
     description: r.description ?? '',
     score: r.score ?? null,
     maxScore: r.max_score ?? null,
@@ -64,7 +65,7 @@ export async function getHomework(): Promise<HomeworkAssignment[]> {
   const user = session?.user;
   if (!user) return [];
 
-  const FULL = 'id,title,description,deadline,status,score,max_score,feedback,submitted_at,created_at,student_id,subject_id,teacher_id,subjects(name),teachers(name),students(name)';
+  const FULL = 'id,title,description,deadline,status,score,max_score,feedback,submitted_at,submission_note,created_at,student_id,subject_id,teacher_id,subjects(name),teachers(name),students(name)';
   const BASE = 'id,title,deadline,status,score,created_at,student_id,subject_id,teacher_id,subjects(name),teachers(name),students(name)';
   const run = (cols: string) =>
     supabase.from('homework').select(cols).is('deleted_at', null).order('deadline', { ascending: false });
@@ -72,7 +73,7 @@ export async function getHomework(): Promise<HomeworkAssignment[]> {
   let { data, error }: { data: any[] | null; error: any } = await run(FULL);
   // Fall back gracefully if the newer columns' migration hasn't run yet, so the
   // list never breaks during a deploy.
-  if (error && /column|does not exist|description|max_score|feedback|submitted_at/i.test(error.message ?? '')) {
+  if (error && /column|does not exist|description|max_score|feedback|submitted_at|submission_note/i.test(error.message ?? '')) {
     hasSubmittedAt = false;
     ({ data, error } = await run(BASE));
   }

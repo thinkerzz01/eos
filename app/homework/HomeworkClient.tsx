@@ -227,12 +227,24 @@ export function HomeworkClient({
     else showToast(res.error ?? 'Failed to delete.', 'error');
   };
   const [submittingId, setSubmittingId] = useState<string | null>(null);
-  const handleSubmitHomework = async (hw: HomeworkAssignment) => {
-    setSubmittingId(hw.id);
-    const res = await submitHomework({ homeworkId: hw.id });
+  // Submit confirmation modal: the student says what they completed and where they
+  // uploaded the file (e.g. WhatsApp / Google Drive link). No file storage.
+  const [submitHw, setSubmitHw] = useState<HomeworkAssignment | null>(null);
+  const [submitNote, setSubmitNote] = useState('');
+  const openSubmit = (hw: HomeworkAssignment) => { setSubmitHw(hw); setSubmitNote(''); };
+  const handleConfirmSubmit = async () => {
+    if (!submitHw) return;
+    setSubmittingId(submitHw.id);
+    const res = await submitHomework({ homeworkId: submitHw.id, note: submitNote });
     setSubmittingId(null);
-    if (res.ok) { if (res.warning) showToast(res.warning, 'info'); router.refresh(); }
-    else showToast(res.error ?? 'Failed to submit.', 'error');
+    if (res.ok) {
+      setSubmitHw(null);
+      if (res.warning) showToast(res.warning, 'info');
+      showToast('Homework submitted', 'success', { description: 'Your teacher can now see it and grade it.' });
+      router.refresh();
+    } else {
+      showToast(res.error ?? 'Failed to submit.', 'error');
+    }
   };
 
   // BULK SELECTION STATE + handlers (staff only; operate on the filtered view)
@@ -447,7 +459,7 @@ export function HomeworkClient({
                           <button onClick={() => setViewHw(hw)} title="View" className="w-7 h-7 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 flex items-center justify-center"><Eye className="w-4 h-4" /></button>
                           {isStudent && hw.submissionStatus === 'Not submitted' && (
                             <button
-                              onClick={() => handleSubmitHomework(hw)}
+                              onClick={() => openSubmit(hw)}
                               disabled={submittingId === hw.id}
                               className="h-7 px-3 rounded-lg bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium flex items-center gap-1.5"
                             >
@@ -512,7 +524,7 @@ export function HomeworkClient({
                   <div className="flex flex-wrap items-center gap-2 pt-1">
                     <button onClick={() => setViewHw(hw)} className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 dark:text-slate-200 text-xs font-medium flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> View</button>
                     {isStudent && hw.submissionStatus === 'Not submitted' && (
-                      <button onClick={() => handleSubmitHomework(hw)} disabled={submittingId === hw.id} className="flex-1 min-w-[110px] px-3 py-2 rounded-xl bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium flex items-center justify-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" />{submittingId === hw.id ? 'Submitting…' : 'Submit'}</button>
+                      <button onClick={() => openSubmit(hw)} disabled={submittingId === hw.id} className="flex-1 min-w-[110px] px-3 py-2 rounded-xl bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium flex items-center justify-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" />{submittingId === hw.id ? 'Submitting…' : 'Submit'}</button>
                     )}
                     {canModify && (
                       <>
@@ -530,6 +542,38 @@ export function HomeworkClient({
           <div className="p-3 bg-slate-50 border-t text-[13px] font-medium text-slate-600">Showing {filtered.length} of {homeworks.length} homework</div>
         </div>
 
+        {/* SUBMIT MODAL (student) — say what you did + where you uploaded the file */}
+        {submitHw && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
+              <div className="flex justify-between items-start border-b pb-3">
+                <div>
+                  <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Submit Homework</h3>
+                  <p className="text-xs text-[#6B7185] mt-0.5">{submitHw.title}{submitHw.subject ? ` · ${submitHw.subject}` : ''}</p>
+                </div>
+                <button onClick={() => setSubmitHw(null)}><X className="w-4 h-4 text-slate-400" /></button>
+              </div>
+              <div className="space-y-2 text-xs font-medium">
+                <label className="text-slate-700 dark:text-slate-300 block">What did you complete, and where did you upload it?</label>
+                <textarea
+                  value={submitNote}
+                  onChange={(e) => setSubmitNote(e.target.value)}
+                  rows={4}
+                  placeholder="e.g. Completed all 12 questions. Photos of my work sent on WhatsApp. / Google Drive link: …"
+                  className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 resize-y"
+                />
+                <p className="text-[11px] text-[#6B7185]">Your teacher sees this note. There's no file upload here — share the file on WhatsApp / Google Drive and tell your teacher where.</p>
+              </div>
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button onClick={() => setSubmitHw(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={handleConfirmSubmit} disabled={submittingId === submitHw.id} className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />{submittingId === submitHw.id ? 'Submitting…' : 'Submit Homework'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* GRADE MODAL — enter an actual mark + optional feedback */}
         {gradeHw && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
@@ -544,6 +588,12 @@ export function HomeworkClient({
                 </div>
                 <button onClick={() => setGradeHw(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
+              {gradeHw.submissionNote && (
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185] mb-0.5">Student's submission note</div>
+                  <div className="text-xs text-slate-800 dark:text-slate-200 whitespace-pre-line break-words">{gradeHw.submissionNote}</div>
+                </div>
+              )}
               <div className="space-y-3 text-xs font-medium">
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
@@ -624,6 +674,12 @@ export function HomeworkClient({
                 <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
                   <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Description</div>
                   <div className="text-slate-800 dark:text-slate-200 mt-0.5 whitespace-pre-line break-words">{viewHw.description}</div>
+                </div>
+              )}
+              {viewHw.submissionNote && (
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Student's submission note</div>
+                  <div className="text-slate-800 dark:text-slate-200 mt-0.5 whitespace-pre-line break-words">{viewHw.submissionNote}</div>
                 </div>
               )}
               {viewHw.feedback && (

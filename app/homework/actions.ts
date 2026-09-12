@@ -170,7 +170,7 @@ export async function bulkDeleteHomework(ids: string[]): Promise<ActionResult> {
  * else 'submitted' - both count as a submission; 'submitted' also counts as
  * on-time in the health formula. Refuses if already graded.
  */
-export async function submitHomework(input: { homeworkId: string }): Promise<ActionResult> {
+export async function submitHomework(input: { homeworkId: string; note?: string }): Promise<ActionResult> {
   if (!input.homeworkId) return { ok: false, error: 'Missing homework id.' };
   const supabase = createClient();
   const {
@@ -178,12 +178,24 @@ export async function submitHomework(input: { homeworkId: string }): Promise<Act
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: 'You are not signed in.' };
 
+  const note = input.note?.trim() || null;
+
   // Submission goes through the locked SECURITY DEFINER RPC (student_submit_homework):
   // it flips status to 'submitted'/'late' for the caller's OWN homework only and can
   // never touch the score or set 'graded'. Students have no direct UPDATE on homework.
-  const { data: newStatus, error } = await supabase.rpc('student_submit_homework', {
+  // The note (what they did / where they uploaded the file) is stored with it.
+  let { data: newStatus, error } = await supabase.rpc('student_submit_homework', {
     p_homework_id: input.homeworkId,
+    p_note: note,
   });
+
+  // Pre-migration: the note param may not exist yet. Retry the old single-arg
+  // signature so submission still works (just without saving the note).
+  if (error && /could not find the function|p_note|schema cache/i.test(error.message)) {
+    ({ data: newStatus, error } = await supabase.rpc('student_submit_homework', {
+      p_homework_id: input.homeworkId,
+    }));
+  }
 
   if (error) {
     // Pre-migration fallback: if the RPC isn't there yet, use the old direct path

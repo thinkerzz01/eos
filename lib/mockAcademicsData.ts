@@ -50,6 +50,7 @@ export interface HomeworkAssignment {
   feedback?: string;
   submittedAt?: string | null; // when the student submitted (null = not submitted)
   submittedLate?: boolean;
+  submissionNote?: string; // student's note at submission (what they did / where they uploaded)
 }
 
 export interface AssessmentRecord {
