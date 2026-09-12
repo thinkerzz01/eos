@@ -11,15 +11,16 @@ export const dynamic = 'force-dynamic';
 export default async function HomeworkPage() {
   const role = await getServerRole();
   const canManage = role === 'admin' || role === 'manager';
-
-  // The student/teacher/subject picker lists are only for the admin/manager
-  // "Assign homework" modal. Don't ship other teachers/students to a teacher's
-  // or student's browser.
+  // Teachers can assign homework too, so they need the student + subject pickers
+  // (both RLS-scoped to their own students). The teacher picker stays admin/manager
+  // only - a teacher always authors as themselves, so we never ship the roster of
+  // other teachers to a teacher's or student's browser.
+  const canAssign = canManage || role === 'teacher';
   const [homeworks, students, teachers, subjects] = await Promise.all([
     getHomework(),
-    canManage ? getStudents() : Promise.resolve([]),
+    canAssign ? getStudents() : Promise.resolve([]),
     canManage ? getTeachers() : Promise.resolve([]),
-    canManage ? getSubjects() : Promise.resolve([]),
+    canAssign ? getSubjects() : Promise.resolve([]),
   ]);
   return (
     <HomeworkClient

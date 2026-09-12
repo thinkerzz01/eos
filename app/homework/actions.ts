@@ -47,7 +47,6 @@ export async function createHomework(input: {
   if (!title) return { ok: false, error: 'Homework title is required.' };
   if (!input.studentId) return { ok: false, error: 'Select a student.' };
   if (!input.subjectId) return { ok: false, error: 'Select a subject.' };
-  if (!input.teacherId) return { ok: false, error: 'Select a teacher.' };
   if (!input.deadline) return { ok: false, error: 'Select a deadline.' };
 
   const supabase = createClient();
@@ -60,11 +59,19 @@ export async function createHomework(input: {
 
   const { data: profile } = await supabase
     .from('profiles')
-    .select('org_id')
+    .select('org_id, role, teacher_id')
     .eq('user_id', user.id)
     .is('deleted_at', null)
     .maybeSingle();
   if (!profile?.org_id) return { ok: false, error: 'No organisation profile found.' };
+
+  // A teacher always authors homework as themselves (RLS enforces teacher_id =
+  // their own id); admin/manager pick the teacher. Never trust a teacher-supplied
+  // teacher_id.
+  const teacherId = profile.role === 'teacher' ? (profile.teacher_id as string | null) : input.teacherId;
+  if (!teacherId) {
+    return { ok: false, error: profile.role === 'teacher' ? 'Your teacher profile is not linked yet.' : 'Select a teacher.' };
+  }
 
   // Deadline = end of that day, PKT, stored UTC.
   const deadlineIso = new Date(`${input.deadline}T23:59:00+05:00`).toISOString();
@@ -73,7 +80,7 @@ export async function createHomework(input: {
     org_id: profile.org_id,
     student_id: input.studentId,
     subject_id: input.subjectId,
-    teacher_id: input.teacherId,
+    teacher_id: teacherId,
     title,
     deadline: deadlineIso,
     status: 'assigned',

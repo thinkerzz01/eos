@@ -44,6 +44,8 @@ export function HomeworkClient({
   // Teachers act on their own students' work (grading), like attendance; students
   // only submit. This keeps the roster of other teachers off a teacher's screen.
   const canManage = role === 'admin' || role === 'manager';
+  // Teachers can assign homework too (as themselves); editing/deleting stays staff-only.
+  const canAssign = canManage || role === 'teacher';
   const isStudent = role === 'student';
   const [homeworks, setHomeworks] = useState<HomeworkAssignment[]>(initialHomeworks);
   const [showAddHomeworkModal, setShowAddHomeworkModal] = useState<boolean>(false);
@@ -99,8 +101,13 @@ export function HomeworkClient({
   }, [homeworks, fSubject, fTeacher, fStatus, fSubmission, dateRange, fromDate, toDate, search]);
 
   const handleAddHomework = async () => {
-    if (!title || !studentId || !subjectId || !teacherId || !deadline) {
-      showToast('Title, student, subject, teacher, and deadline are all required.', 'error');
+    if (!title || !studentId || !subjectId || (canManage && !teacherId) || !deadline) {
+      showToast(
+        canManage
+          ? 'Title, student, subject, teacher, and deadline are all required.'
+          : 'Title, student, subject, and deadline are all required.',
+        'error'
+      );
       return;
     }
     setAssigning(true);
@@ -202,11 +209,11 @@ export function HomeworkClient({
               <span>Homework & Assignments</span>
             </h1>
             <p className="text-[13px] text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
-              Assign homework and track submissions (feeds the 30% homework-completion health metric).
+              Assign homework and track submissions.
             </p>
           </div>
 
-          {canManage && (
+          {canAssign && (
             <Button variant="primary" onClick={() => setShowAddHomeworkModal(true)}>
               <Plus className="w-4 h-4 stroke-[2.5]" />
               <span>Assign Homework</span>
@@ -320,7 +327,7 @@ export function HomeworkClient({
                       />
                     </th>
                   )}
-                  <th className="py-3.5 px-3">Homework Code & Title</th>
+                  <th className="py-3.5 px-3">Title</th>
                   <th className="py-3.5 px-3">Student</th>
                   <th className="py-3.5 px-3">Subject</th>
                   <th className="py-3.5 px-3">Teacher</th>
@@ -349,7 +356,6 @@ export function HomeworkClient({
                       )}
                       <td className="py-3.5 px-3">
                         <div className="font-medium text-slate-900 dark:text-slate-100">{hw.title}</div>
-                        <div className="text-xs text-[#6B7185] font-mono">{hw.homeworkCode}</div>
                       </td>
                       <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{hw.studentName || '-'}</td>
                       <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{hw.subject || '-'}</td>
@@ -465,7 +471,6 @@ export function HomeworkClient({
               <div className="grid grid-cols-2 gap-3 text-[13px]">
                 {[
                   ['Title', viewHw.title],
-                  ['Code', viewHw.homeworkCode],
                   ['Student', viewHw.studentName || '-'],
                   ['Subject', viewHw.subject || '-'],
                   ['Teacher', viewHw.teacherName || '-'],
@@ -533,7 +538,7 @@ export function HomeworkClient({
                     {students.map((s) => (<option key={s.id} value={s.id}>{s.name}</option>))}
                   </select>
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className={`grid gap-2 ${canManage ? 'grid-cols-2' : 'grid-cols-1'}`}>
                   <div>
                     <label className="text-slate-700 dark:text-slate-300 block mb-1">Subject</label>
                     <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
@@ -541,20 +546,22 @@ export function HomeworkClient({
                       {subjects.map((s) => (<option key={s.id} value={s.id}>{labelWithCode(s.name, s.code)} · {s.program}</option>))}
                     </select>
                   </div>
-                  <div>
-                    <label className="text-slate-700 dark:text-slate-300 block mb-1">Teacher</label>
-                    <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
-                      <option value="">Select...</option>
-                      {teachers.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
-                    </select>
-                  </div>
+                  {canManage && (
+                    <div>
+                      <label className="text-slate-700 dark:text-slate-300 block mb-1">Teacher</label>
+                      <select value={teacherId} onChange={(e) => setTeacherId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
+                        <option value="">Select...</option>
+                        {teachers.map((t) => (<option key={t.id} value={t.id}>{t.name}</option>))}
+                      </select>
+                    </div>
+                  )}
                 </div>
                 <div>
                   <label className="text-slate-700 dark:text-slate-300 block mb-1">Deadline</label>
                   <input type="date" value={deadline} onChange={(e) => setDeadline(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
                 </div>
-                {(students.length === 0 || subjects.length === 0 || teachers.length === 0) && (
-                  <p className="text-xs text-amber-600 font-medium">Add students, subjects, and teachers first (run supabase/seed_subjects.sql for subjects).</p>
+                {(students.length === 0 || subjects.length === 0 || (canManage && teachers.length === 0)) && (
+                  <p className="text-xs text-amber-600 font-medium">Add students and subjects first (run supabase/seed_subjects.sql for subjects).</p>
                 )}
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">
