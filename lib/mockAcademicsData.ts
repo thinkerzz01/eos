@@ -48,6 +48,8 @@ export interface HomeworkAssignment {
   score?: number | null;
   maxScore?: number | null;
   feedback?: string;
+  submittedAt?: string | null; // when the student submitted (null = not submitted)
+  submittedLate?: boolean;
 }
 
 export interface AssessmentRecord {

@@ -538,6 +538,9 @@ export function HomeworkClient({
                 <div>
                   <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Grade Homework</h3>
                   <p className="text-xs text-[#6B7185] mt-0.5">{gradeHw.title} · {gradeHw.studentName || 'Student'}</p>
+                  <p className={`text-[11px] mt-1 font-medium ${gradeHw.submittedAt ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                    {gradeHw.submittedAt ? `Student submitted ${fdate(gradeHw.submittedAt)}${gradeHw.submittedLate ? ' (late)' : ''}` : 'Student hasn’t submitted this yet'}
+                  </p>
                 </div>
                 <button onClick={() => setGradeHw(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
@@ -602,7 +605,7 @@ export function HomeworkClient({
                   ['Teacher', viewHw.teacherName || '-'],
                   ['Assigned', fdate(viewHw.assignedDate)],
                   ['Due', fdate(viewHw.dueISO)],
-                  ['Submission', viewHw.submissionStatus || '-'],
+                  ['Submission', viewHw.submittedAt ? `Submitted ${fdate(viewHw.submittedAt)}${viewHw.submittedLate ? ' · late' : ''}` : 'Not submitted'],
                   ['Status', viewHw.status],
                 ].map(([k, v]) => (
                   <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
