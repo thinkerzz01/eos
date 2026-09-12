@@ -151,23 +151,12 @@ export async function createTeacher(input: {
     /* subject links are non-critical; the teacher already exists */
   }
 
-  // Auto-provision the teacher's portal login (best-effort: a mail/quota failure
-  // must not undo the teacher we just created).
-  let warning: string | undefined;
-  const invite = await provisionLogin({
-    email,
-    name,
-    role: 'teacher',
-    orgId: profile.org_id,
-    teacherId: inserted.id,
-  });
-  if (!invite.ok) {
-    warning = `Teacher added, but the portal invite could not be sent: ${invite.error}`;
-  }
-
+  // Portal (LMS) login is NOT created automatically anymore. The teacher exists
+  // and still receives class reminders / calendar invites by email. An admin
+  // grants portal access on demand via grantTeacherPortalAccess (manual by design).
   revalidatePath('/teachers');
   revalidatePath('/');
-  return { ok: true, warning };
+  return { ok: true };
 }
 
 /** Update a teacher's basic profile. Admin-only (RLS + explicit role check). */
@@ -403,5 +392,49 @@ export async function setTeacherPayRate(input: {
 
   revalidatePath('/teachers');
   revalidatePath('/teacher-payouts');
+  return { ok: true };
+}
+
+/**
+ * Manually grant (or resend) a teacher's portal (LMS) login. Access is off by
+ * default; an admin/manager sends it on demand. Idempotent (create or resend).
+ * Teachers without access still receive class reminders / calendar invites.
+ */
+export async function grantTeacherPortalAccess(teacherId: string): Promise<ActionResult> {
+  if (!teacherId) return { ok: false, error: 'Missing teacher.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { data: caller } = await supabase
+    .from('profiles')
+    .select('org_id, role')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!caller?.org_id || !['admin', 'manager'].includes((caller as any).role)) {
+    return { ok: false, error: 'You do not have permission to do that.' };
+  }
+
+  const { data: t } = await supabase
+    .from('teachers')
+    .select('name,email')
+    .eq('id', teacherId)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!t) return { ok: false, error: 'Teacher not found.' };
+  if (!(t as any).email) return { ok: false, error: 'This teacher has no email on file. Add an email first, then send access.' };
+
+  const res = await provisionLogin({
+    email: (t as any).email,
+    name: (t as any).name,
+    role: 'teacher',
+    orgId: (caller as any).org_id,
+    teacherId,
+  });
+  if (!res.ok) return { ok: false, error: res.error ?? 'Could not send portal access.' };
+  revalidatePath('/teachers');
   return { ok: true };
 }

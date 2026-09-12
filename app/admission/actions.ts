@@ -12,7 +12,6 @@
 // anonymous), and mark onboarding complete — same end state as /onboarding.
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { provisionLogin } from '@/lib/auth/provision';
 import { guardPublicSubmit } from '@/lib/publicFormGuard';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE', 'Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
@@ -134,14 +133,8 @@ export async function submitDirectEnrollment(input: {
       /* onboarding payload is best-effort */
     }
 
-    // Auto-provision the student's portal login (best-effort; never fail enrolment).
-    if (email) {
-      try {
-        await provisionLogin({ email, name: studentName, role: 'student', orgId, studentId });
-      } catch {
-        /* invite email failure must not fail the enrolment */
-      }
-    }
+    // Portal login is NOT auto-created — an admin grants LMS access manually later
+    // (the student still gets reminders/invites by email).
   }
 
   return { ok: true };

@@ -23,6 +23,29 @@ export interface ProvisionResult {
   error?: string;
 }
 
+/**
+ * The teacher/student ids in this org that currently HAVE a portal login (a live
+ * profiles row). Service-role because `profiles` is not readable by an admin under
+ * RLS. Used to show "Access granted" vs "No portal access". Best-effort -> [].
+ */
+export async function listProvisionedIds(role: 'teacher' | 'student', orgId: string): Promise<string[]> {
+  if (!orgId) return [];
+  try {
+    const admin = createAdminClient();
+    const col = role === 'teacher' ? 'teacher_id' : 'student_id';
+    const { data } = await admin
+      .from('profiles')
+      .select(col)
+      .eq('org_id', orgId)
+      .eq('role', role)
+      .is('deleted_at', null)
+      .not(col, 'is', null);
+    return ((data as any[]) ?? []).map((r) => r[col] as string).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
 // The functional set-password redirect uses the deployment's own URL (env-driven,
 // localhost in dev). The URL SHOWN to the user for signing in is the public portal.
 function siteUrl(): string {

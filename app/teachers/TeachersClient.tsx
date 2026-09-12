@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AddTeacherModal } from '@/components/teachers/AddTeacherModal';
 import { SetPayRateModal } from '@/components/teachers/SetPayRateModal';
-import { updateTeacher, softDeleteTeacher, markTeacherLeft, bulkDeleteTeachers, bulkSetTeacherStatus } from './actions';
+import { updateTeacher, softDeleteTeacher, markTeacherLeft, bulkDeleteTeachers, bulkSetTeacherStatus, grantTeacherPortalAccess } from './actions';
 import { downloadCsv } from '@/lib/export/csv';
 import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
@@ -16,7 +16,7 @@ import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { ALL_SUBJECTS, ALL_PROGRAMS } from '@/lib/syllabiSeed';
-import { KeyRound } from 'lucide-react';
+import { KeyRound, Send } from 'lucide-react';
 import {
   Users,
   UserCheck,
@@ -113,7 +113,7 @@ const AVATAR_COLORS = [
   'bg-emerald-100 text-emerald-700',
 ];
 
-export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[] }) {
+export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { initialTeachers: Teacher[]; portalAccessIds?: string[] }) {
   const { role } = useRole();
   const router = useRouter();
   const { showToast } = useToast();
@@ -126,7 +126,22 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
 
   // Keep the table in sync when the server refetches after a write (router.refresh()).
   useEffect(() => { setTeachersList(initialTeachers); }, [initialTeachers]);
-  
+
+  // Manual portal (LMS) access - off by default, sent per teacher on demand.
+  const hasPortalAccess = React.useMemo(() => new Set(portalAccessIds), [portalAccessIds]);
+  const handleSendAccess = async (t: Teacher) => {
+    const already = hasPortalAccess.has(t.id);
+    if (!(await confirm({
+      title: already ? 'Resend portal access?' : 'Send portal access?',
+      message: `${t.name} will get an email with a link to set their password and sign in to the teacher portal.`,
+      confirmLabel: already ? 'Resend' : 'Send access',
+      danger: false,
+    }))) return;
+    const res = await grantTeacherPortalAccess(t.id);
+    if (res.ok) showToast('Portal access sent', 'success', { description: `${t.name} was emailed a set-password link.` });
+    else showToast(res.error ?? 'Could not send access.', 'error');
+  };
+
   // TABS & FILTERS STATE
   const [activeTabStatus, setActiveTabStatus] = useState<string>('All Teachers');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -718,6 +733,7 @@ export function TeachersClient({ initialTeachers }: { initialTeachers: Teacher[]
                                   actions={[
                                     { label: 'View Profile', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setSelectedDrawerTeacher(t) },
                                     { label: 'Edit Teacher', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditTeacher(t) },
+                                    { label: hasPortalAccess.has(t.id) ? 'Resend portal access' : 'Send portal access', icon: <Send className="w-3.5 h-3.5" />, tone: hasPortalAccess.has(t.id) ? undefined : 'success', onClick: () => handleSendAccess(t) },
                                     { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, onClick: () => setResetTeacher(t) },
                                     { label: 'Left the Academy', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: t.status === 'Left', onClick: () => openLeaveTeacher(t) },
                                     { label: 'Delete Teacher', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', onClick: () => handleDeleteTeacher(t) },

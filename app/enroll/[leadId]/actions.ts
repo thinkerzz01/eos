@@ -6,7 +6,6 @@
 // the schedule is set by the Admin afterwards.
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
-import { provisionLogin } from '@/lib/auth/provision';
 import { guardPublicSubmit } from '@/lib/publicFormGuard';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE', 'Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
@@ -105,17 +104,11 @@ export async function submitEnrollment(input: {
         .select('org_id')
         .eq('id', studentId)
         .single();
-      if (student?.org_id) {
-        await provisionLogin({
-          email,
-          name: studentName,
-          role: 'student',
-          orgId: student.org_id,
-          studentId,
-        });
-      }
+      // Portal login is NOT auto-created — an admin grants LMS access manually
+      // later (the student still gets reminders/invites by email).
+      void student;
     } catch {
-      // Never fail the enrollment because the invite email could not be sent.
+      // best-effort lookup; enrollment already succeeded
     }
   }
 

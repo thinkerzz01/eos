@@ -232,21 +232,10 @@ export async function createStudent(input: CreateStudentInput): Promise<ActionRe
     /* enrollment links are non-critical; the student already exists */
   }
 
-  // Auto-provision the student's portal login when an email is on file
-  // (best-effort: never undo the student we just created).
-  let warning: string | undefined;
-  if (row.email) {
-    const invite = await provisionLogin({
-      email: row.email,
-      name,
-      role: 'student',
-      orgId: profile.org_id,
-      studentId: inserted.id,
-    });
-    if (!invite.ok && !invite.skipped) {
-      warning = `Student added, but the portal invite could not be sent: ${invite.error}`;
-    }
-  }
+  // Portal (LMS) login is NOT created automatically anymore. The student exists
+  // and still receives class reminders / calendar invites by email. An admin
+  // grants portal access on demand via grantStudentPortalAccess (manual by design).
+  const warning: string | undefined = undefined;
 
   revalidatePath('/students');
   revalidatePath('/');
@@ -656,5 +645,50 @@ export async function assignStudentSubjects(input: {
 
   revalidatePath('/students');
   revalidatePath('/');
+  return { ok: true };
+}
+
+/**
+ * Manually grant (or resend) a student's portal (LMS) login. Access is off by
+ * default now, so an admin/manager sends it on demand. Idempotent: creates the
+ * login if missing, else re-sends the set-password link. Students without access
+ * still receive class reminders / calendar invites by email.
+ */
+export async function grantStudentPortalAccess(studentId: string): Promise<ActionResult> {
+  if (!studentId) return { ok: false, error: 'Missing student.' };
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+
+  const { data: caller } = await supabase
+    .from('profiles')
+    .select('org_id, role')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!caller?.org_id || !['admin', 'manager'].includes((caller as any).role)) {
+    return { ok: false, error: 'You do not have permission to do that.' };
+  }
+
+  const { data: st } = await supabase
+    .from('students')
+    .select('name,email')
+    .eq('id', studentId)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (!st) return { ok: false, error: 'Student not found.' };
+  if (!(st as any).email) return { ok: false, error: 'This student has no email on file. Add an email first, then send access.' };
+
+  const res = await provisionLogin({
+    email: (st as any).email,
+    name: (st as any).name,
+    role: 'student',
+    orgId: (caller as any).org_id,
+    studentId,
+  });
+  if (!res.ok) return { ok: false, error: res.error ?? 'Could not send portal access.' };
+  revalidatePath('/students');
   return { ok: true };
 }

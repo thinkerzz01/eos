@@ -9,13 +9,13 @@ import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
 import { ALL_PROGRAMS, EXAM_SESSIONS, labelWithCode } from '@/lib/syllabiSeed';
-import { bulkCreateStudents, updateStudent, softDeleteStudent, markStudentPassout, bulkDeleteStudents, bulkSetFeeStatus, bulkSetStatus, bulkSetProgram, assignStudentSubjects } from './actions';
+import { bulkCreateStudents, updateStudent, softDeleteStudent, markStudentPassout, bulkDeleteStudents, bulkSetFeeStatus, bulkSetStatus, bulkSetProgram, assignStudentSubjects, grantStudentPortalAccess } from './actions';
 import { listStudentEnrollments } from '../schedule/actions';
 import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { KeyRound } from 'lucide-react';
+import { KeyRound, Send } from 'lucide-react';
 import { OnboardStudentModal } from '@/components/students/OnboardStudentModal';
 import {
   Users,
@@ -121,14 +121,32 @@ export function StudentsClient({
   initialStudents,
   subjects = [],
   teachers = [],
+  portalAccessIds = [],
 }: {
   initialStudents: Student[];
   subjects?: { id: string; name: string; program: string; code?: string }[];
   teachers?: { id: string; name: string }[];
+  portalAccessIds?: string[];
 }) {
   const { role } = useRole();
   const { showToast } = useToast();
   const { confirm } = useConfirm();
+  const hasPortalAccess = React.useMemo(() => new Set(portalAccessIds), [portalAccessIds]);
+  const [sendingAccessId, setSendingAccessId] = useState<string | null>(null);
+  const handleSendAccess = async (s: Student) => {
+    const already = hasPortalAccess.has(s.id);
+    if (!(await confirm({
+      title: already ? 'Resend portal access?' : 'Send portal access?',
+      message: `${s.name} will get an email with a link to set their password and sign in to the student portal.`,
+      confirmLabel: already ? 'Resend' : 'Send access',
+      danger: false,
+    }))) return;
+    setSendingAccessId(s.id);
+    const res = await grantStudentPortalAccess(s.id);
+    setSendingAccessId(null);
+    if (res.ok) showToast('Portal access sent', 'success', { description: `${s.name} was emailed a set-password link.` });
+    else showToast(res.error ?? 'Could not send access.', 'error');
+  };
   // Staff (admin/manager) may see parent/guardian contact PII and manage records.
   // Teachers get a view-only, contact-free roster of their assigned students.
   const isStaff = role === 'admin' || role === 'manager';
@@ -1415,6 +1433,7 @@ export function StudentsClient({
                                 { label: 'Assign Teacher & Subjects', icon: <GraduationCap className="w-3.5 h-3.5" />, tone: 'primary', hidden: !isStaff, onClick: () => openAssign(s) },
                                 { label: 'View Profile', icon: <UserCog className="w-3.5 h-3.5" />, onClick: () => setProfileModalStudent(s) },
                                 { label: 'Admission Form', icon: <GraduationCap className="w-3.5 h-3.5" />, tone: 'success', hidden: !isStaff, onClick: () => copyOnboardingLink(s.id) },
+                                { label: hasPortalAccess.has(s.id) ? 'Resend portal access' : 'Send portal access', icon: <Send className="w-3.5 h-3.5" />, tone: hasPortalAccess.has(s.id) ? undefined : 'success', hidden: !isStaff, onClick: () => handleSendAccess(s) },
                                 { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, hidden: !isStaff, onClick: () => setResetStudent(s) },
                                 { label: 'Pass Out', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: !(isStaff && s.status !== 'alumni'), onClick: () => handlePassoutStudent(s) },
                                 { label: 'Delete Student', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', hidden: !isStaff, onClick: () => handleDeleteStudent(s.id) },
