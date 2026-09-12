@@ -90,10 +90,12 @@ export async function createHomework(input: {
   });
   if (error) return { ok: false, error: friendlyDbError(error) };
 
-  // Let the student know (in-app bell) - best-effort.
+  // Let the student know (in-app bell), naming the subject - best-effort.
+  const { data: subj } = await supabase.from('subjects').select('name').eq('id', input.subjectId).maybeSingle();
+  const subjectName = (subj as any)?.name as string | undefined;
   await notifyStudentById(profile.org_id, input.studentId, {
     title: 'New homework assigned',
-    body: title,
+    body: subjectName ? `${subjectName} · ${title}` : title,
     link: '/homework',
   });
 

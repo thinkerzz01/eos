@@ -286,8 +286,27 @@ export function AssessmentsClient({
 
         {/* OFFICIAL RESULT SLIP MODAL */}
         {showResultSlipModal && selectedAssessmentForSlip && (
+          <>
+            <style>{`
+              @media print {
+                @page { margin: 0; }
+                html, body { background: #ffffff !important; }
+                body * { visibility: hidden !important; }
+                #result-slip-print, #result-slip-print * {
+                  visibility: visible !important;
+                  -webkit-print-color-adjust: exact !important;
+                  print-color-adjust: exact !important;
+                }
+                #result-slip-print {
+                  position: absolute; left: 0; top: 0; width: 100%;
+                  max-width: 100% !important; max-height: none !important;
+                  box-shadow: none !important; border: none !important; overflow: visible !important;
+                  padding: 32px !important; border-radius: 0 !important;
+                }
+              }
+            `}</style>
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
-            <div className="bg-white text-slate-900 border border-[#EBEDF3] rounded-3xl p-5 sm:p-7 w-full max-w-[860px] max-h-[90vh] overflow-y-auto shadow-2xl space-y-5">
+            <div id="result-slip-print" className="bg-white text-slate-900 border border-[#EBEDF3] rounded-3xl p-5 sm:p-7 w-full max-w-[860px] max-h-[90vh] overflow-y-auto shadow-2xl space-y-5">
 
               {/* HEADER: logo + Test Result chip + close */}
               <div className="flex items-start justify-between gap-3">
@@ -308,7 +327,7 @@ export function AssessmentsClient({
                     {selectedAssessmentForSlip.program ? <span className="text-slate-500"> · {selectedAssessmentForSlip.program}</span> : null}
                   </div>
                   <div className="text-xs text-slate-500 mt-0.5 font-medium">
-                    Thinkerzz Test Result · {(() => { const d = new Date(selectedAssessmentForSlip.dateConducted); return isNaN(d.getTime()) ? selectedAssessmentForSlip.dateConducted : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); })()}
+                    {(() => { const d = new Date(selectedAssessmentForSlip.dateConducted); return isNaN(d.getTime()) ? selectedAssessmentForSlip.dateConducted : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }); })()}
                     {selectedAssessmentForSlip.grades.length === 1 ? ` · Candidate: ${selectedAssessmentForSlip.grades[0].studentName || 'Student'}` : ` · ${selectedAssessmentForSlip.grades.length} candidates`}
                   </div>
                 </div>
@@ -431,6 +450,7 @@ export function AssessmentsClient({
 
             </div>
           </div>
+          </>
         )}
 
         {/* RECORD TEST MODAL */}
