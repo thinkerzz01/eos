@@ -262,6 +262,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
             <table className="w-full text-sm">
               <thead className="bg-slate-50 dark:bg-slate-950/60 text-left text-[#6B7185]">
                 <tr>
+                  <th className="py-3 px-4 font-medium">Date</th>
                   <th className="py-3 px-4 font-medium">Time</th>
                   <th className="py-3 px-4 font-medium">Student</th>
                   <th className="py-3 px-4 font-medium">Subject</th>
@@ -272,7 +273,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="py-12 text-center text-[#6B7185]">
+                    <td colSpan={6} className="py-12 text-center text-[#6B7185]">
                       <div>No classes on this day{teacherFilter !== 'All Teachers' ? ' for this teacher' : ''}.</div>
                       {nearbyDates.length > 0 && (
                         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
@@ -293,7 +294,8 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                 ) : (
                   rows.map((c) => (
                     <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
-                      <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.startAt}</td>
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.date}</td>
+                      <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.startAt} - {c.endAt}</td>
                       <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">
                         {c.studentName || '—'}
                         {c.attendanceStatus && <span className="ml-2 text-[10px] font-medium text-emerald-600">✓ recorded</span>}
@@ -359,7 +361,10 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                       </div>
                       <div className="text-xs text-[#6B7185] truncate">{c.subject || '—'} · {c.teacherName || '—'}</div>
                     </div>
-                    <span className="shrink-0 font-mono text-xs text-slate-600 dark:text-slate-300">{c.startAt}</span>
+                    <div className="shrink-0 text-right">
+                      <div className="text-xs text-slate-600 dark:text-slate-300">{c.date}</div>
+                      <div className="font-mono text-xs text-slate-500 dark:text-slate-400">{c.startAt} - {c.endAt}</div>
+                    </div>
                   </div>
                   <div className="flex gap-1.5">
                     {(['Present', 'Late', 'Absent'] as const).map((m) => {
@@ -472,7 +477,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                     histRows.map((c) => (
                       <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                         <td className="py-3 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.date}</td>
-                        <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">{c.startAt}</td>
+                        <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">{c.startAt} - {c.endAt}</td>
                         <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">{c.studentName || '—'}</td>
                         <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.subject || '—'}</td>
                         <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.teacherName || '—'}</td>
@@ -498,7 +503,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                     <div className="min-w-0">
                       <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{c.studentName || '—'}</div>
                       <div className="text-xs text-[#6B7185] truncate">{c.subject || '—'} · {c.teacherName || '—'}</div>
-                      <div className="text-xs text-[#6B7185]">{c.date} · {c.startAt}</div>
+                      <div className="text-xs text-[#6B7185]">{c.date} · {c.startAt} - {c.endAt}</div>
                     </div>
                     <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${markBadgeCls(c.attendanceStatus)}`}>
                       {MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '—'}
