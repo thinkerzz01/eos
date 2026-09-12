@@ -60,31 +60,44 @@ export function HomeworkClient({
 
   // GRADE MODAL (enter an actual mark + optional feedback when checking work)
   const [gradeHw, setGradeHw] = useState<HomeworkAssignment | null>(null);
-  const [gScore, setGScore] = useState('');
-  const [gMax, setGMax] = useState('100');
+  const [gPct, setGPct] = useState(70);
   const [gFeedback, setGFeedback] = useState('');
   const [grading, setGrading] = useState(false);
+  // Homework is graded as a percentage (0-100). We store it in `score` with
+  // max_score = 100, so score IS the percentage; older rows with a different max
+  // are normalised here for display.
+  const pctOf = (hw: HomeworkAssignment): number | null =>
+    hw.score == null ? null : hw.maxScore ? Math.round((hw.score / hw.maxScore) * 100) : Math.round(hw.score);
+  const gradeBarColor = (p: number) => (p >= 75 ? 'bg-emerald-500' : p >= 50 ? 'bg-amber-500' : 'bg-rose-500');
+  const gradeTextColor = (p: number) => (p >= 75 ? 'text-emerald-700 dark:text-emerald-400' : p >= 50 ? 'text-amber-700 dark:text-amber-400' : 'text-rose-700 dark:text-rose-400');
+  const renderGradeBar = (hw: HomeworkAssignment, opts?: { min?: string; full?: boolean }) => {
+    const p = pctOf(hw);
+    if (p == null) return null;
+    return (
+      <div className={`flex items-center gap-2 ${opts?.full ? 'w-full' : opts?.min ?? 'min-w-[104px]'}`}>
+        <div className="flex-1 h-1.5 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+          <div className={`h-full rounded-full ${gradeBarColor(p)}`} style={{ width: `${p}%` }} />
+        </div>
+        <span className={`text-xs font-semibold tabular-nums ${gradeTextColor(p)}`}>{p}%</span>
+      </div>
+    );
+  };
   const openGrade = (hw: HomeworkAssignment) => {
     setGradeHw(hw);
-    setGScore(hw.score != null ? String(hw.score) : '');
-    setGMax(hw.maxScore != null ? String(hw.maxScore) : '100');
+    const p = pctOf(hw);
+    setGPct(p != null ? p : 70);
     setGFeedback(hw.feedback ?? '');
   };
   const handleSubmitGrade = async () => {
     if (!gradeHw) return;
-    if (gScore.trim() === '' || Number.isNaN(Number(gScore))) { showToast('Enter a score.', 'error'); return; }
+    const pct = Math.max(0, Math.min(100, Math.round(gPct)));
     setGrading(true);
-    const res = await gradeHomework({
-      homeworkId: gradeHw.id,
-      score: Number(gScore),
-      maxScore: Number(gMax) || 100,
-      feedback: gFeedback,
-    });
+    const res = await gradeHomework({ homeworkId: gradeHw.id, score: pct, maxScore: 100, feedback: gFeedback });
     setGrading(false);
     if (res.ok) {
       setGradeHw(null);
       router.refresh();
-      showToast('Homework graded', 'success', { description: `${gradeHw.studentName || 'Student'} · ${gScore}/${Number(gMax) || 100}` });
+      showToast('Homework graded', 'success', { description: `${gradeHw.studentName || 'Student'} · ${pct}%` });
     } else {
       showToast(res.error ?? 'Failed to grade.', 'error');
     }
@@ -422,11 +435,9 @@ export function HomeworkClient({
                         <Badge tone={hw.submissionStatus === 'Graded' ? 'success' : hw.submissionStatus === 'Submitted' ? 'info' : 'neutral'}>{hw.submissionStatus}</Badge>
                       </td>
                       <td className="py-3.5 px-3">
-                        <div className="flex items-center gap-2">
+                        <div className="space-y-1.5">
                           <Badge tone={hw.status === 'Graded' ? 'success' : 'brand'}>{hw.status}</Badge>
-                          {hw.status === 'Graded' && hw.score != null && (
-                            <span className="font-mono text-xs font-medium text-emerald-700 dark:text-emerald-400">{hw.score}{hw.maxScore != null ? `/${hw.maxScore}` : ''}</span>
-                          )}
+                          {hw.status === 'Graded' && renderGradeBar(hw)}
                         </div>
                       </td>
                       <td className="py-3.5 px-3 text-center">
@@ -486,11 +497,9 @@ export function HomeworkClient({
                       <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{hw.title}</div>
                       <div className="text-xs text-[#6B7185] truncate">{hw.subject || '-'}{hw.studentName ? ` · ${hw.studentName}` : ''}</div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col items-end gap-1 shrink-0 w-[120px]">
                       <Badge tone={hw.status === 'Graded' ? 'success' : 'brand'}>{hw.status}</Badge>
-                      {hw.status === 'Graded' && hw.score != null && (
-                        <span className="font-mono text-xs font-medium text-emerald-700 dark:text-emerald-400">{hw.score}{hw.maxScore != null ? `/${hw.maxScore}` : ''}</span>
-                      )}
+                      {hw.status === 'Graded' && renderGradeBar(hw, { full: true })}
                     </div>
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
@@ -536,21 +545,41 @@ export function HomeworkClient({
                 <button onClick={() => setGradeHw(null)}><X className="w-4 h-4 text-slate-400" /></button>
               </div>
               <div className="space-y-3 text-xs font-medium">
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="text-slate-700 dark:text-slate-300 block mb-1">Score</label>
-                    <input type="number" value={gScore} onChange={(e) => setGScore(e.target.value)} placeholder="e.g. 85" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono text-slate-900 dark:text-slate-100" />
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-slate-700 dark:text-slate-300">Grade</label>
+                    <span className={`text-lg font-heading font-semibold tabular-nums ${gradeTextColor(gPct)}`}>{gPct}%</span>
                   </div>
-                  <div>
-                    <label className="text-slate-700 dark:text-slate-300 block mb-1">Out of</label>
-                    <input type="number" value={gMax} onChange={(e) => setGMax(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono text-slate-900 dark:text-slate-100" />
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={1}
+                    value={gPct}
+                    onChange={(e) => setGPct(Number(e.target.value))}
+                    className="w-full accent-[#5B47D6] cursor-pointer"
+                  />
+                  <div className="mt-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700 overflow-hidden">
+                    <div className={`h-full rounded-full transition-all ${gradeBarColor(gPct)}`} style={{ width: `${gPct}%` }} />
+                  </div>
+                  <div className="mt-2 flex items-center gap-2">
+                    <span className="text-slate-500 dark:text-slate-400">Or type it:</span>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={gPct}
+                      onChange={(e) => setGPct(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
+                      className="w-16 bg-slate-50 dark:bg-slate-950 border rounded-xl p-1.5 font-mono text-center text-slate-900 dark:text-slate-100"
+                    />
+                    <span className="text-slate-500 dark:text-slate-400">%</span>
                   </div>
                 </div>
                 <div>
                   <label className="text-slate-700 dark:text-slate-300 block mb-1">Feedback <span className="text-slate-400 font-medium normal-case">(optional)</span></label>
                   <textarea value={gFeedback} onChange={(e) => setGFeedback(e.target.value)} rows={3} placeholder="What was good, what to improve…" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 resize-y" />
                 </div>
-                <p className="text-[11px] text-[#6B7185]">Saving marks this homework Graded and records the score. The student is notified.</p>
+                <p className="text-[11px] text-[#6B7185]">Saving marks this homework Graded and records the percentage. The student is notified and can see it.</p>
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button onClick={() => setGradeHw(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
@@ -578,7 +607,6 @@ export function HomeworkClient({
                   ['Due', fdate(viewHw.dueISO)],
                   ['Submission', viewHw.submissionStatus || '-'],
                   ['Status', viewHw.status],
-                  ['Score', viewHw.score != null ? `${viewHw.score}${viewHw.maxScore != null ? ` / ${viewHw.maxScore}` : ''}` : '—'],
                 ].map(([k, v]) => (
                   <div key={k as string} className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
                     <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">{k}</div>
@@ -586,6 +614,12 @@ export function HomeworkClient({
                   </div>
                 ))}
               </div>
+              {viewHw.status === 'Graded' && pctOf(viewHw) != null && (
+                <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-3">
+                  <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185] mb-1.5">Grade</div>
+                  {renderGradeBar(viewHw, { full: true })}
+                </div>
+              )}
               {viewHw.description && (
                 <div className="rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-2.5">
                   <div className="text-[11px] font-medium uppercase tracking-wide text-[#6B7185]">Description</div>
