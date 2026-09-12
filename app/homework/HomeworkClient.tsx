@@ -435,11 +435,12 @@ export function HomeworkClient({
                           />
                         </td>
                       )}
-                      <td className="py-3.5 px-3 max-w-[280px]">
+                      <td className="py-3.5 px-3">
                         <div className="font-medium text-slate-900 dark:text-slate-100">{hw.title}</div>
-                        {hw.description && <div className="text-xs text-[#6B7185] mt-0.5 line-clamp-2">{hw.description}</div>}
-                        <div className="flex items-center gap-2 mt-1">
-                          <button onClick={() => setViewHw(hw)} className="text-[11px] font-medium text-[#5B47D6] hover:underline">View task</button>
+                        <div className="flex items-center gap-2 mt-1.5">
+                          <button onClick={() => setViewHw(hw)} className="inline-flex items-center gap-1.5 rounded-lg bg-[#EEEBFB] text-[#5B47D6] hover:bg-[#5B47D6] hover:text-white px-3 py-1.5 text-xs font-medium transition-colors">
+                            <Eye className="w-3.5 h-3.5" /> View task
+                          </button>
                           {hw.submissionNote && <span className="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-medium"><FileText className="w-3 h-3" /> note</span>}
                         </div>
                       </td>
@@ -515,7 +516,6 @@ export function HomeworkClient({
                     <div className="min-w-0">
                       <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{hw.title}</div>
                       <div className="text-xs text-[#6B7185] truncate">{hw.subject || '-'}{hw.studentName ? ` · ${hw.studentName}` : ''}</div>
-                      {hw.description && <div className="text-xs text-[#6B7185] mt-1 line-clamp-2">{hw.description}</div>}
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0 w-[120px]">
                       <Badge tone={hw.status === 'Graded' ? 'success' : 'brand'}>{hw.status}</Badge>
@@ -528,7 +528,7 @@ export function HomeworkClient({
                     <Badge tone={hw.submissionStatus === 'Submitted' ? 'success' : 'neutral'}>{hw.submissionStatus}</Badge>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <button onClick={() => setViewHw(hw)} className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 dark:text-slate-200 text-xs font-medium flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> View</button>
+                    <button onClick={() => setViewHw(hw)} className="px-3 py-2 rounded-xl bg-[#EEEBFB] text-[#5B47D6] text-xs font-medium flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> View task</button>
                     {isStudent && hw.submissionStatus === 'Not submitted' && (
                       <button onClick={() => openSubmit(hw)} disabled={submittingId === hw.id} className="flex-1 min-w-[110px] px-3 py-2 rounded-xl bg-[#5B47D6] hover:bg-[#4F3DC7] disabled:opacity-60 text-white text-xs font-medium flex items-center justify-center gap-1.5"><CheckCircle2 className="w-3.5 h-3.5" />{submittingId === hw.id ? 'Submitting…' : 'Submit'}</button>
                     )}
