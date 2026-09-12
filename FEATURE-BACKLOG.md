@@ -229,3 +229,45 @@ No retry/cancel/send-now for a permanently-failed email.
 most: teacher rosters, teacher load/capacity, the dashboard teacher filter, and
 per-subject grades all light up once `teacher_subjects` + `student_subjects` get a
 write path from the create/edit forms.
+
+---
+
+## Parked idea — Zoom links for classes (recording support) [added 2026-09-12]
+
+**Why:** Google Meet on the current plan can't record classes. Zoom can (host
+records). Owner will supply a Zoom link + passcode; one fixed link per student can
+be reused across all that student's classes.
+
+**Verdict: feasible and low-risk.** Every class already stores a single
+`meeting_link` and all "Join" buttons open it — so the app doesn't care whether the
+link is Meet or Zoom. A Zoom scheduled-meeting / PMI link stays valid indefinitely,
+so one link works for many sessions. Google Calendar stays as-is (timetable +
+invite email); we just put the Zoom URL in the event location/description instead of
+attaching a Meet conference.
+
+**Recording** is Zoom-side (host clicks record): cloud recording needs a paid Zoom
+license per teacher; local recording is free. We only route people to the Zoom room.
+Auto-pulling the recording link via Zoom API is a later follow-up, not needed for v1.
+
+**Plan (small–medium):**
+1. Add a `zoom_link` (+ optional `zoom_passcode`) field on the student record, with
+   an admin place to paste it (student profile). Store server-side, RLS-visible to
+   the assigned student + teacher only (same PII rules — no leaks).
+2. In `createClassSession` / `bulkScheduleClasses` (`app/schedule/actions.ts`): if
+   the student has a Zoom link, use it as the class `meeting_link` and inject it into
+   the Google Calendar event description/location; **fall back to Google Meet** when
+   no Zoom link is set (nothing breaks for un-set-up students).
+3. Embed the passcode in the URL (`?pwd=...`) so students don't type anything.
+4. Optional: per-class link override + a "recording link" field the teacher pastes
+   after class.
+
+**Decisions still open (ask owner before building):**
+- Unique Zoom link **per student** (recommended, avoids cross-class access) vs the
+  teacher's single **PMI** reused for all their students (riskier — students could
+  wander into each other's room).
+- Where to paste the link: student profile (admin) / at admission / when scheduling.
+- Add a per-class "recording link" field, or leave recordings inside Zoom for now.
+
+**Caveats:** more manual than auto-Meet (paste a link once per student); reused links
+are like a shared password (link + passcode = anyone can join); cloud recording costs
+a Zoom license per teacher.
