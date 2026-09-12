@@ -562,7 +562,7 @@ export function HomeworkClient({
                   placeholder="e.g. Completed all 12 questions. Photos of my work sent on WhatsApp. / Google Drive link: …"
                   className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 resize-y"
                 />
-                <p className="text-[11px] text-[#6B7185]">Your teacher sees this note. There's no file upload here — share the file on WhatsApp / Google Drive and tell your teacher where.</p>
+                <p className="text-[11px] text-[#6B7185]">Your teacher sees this note. There's no file upload here. Share the file on WhatsApp/Google Drive and update to your teacher.</p>
               </div>
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button onClick={() => setSubmitHw(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
