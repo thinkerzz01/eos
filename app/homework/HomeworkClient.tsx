@@ -325,7 +325,6 @@ export function HomeworkClient({
               <option>All Submissions</option>
               <option value="Not submitted">Not submitted</option>
               <option value="Submitted">Submitted</option>
-              <option value="Graded">Graded</option>
             </select>
           </div>
           <div className={boxCls}>
@@ -435,7 +434,7 @@ export function HomeworkClient({
                         <div className="text-rose-600 font-medium">Due: {fdate(hw.dueISO)}</div>
                       </td>
                       <td className="py-3.5 px-3">
-                        <Badge tone={hw.submissionStatus === 'Graded' ? 'success' : hw.submissionStatus === 'Submitted' ? 'info' : 'neutral'}>{hw.submissionStatus}</Badge>
+                        <Badge tone={hw.submissionStatus === 'Submitted' ? 'success' : 'neutral'}>{hw.submissionStatus}</Badge>
                       </td>
                       <td className="py-3.5 px-3">
                         <div className="space-y-1.5">
@@ -508,7 +507,7 @@ export function HomeworkClient({
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                     <span className="text-slate-700 dark:text-slate-200">Due: <span className="text-rose-600 font-medium">{fdate(hw.dueISO)}</span></span>
                     {hw.teacherName && <span className="text-[#6B7185]">{hw.teacherName}</span>}
-                    <Badge tone={hw.submissionStatus === 'Graded' ? 'success' : hw.submissionStatus === 'Submitted' ? 'info' : 'neutral'}>{hw.submissionStatus}</Badge>
+                    <Badge tone={hw.submissionStatus === 'Submitted' ? 'success' : 'neutral'}>{hw.submissionStatus}</Badge>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 pt-1">
                     <button onClick={() => setViewHw(hw)} className="px-3 py-2 rounded-xl border border-slate-200 text-slate-700 dark:text-slate-200 text-xs font-medium flex items-center gap-1.5"><Eye className="w-3.5 h-3.5" /> View</button>

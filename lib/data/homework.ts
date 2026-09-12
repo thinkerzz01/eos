@@ -14,11 +14,15 @@ function one<T>(rel: T | T[] | null | undefined): T | null {
   return Array.isArray(rel) ? rel[0] ?? null : rel ?? null;
 }
 
+// Submission is a SEPARATE axis from grading. The DB collapses both into one
+// `status`, so a graded row lost whether it was submitted; we treat graded work
+// as submitted (the teacher reviewed it) rather than showing "Graded" in a
+// Submission column, which read as a category error. Grading lives in `status`.
 const SUBMISSION_UI: Record<string, HomeworkAssignment['submissionStatus']> = {
   assigned: 'Not submitted',
   submitted: 'Submitted',
   late: 'Submitted',
-  graded: 'Graded',
+  graded: 'Submitted',
 };
 
 function mapRow(r: any, teacherNames?: Map<string, string>): HomeworkAssignment {
