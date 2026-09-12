@@ -12,6 +12,7 @@ import type { DashboardMetrics } from '@/lib/data/dashboard';
 import type { TeacherDashboard } from '@/lib/data/teacherDashboard';
 import type { ScheduledClass } from '@/lib/mockAcademicsData';
 import { ClassCalendar } from './schedule/ClassCalendar';
+import { DashboardAlerts } from './_components/DashboardAlerts';
 import {
   Calendar,
   CalendarCheck,
@@ -169,6 +170,8 @@ export function DashboardClient({
             </p>
           </div>
 
+          <DashboardAlerts />
+
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 font-medium">
             {studentTiles.map((k) => (
               <div key={k.label} className="bg-white border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
@@ -201,6 +204,7 @@ export function DashboardClient({
     return (
       <PortalLayout title="" subtitle="" allowedRoles={['teacher']}>
         <div className="space-y-6 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12 text-xs font-medium">
+          <DashboardAlerts />
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
             {[
               { label: 'Classes Today', value: String(teacherStats?.classesToday ?? 0) },

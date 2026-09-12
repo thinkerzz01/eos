@@ -3,8 +3,9 @@
 // Homework write action. One homework row per (student, subject). RLS decides
 // permission. Feeds the 30% homework-completion health metric.
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
-import { notifyStudentById } from '@/lib/notifications/inapp';
+import { notifyStudentById, notifyTeacherById } from '@/lib/notifications/inapp';
 import { friendlyDbError } from '@/lib/friendlyError';
 
 export interface ActionResult {
@@ -180,6 +181,32 @@ export async function submitHomework(input: { homeworkId: string; note?: string 
 
   const note = input.note?.trim() || null;
 
+  // Alert the teacher (in-app bell) that their student just submitted, so they can
+  // grade it. Best-effort; read the homework with the service role to resolve the
+  // teacher + student name reliably.
+  const alertTeacher = async () => {
+    try {
+      const admin = createAdminClient();
+      const { data: hw } = await admin
+        .from('homework')
+        .select('org_id, teacher_id, title, students(name)')
+        .eq('id', input.homeworkId)
+        .maybeSingle();
+      const org = (hw as any)?.org_id;
+      const tid = (hw as any)?.teacher_id;
+      if (org && tid) {
+        const studentName = (hw as any).students?.name ?? 'A student';
+        await notifyTeacherById(org as string, tid as string, {
+          title: 'Homework submitted',
+          body: `${studentName} submitted "${(hw as any).title ?? ''}"${note ? ` — ${note.slice(0, 120)}` : ''}`,
+          link: '/homework',
+        });
+      }
+    } catch {
+      /* best-effort: never fail a submission because of a notification */
+    }
+  };
+
   // Submission goes through the locked SECURITY DEFINER RPC (student_submit_homework):
   // it flips status to 'submitted'/'late' for the caller's OWN homework only and can
   // never touch the score or set 'graded'. Students have no direct UPDATE on homework.
@@ -215,6 +242,7 @@ export async function submitHomework(input: { homeworkId: string; note?: string 
         .update({ status: late ? 'late' : 'submitted' })
         .eq('id', input.homeworkId);
       if (updErr) return { ok: false, error: updErr.message };
+      await alertTeacher();
       revalidatePath('/homework');
       revalidatePath('/');
       return { ok: true, warning: late ? 'Submitted after the deadline (marked late).' : undefined };
@@ -227,6 +255,7 @@ export async function submitHomework(input: { homeworkId: string; note?: string 
     return { ok: false, error: msg };
   }
 
+  await alertTeacher();
   revalidatePath('/homework');
   revalidatePath('/');
   return { ok: true, warning: newStatus === 'late' ? 'Submitted after the deadline (marked late).' : undefined };
