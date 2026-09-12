@@ -575,6 +575,36 @@ export async function completeClassWithAttendance(input: {
 }
 
 /**
+ * Clear a recorded attendance mark: soft-delete the session's attendance row(s)
+ * and reopen the class (status back to 'scheduled'), since a class with no mark
+ * is no longer "completed". RLS decides permission (a teacher may only clear
+ * their own class's attendance).
+ */
+export async function clearAttendance(input: { sessionId: string }): Promise<ActionResult> {
+  if (!input.sessionId) return { ok: false, error: 'Missing class.' };
+  const { supabase, user, orgId } = await ctx();
+  if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
+
+  const { error: delErr } = await supabase
+    .from('attendance')
+    .update({ deleted_at: new Date().toISOString() })
+    .eq('session_id', input.sessionId)
+    .is('deleted_at', null);
+  if (delErr) return { ok: false, error: friendlyDbError(delErr) };
+
+  const { error: statusErr } = await supabase
+    .from('class_sessions')
+    .update({ status: 'scheduled' })
+    .eq('id', input.sessionId);
+  if (statusErr) return { ok: false, error: friendlyDbError(statusErr) };
+
+  revalidatePath('/schedule');
+  revalidatePath('/attendance');
+  revalidatePath('/');
+  return { ok: true };
+}
+
+/**
  * Save (or update) the teacher's note for a class - what was covered / homework
  * set / how it went. One note per session: we update the latest row if present,
  * else insert. Passing an empty note soft-deletes the existing one. RLS

@@ -966,11 +966,11 @@ export function ScheduleClient({
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 font-medium">
-                  {selectedClassForCompletion.status === 'Completed'
-                    ? 'This class is already completed. Change the mark below to correct the recorded attendance.'
-                    : 'Saving marks the class Completed and records this attendance (feeds the health score).'}
-                </p>
+                {selectedClassForCompletion.status === 'Completed' && (
+                  <p className="text-xs text-slate-500 font-medium">
+                    This class is already completed. Change the mark below to correct the recorded attendance.
+                  </p>
+                )}
 
                 {/* Class note - what was covered / homework set */}
                 <div className="pt-1">

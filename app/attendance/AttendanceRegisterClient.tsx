@@ -8,10 +8,11 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useToast } from '@/components/ui/Toast';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { ScheduledClass } from '@/lib/mockAcademicsData';
-import { bulkMarkAttendance } from '@/app/schedule/actions';
+import { bulkMarkAttendance, clearAttendance } from '@/app/schedule/actions';
 import { downloadCsv } from '@/lib/export/csv';
-import { CalendarCheck, Check, Users, ChevronDown, ClipboardList, ListChecks, Download, Search } from 'lucide-react';
+import { CalendarCheck, Check, Users, ChevronDown, ClipboardList, ListChecks, Download, Search, Trash2 } from 'lucide-react';
 
 type Mark = 'Present' | 'Late' | 'Absent';
 
@@ -23,6 +24,8 @@ const MARK_FROM_STATUS: Record<string, Mark> = { present: 'Present', late: 'Late
 export function AttendanceRegisterClient({ initialClasses }: { initialClasses: ScheduledClass[] }) {
   const router = useRouter();
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
+  const [clearingId, setClearingId] = useState<string | null>(null);
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
 
   // Every day (PKT) that actually has a class, sorted. Used to pick a sensible
@@ -93,6 +96,43 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
   }, [rows]);
 
   const setMark = (id: string, m: Mark) => setChoices((p) => ({ ...p, [id]: m }));
+
+  // Changing a mark that is ALREADY recorded asks for confirmation first, so a
+  // saved attendance can't be flipped by a casual click. Fresh (unrecorded) rows
+  // change instantly. The change still only persists on "Save Register".
+  const handleMarkClick = async (c: ScheduledClass, m: Mark) => {
+    const current = MARK_FROM_STATUS[c.attendanceStatus ?? ''];
+    if (c.attendanceStatus && current && current !== m) {
+      const ok = await confirm({
+        title: 'Change recorded attendance?',
+        message: `${c.studentName || 'This student'} is currently marked ${current} for this class. Change it to ${m}? You still need to press "Save Register" to apply it.`,
+        confirmLabel: 'Change',
+        danger: false,
+      });
+      if (!ok) return;
+    }
+    setMark(c.id, m);
+  };
+
+  // Remove a recorded mark entirely and reopen the class.
+  const handleClearMark = async (c: ScheduledClass) => {
+    const ok = await confirm({
+      title: 'Delete this attendance mark?',
+      message: `This removes the recorded attendance for ${c.studentName || 'this student'} on ${c.date} (${c.startAt}) and reopens the class as not completed.`,
+      confirmLabel: 'Delete mark',
+      danger: true,
+    });
+    if (!ok) return;
+    setClearingId(c.id);
+    const res = await clearAttendance({ sessionId: c.id });
+    setClearingId(null);
+    if (res.ok) {
+      router.refresh();
+      showToast('Attendance mark deleted.', 'success');
+    } else {
+      showToast(res.error ?? 'Failed to delete the mark.', 'error');
+    }
+  };
   const markAllPresent = () => setChoices((p) => {
     const next = { ...p };
     for (const c of rows) next[c.id] = 'Present';
@@ -288,12 +328,13 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                   <th className="py-3 px-4 font-medium">Subject</th>
                   <th className="py-3 px-4 font-medium">Teacher</th>
                   <th className="py-3 px-4 font-medium text-center">Attendance</th>
+                  <th className="py-3 px-4 font-medium text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {rows.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-[#6B7185]">
+                    <td colSpan={8} className="py-12 text-center text-[#6B7185]">
                       <div>No classes on this day{teacherFilter !== 'All Teachers' ? ' for this teacher' : ''}.</div>
                       {nearbyDates.length > 0 && (
                         <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
@@ -333,7 +374,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                               <button
                                 key={m}
                                 type="button"
-                                onClick={() => setMark(c.id, m)}
+                                onClick={() => handleMarkClick(c, m)}
                                 className={`px-3 py-1 rounded-lg text-xs font-medium border transition-colors ${
                                   active ? `${activeCls} border-transparent` : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
                                 }`}
@@ -343,6 +384,21 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                             );
                           })}
                         </div>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {c.attendanceStatus ? (
+                          <button
+                            onClick={() => handleClearMark(c)}
+                            disabled={clearingId === c.id}
+                            title="Delete recorded attendance"
+                            aria-label="Delete recorded attendance"
+                            className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 transition-colors disabled:opacity-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        ) : (
+                          <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -395,13 +451,23 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                         <button
                           key={m}
                           type="button"
-                          onClick={() => setMark(c.id, m)}
+                          onClick={() => handleMarkClick(c, m)}
                           className={`flex-1 px-3 py-2 rounded-lg text-xs font-medium border transition-colors ${active ? `${activeCls} border-transparent` : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`}
                         >
                           {m}
                         </button>
                       );
                     })}
+                    {c.attendanceStatus && (
+                      <button
+                        onClick={() => handleClearMark(c)}
+                        disabled={clearingId === c.id}
+                        aria-label="Delete recorded attendance"
+                        className="px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:text-rose-600 disabled:opacity-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
