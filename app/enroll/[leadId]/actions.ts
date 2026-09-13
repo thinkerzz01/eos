@@ -26,6 +26,21 @@ export async function submitEnrollment(input: {
   gender?: string;
   city?: string;
   address?: string;
+  // Richer admission answers (same fields as the direct-admission form), stored
+  // on students.onboarding_data so the enrol and admission flows capture the same data.
+  dob?: string;
+  studentMobile?: string;
+  grade?: string;
+  school?: string;
+  parentPhone?: string;
+  parentWhatsapp?: string;
+  parentEmail?: string;
+  parentOccupation?: string;
+  subjects?: string;
+  previousResult?: string;
+  timeOfDay?: string;
+  preferredTime?: string;
+  notes?: string;
   turnstileToken?: string;
 }): Promise<EnrollResult> {
   const guard = await guardPublicSubmit({ action: 'enroll', token: input.turnstileToken });
@@ -94,21 +109,42 @@ export async function submitEnrollment(input: {
     return { ok: false, error: msg };
   }
 
-  // Auto-provision the student's portal login (best-effort). The page is anon, so
-  // we resolve the org from the just-created student via the service-role client.
-  if (email && typeof studentId === 'string') {
+  // Save the fuller admission answers + mark onboarding complete (service-role,
+  // since the page is anonymous). Best-effort: never fail the enrolment for this.
+  // Mirrors submitDirectEnrollment so /enroll and /admission store the same data.
+  if (typeof studentId === 'string') {
     try {
       const admin = createAdminClient();
-      const { data: student } = await admin
+      await admin
         .from('students')
-        .select('org_id')
-        .eq('id', studentId)
-        .single();
+        .update({
+          onboarding_completed_at: new Date().toISOString(),
+          onboarding_data: {
+            fullName: studentName,
+            studentEmail: email,
+            studentMobile: input.studentMobile?.trim() || '',
+            dob: input.dob?.trim() || '',
+            grade: input.grade || '',
+            school: input.school?.trim() || '',
+            parentName,
+            parentPhone: input.parentPhone?.trim() || '',
+            parentWhatsapp: input.parentWhatsapp?.trim() || phone,
+            parentEmail: input.parentEmail?.trim() || '',
+            parentOccupation: input.parentOccupation?.trim() || '',
+            subjects: input.subjects?.trim() || '',
+            previousResult: input.previousResult?.trim() || '',
+            timeOfDay: input.timeOfDay || '',
+            preferredTime: input.preferredTime?.trim() || '',
+            notes: input.notes?.trim() || '',
+            agreedToPolicy: 'yes',
+            source: 'demo_enrollment',
+          },
+        })
+        .eq('id', studentId);
       // Portal login is NOT auto-created — an admin grants LMS access manually
       // later (the student still gets reminders/invites by email).
-      void student;
     } catch {
-      // best-effort lookup; enrollment already succeeded
+      /* onboarding payload is best-effort; enrollment already succeeded */
     }
   }
 
