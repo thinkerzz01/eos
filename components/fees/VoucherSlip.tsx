@@ -239,14 +239,6 @@ export function VoucherSlip(props: VoucherSlipProps) {
                 </div>
               </div>
 
-              {/* 2 · DOCUMENT TITLE */}
-              <div>
-                <h1 className="font-heading font-semibold text-[28px] sm:text-[32px] leading-tight text-[#171A2B]">
-                  Fee Voucher
-                </h1>
-                <p className="text-[14px] text-slate-500 mt-1">Payment for your continued learning journey.</p>
-              </div>
-
               {/* 3 · PAYMENT SUMMARY */}
               <div className="voucher-summary rounded-[20px] bg-[#5B47D6]/[0.06] border border-[#5B47D6]/[0.12] p-5 sm:p-6 flex flex-col md:flex-row md:items-center gap-5">
                 <div className="flex items-center gap-4 md:flex-1">
