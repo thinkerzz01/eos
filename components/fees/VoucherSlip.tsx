@@ -37,9 +37,6 @@ import {
   Send,
   MessageCircle,
   Mail,
-  Headphones,
-  Phone,
-  Globe,
   Printer,
   X,
 } from 'lucide-react';
@@ -63,19 +60,7 @@ export interface VoucherSlipProps {
 // Academy contact — same env convention used across the app (client-safe).
 const ACADEMY_WA = (process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP || '923262324477').replace(/\D/g, '');
 const ACADEMY_EMAIL = process.env.NEXT_PUBLIC_ACADEMY_EMAIL || 'info@thinkerzz.com';
-const ACADEMY_SITE = process.env.NEXT_PUBLIC_ACADEMY_WEBSITE || 'https://thinkerzz.com';
 
-// "923262324477" -> "+92 326 2324477"
-function prettyWa(digits: string): string {
-  const d = digits.replace(/\D/g, '');
-  if (d.startsWith('92') && d.length >= 12) return `+92 ${d.slice(2, 5)} ${d.slice(5)}`;
-  return `+${d}`;
-}
-// "https://thinkerzz.com" -> "www.thinkerzz.com"
-function prettySite(url: string): string {
-  const host = url.replace(/^https?:\/\//, '').replace(/\/.*$/, '');
-  return host.startsWith('www.') ? host : `www.${host}`;
-}
 // "2026-10-10" -> "10 October 2026" (falls back to the raw string if not a date).
 function prettyDate(ymd: string): string {
   if (!ymd) return '—';
@@ -101,7 +86,7 @@ function statusChip(status: string): string {
 
 const PRINT_CSS = `
 @media print {
-  @page { margin: 0; }
+  @page { size: A4; margin: 10mm; }
   html, body { background: #ffffff !important; }
   body * { visibility: hidden !important; }
   #voucher-slip-print, #voucher-slip-print * {
@@ -113,6 +98,12 @@ const PRINT_CSS = `
     max-width: 100% !important; max-height: none !important; overflow: visible !important;
     box-shadow: none !important; border: none !important; border-radius: 0 !important;
   }
+  /* Compact the layout so the whole voucher fits on a single A4 page. */
+  #voucher-slip-print .voucher-body { padding: 0 !important; }
+  #voucher-slip-print .voucher-body > * + * { margin-top: 14px !important; }
+  #voucher-slip-print .voucher-summary { padding: 14px 16px !important; }
+  #voucher-slip-print section { padding-top: 0 !important; }
+  #voucher-slip-print .voucher-afterpay { padding: 12px 16px !important; }
 }`;
 
 export function VoucherSlip(props: VoucherSlipProps) {
@@ -224,7 +215,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
             id="voucher-slip-print"
             className="bg-white rounded-[20px] shadow-2xl ring-1 ring-slate-200/70 overflow-hidden max-h-[88vh] overflow-y-auto"
           >
-            <div className="p-6 sm:p-8 space-y-7 text-[#171A2B]">
+            <div className="voucher-body p-6 sm:p-8 space-y-7 text-[#171A2B]">
               {/* 1 · HEADER */}
               <div className="flex items-start justify-between gap-4">
                 <Logo variant="light" size="lg" />
@@ -250,7 +241,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
               </div>
 
               {/* 3 · PAYMENT SUMMARY */}
-              <div className="rounded-[20px] bg-[#5B47D6]/[0.06] border border-[#5B47D6]/[0.12] p-5 sm:p-6 flex flex-col md:flex-row md:items-center gap-5">
+              <div className="voucher-summary rounded-[20px] bg-[#5B47D6]/[0.06] border border-[#5B47D6]/[0.12] p-5 sm:p-6 flex flex-col md:flex-row md:items-center gap-5">
                 <div className="flex items-center gap-4 md:flex-1">
                   <div className="w-14 h-14 rounded-2xl bg-[#5B47D6]/[0.12] flex items-center justify-center shrink-0">
                     <CreditCard className="w-6 h-6 text-[#5B47D6]" />
@@ -380,7 +371,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
               )}
 
               {/* 6 · AFTER PAYMENT */}
-              <section className="rounded-2xl bg-slate-50 border border-slate-200 p-5 flex flex-col md:flex-row md:items-center gap-4">
+              <section className="voucher-afterpay rounded-2xl bg-slate-50 border border-slate-200 p-5 flex flex-col md:flex-row md:items-center gap-4">
                 <div className="flex items-start gap-3 md:flex-1">
                   <div className="w-10 h-10 rounded-xl bg-[#5B47D6]/10 flex items-center justify-center shrink-0">
                     <Send className="w-5 h-5 text-[#5B47D6]" />
@@ -411,31 +402,6 @@ export function VoucherSlip(props: VoucherSlipProps) {
                 </div>
               </section>
 
-              {/* 7 · NEED HELP — the final element (nothing below this) */}
-              <section className="border-t border-slate-200 pt-5">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6">
-                  <div className="flex items-center gap-3 sm:flex-1">
-                    <div className="w-10 h-10 rounded-xl bg-[#5B47D6]/[0.08] flex items-center justify-center shrink-0 text-[#5B47D6]">
-                      <Headphones className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-[14.5px] text-[#171A2B]">Need Help?</div>
-                      <div className="text-[12.5px] text-slate-500">If you have any questions, feel free to contact us.</div>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-[12.5px] text-slate-600">
-                    <a href={`https://wa.me/${ACADEMY_WA}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-[#5B47D6]">
-                      <Phone className="w-3.5 h-3.5 text-emerald-600" /> {prettyWa(ACADEMY_WA)}
-                    </a>
-                    <a href={`mailto:${ACADEMY_EMAIL}`} className="inline-flex items-center gap-1.5 hover:text-[#5B47D6]">
-                      <Mail className="w-3.5 h-3.5 text-[#5B47D6]" /> {ACADEMY_EMAIL}
-                    </a>
-                    <a href={ACADEMY_SITE} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 hover:text-[#5B47D6]">
-                      <Globe className="w-3.5 h-3.5 text-[#5B47D6]" /> {prettySite(ACADEMY_SITE)}
-                    </a>
-                  </div>
-                </div>
-              </section>
             </div>
           </div>
 
