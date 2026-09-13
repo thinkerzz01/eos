@@ -59,20 +59,16 @@ export async function recordTeacherPayout(input: {
   return { ok: true };
 }
 
-// Set an enrollment's salary inputs (monthly salary, weekly schedule, and the
-// first paid month for the 25% commission). Admin only. One student_subjects
-// row = one teacher+subject salary.
+// Set an enrollment's salary inputs (monthly salary and the first paid month
+// for the 25% commission). Admin only. One student_subjects row = one
+// teacher+subject salary.
 export async function setEnrollmentSalary(input: {
   enrollmentId: string;
   monthlySalary: number;
-  weeklyDays?: number | null; // 3 | 4 | 5 | null
   salaryStartMonth?: string | null; // 'YYYY-MM' | null (null = use enrolment month)
 }): Promise<PayoutResult> {
   if (!input.enrollmentId) return { ok: false, error: 'Enrollment is required.' };
   if (!(input.monthlySalary >= 0)) return { ok: false, error: 'Enter a valid monthly salary.' };
-  if (input.weeklyDays != null && ![3, 4, 5].includes(input.weeklyDays)) {
-    return { ok: false, error: 'Schedule must be 3, 4 or 5 days per week.' };
-  }
   const startMonth = input.salaryStartMonth?.trim() || null;
   if (startMonth && !/^\d{4}-\d{2}$/.test(startMonth)) {
     return { ok: false, error: 'First month must be in YYYY-MM format.' };
@@ -94,7 +90,6 @@ export async function setEnrollmentSalary(input: {
     .from('student_subjects')
     .update({
       monthly_salary: input.monthlySalary,
-      weekly_days: input.weeklyDays ?? null,
       salary_start_month: startMonth,
     })
     .eq('id', input.enrollmentId);

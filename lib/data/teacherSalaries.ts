@@ -1,11 +1,11 @@
 // Teacher SALARY & REVENUE sheet - RLS-enforced, server-only. Admin-only.
 //
 // One row per student/subject enrollment (student_subjects). Each teacher earns
-// a fixed monthly salary per enrollment, minus a missed-class deduction and a
-// first-month commission (see lib/config/payroll.ts). Revenue is computed per
-// STUDENT: the student's monthly fee minus the teacher pay across their subjects.
+// a fixed monthly salary per enrollment, minus a first-month commission only
+// (see lib/config/payroll.ts). Revenue is computed per STUDENT: the student's
+// monthly fee minus the teacher pay across their subjects.
 import { createClient } from '@/lib/supabase/server';
-import { classesForWeeklyDays, computeSalaryMath } from '@/lib/config/payroll';
+import { computeSalaryMath } from '@/lib/config/payroll';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -22,20 +22,12 @@ export interface SalaryRow {
   studentName: string;
   subjectName: string;
   program: string;
-  weeklyDays: number | null;
   salaryStartMonth: string | null; // raw 'YYYY-MM' override, or null (auto)
-  classesPerMonth: number;
-  taught: number;
-  missed: number;
   monthlySalary: number;
   hasSalary: boolean;
-  perClass: number;
-  missedDeduction: number;
   isMonth1: boolean;
   commission: number;
-  salaryAfterDeduction: number;
   teacherPay: number;
-  wentNegative: boolean;
   studentFee: number;
 }
 
@@ -59,7 +51,6 @@ export interface SalarySheet {
     totalFees: number;
     totalSalaries: number;
     totalCommission: number;
-    totalMissedDeduction: number;
     grossRevenue: number;
     studentCount: number;
     teacherCount: number;
@@ -72,7 +63,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   const empty: SalarySheet = {
     rows: [],
     teachers: [],
-    totals: { totalFees: 0, totalSalaries: 0, totalCommission: 0, totalMissedDeduction: 0, grossRevenue: 0, studentCount: 0, teacherCount: 0 },
+    totals: { totalFees: 0, totalSalaries: 0, totalCommission: 0, grossRevenue: 0, studentCount: 0, teacherCount: 0 },
     period: '',
     periodYYYYMM: periodYYYYMM ?? '',
   };
@@ -93,12 +84,11 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   const mm = String(month + 1).padStart(2, '0');
   const selectedYYYYMM = `${year}-${mm}`;
   const period = `${MONTHS[month]} ${year}`;
-  const monthStart = new Date(Date.UTC(year, month, 1)).toISOString();
   const monthEnd = new Date(Date.UTC(year, month + 1, 1)).toISOString();
 
   // Enrollments that existed during (or before) the target month. FULL select
   // falls back to BASE when the salary columns have not been migrated yet.
-  const FULL = 'id,teacher_id,student_id,subject_id,monthly_salary,weekly_days,salary_start_month,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
+  const FULL = 'id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
   const BASE = 'id,teacher_id,student_id,subject_id,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
   let enr: any[] | null = null;
   {
@@ -108,25 +98,6 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
       enr = (fb.data as any[]) ?? [];
     } else {
       enr = (res.data as any[]) ?? [];
-    }
-  }
-
-  // Sessions this month → taught (completed) and actual scheduled (not cancelled).
-  const taughtByKey = new Map<string, number>();
-  const scheduledByKey = new Map<string, number>();
-  const key = (st: string, su: string, te: string) => `${st}|${su}|${te}`;
-  {
-    const { data: sess } = await supabase
-      .from('class_sessions')
-      .select('teacher_id,student_id,subject_id,status')
-      .gte('start_at', monthStart)
-      .lt('start_at', monthEnd)
-      .is('deleted_at', null);
-    for (const s of (sess as any[]) ?? []) {
-      if (!s.teacher_id || !s.student_id || !s.subject_id) continue;
-      const k = key(s.student_id, s.subject_id, s.teacher_id);
-      if (s.status !== 'cancelled') scheduledByKey.set(k, (scheduledByKey.get(k) ?? 0) + 1);
-      if (s.status === 'completed') taughtByKey.set(k, (taughtByKey.get(k) ?? 0) + 1);
     }
   }
 
@@ -157,48 +128,33 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     if (!student || student.deleted_at) continue; // student removed
     if (student.enrolled_at && String(student.enrolled_at) > monthEnd.slice(0, 10)) continue; // not enrolled yet
 
-    const k = key(e.student_id, e.subject_id, e.teacher_id);
-    const taught = taughtByKey.get(k) ?? 0;
-    const scheduledActual = scheduledByKey.get(k) ?? 0;
-    const weeklyDays: number | null = e.weekly_days ?? null;
-    const classesPerMonth = classesForWeeklyDays(weeklyDays) ?? scheduledActual;
-
     const monthlySalary = Number(e.monthly_salary ?? 0);
     const startMonth = (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month))
       ? e.salary_start_month
       : String(e.created_at || '').slice(0, 7);
     const isMonth1 = startMonth === selectedYYYYMM;
 
-    const math = computeSalaryMath({ monthlySalary, classesPerMonth, taught, isMonth1 });
+    const math = computeSalaryMath({ monthlySalary, isMonth1 });
 
     rows.push({
       enrollmentId: e.id,
       teacherId: e.teacher_id,
-      teacherName: teacher?.name ?? '—',
+      teacherName: teacher?.name ?? '',
       teacherPhone: teacher?.phone ?? '',
       studentId: e.student_id,
       studentName: student.name ?? '',
       subjectName: subject?.name ?? '',
       program: student.program ?? '',
-      weeklyDays,
       salaryStartMonth: (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month)) ? e.salary_start_month : null,
-      classesPerMonth,
-      taught,
-      missed: math.missed,
       monthlySalary,
       hasSalary: monthlySalary > 0,
-      perClass: math.perClass,
-      missedDeduction: math.missedDeduction,
       isMonth1,
       commission: math.commission,
-      salaryAfterDeduction: math.salaryAfterDeduction,
       teacherPay: math.teacherPay,
-      wentNegative: math.wentNegative,
       studentFee: Number(student.monthly_fee ?? 0),
     });
   }
 
-  // Sort: teacher name, then student, then subject.
   rows.sort((a, b) =>
     a.teacherName.localeCompare(b.teacherName) ||
     a.studentName.localeCompare(b.studentName) ||
@@ -243,7 +199,6 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   const totalFees = Array.from(feeByStudent.values()).reduce((s, v) => s + v, 0);
   const totalSalaries = rows.reduce((s, r) => s + r.teacherPay, 0);
   const totalCommission = rows.reduce((s, r) => s + r.commission, 0);
-  const totalMissedDeduction = rows.reduce((s, r) => s + r.missedDeduction, 0);
 
   return {
     rows,
@@ -252,7 +207,6 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
       totalFees,
       totalSalaries,
       totalCommission,
-      totalMissedDeduction,
       grossRevenue: totalFees - totalSalaries,
       studentCount: feeByStudent.size,
       teacherCount: byTeacher.size,
