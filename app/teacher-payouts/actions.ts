@@ -19,9 +19,13 @@ export async function recordTeacherPayout(input: {
   method?: string; // 'Bank Transfer' | 'JazzCash'
   reference?: string;
   period?: string; // defaults to the current month
+  paidAt?: string; // 'YYYY-MM-DD' the payout was made; defaults to now
 }): Promise<PayoutResult> {
   if (!input.teacherId) return { ok: false, error: 'Teacher is required.' };
   if (!(input.amount > 0)) return { ok: false, error: 'Enter a valid payout amount.' };
+  if (input.paidAt && !/^\d{4}-\d{2}-\d{2}$/.test(input.paidAt)) {
+    return { ok: false, error: 'Enter a valid payout date.' };
+  }
 
   const supabase = createClient();
   const {
@@ -43,6 +47,10 @@ export async function recordTeacherPayout(input: {
   const now = new Date();
   const period = input.period?.trim() || `${MONTHS[now.getUTCMonth()]} ${now.getUTCFullYear()}`;
 
+  // Stamp the chosen payout date at noon PKT so the calendar day never rolls
+  // over when read back; default to the current timestamp.
+  const paidAtIso = input.paidAt ? new Date(`${input.paidAt}T12:00:00+05:00`).toISOString() : undefined;
+
   const { error } = await supabase.from('teacher_payouts').insert({
     org_id: profile.org_id,
     teacher_id: input.teacherId,
@@ -51,6 +59,7 @@ export async function recordTeacherPayout(input: {
     method: input.method === 'JazzCash' ? 'jazzcash' : 'bank_transfer',
     reference: input.reference?.trim() || null,
     by_user_id: user.id,
+    ...(paidAtIso ? { paid_at: paidAtIso } : {}),
   });
   if (error) return { ok: false, error: friendlyDbError(error) };
 

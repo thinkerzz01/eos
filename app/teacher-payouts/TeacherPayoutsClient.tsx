@@ -102,19 +102,22 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
   const [payAmount, setPayAmount] = useState('');
   const [payMethod, setPayMethod] = useState('Bank Transfer');
   const [payRef, setPayRef] = useState('');
+  const [payDate, setPayDate] = useState('');
   const [paying, setPaying] = useState(false);
+  const todayPKT = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
   const openPay = (t: TeacherRollup) => {
     setPayTeacher(t);
     setPayAmount(t.balance > 0 ? String(t.balance) : (t.earned > 0 ? String(t.earned) : ''));
     setPayMethod('Bank Transfer');
     setPayRef('');
+    setPayDate(todayPKT()); // default to today; admin can change
   };
   const submitPay = async () => {
     if (!payTeacher) return;
     const amt = parseFloat(payAmount);
     if (isNaN(amt) || amt <= 0) { showToast('Enter a valid payout amount.', 'error'); return; }
     setPaying(true);
-    const res = await recordTeacherPayout({ teacherId: payTeacher.teacherId, amount: amt, method: payMethod, reference: payRef, period: PERIOD });
+    const res = await recordTeacherPayout({ teacherId: payTeacher.teacherId, amount: amt, method: payMethod, reference: payRef, period: PERIOD, paidAt: payDate || undefined });
     setPaying(false);
     if (res.ok) { showToast(`Payout recorded for ${payTeacher.teacherName}.`, 'success'); setPayTeacher(null); router.refresh(); }
     else showToast(res.error ?? 'Could not record the payout.', 'error');
@@ -365,6 +368,11 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
               <div>
                 <label className="text-slate-700 dark:text-slate-300 block mb-1">Payout Amount (PKR)</label>
                 <input type="number" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} placeholder="e.g. 30000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-slate-900 dark:text-slate-100" />
+              </div>
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1">Payout Date</label>
+                <input type="date" value={payDate} onChange={(e) => setPayDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+                <p className="text-[11px] text-slate-500 mt-1">Defaults to today. Set the date you actually paid the teacher.</p>
               </div>
               <div>
                 <label className="text-slate-700 dark:text-slate-300 block mb-1">Method</label>
