@@ -6,7 +6,7 @@
 // We soft-delete (deleted_at) so past classes/homework that referenced a subject
 // stay intact - the subject just drops out of the pickers.
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
 import { friendlyDbError } from '@/lib/friendlyError';
 
@@ -87,6 +87,7 @@ export async function createSubject(input: { name: string; program: string; code
     if (error) return { ok: false, error: friendlyDbError(error) };
   }
 
+  revalidateTag('subjects');
   revalidatePath('/subjects');
   revalidatePath('/teachers');
   revalidatePath('/students');
@@ -115,6 +116,7 @@ export async function updateSubject(input: { id: string; name?: string; program?
   const { error } = await supabase.from('subjects').update(patch).eq('id', input.id);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
+  revalidateTag('subjects');
   revalidatePath('/subjects');
   revalidatePath('/teachers');
   revalidatePath('/students');
@@ -138,6 +140,7 @@ export async function bulkDeleteSubjects(ids: string[]): Promise<ActionResult> {
     .in('id', clean);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
+  revalidateTag('subjects');
   revalidatePath('/subjects');
   revalidatePath('/teachers');
   revalidatePath('/students');
@@ -160,6 +163,7 @@ export async function deleteSubject(id: string): Promise<ActionResult> {
     .eq('id', id);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
+  revalidateTag('subjects');
   revalidatePath('/subjects');
   revalidatePath('/teachers');
   revalidatePath('/students');

@@ -6,7 +6,7 @@
 // (tagline, currency, cron secret, Resend cap) are not schema-backed and are not
 // persisted here.
 import { createClient } from '@/lib/supabase/server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { sendViaResend } from '@/lib/notifications/resend';
 import { renderEmailHtml } from '@/lib/notifications/emailLayout';
 
@@ -126,6 +126,8 @@ export async function saveSettings(input: {
   }
   if (settingsErr) return { ok: false, error: settingsErr.message };
 
+  // Bust the cached org config (typography + payment info) everywhere.
+  revalidateTag('org-config');
   revalidatePath('/settings');
   revalidatePath('/vouchers');
   revalidatePath('/fees');
