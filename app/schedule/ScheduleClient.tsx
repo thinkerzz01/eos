@@ -402,12 +402,16 @@ export function ScheduleClient({
 
   const handleDeleteSeries = async (s: ClassSeries) => {
     const ids = s.sessions.map((x) => x.id);
-    if (!(await confirm({ title: `Delete all ${ids.length} classes?`, message: `Every "${s.sample.subject}" class for ${s.sample.studentName || 'this student'} (${s.sample.startAt}–${s.sample.endAt}) is cancelled and removed from the timetable. This is logged.`, confirmLabel: 'Delete series' }))) return;
+    if (!(await confirm({ title: `Delete all ${ids.length} classes?`, message: `Every "${s.sample.subject}" class for ${s.sample.studentName || 'this student'} (${s.sample.startAt}–${s.sample.endAt}) is cancelled, removed from the timetable, and its Google Calendar invite cancelled for the student and teacher. This is logged.`, confirmLabel: 'Delete series' }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteClasses({ sessionIds: ids });
     setBulkBusy(false);
-    if (res.ok) { setSelectedClassIds((prev) => prev.filter((id) => !ids.includes(id))); router.refresh(); }
-    else showToast(res.error ?? 'Failed to delete the series.', 'error');
+    if (res.ok) {
+      setSelectedClassIds((prev) => prev.filter((id) => !ids.includes(id)));
+      router.refresh();
+      showToast(`${res.count} class${res.count === 1 ? '' : 'es'} deleted and removed from the calendar.`, 'success');
+      if (res.calendarWarning) showToast(res.calendarWarning, 'info');
+    } else showToast(res.error ?? 'Failed to delete the series.', 'error');
   };
 
   // BULK SELECTION on the class list (admin/manager; teachers see their own via RLS).
@@ -437,12 +441,16 @@ export function ScheduleClient({
   };
   const handleBulkDeleteClasses = async () => {
     if (selectedClassIds.length === 0) return;
-    if (!(await confirm({ title: `Delete ${selectedClassIds.length} class${selectedClassIds.length === 1 ? '' : 'es'}?`, message: 'They are cancelled and removed from the timetable. This is logged.', confirmLabel: 'Delete' }))) return;
+    if (!(await confirm({ title: `Delete ${selectedClassIds.length} class${selectedClassIds.length === 1 ? '' : 'es'}?`, message: 'They are cancelled, removed from the timetable, and their Google Calendar invites cancelled for the student and teacher. This is logged.', confirmLabel: 'Delete' }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteClasses({ sessionIds: selectedClassIds });
     setBulkBusy(false);
-    if (res.ok) { setSelectedClassIds([]); router.refresh(); }
-    else showToast(res.error ?? 'Failed to delete the selected classes.', 'error');
+    if (res.ok) {
+      setSelectedClassIds([]);
+      router.refresh();
+      showToast(`${res.count} class${res.count === 1 ? '' : 'es'} deleted and removed from the calendar.`, 'success');
+      if (res.calendarWarning) showToast(res.calendarWarning, 'info');
+    } else showToast(res.error ?? 'Failed to delete the selected classes.', 'error');
   };
 
   // Split students into "new" (no class sessions yet) vs "already scheduled".

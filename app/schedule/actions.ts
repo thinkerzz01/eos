@@ -551,11 +551,18 @@ export async function rescheduleClass(input: {
  * the classes just drop out of the timetable; remove stale invites from Google
  * Calendar manually if needed.
  */
-export async function bulkDeleteClasses(input: { sessionIds: string[] }): Promise<{ ok: boolean; count: number; error?: string }> {
+export async function bulkDeleteClasses(input: { sessionIds: string[] }): Promise<{ ok: boolean; count: number; error?: string; calendarWarning?: string }> {
   const ids = (input.sessionIds ?? []).filter(Boolean);
   if (ids.length === 0) return { ok: false, count: 0, error: 'No classes selected.' };
   const { supabase, user, orgId } = await ctx();
   if (!user || !orgId) return { ok: false, count: 0, error: 'You are not signed in.' };
+
+  // Read calendar event ids BEFORE deleting so we can cancel each invite so the
+  // classes disappear from the student's and teacher's Google Calendar too.
+  const { data: rows } = await supabase
+    .from('class_sessions')
+    .select('calendar_event_id')
+    .in('id', ids);
 
   const { error } = await supabase
     .from('class_sessions')
@@ -563,10 +570,21 @@ export async function bulkDeleteClasses(input: { sessionIds: string[] }): Promis
     .in('id', ids);
   if (error) return { ok: false, count: 0, error: friendlyDbError(error) };
 
+  // Cancel the Google Calendar events (best-effort; the DB delete already stuck).
+  const eventIds = ((rows as any[]) ?? []).map((r) => r.calendar_event_id).filter(Boolean) as string[];
+  let failed = 0;
+  for (const eid of eventIds) {
+    const del = await deleteCalendarEvent(eid);
+    if (!del.ok) failed++;
+  }
+  const calendarWarning = failed > 0
+    ? `${ids.length} class${ids.length === 1 ? '' : 'es'} deleted, but ${failed} calendar invite${failed === 1 ? '' : 's'} could not be cancelled. Remove ${failed === 1 ? 'it' : 'them'} from Google Calendar manually.`
+    : undefined;
+
   revalidatePath('/schedule');
   revalidatePath('/attendance');
   revalidatePath('/');
-  return { ok: true, count: ids.length };
+  return { ok: true, count: ids.length, calendarWarning };
 }
 
 export async function completeClassWithAttendance(input: {
