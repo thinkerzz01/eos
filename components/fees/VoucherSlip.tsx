@@ -98,12 +98,19 @@ const PRINT_CSS = `
     max-width: 100% !important; max-height: none !important; overflow: visible !important;
     box-shadow: none !important; border: none !important; border-radius: 0 !important;
   }
-  /* Compact the layout so the whole voucher fits on a single A4 page. */
+  /* Compact the layout so the whole voucher comfortably fits one A4 page
+     (allowing headroom for the heavier print fonts and the real logo). */
   #voucher-slip-print .voucher-body { padding: 0 !important; }
-  #voucher-slip-print .voucher-body > * + * { margin-top: 14px !important; }
-  #voucher-slip-print .voucher-summary { padding: 14px 16px !important; }
+  #voucher-slip-print .voucher-body > * + * { margin-top: 11px !important; }
+  #voucher-slip-print h1 { font-size: 22px !important; line-height: 1.15 !important; }
+  #voucher-slip-print .voucher-summary { padding: 12px 16px !important; }
+  #voucher-slip-print .voucher-summary .font-heading { font-size: 30px !important; }
+  #voucher-slip-print .voucher-info-grid { row-gap: 10px !important; }
+  #voucher-slip-print .mb-4 { margin-bottom: 8px !important; }
+  #voucher-slip-print .mb-3 { margin-bottom: 6px !important; }
+  #voucher-slip-print .border-slate-200.bg-white { padding: 12px !important; }
   #voucher-slip-print section { padding-top: 0 !important; }
-  #voucher-slip-print .voucher-afterpay { padding: 12px 16px !important; }
+  #voucher-slip-print .voucher-afterpay { padding: 10px 16px !important; }
 }`;
 
 export function VoucherSlip(props: VoucherSlipProps) {
@@ -276,7 +283,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
                   </div>
                   <h2 className="font-heading font-semibold text-[16px] text-[#171A2B]">Student Information</h2>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                <div className="voucher-info-grid grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
                   <InfoField icon={<GraduationCap className="w-4 h-4" />} label="Student">
                     {studentName || '—'}
                   </InfoField>
