@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { formatPKR } from '@/lib/format';
-import { AdminDashboard } from './_components/AdminDashboard';
+import dynamic from 'next/dynamic';
 import type { AdminData } from '@/lib/data/adminDashboard';
 import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
@@ -11,7 +11,6 @@ import { Student } from '@/lib/mockStudentsData';
 import type { DashboardMetrics } from '@/lib/data/dashboard';
 import type { TeacherDashboard } from '@/lib/data/teacherDashboard';
 import type { ScheduledClass } from '@/lib/mockAcademicsData';
-import { ClassCalendar } from './schedule/ClassCalendar';
 import { DashboardAlerts } from './_components/DashboardAlerts';
 import {
   Calendar,
@@ -41,6 +40,17 @@ import {
   ArrowUpRight,
   Filter,
 } from 'lucide-react';
+
+// Code-split by role: the admin dashboard ships only to admin/manager, and the
+// class calendar only to student/teacher — no role downloads the other's widget.
+const AdminDashboard = dynamic(
+  () => import('./_components/AdminDashboard').then((m) => ({ default: m.AdminDashboard })),
+  { loading: () => <div className="p-10 text-center text-sm text-[#6B7185]">Loading dashboard…</div> }
+);
+const ClassCalendar = dynamic(
+  () => import('./schedule/ClassCalendar').then((m) => ({ default: m.ClassCalendar })),
+  { loading: () => <div className="p-10 text-center text-sm text-[#6B7185]">Loading calendar…</div> }
+);
 
 export function DashboardClient({
   initialStudents,
