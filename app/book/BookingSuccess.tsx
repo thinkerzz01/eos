@@ -105,10 +105,11 @@ export function BookingSuccess(props: BookingSuccessProps) {
     };
   }, [dateISO, time24, durationMinutes, subject, program, bookingRef]);
 
-  // ---- WhatsApp (contact the academy, prefilled with the reference) --------
+  // ---- WhatsApp (contact the academy, prefilled greeting the parent sends) ----
+  // No internal lead code here — that TZ-LEAD ref is for staff only, not the family.
   const waHref = helpWa
     ? `https://wa.me/${helpWa}?text=${encodeURIComponent(
-        `Hi Thinkerzz, I just booked a free demo (Ref: ${bookingRef}) for ${studentName || 'my child'}.`
+        `Assalam o Alaikum Thinkerzz! I have just booked a free demo for ${studentName || 'my child'}. Please confirm the details.`
       )}`
     : '';
 
