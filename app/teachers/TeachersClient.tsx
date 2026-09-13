@@ -3,7 +3,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { AddTeacherModal } from '@/components/teachers/AddTeacherModal';
-import { SetPayRateModal } from '@/components/teachers/SetPayRateModal';
 import { updateTeacher, softDeleteTeacher, markTeacherLeft, bulkDeleteTeachers, bulkSetTeacherStatus, grantTeacherPortalAccess } from './actions';
 import { downloadCsv } from '@/lib/export/csv';
 import Link from 'next/link';
@@ -63,7 +62,6 @@ import {
   Award,
   CheckCircle2,
   Flame,
-  Wallet,
   ShieldCheck,
   RefreshCw,
   QrCode,
@@ -122,7 +120,6 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
   // LOCAL TEACHERS DATA STORE (seeded from server, RLS-authorized)
   const [teachersList, setTeachersList] = useState<Teacher[]>(initialTeachers);
   const [showAddTeacher, setShowAddTeacher] = useState(false);
-  const [payRateTeacher, setPayRateTeacher] = useState<Teacher | null>(null);
 
   // Keep the table in sync when the server refetches after a write (router.refresh()).
   useEffect(() => { setTeachersList(initialTeachers); }, [initialTeachers]);
@@ -148,7 +145,6 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
   const [selectedSubject, setSelectedSubject] = useState<string>('All Subjects');
   const [selectedProgram, setSelectedProgram] = useState<string>('All Programs');
   const [selectedLoadLevel, setSelectedLoadLevel] = useState<string>('All Load Levels');
-  const [selectedPayRange, setSelectedPayRange] = useState<string>('All Pay Ranges');
 
   // SELECTED TEACHER FOR RIGHT SIDEBAR DRAWER
   const [selectedDrawerTeacher, setSelectedDrawerTeacher] = useState<Teacher | null>(initialTeachers[0] ?? null);
@@ -178,12 +174,7 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
       if (selectedLoadLevel === 'Near Capacity (90-99%)' && (loadPct < 90 || loadPct >= 100)) return false;
       if (selectedLoadLevel === 'At Capacity (100%)' && loadPct < 100) return false;
 
-      // 4. Per Class Pay Filter
-      if (selectedPayRange === '< PKR 2,500' && t.perClassPay >= 2500) return false;
-      if (selectedPayRange === 'PKR 2,500 - 3,500' && (t.perClassPay < 2500 || t.perClassPay > 3500)) return false;
-      if (selectedPayRange === '> PKR 3,500' && t.perClassPay <= 3500) return false;
-
-      // 5. Search Query Filter (Name, Subject, Program)
+      // 4. Search Query Filter (Name, Subject, Program)
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = t.name.toLowerCase().includes(q);
@@ -194,14 +185,13 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
 
       return true;
     });
-  }, [teachersList, activeTabStatus, selectedSubject, selectedProgram, selectedLoadLevel, selectedPayRange, searchQuery]);
+  }, [teachersList, activeTabStatus, selectedSubject, selectedProgram, selectedLoadLevel, searchQuery]);
 
   const resetAllFilters = () => {
     setActiveTabStatus('All Teachers');
     setSelectedSubject('All Subjects');
     setSelectedProgram('All Programs');
     setSelectedLoadLevel('All Load Levels');
-    setSelectedPayRange('All Pay Ranges');
     setSearchQuery('');
   };
 
@@ -345,7 +335,7 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
               <span>Teachers Management</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
-              Manage all {teachersList.length} academy teachers, workloads, and per-class pay rates.
+              Manage all {teachersList.length} academy teachers and their workloads.
             </p>
           </div>
 
@@ -426,20 +416,6 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
               <div className="text-xs font-medium text-blue-600 mt-1">Avg load</div>
             </div>
             <span className="text-xs font-medium text-blue-600 hover:underline inline-flex items-center gap-0.5">View report</span>
-          </div>
-
-          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[16px] p-3.5 shadow-sm flex flex-col justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-7.5 h-7.5 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
-                <Wallet className="w-4 h-4" />
-              </div>
-              <span className="font-heading font-medium text-[12.5px] text-[#3D4157] dark:text-slate-200">Avg Per Class Pay</span>
-            </div>
-            <div className="my-2">
-              <div className="font-heading font-medium text-2xl text-slate-900 dark:text-white leading-none">{teachersList.length ? `PKR ${Math.round(teachersList.reduce((s, t) => s + t.perClassPay, 0) / teachersList.length).toLocaleString()}` : 'PKR 0'}</div>
-              <div className="text-xs font-medium text-emerald-600 mt-1">Per class rate</div>
-            </div>
-            <span className="text-xs font-medium text-purple-600 hover:underline inline-flex items-center gap-0.5">View rates</span>
           </div>
 
           <div className="bg-gradient-to-br from-[#1B1E38] to-[#2E285C] text-white rounded-[16px] p-3.5 shadow-md flex flex-col justify-between">
@@ -548,19 +524,6 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
               </select>
             </div>
 
-            <div className="bg-[#F6F7FB] dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-xl px-3 py-1.5 text-xs">
-              <span className="text-xs text-[#6B7185] block font-medium">Per Class Pay Filter</span>
-              <select
-                value={selectedPayRange}
-                onChange={(e) => setSelectedPayRange(e.target.value)}
-                className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
-              >
-                <option value="All Pay Ranges">All Pay Ranges</option>
-                <option value="< PKR 2,500">&lt; PKR 2,500 / class</option>
-                <option value="PKR 2,500 - 3,500">PKR 2,500 - 3,500 / class</option>
-                <option value="> PKR 3,500">&gt; PKR 3,500 / class</option>
-              </select>
-            </div>
           </div>
         </div>
 
@@ -624,7 +587,6 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
                     <th className="py-3.5 px-3 font-medium">Subjects & Programs</th>
                     <th className="py-3.5 px-3 font-medium">Joined Date</th>
                     <th className="py-3.5 px-3 font-medium">Load / Capacity</th>
-                    {role === 'admin' && <th className="py-3.5 px-3 font-medium">Per Class Pay</th>}
                     <th className="py-3.5 px-3 font-medium">Status</th>
                     <th className="py-3.5 px-3 text-center font-medium">Actions</th>
                   </tr>
@@ -633,7 +595,7 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
                 <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px]">
                   {filteredTeachers.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="py-8 text-center text-[#6B7185]">
+                      <td colSpan={7} className="py-8 text-center text-[#6B7185]">
                         No teachers match the selected filter criteria.
                       </td>
                     </tr>
@@ -696,19 +658,6 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
                               )}
                             </div>
                           </td>
-
-                          {/* PER CLASS PAY COLUMN */}
-                          {role === 'admin' && (
-                            <td className="py-3.5 px-3" onClick={(e) => e.stopPropagation()}>
-                              <div className="font-medium text-slate-900 dark:text-slate-100 font-mono text-sm">PKR {t.perClassPay.toLocaleString()}</div>
-                              <button
-                                onClick={() => setPayRateTeacher(t)}
-                                className="text-xs text-[#5B47D6] font-medium hover:underline cursor-pointer"
-                              >
-                                Set rate
-                              </button>
-                            </td>
-                          )}
 
                           <td className="py-3.5 px-3">
                             <Badge tone={t.status === 'Teaching' ? 'success' : t.status === 'At Capacity' ? 'danger' : 'brand'}>
@@ -829,11 +778,6 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
                       </div>
                     )}
                   </div>
-
-                  <div className="text-right">
-                    <span className="text-xs text-[#6B7185] block font-medium">Per Class Rate</span>
-                    <span className="font-medium text-base text-[#5B47D6] font-mono">PKR {selectedDrawerTeacher.perClassPay.toLocaleString()}</span>
-                  </div>
                 </div>
               </div>
 
@@ -879,16 +823,6 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
       {resetTeacher && (
         <ResetPasswordControl id={resetTeacher.id} kind="teacher" autoOpen onClose={() => setResetTeacher(null)} />
       )}
-      {payRateTeacher && (
-        <SetPayRateModal
-          isOpen={!!payRateTeacher}
-          onClose={() => setPayRateTeacher(null)}
-          teacherId={payRateTeacher.id}
-          teacherName={payRateTeacher.name}
-          currentRate={payRateTeacher.perClassPay}
-        />
-      )}
-
       {/* EDIT TEACHER MODAL */}
       {editTeacher && (
         <div className="fixed inset-0 z-50 flex items-start sm:items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in overflow-y-auto">
