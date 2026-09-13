@@ -40,6 +40,12 @@ function recentMonths(): { value: string; label: string }[] {
   return out;
 }
 const pkr = (n: number) => `PKR ${Math.round(n).toLocaleString()}`;
+// 'YYYY-MM-DD' -> '06 Sep 2026' (falls back to the raw value).
+const fmtDate = (ymd?: string) => {
+  if (!ymd) return '';
+  const d = new Date(ymd);
+  return Number.isNaN(d.getTime()) ? ymd : d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+};
 
 export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalarySheet; selectedPeriod: string }) {
   const { role } = useRole();
@@ -256,13 +262,14 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
             <Wallet className="w-4 h-4 text-[#5B47D6]" /> Pay Teachers · {PERIOD}
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse min-w-[720px]">
+            <table className="w-full text-left text-sm border-collapse min-w-[840px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 text-[13px]">
                   <th className="py-3 px-3">Teacher</th>
                   <th className="py-3 px-3 text-center">Subjects</th>
                   <th className="py-3 px-3 text-right">Earned</th>
                   <th className="py-3 px-3 text-right">Paid</th>
+                  <th className="py-3 px-3">Paid On</th>
                   <th className="py-3 px-3 text-right">Balance</th>
                   <th className="py-3 px-3">Status</th>
                   <th className="py-3 px-3 text-center">Actions</th>
@@ -270,13 +277,23 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
               </thead>
               <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                 {sheet.teachers.length === 0 ? (
-                  <tr><td colSpan={7} className="py-8 text-center text-slate-400 font-medium">No teachers to pay this month.</td></tr>
+                  <tr><td colSpan={8} className="py-8 text-center text-slate-400 font-medium">No teachers to pay this month.</td></tr>
                 ) : sheet.teachers.map((tr) => (
                   <tr key={tr.teacherId} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3 px-3 font-medium text-slate-900 dark:text-slate-100">{tr.teacherName}</td>
                     <td className="py-3 px-3 text-center text-purple-600">{tr.enrollments}</td>
                     <td className="py-3 px-3 text-right font-mono text-slate-900 dark:text-slate-100">{pkr(tr.earned)}</td>
                     <td className="py-3 px-3 text-right font-mono text-emerald-600">{pkr(tr.paid)}</td>
+                    <td className="py-3 px-3 text-[12px] whitespace-nowrap">
+                      {tr.payoutDate ? (
+                        <>
+                          <span className="text-slate-700 dark:text-slate-200">{fmtDate(tr.payoutDate)}</span>
+                          {tr.paymentMethod && <span className="block text-[11px] text-slate-400">{tr.paymentMethod}</span>}
+                        </>
+                      ) : (
+                        <span className="text-slate-400">Not paid</span>
+                      )}
+                    </td>
                     <td className="py-3 px-3 text-right font-mono text-rose-600">{pkr(tr.balance)}</td>
                     <td className="py-3 px-3"><Badge tone={tr.status === 'Paid' ? 'success' : tr.status === 'Partial' ? 'warning' : 'neutral'}>{tr.status}</Badge></td>
                     <td className="py-3 px-3">
