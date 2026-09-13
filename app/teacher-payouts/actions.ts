@@ -38,8 +38,10 @@ export async function recordTeacherPayout(input: {
   if (!profile?.org_id) return { ok: false, error: 'No organisation profile found.' };
   if (profile.role !== 'admin') return { ok: false, error: 'Only an admin can pay teachers.' };
 
+  // UTC to match the reader (lib/data/teacherPayouts + the page), so a recorded
+  // payout lands under the same month label the admin is viewing.
   const now = new Date();
-  const period = input.period?.trim() || `${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
+  const period = input.period?.trim() || `${MONTHS[now.getUTCMonth()]} ${now.getUTCFullYear()}`;
 
   const { error } = await supabase.from('teacher_payouts').insert({
     org_id: profile.org_id,

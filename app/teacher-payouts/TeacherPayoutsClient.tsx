@@ -103,7 +103,8 @@ export function TeacherPayoutsClient({ initialPayouts, selectedPeriod }: { initi
     const amt = parseFloat(payAmount);
     if (isNaN(amt) || amt <= 0) { showToast('Enter a valid payout amount.', 'error'); return; }
     setPaying(true);
-    const res = await recordTeacherPayout({ teacherId: payTeacher.teacherId, amount: amt, method: payMethod, reference: payRef });
+    // Record against the month currently being viewed (not just the current month).
+    const res = await recordTeacherPayout({ teacherId: payTeacher.teacherId, amount: amt, method: payMethod, reference: payRef, period: PERIOD });
     setPaying(false);
     if (res.ok) {
       showToast(`Payout recorded for ${payTeacher.teacherName}.`, 'success');

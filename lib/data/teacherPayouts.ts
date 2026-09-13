@@ -32,16 +32,13 @@ export async function getTeacherPayouts(periodYYYYMM?: string): Promise<TeacherP
     .order('name', { ascending: true });
   if (error || !teachers) return [];
 
-  // Latest per-class rate per teacher (teacher_pay_rates is versioned history).
+  // Per-class rate rows (teacher_pay_rates is versioned by effective_from). We
+  // resolve the applicable rate per teacher AFTER the target month is known.
   const { data: rateRows } = await supabase
     .from('teacher_pay_rates')
     .select('teacher_id,rate_per_class,effective_from')
     .is('deleted_at', null)
     .order('effective_from', { ascending: false });
-  const rateByTeacher = new Map<string, number>();
-  for (const r of (rateRows as any[]) ?? []) {
-    if (!rateByTeacher.has(r.teacher_id)) rateByTeacher.set(r.teacher_id, Number(r.rate_per_class || 0));
-  }
 
   // Target month - defaults to the current month, or a 'YYYY-MM' passed in.
   const now = new Date();
@@ -55,6 +52,20 @@ export async function getTeacherPayouts(periodYYYYMM?: string): Promise<TeacherP
   const period = `${MONTHS[month]} ${year}`;
   const monthStart = new Date(Date.UTC(year, month, 1)).toISOString();
   const monthEnd = new Date(Date.UTC(year, month + 1, 1)).toISOString();
+  // First day of the NEXT month as YYYY-MM-01. A rate applies to this period only
+  // if it took effect on or before the period's last day (effective_from < next month).
+  const monthEndYmd = monthEnd.slice(0, 10);
+
+  // Rate effective AS OF the selected month (not simply the newest rate), so
+  // re-opening a past month uses the rate that was in force back then. Rows are
+  // ordered newest-first; the first one effective on/before the period wins.
+  const rateByTeacher = new Map<string, number>();
+  for (const r of (rateRows as any[]) ?? []) {
+    if (rateByTeacher.has(r.teacher_id)) continue;
+    const ef = r.effective_from ? String(r.effective_from) : '';
+    if (ef && ef >= monthEndYmd) continue; // took effect after this month — not yet applicable
+    rateByTeacher.set(r.teacher_id, Number(r.rate_per_class || 0));
+  }
 
   // Completed classes THIS MONTH per teacher (drives the earned amount).
   const completedByTeacher = new Map<string, number>();
@@ -90,7 +101,8 @@ export async function getTeacherPayouts(periodYYYYMM?: string): Promise<TeacherP
     .from('teacher_payouts')
     .select('teacher_id,amount,paid_at,period,method')
     .eq('period', period)
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    .order('paid_at', { ascending: true }); // last row wins => "Last payout" is the latest
   for (const p of (payoutRows as any[]) ?? []) {
     const prev = paidByTeacher.get(p.teacher_id);
     paidByTeacher.set(p.teacher_id, {
