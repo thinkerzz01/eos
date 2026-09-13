@@ -13,7 +13,8 @@ export default async function TeacherPayoutsPage({
   await requireRole(['admin']);
   const now = new Date();
   const current = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
-  const period = /^\d{4}-\d{2}$/.test(searchParams.period ?? '') ? searchParams.period! : current;
+  const raw = searchParams.period ?? '';
+  const period = raw === 'all' || /^\d{4}-\d{2}$/.test(raw) ? raw : current;
   const sheet = await getSalarySheet(period);
   return <TeacherPayoutsClient sheet={sheet} selectedPeriod={period} />;
 }

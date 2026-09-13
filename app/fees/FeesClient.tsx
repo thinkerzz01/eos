@@ -38,8 +38,14 @@ export function FeesClient({
 }) {
   const { role } = useRole();
   const isAdmin = role === 'admin';
+  // Default the period filter to THIS MONTH (fall back to All if there's no
+  // voucher for it yet). Other months — including upcoming/advance — stay
+  // selectable, and "All periods" shows everything.
+  const nowLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'Asia/Karachi' });
   const [status, setStatus] = useState('all');
-  const [period, setPeriod] = useState('all');
+  const [period, setPeriod] = useState<string>(() =>
+    initialVouchers.some((v) => v.period === nowLabel) ? nowLabel : 'all'
+  );
   const [view, setView] = useState<VoucherRow | null>(null);
 
   const periods = useMemo(

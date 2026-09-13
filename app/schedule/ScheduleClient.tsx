@@ -73,7 +73,7 @@ export function ScheduleClient({
   // Date window for the LIST view. Recurring timetables make the flat list run to
   // dozens of near-identical rows, so we default to "upcoming" (today onward) and
   // let the user widen it. The calendar view ignores this (it navigates by month).
-  const [dateRange, setDateRange] = useState<'upcoming' | 'week' | 'month' | 'past' | 'all'>('upcoming');
+  const [dateRange, setDateRange] = useState<'thismonth' | 'nextmonth' | 'upcoming' | 'week' | 'month' | 'past' | 'all'>('thismonth');
   // Which recurring series (student+subject+teacher+time) are expanded in the list.
   const [expandedSeries, setExpandedSeries] = useState<Set<string>>(new Set());
 
@@ -332,6 +332,16 @@ export function ScheduleClient({
   };
   const weekEnd = useMemo(() => addDaysPkt(todayStr, 6), [todayStr]);
   const monthEnd = useMemo(() => addDaysPkt(todayStr, 30), [todayStr]);
+  // Calendar-month windows (this month / next month), so "advance" classes and
+  // payments in a future month show up when that window is chosen.
+  const pad2 = (n: number) => String(n).padStart(2, '0');
+  const [curY, curMo] = todayStr.split('-').map(Number);
+  const monthStartStr = `${curY}-${pad2(curMo)}-01`;
+  const nextMonthStartStr = curMo === 12 ? `${curY + 1}-01-01` : `${curY}-${pad2(curMo + 1)}-01`;
+  const monthLastStr = addDaysPkt(nextMonthStartStr, -1);
+  const [nY, nMo] = nextMonthStartStr.split('-').map(Number);
+  const nextNextStartStr = nMo === 12 ? `${nY + 1}-01-01` : `${nY}-${pad2(nMo + 1)}-01`;
+  const nextMonthLastStr = addDaysPkt(nextNextStartStr, -1);
 
   // The LIST view narrows filteredClasses to the chosen date window (calendar view
   // is unaffected - it has its own month navigation). YYYY-MM-DD strings compare
@@ -340,13 +350,15 @@ export function ScheduleClient({
     if (dateRange === 'all') return filteredClasses;
     return filteredClasses.filter((c) => {
       const d = isoToPktDate(c.startAtISO);
+      if (dateRange === 'thismonth') return d >= monthStartStr && d <= monthLastStr;
+      if (dateRange === 'nextmonth') return d >= nextMonthStartStr && d <= nextMonthLastStr;
       if (dateRange === 'upcoming') return d >= todayStr;
       if (dateRange === 'past') return d < todayStr;
       if (dateRange === 'week') return d >= todayStr && d <= weekEnd;
       if (dateRange === 'month') return d >= todayStr && d <= monthEnd;
       return true;
     });
-  }, [filteredClasses, dateRange, todayStr, weekEnd, monthEnd]);
+  }, [filteredClasses, dateRange, todayStr, weekEnd, monthEnd, monthStartStr, monthLastStr, nextMonthStartStr, nextMonthLastStr]);
 
   // Collapse recurring sessions into ONE "series" row each. A series is the same
   // student + subject + teacher + time slot + type (e.g. "Ali · Maths · 7-8pm ·
@@ -725,11 +737,13 @@ export function ScheduleClient({
                     onChange={(e) => setDateRange(e.target.value as typeof dateRange)}
                     className="bg-transparent font-medium text-slate-800 dark:text-slate-100 focus:outline-none cursor-pointer text-xs"
                   >
+                    <option value="thismonth">This month</option>
+                    <option value="nextmonth">Upcoming month</option>
                     <option value="upcoming">Upcoming (today on)</option>
                     <option value="week">Next 7 days</option>
                     <option value="month">Next 30 days</option>
                     <option value="past">Past classes</option>
-                    <option value="all">All dates</option>
+                    <option value="all">All months</option>
                   </select>
                 </div>
               )}

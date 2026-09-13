@@ -27,9 +27,15 @@ function periodLabelOf(yyyymm: string): string {
   if (!m) return yyyymm;
   return `${MONTH_NAMES[Math.min(11, Math.max(0, Number(m[2]) - 1))]} ${m[1]}`;
 }
-function recentMonths(): { value: string; label: string }[] {
-  const out: { value: string; label: string }[] = [];
+function monthOptions(): { value: string; label: string }[] {
+  const out: { value: string; label: string }[] = [{ value: 'all', label: 'All months' }];
   const n = new Date();
+  // Upcoming (next) month first, so advance salaries paid ahead show up there.
+  let ny = n.getUTCFullYear();
+  let nmo = n.getUTCMonth() + 1;
+  if (nmo > 11) { nmo = 0; ny += 1; }
+  out.push({ value: `${ny}-${String(nmo + 1).padStart(2, '0')}`, label: `Upcoming · ${MONTH_NAMES[nmo]} ${ny}` });
+  // This month, then the trailing 14 months.
   let y = n.getUTCFullYear();
   let mo = n.getUTCMonth();
   for (let i = 0; i < 15; i++) {
@@ -52,8 +58,9 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
   const { showToast } = useToast();
   const router = useRouter();
   const fmt = (n: number) => formatPKR(n);
-  const PERIOD = periodLabelOf(selectedPeriod);
-  const monthOptions = recentMonths();
+  const PERIOD = selectedPeriod === 'all' ? 'All months' : periodLabelOf(selectedPeriod);
+  const isAll = selectedPeriod === 'all';
+  const months = monthOptions();
 
   const [search, setSearch] = useState('');
   const rows = useMemo(() => {
@@ -106,6 +113,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
   const [paying, setPaying] = useState(false);
   const todayPKT = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
   const openPay = (t: TeacherRollup) => {
+    if (isAll) { showToast('Pick a specific month to record a payout.', 'error'); return; }
     setPayTeacher(t);
     setPayAmount(t.balance > 0 ? String(t.balance) : (t.earned > 0 ? String(t.earned) : ''));
     setPayMethod('Bank Transfer');
@@ -171,7 +179,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
           <div className={boxCls}>
             <span className="text-[11px] text-[#6B7185] block font-medium">Month</span>
             <select value={selectedPeriod} onChange={(e) => router.push(`/teacher-payouts?period=${e.target.value}`)} className={selCls}>
-              {monthOptions.map((m) => (<option key={m.value} value={m.value}>{m.label}</option>))}
+              {months.map((m) => (<option key={m.value} value={m.value}>{m.label}</option>))}
             </select>
           </div>
         </div>

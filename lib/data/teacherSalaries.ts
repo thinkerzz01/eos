@@ -14,6 +14,15 @@ function one<T>(rel: T | T[] | null | undefined): T | null {
   return Array.isArray(rel) ? rel[0] ?? null : rel ?? null;
 }
 
+// Inclusive count of months from 'YYYY-MM' a to b (0 if a is after b).
+function monthsInclusive(a: string, b: string): number {
+  const am = /^(\d{4})-(\d{2})$/.exec(a);
+  const bm = /^(\d{4})-(\d{2})$/.exec(b);
+  if (!am || !bm) return 0;
+  const n = (Number(bm[1]) - Number(am[1])) * 12 + (Number(bm[2]) - Number(am[2])) + 1;
+  return n > 0 ? n : 0;
+}
+
 export interface SalaryRow {
   enrollmentId: string;
   teacherId: string;
@@ -80,18 +89,21 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   if (!session?.user) return empty;
 
   // Target month (UTC, consistent with the reader/writer elsewhere).
+  // 'all' aggregates every month up to the current one.
+  const isAll = periodYYYYMM === 'all';
   const now = new Date();
   let year = now.getUTCFullYear();
   let month = now.getUTCMonth();
-  if (periodYYYYMM && /^\d{4}-\d{2}$/.test(periodYYYYMM)) {
+  if (!isAll && periodYYYYMM && /^\d{4}-\d{2}$/.test(periodYYYYMM)) {
     const [y, m] = periodYYYYMM.split('-').map(Number);
     year = y;
     month = Math.min(11, Math.max(0, m - 1));
   }
   const mm = String(month + 1).padStart(2, '0');
-  const selectedYYYYMM = `${year}-${mm}`;
-  const period = `${MONTHS[month]} ${year}`;
-  const monthEnd = new Date(Date.UTC(year, month + 1, 1)).toISOString();
+  const selectedYYYYMM = `${year}-${mm}`; // current month, and the upper bound for 'all'
+  const period = isAll ? 'All months' : `${MONTHS[month]} ${year}`;
+  // 'all' includes every enrollment (no upper bound); a month view stops at month end.
+  const monthEnd = isAll ? new Date(Date.UTC(9999, 0, 1)).toISOString() : new Date(Date.UTC(year, month + 1, 1)).toISOString();
 
   // Enrollments that existed during (or before) the target month. FULL select
   // falls back to BASE when the salary columns have not been migrated yet.
@@ -111,12 +123,13 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   // Already-paid this month per teacher (latest row wins for the display date).
   const paidByTeacher = new Map<string, { amount: number; at: string; method: string }>();
   {
-    const { data: payouts } = await supabase
+    let pq = supabase
       .from('teacher_payouts')
       .select('teacher_id,amount,paid_at,method')
-      .eq('period', period)
       .is('deleted_at', null)
       .order('paid_at', { ascending: true });
+    if (!isAll) pq = pq.eq('period', period); // 'all' sums every period's payouts
+    const { data: payouts } = await pq;
     for (const p of (payouts as any[]) ?? []) {
       const prev = paidByTeacher.get(p.teacher_id);
       paidByTeacher.set(p.teacher_id, {
@@ -142,9 +155,26 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     const startMonth = (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month))
       ? e.salary_start_month
       : enrolledMonth;
-    const isMonth1 = startMonth === selectedYYYYMM;
 
-    const math = computeSalaryMath({ monthlySalary, isMonth1 });
+    let isMonth1 = false;
+    let commission = 0;
+    let teacherPay = 0;
+    let rowPeriodLabel: string;
+    if (isAll) {
+      // Lifetime: salary for every month from start to the current month, with the
+      // 25% commission charged once (the first month).
+      const monthsActive = monthsInclusive(startMonth, selectedYYYYMM);
+      const oneComm = computeSalaryMath({ monthlySalary, isMonth1: true }).commission;
+      commission = monthsActive >= 1 ? oneComm : 0;
+      teacherPay = Math.max(0, monthlySalary * monthsActive - commission);
+      rowPeriodLabel = monthsActive > 0 ? `All · ${monthsActive} mo` : 'Not started';
+    } else {
+      isMonth1 = startMonth === selectedYYYYMM;
+      const math = computeSalaryMath({ monthlySalary, isMonth1 });
+      commission = math.commission;
+      teacherPay = math.teacherPay;
+      rowPeriodLabel = billingPeriodLabel(period, student.enrolled_at);
+    }
 
     rows.push({
       enrollmentId: e.id,
@@ -155,14 +185,14 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
       studentName: student.name ?? '',
       subjectName: subject?.name ?? '',
       program: student.program ?? '',
-      periodLabel: billingPeriodLabel(period, student.enrolled_at),
+      periodLabel: rowPeriodLabel,
       salaryStartMonth: (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month)) ? e.salary_start_month : null,
       enrolledMonth,
       monthlySalary,
       hasSalary: monthlySalary > 0,
       isMonth1,
-      commission: math.commission,
-      teacherPay: math.teacherPay,
+      commission,
+      teacherPay,
       studentFee: Number(student.monthly_fee ?? 0),
     });
   }
@@ -212,11 +242,12 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   let feesBilled = 0;
   let feesReceived = 0;
   {
-    const { data: vs } = await supabase
+    let vq = supabase
       .from('vouchers')
       .select('id,amount,status')
-      .eq('period', period)
       .is('deleted_at', null);
+    if (!isAll) vq = vq.eq('period', period); // 'all' sums every period's fees
+    const { data: vs } = await vq;
     const vouchers = (vs as any[]) ?? [];
     feesBilled = vouchers.reduce((s, v) => s + Number(v.amount || 0), 0);
     const vids = vouchers.map((v) => v.id);
