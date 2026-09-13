@@ -241,6 +241,26 @@ export function VouchersClient({
     }
   };
 
+  // QUICK "MARK AS PAID" — records a full payment for the running balance in one
+  // click (payments are entered manually). Use "+ Payment" for partial/specific method.
+  const handleMarkPaid = async (v: FeeVoucher) => {
+    if (v.status === 'Paid' || v.runningBalance <= 0) return;
+    const ok = await confirm({
+      title: 'Mark as paid?',
+      message: `Record full payment of PKR ${v.runningBalance.toLocaleString()} for ${v.studentName} and mark this voucher as Paid?`,
+      confirmLabel: 'Mark as Paid',
+      danger: false,
+    });
+    if (!ok) return;
+    const res = await recordPayment({ voucherId: v.id, amount: v.runningBalance, method: 'Bank Transfer', reference: 'Marked as paid' });
+    if (res.ok) {
+      router.refresh();
+      showToast('Voucher marked as PAID.', 'success');
+    } else {
+      showToast(res.error ?? 'Failed to mark the voucher as paid.', 'error');
+    }
+  };
+
   // HANDLE REFUND - negative payment linked to the voucher (server action, audited)
   const handleIssueRefund = async () => {
     if (!refundVoucher) return;
@@ -654,6 +674,7 @@ export function VouchersClient({
                           )}
                           <RowActionsMenu
                             actions={[
+                              { label: 'Mark as Paid', icon: <CheckCircle2 className="w-3.5 h-3.5" />, tone: 'success', hidden: v.status === 'Paid' || v.runningBalance <= 0, onClick: () => handleMarkPaid(v) },
                               { label: 'Review Voucher', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setPreviewVoucher(v) },
                               { label: 'Send to Student', icon: <MessageSquare className="w-3.5 h-3.5" />, tone: 'success', onClick: () => sendVoucherWa(v) },
                               { label: 'Modify Voucher', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditVoucher(v) },
