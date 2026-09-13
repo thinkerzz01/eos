@@ -13,8 +13,10 @@ function mapRow(r: any): VoucherRow {
   const student = one<any>(r.students);
   return {
     id: r.id,
-    voucher_no: r.voucher_no,
+    voucher_no: r.code ?? r.voucher_no,
     student_name: student?.name ?? '',
+    parent_name: student?.parent_name ?? '',
+    program: student?.program ?? '',
     period: r.period,
     // Exact billing cycle anchored to the student's enrolment day (mid-month starts).
     periodLabel: billingPeriodLabel(r.period, student?.enrolled_at, r.due_date),
@@ -35,7 +37,7 @@ export async function getFeeVouchers(): Promise<VoucherRow[]> {
 
   const { data, error } = await supabase
     .from('vouchers')
-    .select('id,voucher_no,period,amount,due_date,grace_deadline,status,students(name,enrolled_at)')
+    .select('id,code,voucher_no,period,amount,due_date,grace_deadline,status,students(name,parent_name,program,enrolled_at)')
     .is('deleted_at', null)
     .order('due_date', { ascending: false });
 

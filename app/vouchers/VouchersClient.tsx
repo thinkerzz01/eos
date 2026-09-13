@@ -9,6 +9,7 @@ import { FeeVoucher, PaymentTransaction } from '@/lib/mockFinanceData';
 import type { PaymentInfo } from '@/lib/config/paymentInfo';
 import { recordPayment, issueRefund, adminFeeDecision, createVoucher, updateVoucher, generateMonthlyVouchers, bulkDeleteVouchers } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { VoucherSlip } from '@/components/fees/VoucherSlip';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
@@ -755,98 +756,21 @@ export function VouchersClient({
           </div>
         )}
 
-        {/* VOUCHER PREVIEW (view / print / send on WhatsApp) */}
+        {/* VOUCHER PREVIEW — shared premium slip (identical on admin & student). */}
         {previewVoucher && (
-          <>
-            <style>{`
-              @media print {
-                @page { margin: 0; }
-                html, body { background: #ffffff !important; }
-                body * { visibility: hidden !important; }
-                #voucher-print, #voucher-print * {
-                  visibility: visible !important;
-                  -webkit-print-color-adjust: exact !important;
-                  print-color-adjust: exact !important;
-                }
-                #voucher-print {
-                  position: absolute; left: 0; top: 0; width: 100%;
-                  box-shadow: none !important; border-radius: 0 !important; padding: 40px !important;
-                }
-              }
-            `}</style>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in" onClick={() => setPreviewVoucher(null)}>
-              <div className="bg-white rounded-3xl p-0 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                <div id="voucher-print" className="p-7 space-y-5 text-slate-900 text-[15px]">
-                  {/* Colored branded header */}
-                  <div className="flex items-center gap-3 rounded-2xl bg-[#5B47D6] text-white px-5 py-4">
-                    <div className="w-11 h-11 rounded-xl bg-white/20 flex items-center justify-center font-medium text-lg">T</div>
-                    <div>
-                      <div className="font-medium text-xl leading-tight">Thinkerzz</div>
-                      <div className="text-xs text-purple-200 font-medium uppercase tracking-widest">Fee Voucher</div>
-                    </div>
-                    <div className="ml-auto text-right">
-                      <div className="text-[11px] text-purple-200">Voucher</div>
-                      <div className="font-mono font-medium text-sm">{previewVoucher.voucherNo}</div>
-                    </div>
-                  </div>
-
-                  {/* Amount the student has to pay - the headline */}
-                  <div className="rounded-2xl border-2 border-[#5B47D6]/20 bg-[#5B47D6]/5 p-4 text-center">
-                    <div className="text-xs font-medium uppercase tracking-widest text-[#5B47D6]">Amount To Pay</div>
-                    <div className="font-heading font-medium text-4xl text-slate-900 mt-1">
-                      PKR {(previewVoucher.runningBalance > 0 ? previewVoucher.runningBalance : previewVoucher.totalAmount).toLocaleString()}
-                    </div>
-                    <div className="text-[13px] font-medium text-slate-500 mt-1">Due by {previewVoucher.dueDate}</div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-y-2 gap-x-3 text-[14px] font-medium">
-                    <div className="text-slate-500">Student</div><div className="text-right">{previewVoucher.studentName}</div>
-                    <div className="text-slate-500">Parent</div><div className="text-right">{previewVoucher.parentName}</div>
-                    <div className="text-slate-500">Program</div><div className="text-right">{previewVoucher.program}</div>
-                    <div className="text-slate-500">Status</div><div className="text-right font-medium">{previewVoucher.status}</div>
-                  </div>
-
-                  {paymentInfo && (paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban || paymentInfo.wallet) && (
-                    <div className="space-y-2.5">
-                      {(paymentInfo.bankTitle || paymentInfo.bankAccountNo || paymentInfo.bankIban) && (
-                        <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
-                          <div className="font-medium text-[#5B47D6] mb-1 uppercase tracking-wide text-xs">Bank Transfer</div>
-                          <div className="space-y-0.5 text-slate-700">
-                            {paymentInfo.bankTitle && <div>Title: <span className="font-medium">{paymentInfo.bankTitle}</span></div>}
-                            {paymentInfo.bankAccountNo && <div>Account No: <span className="font-mono">{paymentInfo.bankAccountNo}</span></div>}
-                            {paymentInfo.bankIban && <div>IBAN: <span className="font-mono">{paymentInfo.bankIban}</span></div>}
-                          </div>
-                        </div>
-                      )}
-                      {paymentInfo.wallet && (
-                        <div className="rounded-xl bg-slate-50 border border-slate-200 p-3 text-[13px]">
-                          <div className="font-medium text-[#12A150] mb-1 uppercase tracking-wide text-xs">JazzCash / Mobile Wallet</div>
-                          <div className="text-slate-700"><span className="font-medium">{paymentInfo.wallet}</span></div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  <div className="text-center text-[11px] text-slate-400 font-medium pt-1 border-t border-slate-100">
-                    Please share the payment receipt after paying. Thank you. · Thinkerzz
-                  </div>
-                </div>
-
-                <div className="flex gap-2 p-4 border-t border-slate-200 bg-slate-50 no-print">
-                  <a
-                    href={`https://wa.me/${waDigits(previewVoucher.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(previewVoucher, paymentInfo))}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex-1 text-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs rounded-xl"
-                  >
-                    Send on WhatsApp
-                  </a>
-                  <button onClick={() => window.print()} className="px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white font-medium text-xs rounded-xl">Print</button>
-                  <button onClick={() => setPreviewVoucher(null)} className="px-3 py-2 border border-slate-300 font-medium text-xs rounded-xl">Close</button>
-                </div>
-              </div>
-            </div>
-          </>
+          <VoucherSlip
+            voucherNo={previewVoucher.voucherNo}
+            studentName={previewVoucher.studentName}
+            parentName={previewVoucher.parentName}
+            program={previewVoucher.program}
+            amount={previewVoucher.runningBalance > 0 ? previewVoucher.runningBalance : previewVoucher.totalAmount}
+            dueDate={previewVoucher.dueDate}
+            status={previewVoucher.status}
+            paymentInfo={paymentInfo}
+            showVoucherId
+            onClose={() => setPreviewVoucher(null)}
+            sendToStudentHref={`https://wa.me/${waDigits(previewVoucher.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(previewVoucher, paymentInfo))}`}
+          />
         )}
 
         {partialPayVoucher && (
