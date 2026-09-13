@@ -51,10 +51,14 @@ export interface SalarySheet {
   rows: SalaryRow[];
   teachers: TeacherRollup[];
   totals: {
-    totalFees: number;
-    totalSalaries: number;
-    totalCommission: number;
-    grossRevenue: number;
+    feesBilled: number;       // this month's voucher amounts
+    feesReceived: number;     // actual payments collected on those vouchers (in bank)
+    feesOutstanding: number;  // billed − received (still to collect)
+    salariesEarned: number;   // computed teacher pay owed
+    salariesPaid: number;     // actual payouts made this month
+    salaryOutstanding: number;// earned − paid (still to pay)
+    commission: number;
+    netThisMonth: number;     // feesReceived − salariesPaid
     studentCount: number;
     teacherCount: number;
   };
@@ -66,7 +70,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   const empty: SalarySheet = {
     rows: [],
     teachers: [],
-    totals: { totalFees: 0, totalSalaries: 0, totalCommission: 0, grossRevenue: 0, studentCount: 0, teacherCount: 0 },
+    totals: { feesBilled: 0, feesReceived: 0, feesOutstanding: 0, salariesEarned: 0, salariesPaid: 0, salaryOutstanding: 0, commission: 0, netThisMonth: 0, studentCount: 0, teacherCount: 0 },
     period: '',
     periodYYYYMM: periodYYYYMM ?? '',
   };
@@ -201,22 +205,60 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     return { ...t, balance, status };
   }).sort((a, b) => a.teacherName.localeCompare(b.teacherName));
 
-  // Company totals. Fees are per STUDENT (count each student once).
-  const feeByStudent = new Map<string, number>();
-  for (const r of rows) if (!feeByStudent.has(r.studentId)) feeByStudent.set(r.studentId, r.studentFee);
-  const totalFees = Array.from(feeByStudent.values()).reduce((s, v) => s + v, 0);
-  const totalSalaries = rows.reduce((s, r) => s + r.teacherPay, 0);
+  // ACTUAL CASH for the month — wired to real records, not the agreed fee:
+  //   feesBilled   = sum of this month's voucher amounts
+  //   feesReceived = actual payments collected on those vouchers (what's in bank)
+  //   salariesPaid = actual teacher_payouts made this month
+  let feesBilled = 0;
+  let feesReceived = 0;
+  {
+    const { data: vs } = await supabase
+      .from('vouchers')
+      .select('id,amount,status')
+      .eq('period', period)
+      .is('deleted_at', null);
+    const vouchers = (vs as any[]) ?? [];
+    feesBilled = vouchers.reduce((s, v) => s + Number(v.amount || 0), 0);
+    const vids = vouchers.map((v) => v.id);
+
+    // Payments recorded per voucher (for partial collections).
+    const paidByVoucher = new Map<string, number>();
+    if (vids.length) {
+      const { data: ps } = await supabase
+        .from('payments')
+        .select('amount,voucher_id')
+        .in('voucher_id', vids)
+        .is('deleted_at', null);
+      for (const p of (ps as any[]) ?? []) {
+        paidByVoucher.set(p.voucher_id, (paidByVoucher.get(p.voucher_id) ?? 0) + Number(p.amount || 0));
+      }
+    }
+    // Received = full amount for vouchers marked Paid, else the partial payments
+    // recorded. (Vouchers can be marked Paid by status without a payment row.)
+    for (const v of vouchers) {
+      const amount = Number(v.amount || 0);
+      feesReceived += v.status === 'paid' ? amount : Math.min(amount, paidByVoucher.get(v.id) ?? 0);
+    }
+  }
+
+  const salariesEarned = rows.reduce((s, r) => s + r.teacherPay, 0);
+  const salariesPaid = teachers.reduce((s, tt) => s + tt.paid, 0);
   const totalCommission = rows.reduce((s, r) => s + r.commission, 0);
+  const studentCount = new Set(rows.map((r) => r.studentId)).size;
 
   return {
     rows,
     teachers,
     totals: {
-      totalFees,
-      totalSalaries,
-      totalCommission,
-      grossRevenue: totalFees - totalSalaries,
-      studentCount: feeByStudent.size,
+      feesBilled,
+      feesReceived,
+      feesOutstanding: Math.max(0, feesBilled - feesReceived),
+      salariesEarned,
+      salariesPaid,
+      salaryOutstanding: Math.max(0, salariesEarned - salariesPaid),
+      commission: totalCommission,
+      netThisMonth: feesReceived - salariesPaid,
+      studentCount,
       teacherCount: byTeacher.size,
     },
     period,

@@ -165,7 +165,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
           <div>
             <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white">Teacher Salaries &amp; Revenue</h1>
             <p className="text-[13px] text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
-              Payroll for {PERIOD}. Each teacher earns a fixed monthly salary per student/subject, with a 25% first-month commission. Revenue is student fees minus teacher pay.
+              Payroll for {PERIOD}. Each teacher earns a fixed monthly salary per student/subject (25% first-month commission). The cards show real cash: fees collected vs salaries paid this month.
             </p>
           </div>
           <div className={boxCls}>
@@ -176,13 +176,13 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
           </div>
         </div>
 
-        {/* KPI CARDS */}
+        {/* KPI CARDS — real cash for the month (in bank vs paid out) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Student Fees', value: fmt(t.totalFees), sub: `${t.studentCount} student${t.studentCount === 1 ? '' : 's'}`, color: 'text-slate-900 dark:text-white' },
-            { label: 'Teacher Salaries', value: fmt(t.totalSalaries), sub: `${t.teacherCount} teacher${t.teacherCount === 1 ? '' : 's'}`, color: 'text-purple-600' },
-            { label: 'Commission (M1)', value: fmt(t.totalCommission), sub: 'Company keeps', color: 'text-amber-600' },
-            { label: 'Gross Revenue', value: fmt(t.grossRevenue), sub: 'Fees less teacher pay', color: 'text-emerald-600' },
+            { label: 'Fees Received', value: fmt(t.feesReceived), sub: `Collected in ${PERIOD}`, color: 'text-emerald-600' },
+            { label: 'Fees Outstanding', value: fmt(t.feesOutstanding), sub: `of ${fmt(t.feesBilled)} billed`, color: 'text-amber-600' },
+            { label: 'Salaries Paid', value: fmt(t.salariesPaid), sub: t.salaryOutstanding > 0 ? `${fmt(t.salaryOutstanding)} still owed` : 'All teachers paid', color: 'text-purple-600' },
+            { label: 'Net This Month', value: fmt(t.netThisMonth), sub: 'Received − salaries paid', color: t.netThisMonth >= 0 ? 'text-emerald-600' : 'text-rose-600' },
           ].map((c) => (
             <div key={c.label} className="bg-white dark:bg-slate-900 border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
               <div className="text-xs font-medium text-slate-500 uppercase">{c.label}</div>
