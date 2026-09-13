@@ -196,11 +196,12 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-white">Salary Sheet · {PERIOD}</div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse min-w-[720px]">
+            <table className="w-full text-left text-sm border-collapse min-w-[860px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 text-[13px]">
                   <th className="py-3 px-3">Teacher</th>
                   <th className="py-3 px-3">Student / Subject</th>
+                  <th className="py-3 px-3">Period</th>
                   <th className="py-3 px-3 text-right">Salary</th>
                   <th className="py-3 px-3 text-right">Commission</th>
                   <th className="py-3 px-3 text-right">Pay</th>
@@ -209,7 +210,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
               </thead>
               <tbody className="divide-y divide-[#F1F2F7] dark:divide-slate-800 text-[13px] font-medium">
                 {rows.length === 0 ? (
-                  <tr><td colSpan={6} className="py-10 text-center text-slate-400 font-medium">{sheet.rows.length === 0 ? 'No enrollments this month. Assign students to teachers first.' : 'No rows match your search.'}</td></tr>
+                  <tr><td colSpan={7} className="py-10 text-center text-slate-400 font-medium">{sheet.rows.length === 0 ? 'No enrollments this month. Assign students to teachers first.' : 'No rows match your search.'}</td></tr>
                 ) : rows.map((r) => (
                   <tr key={r.enrollmentId} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3 px-3">
@@ -220,6 +221,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                       <div className="font-medium text-slate-900 dark:text-slate-100">{r.studentName}</div>
                       {r.subjectName && <div className="text-xs text-[#6B7185]">{r.subjectName}</div>}
                     </td>
+                    <td className="py-3 px-3 text-[12px] text-slate-600 dark:text-slate-300 whitespace-nowrap">{r.periodLabel}</td>
                     <td className="py-3 px-3 text-right font-mono">
                       {r.hasSalary ? pkr(r.monthlySalary) : (
                         <button onClick={() => openSalary(r)} className="text-[#5B47D6] font-sans font-medium hover:underline cursor-pointer">Set salary</button>
@@ -236,7 +238,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
               {rows.length > 0 && (
                 <tfoot>
                   <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-t-2 border-[#EBEDF3] dark:border-slate-700 font-semibold text-[13px]">
-                    <td className="py-3 px-3" colSpan={2}>Totals · {rows.length} row{rows.length === 1 ? '' : 's'}</td>
+                    <td className="py-3 px-3" colSpan={3}>Totals · {rows.length} row{rows.length === 1 ? '' : 's'}</td>
                     <td className="py-3 px-3 text-right font-mono">{pkr(sumSalary)}</td>
                     <td className="py-3 px-3 text-right font-mono text-amber-600">{pkr(sumComm)}</td>
                     <td className="py-3 px-3 text-right font-mono text-slate-900 dark:text-white">{pkr(sumPay)}</td>

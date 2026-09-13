@@ -6,6 +6,7 @@
 // monthly fee minus the teacher pay across their subjects.
 import { createClient } from '@/lib/supabase/server';
 import { computeSalaryMath } from '@/lib/config/payroll';
+import { billingPeriodLabel } from '@/lib/billingPeriod';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -22,6 +23,7 @@ export interface SalaryRow {
   studentName: string;
   subjectName: string;
   program: string;
+  periodLabel: string;             // exact pay cycle, e.g. "06 Sep – 05 Oct 2026"
   salaryStartMonth: string | null; // raw 'YYYY-MM' override, or null (auto)
   enrolledMonth: string;           // 'YYYY-MM' the student started (auto first-paid month)
   monthlySalary: number;
@@ -149,6 +151,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
       studentName: student.name ?? '',
       subjectName: subject?.name ?? '',
       program: student.program ?? '',
+      periodLabel: billingPeriodLabel(period, student.enrolled_at),
       salaryStartMonth: (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month)) ? e.salary_start_month : null,
       enrolledMonth,
       monthlySalary,
