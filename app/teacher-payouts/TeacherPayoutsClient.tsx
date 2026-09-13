@@ -69,7 +69,8 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
   const openSalary = (r: SalaryRow) => {
     setSalaryRow(r);
     setSalInput(r.monthlySalary > 0 ? String(r.monthlySalary) : '');
-    setSalStart(r.salaryStartMonth ?? '');
+    // Auto-fill the first-paid month from the student's start month; admin may change it.
+    setSalStart(r.salaryStartMonth ?? r.enrolledMonth);
     setSalError(null);
   };
   const saveSalary = async () => {
@@ -81,7 +82,9 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
     const res = await setEnrollmentSalary({
       enrollmentId: salaryRow.enrollmentId,
       monthlySalary: amt,
-      salaryStartMonth: salStart || null,
+      // Keep it dynamic (null) when left at the auto start month; store an explicit
+      // override only when the admin picks a different first-paid month.
+      salaryStartMonth: salStart && salStart !== salaryRow.enrolledMonth ? salStart : null,
     });
     setSalSaving(false);
     if (res.ok) { setSalaryRow(null); router.refresh(); showToast('Salary saved.', 'success'); }
@@ -312,9 +315,9 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                 <input type="number" value={salInput} onChange={(e) => setSalInput(e.target.value)} placeholder="e.g. 15000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-base text-slate-900 dark:text-slate-100" />
               </div>
               <div>
-                <label className="block text-slate-700 dark:text-slate-300 mb-1">First paid month (optional)</label>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1">First paid month</label>
                 <input type="month" value={salStart} onChange={(e) => setSalStart(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
-                <p className="text-[11px] text-slate-500 mt-1">The 25% commission applies this month only. Leave blank to auto-use the enrolment month.</p>
+                <p className="text-[11px] text-slate-500 mt-1">Auto-filled from the student&apos;s start month. The 25% commission applies only in this first month; from next month the teacher gets the full salary. Change it only if the first paid month differs.</p>
               </div>
               {salError && <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">{salError}</div>}
             </div>

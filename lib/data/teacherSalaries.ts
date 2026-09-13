@@ -23,6 +23,7 @@ export interface SalaryRow {
   subjectName: string;
   program: string;
   salaryStartMonth: string | null; // raw 'YYYY-MM' override, or null (auto)
+  enrolledMonth: string;           // 'YYYY-MM' the student started (auto first-paid month)
   monthlySalary: number;
   hasSalary: boolean;
   isMonth1: boolean;
@@ -129,9 +130,12 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     if (student.enrolled_at && String(student.enrolled_at) > monthEnd.slice(0, 10)) continue; // not enrolled yet
 
     const monthlySalary = Number(e.monthly_salary ?? 0);
+    // Auto first-paid month = the student's enrolment month (when they first paid
+    // us), falling back to the enrolment row's creation month. Admin can override.
+    const enrolledMonth = (student.enrolled_at ? String(student.enrolled_at) : String(e.created_at || '')).slice(0, 7);
     const startMonth = (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month))
       ? e.salary_start_month
-      : String(e.created_at || '').slice(0, 7);
+      : enrolledMonth;
     const isMonth1 = startMonth === selectedYYYYMM;
 
     const math = computeSalaryMath({ monthlySalary, isMonth1 });
@@ -146,6 +150,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
       subjectName: subject?.name ?? '',
       program: student.program ?? '',
       salaryStartMonth: (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month)) ? e.salary_start_month : null,
+      enrolledMonth,
       monthlySalary,
       hasSalary: monthlySalary > 0,
       isMonth1,
