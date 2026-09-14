@@ -8,7 +8,7 @@
 
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
-  Copy, Check, CalendarPlus, ChevronDown, Download, MessageCircle, ArrowRight,
+  Check, CalendarPlus, ChevronDown, Download, MessageCircle, ArrowRight,
   Home, Clock, BookOpen, GraduationCap, Timer, CalendarDays, Video, LifeBuoy,
 } from 'lucide-react';
 
@@ -39,7 +39,6 @@ export function BookingSuccess(props: BookingSuccessProps) {
   } = props;
 
   const [reduced, setReduced] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [calOpen, setCalOpen] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const calWrapRef = useRef<HTMLDivElement>(null);
@@ -65,14 +64,6 @@ export function BookingSuccess(props: BookingSuccessProps) {
     return () => { document.removeEventListener('mousedown', onDown); document.removeEventListener('keydown', onKey); };
   }, [calOpen]);
 
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(bookingRef);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch { /* clipboard blocked -> no-op, the reference is still visible */ }
-  };
-
   // ---- Calendar links ------------------------------------------------------
   const { googleUrl, icsHref, icsName } = useMemo(() => {
     const start = new Date(`${dateISO}T${time24}:00+05:00`);
@@ -83,7 +74,6 @@ export function BookingSuccess(props: BookingSuccessProps) {
     const details = [
       'Your free 1-on-1 Thinkerzz demo class.',
       program ? `Program: ${program}.` : '',
-      `Booking reference: ${bookingRef}.`,
       'Your Google Meet link will be shared on WhatsApp before the class.',
     ].filter(Boolean).join(' ');
     const g = new URLSearchParams({
@@ -101,7 +91,7 @@ export function BookingSuccess(props: BookingSuccessProps) {
     return {
       googleUrl: `https://calendar.google.com/calendar/render?${g.toString()}`,
       icsHref: `data:text/calendar;charset=utf-8,${encodeURIComponent(ics)}`,
-      icsName: `Thinkerzz-Demo-${bookingRef}.ics`,
+      icsName: `Thinkerzz-Demo.ics`,
     };
   }, [dateISO, time24, durationMinutes, subject, program, bookingRef]);
 
@@ -200,16 +190,9 @@ export function BookingSuccess(props: BookingSuccessProps) {
           <section className="rounded-3xl border border-slate-200 bg-slate-50/60 p-5 sm:p-6" aria-label="Booking details">
             <div className="flex items-start justify-between gap-3 flex-wrap">
               <div>
-                <div className="text-[11px] uppercase tracking-[0.12em] font-medium text-[#5B47D6]">Booking Reference</div>
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="font-mono text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">{bookingRef}</span>
-                  <button
-                    onClick={handleCopy}
-                    aria-label={copied ? 'Reference copied' : 'Copy booking reference'}
-                    className="tz-press inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:text-[#5B47D6] hover:border-[#5B47D6]/40 transition"
-                  >
-                    {copied ? <><Check className="w-3.5 h-3.5 text-emerald-600" /> Copied!</> : <><Copy className="w-3.5 h-3.5" /> Copy</>}
-                  </button>
+                <div className="text-[11px] uppercase tracking-[0.12em] font-medium text-[#5B47D6]">Free Demo Booked</div>
+                <div className="mt-1 font-heading text-2xl sm:text-3xl font-semibold text-slate-900 tracking-tight">
+                  {studentName || 'Your child'}
                 </div>
               </div>
 
