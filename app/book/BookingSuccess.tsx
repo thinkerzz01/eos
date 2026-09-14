@@ -99,7 +99,7 @@ export function BookingSuccess(props: BookingSuccessProps) {
   // No internal lead code here — that TZ-LEAD ref is for staff only, not the family.
   const waHref = helpWa
     ? `https://wa.me/${helpWa}?text=${encodeURIComponent(
-        `Assalam o Alaikum Thinkerzz! I have just booked a free demo for ${studentName || 'my child'}. Please confirm the details.`
+        `Assalam o Alaikum Thinkerzz! I've just booked my free demo class & excited to start! Please confirm the details.`
       )}`
     : '';
 
