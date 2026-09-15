@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronBearerHeader, cronSecret } from '@/lib/security';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { enqueueNotification } from '@/lib/notifications/enqueue';
-import { assembleReportFacts, phraseReport } from '@/lib/reports/monthlyReport';
+import { assembleReportFacts, assembleReportText } from '@/lib/reports/monthlyReport';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -14,6 +14,12 @@ export const runtime = 'nodejs';
 export async function GET(req: NextRequest) {
   if (!verifyCronBearerHeader(req.headers.get('authorization'), cronSecret())) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  // Monthly reports are MANUAL-ONLY: a scheduled/accidental cron hit does nothing
+  // unless it is explicitly triggered with ?manual=1. This keeps them off "auto".
+  if (req.nextUrl.searchParams.get('manual') !== '1') {
+    return NextResponse.json({ ok: true, sent: 0, note: 'Monthly reports are manual only. Add ?manual=1 to send.' });
   }
 
   const admin = createAdminClient();
@@ -36,7 +42,8 @@ export async function GET(req: NextRequest) {
   for (const s of students ?? []) {
     const student = s as any;
     const facts = await assembleReportFacts(admin, { id: student.id, name: student.name });
-    const body = await phraseReport(facts); // first-name + facts only; never sees surname/phone
+    // Deterministic text ONLY - no LLM ever alters the report numbers or wording.
+    const body = assembleReportText(facts);
 
     const r = await enqueueNotification(admin, {
       orgId: student.org_id,

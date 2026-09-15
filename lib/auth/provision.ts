@@ -57,14 +57,14 @@ function portalUrl(): string {
 
 const ROLE_COPY: Record<'teacher' | 'student', { subject: string; intro: string }> = {
   teacher: {
-    subject: 'Welcome to Thinkerzz - Set Your Portal Password',
+    subject: 'Welcome To Thinkerzz | Set Your Portal Password',
     intro:
-      'You have been added as a teacher at Thinkerzz. Set your password to access your portal, where you can view your class schedule, students, and more.',
+      'You have been added as a teacher to our portal. Please set your password to access your account and view your class schedule, students, and other teaching details.',
   },
   student: {
-    subject: 'Welcome to Thinkerzz - Set Your Portal Password',
+    subject: 'Welcome To Thinkerzz | Set Your Portal Password',
     intro:
-      'You have been enrolled at Thinkerzz. Set your password to access your student portal, where you can view your class schedule, fees, and more.',
+      'You have been enrolled as a student. Please set your password to access your student portal, where you can view your classes, schedule, fees, and other academic details.',
   },
 };
 
@@ -166,19 +166,21 @@ export async function provisionLogin(opts: {
   const waNumber = process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP ?? '';
   const contactCardUrl = `${siteUrl()}/api/contact-card`;
   const saveContactNote =
-    'Tip: Save the Thinkerzz contact below so your class invitations are trusted and appear automatically on your Google Calendar.';
+    'One Small Tip: Save the Thinkerzz contact details below so your class invitations are recognised and can be added to your Google Calendar easily.';
+  // Teachers are addressed as "Sir" (local convention); students by name only.
+  const heading = opts.role === 'teacher' ? `Welcome To Thinkerzz, Sir ${opts.name}` : `Welcome To Thinkerzz, ${opts.name}`;
   // Plain-text fallback keeps the single-use link (some text-only clients need it).
   const bodyText =
-    `${copy.intro}\n\n` +
+    `Assalam o Alaikum,\n\n${copy.intro}\n\n` +
     `Set your password here (single-use link):\n${actionLink}\n\n` +
-    `After setting it, sign in at ${portalUrl()}/login with this email.\n\n` +
+    `Once your password is set, you can sign in at ${portalUrl()}/login using this email address.\n\n` +
     `${saveContactNote}\nSave contact: ${contactCardUrl}\n\n` +
     (waNumber ? `Need help? Contact us on WhatsApp: https://wa.me/${waNumber.replace(/\D/g, '')}\n\n` : '') +
-    `- Thinkerzz`;
+    `Regards,\nThinkerzz`;
   const html = renderEmailHtml({
-    heading: `Welcome to Thinkerzz, ${opts.name}`,
+    heading,
     preheader: 'Set your password to access your Thinkerzz portal.',
-    bodyText: `${copy.intro}\n\nAfter you set your password, sign in at ${portalUrl()}/login using this email address.\n\n${saveContactNote}`,
+    bodyText: `Assalam o Alaikum,\n\n${copy.intro}\n\nOnce your password is set, you can sign in at ${portalUrl()}/login using this email address.\n\n${saveContactNote}\n\nRegards,\nThinkerzz`,
     cta: { label: 'Set Your Password', url: actionLink },
     hideCtaLinkFallback: true,
     secondaryButton: { label: 'Save Thinkerzz Contact', url: contactCardUrl },

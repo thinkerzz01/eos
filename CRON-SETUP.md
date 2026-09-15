@@ -55,18 +55,22 @@ cPanel -> Cron Jobs -> add, every 10 minutes:
 
 ---
 
-## 2. Monthly parent reports - once a month
+## 2. Monthly parent reports - MANUAL ONLY (not scheduled)
+
+Monthly reports are **not** on auto-send. Do **not** add a cron for them. To send
+them, trigger the endpoint yourself with the explicit `?manual=1` flag (a plain
+GET without the flag does nothing):
 
 ```
-GET https://<your-domain>/api/cron/monthly-reports
+GET https://<your-domain>/api/cron/monthly-reports?manual=1
 ```
 
-Run it on the 1st of each month (assembles each active student's month facts and
-queues the report emails; the /tick heartbeat then sends them):
+```
+curl -fsS -H "Authorization: Bearer YOUR_TOKEN" "https://<your-domain>/api/cron/monthly-reports?manual=1"
+```
 
-```
-0 6 1 * * curl -fsS -H "Authorization: Bearer YOUR_TOKEN" https://<your-domain>/api/cron/monthly-reports >/dev/null 2>&1
-```
+The report text is deterministic (assembled by our code) - no AI/LLM ever alters
+the numbers or wording.
 
 ## 3. Backup export - weekly
 

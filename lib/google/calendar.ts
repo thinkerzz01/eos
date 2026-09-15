@@ -103,14 +103,11 @@ export async function createMeetEvent(input: MeetEventInput): Promise<MeetEventR
     // Guests can't invite others or edit; they join only.
     guestsCanInviteOthers: false,
     guestsCanModify: false,
-    // Two popup reminders: the usual 30 minutes, plus 5 minutes to prompt joining
-    // just before the class starts.
+    // One popup reminder, 10 minutes before start, to prompt the student and
+    // teacher to join just before the class begins.
     reminders: {
       useDefault: false,
-      overrides: [
-        { method: 'popup', minutes: 30 },
-        { method: 'popup', minutes: 5 },
-      ],
+      overrides: [{ method: 'popup', minutes: 10 }],
     },
   };
   if (input.recurrence && input.recurrence.length) body.recurrence = input.recurrence;

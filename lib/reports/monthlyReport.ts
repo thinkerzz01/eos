@@ -120,14 +120,15 @@ function stripDashes(s: string): string {
 
 /** Deterministic report text. These numbers are fixed by our code. */
 export function assembleReportText(f: ReportFacts): string {
+  // The facts block only. The monthly_report template wraps it with the greeting,
+  // portal line, and sign-off, so this stays purely the numbers.
   return (
-    `Progress summary for ${f.firstName} this month:\n` +
-    `Attendance: ${f.attendancePct} percent.\n` +
-    `Homework completion: ${f.homeworkPct} percent.\n` +
-    `Tests conducted: ${f.testsConducted}.\n` +
-    `Topics covered: ${f.topicsCovered}.\n` +
-    `Assessed grade trend: ${f.gradeTrend}.\n` +
-    `Thank you for your trust.\nThinkerzz`
+    `Here is ${f.firstName}'s progress summary for this month.\n\n` +
+    `Attendance: ${f.attendancePct} percent\n` +
+    `Homework Completion: ${f.homeworkPct} percent\n` +
+    `Tests Conducted: ${f.testsConducted}\n` +
+    `Topics Covered: ${f.topicsCovered}\n` +
+    `Assessed Grade Trend: ${f.gradeTrend}`
   );
 }
 

@@ -64,15 +64,15 @@ export async function sendResetById(
   const bodyText =
     `A password reset was requested for your Thinkerzz account.\n\n` +
     `Username: ${target.email}\n\n` +
-    `Set a new password (single-use link):\n${link}\n\n` +
-    `If you did not request this, you can ignore this email.\n\n- Thinkerzz`;
+    `If you made this request, use this single-use link to set a new password:\n${link}\n\n` +
+    `If you did not request a password reset, you can safely ignore this email.\n\nRegards,\nThinkerzz`;
   const html = renderEmailHtml({
-    heading: 'Reset your password',
+    heading: 'Reset Your Password',
     preheader: 'Set a new password for your Thinkerzz account.',
-    bodyText: `A password reset was requested for your Thinkerzz account.\n\nUsername: ${target.email}\n\nIf you did not request this, you can safely ignore this email.`,
+    bodyText: `A password reset was requested for your Thinkerzz account.\n\nUsername: ${target.email}\n\nIf you made this request, use the button below to set a new password.\n\nIf you did not request a password reset, you can safely ignore this email.\n\nRegards,\nThinkerzz`,
     cta: { label: 'Set a new password', url: link },
   });
-  const sent = await sendViaResend(target.email, 'Reset your Thinkerzz password', bodyText, html);
+  const sent = await sendViaResend(target.email, 'Reset Your Thinkerzz Password', bodyText, html);
   if (!sent.ok) return { ok: false, error: `Reset link created but the email failed to send: ${sent.error}` };
   return { ok: true };
 }

@@ -37,13 +37,13 @@ export async function sendTestEmail(toEmail: string): Promise<{ ok: boolean; err
   if (profile?.role !== 'admin') return { ok: false, error: 'Only an admin can send a test email.' };
 
   const from = process.env.RESEND_FROM ?? 'onboarding@resend.dev';
-  const bodyText = `This is a test email from Thinkerzz EOS.\n\nFrom: ${from}\n\nIf you received this, Resend is delivering correctly.\n\n- Thinkerzz`;
+  const bodyText = `This is a test email from Thinkerzz EOS.\n\nFrom: ${from}\n\nIf you received this message, email delivery is working correctly.\n\nThinkerzz EOS`;
   const html = renderEmailHtml({
-    heading: 'Test email',
+    heading: 'Test Email',
     preheader: 'Confirming Thinkerzz email delivery.',
-    bodyText: `This is a test email from Thinkerzz EOS.\n\nFrom: ${from}\n\nIf you received this, your email delivery is working correctly.`,
+    bodyText: `This is a test email from Thinkerzz EOS.\n\nFrom: ${from}\n\nIf you received this message, email delivery is working correctly.\n\nThinkerzz EOS`,
   });
-  const res = await sendViaResend(email, 'Thinkerzz EOS - test email', bodyText, html);
+  const res = await sendViaResend(email, 'Thinkerzz EOS | Test Email', bodyText, html);
   if (!res.ok) return { ok: false, error: res.error ?? 'Send failed.' };
   return {
     ok: true,
