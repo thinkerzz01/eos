@@ -10,6 +10,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { createMeetEvent, weeklyRecurrence, calendarReasonText, buildClassInvite, updateCalendarEvent, deleteCalendarEvent } from '@/lib/google/calendar';
 import { enqueueNotification } from '@/lib/notifications/enqueue';
+import { buildGoogleCalUrl } from '@/lib/notifications/calendarLink';
 import { notifyStudentById } from '@/lib/notifications/inapp';
 import { friendlyDbError } from '@/lib/friendlyError';
 
@@ -507,6 +508,12 @@ export async function rescheduleClass(input: {
       gender: (student as any)?.gender ?? '',
       class_subject: subjectName,
       class_time: classTimePKT,
+      calendar_url: buildGoogleCalUrl({
+        text: `Thinkerzz ${subjectName} Class`,
+        startISO: startIso,
+        endISO: endIso,
+        location: 'Google Meet',
+      }),
     };
     const res = await enqueueNotification(admin, {
       orgId, type: 'class_rescheduled', priority: 1,

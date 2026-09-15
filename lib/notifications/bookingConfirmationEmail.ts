@@ -246,9 +246,7 @@ export function renderBookingConfirmationEmail(data: BookingConfirmationData): {
 
       <!-- FOOTER -->
       <tr><td class="p-side" style="padding:18px 28px 24px;border-top:1px solid ${LINE};text-align:center;">
-        <div style="font-size:16px;font-weight:800;color:${BRAND};">Thinkerzz</div>
-        <div style="font-size:12px;color:${MUTED};margin-top:2px;">Question. Think. Achieve.</div>
-        <div style="font-size:12px;color:${INK};margin-top:10px;">Thank you for choosing Thinkerzz. Together, we build brighter futures. &#128156;</div>
+        <div style="font-size:12px;color:${INK};">Thank you for choosing Thinkerzz. Together, we build brighter futures. &#128156;</div>
         <div style="font-size:11px;color:${MUTED};margin-top:12px;line-height:1.6;">This email was sent because a free demo class was booked through Thinkerzz.<br>If you did not make this booking, please contact our support team.</div>
       </td></tr>
 
@@ -280,5 +278,144 @@ export function renderBookingConfirmationEmail(data: BookingConfirmationData): {
 
   const subject = `Demo Confirmed: ${data.studentName} - ${data.dateLabel}`;
 
+  return { subject, html, text };
+}
+
+// ---------------------------------------------------------------------------
+// Teacher demo assignment email. Sent to the TEACHER when an admin assigns them
+// to a demo. Same premium visual language as the family email, but teacher-facing
+// copy: it carries the main info (student, date, time, subject, duration), the
+// Google Meet button and an Add-to-Calendar button.
+// ---------------------------------------------------------------------------
+export interface TeacherDemoEmailData {
+  teacherName: string;
+  studentName: string;
+  dateLabel: string;
+  timeLabel: string;
+  subject?: string;
+  program?: string;
+  durationLabel?: string;
+  meetUrl?: string;
+  googleCalUrl?: string;
+  whatsappNumber?: string;
+  supportEmail?: string;
+}
+
+export function renderTeacherDemoEmail(data: TeacherDemoEmailData): {
+  subject: string;
+  html: string;
+  text: string;
+} {
+  const portalBase = (process.env.NEXT_PUBLIC_PORTAL_URL ?? 'https://portal.thinkerzz.com').replace(/\/$/, '');
+  const logoUrl = process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || `${portalBase}/logo-light.png`;
+  const supportEmail = data.supportEmail || process.env.NEXT_PUBLIC_ACADEMY_EMAIL || 'info@thinkerzz.com';
+  const hasMeet = !!data.meetUrl;
+  const teacher = data.teacherName?.trim() || 'Teacher';
+
+  const cells = [
+    detailCell('&#128100;', 'Student', data.studentName),
+    detailCell('&#128197;', 'Date', data.dateLabel),
+    detailCell('&#128336;', 'Time', data.timeLabel),
+    detailCell('&#128214;', 'Subject', data.subject || ''),
+    detailCell('&#127891;', 'Program', data.program || ''),
+    detailCell('&#8987;', 'Duration', data.durationLabel || '1 Hour'),
+  ].filter(Boolean);
+  let detailRows = '';
+  for (let i = 0; i < cells.length; i += 2) detailRows += `<tr>${cells[i]}${cells[i + 1] ?? '<td width="50%"></td>'}</tr>`;
+
+  const btn = (label: string, url: string, bg: string, color = '#ffffff', border?: string) =>
+    `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr>
+       <td align="center" style="border-radius:12px;background:${bg};${border ? `border:1px solid ${border};` : ''}">
+         <a href="${url}" style="display:block;padding:13px 22px;font-size:14px;font-weight:700;color:${color};text-decoration:none;border-radius:12px;">${label}</a>
+       </td></tr></table>`;
+  const joinBtn = hasMeet
+    ? `<td class="stack" width="${data.googleCalUrl ? '50%' : '100%'}" valign="top" style="padding:4px;">${btn('&#127909;&nbsp; Join Google Meet &rarr;', data.meetUrl as string, BRAND)}</td>`
+    : '';
+  const calBtn = data.googleCalUrl
+    ? `<td class="stack" width="${hasMeet ? '50%' : '100%'}" valign="top" style="padding:4px;">${btn('&#128197;&nbsp; Add to Calendar', data.googleCalUrl, '#ffffff', INK, '#D7D9E4')}</td>`
+    : '';
+
+  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light">
+<style>@media only screen and (max-width:600px){.stack{display:block!important;width:100%!important;padding:4px 0!important;}.container{width:100%!important;}.p-side{padding-left:18px!important;padding-right:18px!important;}.h1{font-size:24px!important;}}</style></head>
+<body style="margin:0;padding:0;background:#F1F0F8;-webkit-text-size-adjust:100%;">
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">New demo assigned: ${esc(data.studentName)} &mdash; ${esc(data.dateLabel)}, ${esc(data.timeLabel)}.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F1F0F8;padding:24px 10px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;"><tr><td align="center">
+  <table role="presentation" width="680" class="container" cellpadding="0" cellspacing="0" style="max-width:680px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;border:1px solid ${LINE};">
+
+    <tr><td class="p-side" style="padding:20px 28px;border-bottom:1px solid ${LINE};">
+      <img src="${logoUrl}" alt="Thinkerzz" height="30" style="height:30px;width:auto;display:block;border:0;">
+    </td></tr>
+
+    <tr><td class="p-side" style="padding:26px 28px 8px;">
+      <span style="display:inline-block;background:${LAV};border:1px solid #E4DFFA;color:${BRAND};font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;">&#128197; New Demo Assigned</span>
+      <h1 class="h1" style="margin:14px 0 6px;font-size:28px;line-height:1.15;font-weight:800;color:${INK};">You Have a New <span style="color:${BRAND};">Demo Class</span></h1>
+      <p style="margin:8px 0 2px;font-size:15px;color:${INK};font-weight:700;">Assalam o Alaikum, Sir ${esc(teacher)}</p>
+      <p style="margin:2px 0 0;font-size:14px;color:${MUTED};line-height:1.6;">A new free demo class has been assigned to you. Please review the details below and be ready to conduct the session.</p>
+    </td></tr>
+
+    <tr><td class="p-side" style="padding:18px 28px 4px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${LAV};border:1px solid #E4DFFA;border-radius:18px;">
+        <tr><td style="padding:18px 18px 6px;">
+          <div style="font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:${BRAND};font-weight:800;">Demo Class</div>
+          <div style="font-size:24px;font-weight:800;color:${INK};margin-top:2px;">${esc(data.studentName)}</div>
+        </td></tr>
+        <tr><td style="padding:2px 10px 12px;"><table role="presentation" width="100%" cellpadding="0" cellspacing="0">${detailRows}</table></td></tr>
+      </table>
+    </td></tr>
+
+    <tr><td class="p-side" style="padding:14px 24px 6px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr>${joinBtn}${calBtn}</tr></table>
+      ${hasMeet
+        ? `<p style="margin:8px 4px 0;font-size:12px;color:${MUTED};text-align:center;">Meeting link: <a href="${data.meetUrl}" style="color:${BRAND};">${esc((data.meetUrl as string).replace(/^https?:\/\//, ''))}</a></p>`
+        : `<p style="margin:8px 4px 0;font-size:12px;color:${MUTED};text-align:center;">The Google Meet link will be shared with you shortly.</p>`}
+    </td></tr>
+
+    <tr><td class="p-side" style="padding:18px 28px 4px;">
+      <div style="font-size:15px;font-weight:800;color:${INK};margin-bottom:8px;">Before the Demo</div>
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:13px;color:${INK};line-height:1.5;">
+        <tr><td valign="top" style="padding:4px 0;"><strong style="color:${BRAND};">01</strong>&nbsp;&nbsp;Start the meeting on time and join 5 minutes early.</td></tr>
+        <tr><td valign="top" style="padding:4px 0;"><strong style="color:${BRAND};">02</strong>&nbsp;&nbsp;Keep the lesson material for ${esc(data.subject || 'the subject')} ready.</td></tr>
+        <tr><td valign="top" style="padding:4px 0;"><strong style="color:${BRAND};">03</strong>&nbsp;&nbsp;After the demo, record the outcome in the portal.</td></tr>
+      </table>
+    </td></tr>
+
+    <tr><td class="p-side" style="padding:14px 28px 6px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F6F7FB;border:1px solid ${LINE};border-radius:16px;">
+        <tr><td style="padding:16px 18px;">
+          <div style="font-size:14px;font-weight:800;color:${INK};">Need help?</div>
+          <div style="font-size:13px;color:${INK};margin-top:8px;">
+            ${data.whatsappNumber ? `&#128172;&nbsp; WhatsApp: <strong>${esc(data.whatsappNumber)}</strong>&nbsp;&nbsp;` : ''}
+            &#9993;&nbsp; <a href="mailto:${esc(supportEmail)}" style="color:${BRAND};">${esc(supportEmail)}</a>
+          </div>
+        </td></tr>
+      </table>
+    </td></tr>
+
+    <tr><td class="p-side" style="padding:18px 28px 24px;border-top:1px solid ${LINE};text-align:center;">
+      <div style="font-size:11px;color:${MUTED};line-height:1.6;">This is an automated message from Thinkerzz. Please do not reply.</div>
+    </td></tr>
+
+  </table>
+</td></tr></table></body></html>`;
+
+  const text = [
+    `New demo assigned`,
+    ``,
+    `Assalam o Alaikum, Sir ${teacher}. A new free demo class has been assigned to you.`,
+    ``,
+    `Student: ${data.studentName}`,
+    `Date: ${data.dateLabel}`,
+    `Time: ${data.timeLabel}`,
+    data.subject ? `Subject: ${data.subject}` : '',
+    data.program ? `Program: ${data.program}` : '',
+    `Duration: ${data.durationLabel || '1 Hour'}`,
+    ``,
+    hasMeet ? `Join Google Meet: ${data.meetUrl}` : `The Google Meet link will be shared with you shortly.`,
+    data.googleCalUrl ? `Add to Calendar: ${data.googleCalUrl}` : '',
+    ``,
+    `Need help? Email ${supportEmail}${data.whatsappNumber ? ` or WhatsApp ${data.whatsappNumber}` : ''}.`,
+  ].filter((l) => l !== '').join('\n');
+
+  const subject = `New Demo Assigned: ${data.studentName} - ${data.dateLabel}`;
   return { subject, html, text };
 }

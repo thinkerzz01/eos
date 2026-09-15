@@ -9,7 +9,6 @@ export type NotificationType =
   | 'class_rescheduled'
   | 'fee_due'
   | 'grace_ending'
-  | 'demo_confirmed'
   | 'payment_received'
   | 'monthly_report'
   | 'follow_up'
@@ -94,12 +93,6 @@ export const TEMPLATES: Record<NotificationType, Template> = {
     body:
       "Assalam o Alaikum {{parent_name}},\n\nA quick reminder that the grace period for {{student_name}}'s fee ends on {{grace_deadline}}.\n\nPlease complete the payment before the deadline so {{student_name}}'s classes can continue without interruption.\n\nIf you have already made the payment, please disregard this message.\n\nRegards,\nThinkerzz",
     cta: { label: 'Pay Now', path: '/fees' },
-  },
-  demo_confirmed: {
-    subject: 'Demo Confirmed: {{student_name}} | {{date}}',
-    body:
-      'Assalam o Alaikum {{parent_name}},\n\nYour demo for {{student_name}} is confirmed.\n\nDemo Class Details\nDate: {{date}}\nTime: {{time}}\nSubject: {{subject}}\nDuration: {{duration}}\n\nJoin using the Google Meet button below. If the meeting link is not available yet, we will send it to you on WhatsApp.\n\nBefore Your Demo\nPlease join 5 minutes early and keep your study materials ready.\n\nWe look forward to meeting {{student_name}}.\n\nRegards,\nThinkerzz',
-    cta: { label: 'Join Demo Class', useMeet: true },
   },
   payment_received: {
     subject: 'Payment Received For {{student_name}}',

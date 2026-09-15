@@ -9,6 +9,7 @@ import { revalidatePath } from 'next/cache';
 import { provisionLogin } from '@/lib/auth/provision';
 import { findEmailAccountOwner, emailTakenMessage } from '@/lib/auth/emailUniqueness';
 import { friendlyDbError } from '@/lib/friendlyError';
+import { cancelScheduleForTeachers } from '@/lib/scheduling/cascade';
 
 export interface ActionResult {
   ok: boolean;
@@ -254,6 +255,9 @@ export async function bulkDeleteTeachers(ids: string[]): Promise<ActionResult> {
     .in('id', clean);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
+  // Stop every future email + Google Calendar invite for these teachers.
+  await cancelScheduleForTeachers(clean);
+
   revalidatePath('/teachers');
   revalidatePath('/');
   return { ok: true };
@@ -311,6 +315,10 @@ export async function softDeleteTeacher(id: string): Promise<ActionResult> {
     .update({ deleted_at: new Date().toISOString() })
     .eq('id', id);
   if (error) return { ok: false, error: friendlyDbError(error) };
+
+  // Stop every future email + Google Calendar invite tied to this teacher: cancel
+  // their class-session invites (and the sessions) and unassign their demos.
+  await cancelScheduleForTeachers([id]);
 
   revalidatePath('/teachers');
   revalidatePath('/');

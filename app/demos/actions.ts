@@ -11,6 +11,9 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 import { createMeetEvent, calendarReasonText, buildClassInvite, updateCalendarEvent } from '@/lib/google/calendar';
 import { friendlyDbError } from '@/lib/friendlyError';
+import { sendViaResend } from '@/lib/notifications/resend';
+import { renderTeacherDemoEmail } from '@/lib/notifications/bookingConfirmationEmail';
+import { buildGoogleCalUrl } from '@/lib/notifications/calendarLink';
 
 // Read-only service-role client for looking up invite emails, so the invite
 // never depends on the caller's RLS. Falls back to the session client. See the
@@ -129,6 +132,7 @@ export async function assignTeacher(input: {
       endISO: end.toISOString(),
       attendees,
     });
+    const meetUrl = meet.ok ? meet.meetLink : undefined;
     if (meet.ok) {
       await supabase
         .from('demos')
@@ -136,6 +140,41 @@ export async function assignTeacher(input: {
         .eq('id', input.demoId);
     } else {
       warning = `Teacher assigned, but the calendar invite could not be sent: ${calendarReasonText(meet.reason)}.`;
+    }
+
+    // Email the assigned TEACHER a designed demo notice with the main info,
+    // the Meet link (once available) and an Add-to-Calendar button. Best-effort:
+    // a mail failure never undoes the assignment.
+    const teacherEmail = (teacher as any)?.email as string | undefined;
+    if (teacherEmail) {
+      try {
+        const fmtDate = start.toLocaleDateString('en-GB', {
+          weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Karachi',
+        });
+        const fmtT = (d: Date) =>
+          d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Karachi' });
+        const googleCalUrl = buildGoogleCalUrl({
+          text: invite.summary,
+          startISO: start.toISOString(),
+          endISO: end.toISOString(),
+          details: `Thinkerzz demo class with ${lead?.name ?? 'the student'}.`,
+          location: meetUrl || 'Google Meet',
+        });
+        const tmail = renderTeacherDemoEmail({
+          teacherName: (teacher as any)?.name ?? 'Teacher',
+          studentName: lead?.name ?? '',
+          dateLabel: fmtDate,
+          timeLabel: `${fmtT(start)} - ${fmtT(end)} (PKT)`,
+          subject: subj?.name,
+          durationLabel: '1 Hour',
+          meetUrl,
+          googleCalUrl,
+          whatsappNumber: process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP || undefined,
+        });
+        await sendViaResend(teacherEmail, tmail.subject, tmail.text, tmail.html);
+      } catch {
+        /* teacher notice is best-effort; assignment already succeeded */
+      }
     }
   } catch {
     warning = 'Teacher assigned, but the calendar invite could not be sent (unexpected error).';

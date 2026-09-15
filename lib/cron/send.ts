@@ -95,7 +95,12 @@ export async function runSend(admin: Admin): Promise<SendResult> {
       const url = tpl.cta.useMeet && meet ? meet : tpl.cta.path ? `${portal}${tpl.cta.path}` : '';
       if (url) cta = { label: tpl.cta.label, url };
     }
-    const html = renderEmailHtml({ bodyText: body, preheader: subject, cta, hideCtaLinkFallback: true });
+    // Optional "Add to Calendar" outline button (class reminders / reschedules
+    // put a Google Calendar link in the payload).
+    const secondaryButton = payload.calendar_url
+      ? { label: 'Add to Calendar', url: payload.calendar_url as string }
+      : undefined;
+    const html = renderEmailHtml({ bodyText: body, preheader: subject, cta, hideCtaLinkFallback: true, secondaryButton });
 
     const result = await sendViaResend(to, subject, body, html);
     if (result.ok) {

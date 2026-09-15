@@ -74,7 +74,7 @@ export function renderEmailHtml(opts: {
   const logoUrl = process.env.NEXT_PUBLIC_EMAIL_LOGO_URL || `${portalBase}/logo-light.png`;
   const header = `<img src="${logoUrl}" alt="Thinkerzz" height="28" style="height:28px;width:auto;display:block;border:0;" />`;
 
-  const footer = opts.footerNote ?? `© ${new Date().getFullYear()} Thinkerzz. This is an automated message, please do not reply.`;
+  const footer = opts.footerNote ?? `© 2022 - ${new Date().getFullYear()} Thinkerzz. This is an automated message, please do not reply.`;
 
   return `<!doctype html><html><body style="margin:0;padding:0;background:#F6F7FB;">
 ${preheader}
@@ -84,8 +84,6 @@ ${preheader}
       <tr><td style="background:#ffffff;padding:18px 24px;border-bottom:1px solid #EBEDF3;">${header}</td></tr>
       <tr><td style="padding:26px 24px 6px;">${heading}${paras}${ctaButton}${ctaFallback}${secondary}${whatsapp}</td></tr>
       <tr><td style="padding:16px 24px 22px;border-top:1px solid #EBEDF3;">
-        <p style="margin:0 0 6px;font-size:13px;font-weight:700;color:${INK};">Thinkerzz</p>
-        <p style="margin:0 0 10px;font-size:12px;color:${MUTED};">Question. Think. Achieve.</p>
         <p style="margin:0;font-size:12px;color:${MUTED};">${esc(footer)}</p>
       </td></tr>
     </table>

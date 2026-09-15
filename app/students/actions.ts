@@ -10,6 +10,7 @@ import { revalidatePath } from 'next/cache';
 import { provisionLogin } from '@/lib/auth/provision';
 import { findEmailAccountOwner, emailTakenMessage } from '@/lib/auth/emailUniqueness';
 import { friendlyDbError } from '@/lib/friendlyError';
+import { cancelScheduleForStudents, cancelDemoCalendarForLeads } from '@/lib/scheduling/cascade';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE', 'Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
 const SOURCES = ['google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in'];
@@ -447,15 +448,22 @@ async function cascadeDeleteForStudents(
 ): Promise<void> {
   try {
     const now = new Date().toISOString();
+    // 1) Stop every future class email + Google Calendar invite for these students
+    //    (cancels the calendar events and soft-deletes their class sessions).
+    await cancelScheduleForStudents(studentIds);
+    // 2) Soft-delete any converted lead + its demos, cancelling the demo calendar
+    //    invites so Google stops inviting the (now removed) student.
     const { data: leads } = await supabase
       .from('leads')
       .select('id')
       .in('converted_student_id', studentIds)
       .is('deleted_at', null);
     const leadIds = ((leads as any[]) ?? []).map((l) => l.id).filter(Boolean);
-    if (leadIds.length === 0) return;
-    await supabase.from('demos').update({ deleted_at: now }).in('lead_id', leadIds);
-    await supabase.from('leads').update({ deleted_at: now }).in('id', leadIds);
+    if (leadIds.length > 0) {
+      await cancelDemoCalendarForLeads(leadIds);
+      await supabase.from('demos').update({ deleted_at: now }).in('lead_id', leadIds);
+      await supabase.from('leads').update({ deleted_at: now }).in('id', leadIds);
+    }
   } catch {
     /* cascade is best-effort - the student is already removed */
   }

@@ -5,6 +5,7 @@ import 'server-only';
 // never double-sends. Does NOT send anything - runSend drains the queue. Extracted
 // from the route so both /api/cron/reminders and /api/cron/tick can call it.
 import { enqueueNotification } from '@/lib/notifications/enqueue';
+import { buildGoogleCalUrl } from '@/lib/notifications/calendarLink';
 import type { createAdminClient } from '@/lib/supabase/admin';
 
 type Admin = ReturnType<typeof createAdminClient>;
@@ -64,10 +65,11 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
   // 1) Fees due today (priority 1)
   const { data: dueVouchers } = await admin
     .from('vouchers')
-    .select('id,org_id,voucher_no,due_date,status,students(name,parent_name,email,gender)')
+    .select('id,org_id,voucher_no,due_date,status,students!inner(name,parent_name,email,gender,deleted_at)')
     .eq('due_date', today)
     .neq('status', 'paid')
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    .is('students.deleted_at', null);
   for (const v of dueVouchers ?? []) {
     const s = one<any>((v as any).students);
     tally(
@@ -91,10 +93,11 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
   // 2) Grace ending tomorrow (priority 1)
   const { data: graceVouchers } = await admin
     .from('vouchers')
-    .select('id,org_id,voucher_no,grace_deadline,status,students(name,parent_name,email,gender)')
+    .select('id,org_id,voucher_no,grace_deadline,status,students!inner(name,parent_name,email,gender,deleted_at)')
     .eq('grace_deadline', tomorrow)
     .in('status', ['due', 'in_grace'])
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    .is('students.deleted_at', null);
   for (const v of graceVouchers ?? []) {
     const s = one<any>((v as any).students);
     tally(
@@ -118,14 +121,17 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
   // 3) Classes starting within the reminder window (priority 1)
   const { data: soonClasses } = await admin
     .from('class_sessions')
-    .select('id,org_id,start_at,status,meeting_link,students(name,parent_name,email,gender),subjects(name)')
+    .select('id,org_id,start_at,end_at,status,meeting_link,students!inner(name,parent_name,email,gender,deleted_at),subjects(name)')
     .eq('status', 'scheduled')
     .gte('start_at', now.toISOString())
     .lte('start_at', windowEnd.toISOString())
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    .is('students.deleted_at', null);
   for (const c of soonClasses ?? []) {
     const s = one<any>((c as any).students);
     const subj = one<any>((c as any).subjects);
+    const startAt = (c as any).start_at as string;
+    const endAt = ((c as any).end_at as string) || new Date(new Date(startAt).getTime() + 60 * 60 * 1000).toISOString();
     tally(
       await enqueueNotification(admin, {
         orgId: (c as any).org_id,
@@ -138,8 +144,14 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
           email: s?.email ?? '',
           gender: s?.gender ?? '',
           class_subject: subj?.name ?? 'class',
-          class_time: new Date((c as any).start_at).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' }),
+          class_time: new Date(startAt).toLocaleString('en-GB', { timeZone: 'Asia/Karachi' }),
           meeting_link: (c as any).meeting_link ?? '',
+          calendar_url: buildGoogleCalUrl({
+            text: `Thinkerzz ${subj?.name ?? ''} Class`,
+            startISO: startAt,
+            endISO: endAt,
+            location: (c as any).meeting_link || 'Google Meet',
+          }),
         },
       })
     );
@@ -181,10 +193,11 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
   }
   const { data: expiredVouchers } = await admin
     .from('vouchers')
-    .select('id,org_id,voucher_no,grace_deadline,students(name)')
+    .select('id,org_id,voucher_no,grace_deadline,students!inner(name,deleted_at)')
     .lt('grace_deadline', today) // grace ended before today -> overdue (day AFTER deadline)
     .in('status', ['due', 'in_grace'])
-    .is('deleted_at', null);
+    .is('deleted_at', null)
+    .is('students.deleted_at', null);
   for (const v of expiredVouchers ?? []) {
     const adminEmail = adminEmailByOrg.get((v as any).org_id);
     if (!adminEmail) continue;
