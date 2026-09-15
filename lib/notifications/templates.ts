@@ -86,13 +86,13 @@ export const TEMPLATES: Record<NotificationType, Template> = {
   fee_due: {
     subject: 'Fee Reminder For {{student_name}}',
     body:
-      'Assalam o Alaikum {{parent_name}},\n\nThis is a reminder that voucher {{voucher_no}} for {{student_name}} is due on {{due_date}}.\n\nWhen making the payment, please use the voucher number as your payment reference. Once paid, you can share the payment screenshot with us on WhatsApp or upload it through your portal.\n\nThank you.\n\nRegards,\nThinkerzz',
+      'Assalam o Alaikum {{parent_name}},\n\nThis is a reminder that the fee for {{student_name}} is due on {{due_date}}.\n\nOnce paid, you can share the payment screenshot with us on WhatsApp or upload it through your portal.\n\nThank you.\n\nRegards,\nThinkerzz',
     cta: { label: 'View & Pay Voucher', path: '/fees' },
   },
   grace_ending: {
     subject: "A Quick Note About {{student_name}}'s Fee",
     body:
-      "Assalam o Alaikum {{parent_name}},\n\nA quick reminder that the grace period for voucher {{voucher_no}} ends on {{grace_deadline}}.\n\nPlease complete the payment before the deadline so {{student_name}}'s classes can continue without interruption.\n\nIf you have already made the payment, please disregard this message.\n\nRegards,\nThinkerzz",
+      "Assalam o Alaikum {{parent_name}},\n\nA quick reminder that the grace period for {{student_name}}'s fee ends on {{grace_deadline}}.\n\nPlease complete the payment before the deadline so {{student_name}}'s classes can continue without interruption.\n\nIf you have already made the payment, please disregard this message.\n\nRegards,\nThinkerzz",
     cta: { label: 'Pay Now', path: '/fees' },
   },
   demo_confirmed: {

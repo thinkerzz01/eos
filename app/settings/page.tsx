@@ -7,7 +7,7 @@ import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { useToast } from '@/components/ui/Toast';
 import { createClient } from '@/lib/supabase/client';
-import { saveSettings, sendTestEmail } from './actions';
+import { saveSettings, sendTestEmail, sendMonthlyReportsNow } from './actions';
 import { FONT_OPTIONS, DEFAULT_HEADING_FONT, DEFAULT_BODY_FONT } from '@/lib/fonts';
 import {
   Settings as SettingsIcon,
@@ -65,6 +65,18 @@ export default function SettingsPage() {
     const res = await sendTestEmail(testEmail);
     setTesting(false);
     setTestResult(res.ok ? `✓ ${res.info ?? 'Sent.'}` : `✗ ${res.error ?? 'Failed.'}`);
+  };
+
+  // Monthly reports are manual: this button triggers them for all active students.
+  const [sendingReports, setSendingReports] = useState(false);
+  const [reportsResult, setReportsResult] = useState<string>('');
+  const handleSendMonthlyReports = async () => {
+    if (!window.confirm('Send this month’s progress reports to all active students’ parents now?')) return;
+    setSendingReports(true);
+    setReportsResult('');
+    const res = await sendMonthlyReportsNow();
+    setSendingReports(false);
+    setReportsResult(res.ok ? `✓ ${res.info ?? 'Done.'}` : `✗ ${res.error ?? 'Failed.'}`);
   };
 
   // Reference-only values. These are shown for context but NOT persisted (no
@@ -385,6 +397,28 @@ export default function SettingsPage() {
                 {testResult && (
                   <div className={`text-xs font-medium normal-case ${testResult.startsWith('✓') ? 'text-emerald-600' : 'text-rose-600'}`}>
                     {testResult}
+                  </div>
+                )}
+              </div>
+
+              {/* SEND MONTHLY REPORTS - manual trigger (no auto/cron) */}
+              <div className="p-3.5 bg-white border border-slate-200 rounded-2xl space-y-2">
+                <div className="font-medium text-slate-800">Send monthly progress reports</div>
+                <div className="text-xs font-medium text-slate-500 normal-case">
+                  Monthly reports are manual - they never send automatically. Press this to queue this
+                  month's report for every active student's parent. The text is assembled by us (no AI),
+                  and pressing it more than once in the same month never double-sends.
+                </div>
+                <button
+                  onClick={handleSendMonthlyReports}
+                  disabled={sendingReports}
+                  className="px-4 py-2.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-medium text-xs shadow-sm disabled:opacity-50 normal-case"
+                >
+                  {sendingReports ? 'Sending...' : 'Send Monthly Reports Now'}
+                </button>
+                {reportsResult && (
+                  <div className={`text-xs font-medium normal-case ${reportsResult.startsWith('✓') ? 'text-emerald-600' : 'text-rose-600'}`}>
+                    {reportsResult}
                   </div>
                 )}
               </div>

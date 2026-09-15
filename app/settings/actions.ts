@@ -6,9 +6,12 @@
 // (tagline, currency, cron secret, Resend cap) are not schema-backed and are not
 // persisted here.
 import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath, revalidateTag } from 'next/cache';
 import { sendViaResend } from '@/lib/notifications/resend';
 import { renderEmailHtml } from '@/lib/notifications/emailLayout';
+import { enqueueNotification } from '@/lib/notifications/enqueue';
+import { assembleReportFacts, assembleReportText } from '@/lib/reports/monthlyReport';
 
 export interface ActionResult {
   ok: boolean;
@@ -48,6 +51,78 @@ export async function sendTestEmail(toEmail: string): Promise<{ ok: boolean; err
   return {
     ok: true,
     info: `Sent from ${from}. If it does not arrive, your domain is not verified yet (or RESEND_FROM is unset).`,
+  };
+}
+
+/**
+ * Send this month's progress reports to all active students' parents, right now
+ * (admin-only). Monthly reports are MANUAL: this is the in-app trigger, equivalent
+ * to hitting /api/cron/monthly-reports?manual=1. Report text is deterministic (no
+ * LLM). Idempotent per student per month, so pressing it twice never double-sends.
+ */
+export async function sendMonthlyReportsNow(): Promise<{ ok: boolean; error?: string; info?: string }> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { ok: false, error: 'You are not signed in.' };
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('org_id,role')
+    .eq('user_id', user.id)
+    .is('deleted_at', null)
+    .maybeSingle();
+  if (profile?.role !== 'admin') return { ok: false, error: 'Only an admin can send monthly reports.' };
+  if (!profile?.org_id) return { ok: false, error: 'No organisation profile found.' };
+
+  let admin;
+  try {
+    admin = createAdminClient();
+  } catch (e: any) {
+    return { ok: false, error: e?.message ?? 'Service-role client not configured.' };
+  }
+
+  const month = new Date().toISOString().slice(0, 7); // YYYY-MM
+  const { data: students, error } = await admin
+    .from('students')
+    .select('id,org_id,name,parent_name,email,gender')
+    .eq('org_id', profile.org_id)
+    .eq('status', 'active')
+    .is('deleted_at', null);
+  if (error) return { ok: false, error: 'Could not load students.' };
+
+  let queued = 0;
+  let duplicate = 0;
+  let errored = 0;
+  for (const s of students ?? []) {
+    const student = s as any;
+    const facts = await assembleReportFacts(admin, { id: student.id, name: student.name });
+    const body = assembleReportText(facts); // deterministic - no LLM
+    const r = await enqueueNotification(admin, {
+      orgId: student.org_id,
+      type: 'monthly_report',
+      priority: 3,
+      uniqueKey: `monthly_report:${student.id}:${month}`,
+      payload: {
+        student_name: student.name,
+        parent_name: student.parent_name ?? '',
+        email: student.email ?? '',
+        gender: student.gender ?? '',
+        body,
+      },
+    });
+    if (r === 'queued') queued++;
+    else if (r === 'duplicate') duplicate++;
+    else errored++;
+  }
+
+  const total = (students ?? []).length;
+  const parts = [`${queued} queued`];
+  if (duplicate) parts.push(`${duplicate} already sent this month`);
+  if (errored) parts.push(`${errored} failed`);
+  return {
+    ok: true,
+    info: `${total} active student${total === 1 ? '' : 's'}: ${parts.join(', ')}. Queued reports send on the next cron drain.`,
   };
 }
 
