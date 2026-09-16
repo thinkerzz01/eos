@@ -59,6 +59,7 @@ function mapRow(r: any): DemoSession {
     status: STATUS_UI[r.status as string] ?? 'Scheduled',
     outcome: r.outcome ? OUTCOME_UI[r.outcome as string] : 'Pending',
     conductedBy: (r.conducted_by as 'internal' | 'external' | null) ?? null,
+    externalTeacherName: (r.external_teacher_name as string | null) ?? null,
     feedback: r.reason ?? '',
     parentEmail: lead?.email ?? '',
     subjects: lead?.subjects ?? '',
@@ -82,11 +83,12 @@ export async function getDemos(): Promise<DemoSession[]> {
   let error: any = null;
   ({ data, error } = await supabase
     .from('demos')
-    .select(`${base},conducted_by`)
+    .select(`${base},conducted_by,external_teacher_name`)
     .is('deleted_at', null)
     .order('scheduled_at', { ascending: true }));
-  // Fall back gracefully if the conducted_by migration has not been applied yet.
-  if (error && /conducted_by|column .* does not exist|schema cache/i.test(error.message)) {
+  // Fall back gracefully if the conducted_by / external_teacher_name migrations
+  // have not been applied yet.
+  if (error && /conducted_by|external_teacher_name|column .* does not exist|schema cache/i.test(error.message)) {
     ({ data, error } = await supabase
       .from('demos')
       .select(base)

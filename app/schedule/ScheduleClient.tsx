@@ -83,9 +83,12 @@ export function ScheduleClient({
   const [classNoteText, setClassNoteText] = useState('');
   const [savingCompletion, setSavingCompletion] = useState(false);
 
-  // SCHEDULE WIZARD (set up a qualified student's whole timetable at once)
-  type WizRow = { subjectId: string; teacherId: string; weekdays: number[]; startTime: string; endTime: string; meetingLink?: string };
-  const emptyRow = (): WizRow => ({ subjectId: '', teacherId: '', weekdays: [1, 2, 3, 4, 5], startTime: '', endTime: '', meetingLink: '' });
+  // SCHEDULE WIZARD (set up a qualified student's whole timetable at once).
+  // Each row is a subject+teacher with a list of days, and EACH day carries its
+  // own start/end time (so Mon can be 5pm, Tue 6pm, etc.).
+  type WizDay = { weekday: number; startTime: string; endTime: string };
+  type WizRow = { subjectId: string; teacherId: string; days: WizDay[]; meetingLink?: string };
+  const emptyRow = (): WizRow => ({ subjectId: '', teacherId: '', days: [1, 2, 3, 4, 5].map((w) => ({ weekday: w, startTime: '', endTime: '' })), meetingLink: '' });
   const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
   const [showAddClassModal, setShowAddClassModal] = useState<boolean>(false);
   const [studentTab, setStudentTab] = useState<'new' | 'scheduled'>('new');
@@ -151,7 +154,12 @@ export function ScheduleClient({
         if (!alive) return;
         setWizRows(
           es.length > 0
-            ? es.map((e) => ({ subjectId: e.subjectId, teacherId: e.teacherId, weekdays: [1, 2, 3, 4, 5], startTime: '', endTime: '' }))
+            ? es.map((e) => ({
+                subjectId: e.subjectId,
+                teacherId: e.teacherId,
+                days: [1, 2, 3, 4, 5].map((w) => ({ weekday: w, startTime: '', endTime: '' })),
+                meetingLink: '',
+              }))
             : [emptyRow()]
         );
       })
@@ -490,11 +498,26 @@ export function ScheduleClient({
 
   const updateRow = (i: number, patch: Partial<WizRow>) =>
     setWizRows((rows) => rows.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+  // Toggle a weekday on/off for a row. A newly-added day pre-fills its time from
+  // the last day that already has one (so a same-time week needs one entry, edited
+  // per day only where it differs).
   const toggleWeekday = (i: number, day: number) =>
+    setWizRows((rows) =>
+      rows.map((r, idx) => {
+        if (idx !== i) return r;
+        const has = r.days.some((d) => d.weekday === day);
+        if (has) return { ...r, days: r.days.filter((d) => d.weekday !== day) };
+        const last = [...r.days].reverse().find((d) => d.startTime);
+        const next: WizDay = { weekday: day, startTime: last?.startTime ?? '', endTime: last?.endTime ?? '' };
+        return { ...r, days: [...r.days, next].sort((a, b) => a.weekday - b.weekday) };
+      })
+    );
+  // Set one day's start time (end auto +1h) within a row.
+  const setDayTime = (i: number, day: number, startTime: string) =>
     setWizRows((rows) =>
       rows.map((r, idx) =>
         idx === i
-          ? { ...r, weekdays: r.weekdays.includes(day) ? r.weekdays.filter((d) => d !== day) : [...r.weekdays, day].sort() }
+          ? { ...r, days: r.days.map((d) => (d.weekday === day ? { ...d, startTime, endTime: addOneHour(startTime) } : d)) }
           : r
       )
     );
@@ -510,8 +533,11 @@ export function ScheduleClient({
     setOverlapWarning(null);
     if (!wizStudentId) { setOverlapWarning('Please select a student.'); return; }
     if (!wizStartDate) { setOverlapWarning('Pick a start date.'); return; }
-    const rows = wizRows.filter((r) => r.subjectId && r.teacherId && r.weekdays.length && r.startTime && r.endTime);
-    if (rows.length === 0) { setOverlapWarning('Add at least one subject with a teacher, day(s), and a time.'); return; }
+    // Keep only rows with a subject + teacher and at least one day that has a time.
+    const rows = wizRows
+      .map((r) => ({ ...r, days: r.days.filter((d) => d.startTime && d.endTime) }))
+      .filter((r) => r.subjectId && r.teacherId && r.days.length > 0);
+    if (rows.length === 0) { setOverlapWarning('Add at least one subject with a teacher, and a time for at least one day.'); return; }
 
     setScheduling(true);
     const res = await bulkScheduleClasses({ studentId: wizStudentId, startDate: wizStartDate, weeks: wizWeeks, type: wizType, rows });
@@ -1431,22 +1457,32 @@ export function ScheduleClient({
                           <button
                             key={d}
                             onClick={() => toggleWeekday(i, d)}
-                            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${r.weekdays.includes(d) ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`}
+                            className={`px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-all ${r.days.some((x) => x.weekday === d) ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'}`}
                           >
                             {l}
                           </button>
                         ))}
                       </div>
                     </div>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[11px] text-[#6B7185] font-medium block mb-1">Start (PKT)</label>
-                        <input type="time" value={r.startTime} onChange={(e) => updateRow(i, { startTime: e.target.value, endTime: addOneHour(e.target.value) })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium" />
-                      </div>
-                      <div>
-                        <label className="text-[11px] text-[#6B7185] font-medium block mb-1">End (PKT)</label>
-                        <input type="time" value={r.endTime} onChange={(e) => updateRow(i, { endTime: e.target.value })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium" />
-                      </div>
+                    <div>
+                      <label className="text-[11px] text-[#6B7185] font-medium block mb-1">Time for each day (PKT) <span className="normal-case text-slate-400">- end auto +1h</span></label>
+                      {r.days.length === 0 ? (
+                        <p className="text-[11px] text-slate-400 font-medium">Pick at least one day above.</p>
+                      ) : (
+                        <div className="space-y-1.5">
+                          {r.days.map((d) => {
+                            const label = ({ 0: 'Sun', 1: 'Mon', 2: 'Tue', 3: 'Wed', 4: 'Thu', 5: 'Fri', 6: 'Sat' } as Record<number, string>)[d.weekday];
+                            return (
+                              <div key={d.weekday} className="flex items-center gap-2">
+                                <span className="w-10 shrink-0 text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>
+                                <input type="time" value={d.startTime} onChange={(e) => setDayTime(i, d.weekday, e.target.value)} className="flex-1 bg-white dark:bg-slate-900 border rounded-xl p-2 text-slate-900 dark:text-slate-100 font-medium" />
+                                <span className="text-xs text-slate-400 font-medium">to</span>
+                                <span className="w-16 shrink-0 text-xs font-mono text-slate-500">{d.endTime || '--:--'}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                     <div>
                       <label className="text-[11px] text-[#6B7185] font-medium block mb-1">Meeting link <span className="normal-case text-slate-400">(optional - blank = auto Google Meet)</span></label>

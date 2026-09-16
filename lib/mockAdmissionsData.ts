@@ -40,6 +40,7 @@ export interface DemoSession {
   // Who ran the demo: an in-system ('internal') teacher or an outside/not-yet-hired
   // ('external') one. Recorded at Log Outcome; external never triggers any email.
   conductedBy?: 'internal' | 'external' | null;
+  externalTeacherName?: string | null; // name of the external tutor (when external)
   // Full booking details (from the lead the booking created) - shown in "View Demo".
   parentEmail?: string;
   subjects?: string;

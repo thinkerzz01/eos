@@ -197,6 +197,7 @@ export function DemosClient({
   const [selectedOutcome, setSelectedOutcome] = useState<'Won' | 'Lost' | 'No-show' | 'Pending'>('Won');
   const [outcomeFeedback, setOutcomeFeedback] = useState<string>('');
   const [outcomeConductedBy, setOutcomeConductedBy] = useState<'internal' | 'external'>('external');
+  const [outcomeExternalName, setOutcomeExternalName] = useState<string>('');
   const [enrollLink, setEnrollLink] = useState<string | null>(null);
 
   // Open Log Outcome, defaulting "conducted by" to internal when a system teacher
@@ -205,6 +206,7 @@ export function DemosClient({
     setSelectedOutcome(d.outcome && d.outcome !== 'Pending' ? d.outcome : 'Won');
     setOutcomeFeedback(d.feedback ?? '');
     setOutcomeConductedBy(d.conductedBy ?? (d.teacherId ? 'internal' : 'external'));
+    setOutcomeExternalName(d.externalTeacherName ?? '');
     setOutcomeModalDemo(d);
   };
 
@@ -214,13 +216,18 @@ export function DemosClient({
   const isConducted = (d: DemoSession) =>
     Boolean((d.outcome && d.outcome !== 'Pending') || d.conductedBy || d.status === 'Completed');
   const conductedLabel = (d: DemoSession) =>
-    d.conductedBy === 'external' ? 'External teacher' : d.conductedBy === 'internal' ? 'Internal teacher' : '-';
+    d.conductedBy === 'external'
+      ? (d.externalTeacherName ? `External: ${d.externalTeacherName}` : 'External teacher')
+      : d.conductedBy === 'internal' ? 'Internal teacher' : '-';
 
   const filteredDemos = useMemo(() => {
     return demosList.filter((d) => {
-      if (selectedStatusTab === 'Needs Teacher' && d.teacherId !== null) return false;
+      // Needs Teacher = no teacher assigned AND not already conducted (a Won/logged
+      // demo no longer needs a teacher, so it drops out of this tab).
+      if (selectedStatusTab === 'Needs Teacher' && (d.teacherId !== null || isConducted(d))) return false;
       if (selectedStatusTab === 'Scheduled' && d.status !== 'Scheduled') return false;
       if (selectedStatusTab === 'Completed' && d.status !== 'Completed') return false;
+      if (selectedStatusTab === 'External' && d.conductedBy !== 'external') return false;
 
       // Date range (by demo scheduled date)
       if (dateRange !== 'all' && d.scheduledISO) {
@@ -283,6 +290,7 @@ export function DemosClient({
       outcome: selectedOutcome,
       reason: outcomeFeedback,
       conductedBy: outcomeConductedBy,
+      externalTeacherName: outcomeConductedBy === 'external' ? outcomeExternalName.trim() : undefined,
     });
     setSavingOutcome(false);
 
@@ -440,9 +448,10 @@ export function DemosClient({
             <div className="flex items-center gap-1 bg-[#F6F7FB] dark:bg-slate-800 p-1 rounded-xl flex-wrap">
               {[
                 { name: 'All Demos', count: demosList.length },
-                { name: 'Needs Teacher', count: demosList.filter((d) => d.teacherId === null).length },
+                { name: 'Needs Teacher', count: demosList.filter((d) => d.teacherId === null && !isConducted(d)).length },
                 { name: 'Scheduled', count: demosList.filter((d) => d.status === 'Scheduled').length },
                 { name: 'Completed', count: demosList.filter((d) => d.status === 'Completed').length },
+                { name: 'External', count: demosList.filter((d) => d.conductedBy === 'external').length },
               ].map((tab) => (
                 <button
                   key={tab.name}
@@ -900,6 +909,15 @@ export function DemosClient({
                     <button type="button" onClick={() => setOutcomeConductedBy('external')} className={`flex-1 px-3 py-2 rounded-xl border font-medium transition-colors ${outcomeConductedBy === 'external' ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>External teacher</button>
                   </div>
                   <p className="mt-1 text-[11px] text-slate-400 font-medium normal-case">{outcomeConductedBy === 'external' ? 'Conducted by an outside / not-yet-hired teacher. Nothing is emailed - the outcome is just saved. You can add the teacher to the system later.' : 'Conducted by a teacher already in your system.'}</p>
+                  {outcomeConductedBy === 'external' && (
+                    <input
+                      type="text"
+                      value={outcomeExternalName}
+                      onChange={(e) => setOutcomeExternalName(e.target.value)}
+                      placeholder="External tutor's name (e.g. Sir Bilal)"
+                      className="mt-2 w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900"
+                    />
+                  )}
                 </div>
 
                 <div>

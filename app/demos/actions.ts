@@ -260,6 +260,7 @@ export async function recordOutcome(input: {
   outcome: 'Won' | 'Lost' | 'No-show' | 'Pending';
   reason?: string;
   conductedBy?: 'internal' | 'external'; // who ran the demo; never sends any email
+  externalTeacherName?: string; // name of the external tutor (when conductedBy = external)
 }): Promise<ActionResult> {
   const { supabase, user } = await ctx();
   if (!user) return { ok: false, error: 'You are not signed in.' };
@@ -288,18 +289,45 @@ export async function recordOutcome(input: {
 
   const patch: Record<string, any> = { status, outcome, reason: input.reason?.trim() || null };
   if (input.conductedBy) patch.conducted_by = input.conductedBy;
+  // Only an external tutor carries a name; clear it for internal.
+  if (input.conductedBy === 'external') patch.external_teacher_name = input.externalTeacherName?.trim() || null;
+  else if (input.conductedBy === 'internal') patch.external_teacher_name = null;
 
   let { error } = await supabase.from('demos').update(patch).eq('id', input.demoId);
-  // If the conducted_by column isn't there yet (migration not applied), still save
-  // the outcome without it so nothing is blocked.
-  if (error && /conducted_by|column .* does not exist|schema cache/i.test(error.message)) {
-    const { conducted_by, ...rest } = patch;
+  // If the conducted_by / external_teacher_name columns aren't there yet (migration
+  // not applied), still save the outcome without them so nothing is blocked.
+  if (error && /conducted_by|external_teacher_name|column .* does not exist|schema cache/i.test(error.message)) {
+    const { conducted_by, external_teacher_name, ...rest } = patch;
     ({ error } = await supabase.from('demos').update(rest).eq('id', input.demoId));
   }
   if (error) return { ok: false, error: friendlyDbError(error) };
 
+  // Keep the lead pipeline in sync with the demo outcome so a decided demo leaves
+  // the "New" stage. NOTE: lead status 'won' means ENROLLED (set only by Convert),
+  // so a won demo maps to 'demo_booked' (Demo Set) - it stays convertible. Lost ->
+  // lost; No-show -> contacted (follow up). Pending leaves the lead untouched.
+  const leadStatus =
+    input.outcome === 'Won' ? 'demo_booked'
+    : input.outcome === 'Lost' ? 'lost'
+    : input.outcome === 'No-show' ? 'contacted'
+    : null;
+  if (leadStatus) {
+    const { data: demoRow } = await supabase.from('demos').select('lead_id').eq('id', input.demoId).maybeSingle();
+    const leadId = (demoRow as any)?.lead_id as string | undefined;
+    if (leadId) {
+      // Never downgrade a lead that's already enrolled ('won').
+      await supabase
+        .from('leads')
+        .update({ status: leadStatus })
+        .eq('id', leadId)
+        .neq('status', 'won')
+        .is('deleted_at', null);
+    }
+  }
+
   revalidatePath('/demos');
   revalidatePath('/');
+  revalidatePath('/leads');
   return { ok: true };
 }
 
@@ -378,7 +406,8 @@ export async function createDemo(input: {
       program,
       subjects: subjectName,
       source,
-      status: 'new',
+      // A demo is being booked, so the lead starts at "Demo Set" (not "New").
+      status: 'demo_booked',
       temperature: 'hot',
     })
     .select('id')

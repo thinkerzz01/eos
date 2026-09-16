@@ -607,7 +607,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                               <MessageSquare className="w-3.5 h-3.5" />
                             </a>
 
-                            {l.stage !== 'Won' && (
+                            {l.stage !== 'Won' && l.stage !== 'Lost' && (
                               <button
                                 onClick={() => setConvertModalLead(l)}
                                 title="Convert Lead to Active Student"
@@ -664,7 +664,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       <a href={`https://wa.me/${l.parentPhone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" title="WhatsApp Lead" className="w-9 h-9 rounded-xl bg-[#E7F9EE] text-[#12A150] flex items-center justify-center border border-[#BDE8CC]">
                         <MessageSquare className="w-4 h-4" />
                       </a>
-                      {l.stage !== 'Won' && (
+                      {l.stage !== 'Won' && l.stage !== 'Lost' && (
                         <button
                           onClick={() => setConvertModalLead(l)}
                           title="Convert Lead to Active Student"
@@ -770,7 +770,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               )}
 
               {/* CONVERT BUTTON BANNER */}
-              {selectedLeadDrawer.stage !== 'Won' && (
+              {selectedLeadDrawer.stage !== 'Won' && selectedLeadDrawer.stage !== 'Lost' && (
                 <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl space-y-2">
                   <div className="flex justify-between items-center font-medium text-xs text-emerald-900">
                     <span>Ready to Enroll Student?</span>

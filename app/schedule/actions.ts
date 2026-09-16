@@ -209,15 +209,16 @@ export async function bulkScheduleClasses(input: {
   startDate: string; // YYYY-MM-DD (PKT)
   weeks: number;
   type: 'Class' | 'Makeup' | 'Test';
-  rows: { subjectId: string; teacherId: string; weekdays: number[]; startTime: string; endTime: string; meetingLink?: string }[];
+  // Each row is a subject+teacher with a list of days; EACH day has its own time.
+  rows: { subjectId: string; teacherId: string; days: { weekday: number; startTime: string; endTime: string }[]; meetingLink?: string }[];
 }): Promise<{ ok: boolean; created: number; conflicts: number; error?: string; calendarWarning?: string }> {
   if (!input.studentId) return { ok: false, created: 0, conflicts: 0, error: 'Select a student.' };
   if (!input.startDate) return { ok: false, created: 0, conflicts: 0, error: 'Pick a start date.' };
-  const rows = (input.rows ?? []).filter(
-    (r) => r.subjectId && r.teacherId && Array.isArray(r.weekdays) && r.weekdays.length > 0 && r.startTime && r.endTime
-  );
+  const rows = (input.rows ?? [])
+    .map((r) => ({ ...r, days: (r.days ?? []).filter((d) => d && d.startTime && d.endTime) }))
+    .filter((r) => r.subjectId && r.teacherId && r.days.length > 0);
   if (rows.length === 0) {
-    return { ok: false, created: 0, conflicts: 0, error: 'Add at least one subject with a teacher, day(s), and a time.' };
+    return { ok: false, created: 0, conflicts: 0, error: 'Add at least one subject with a teacher, and a time for at least one day.' };
   }
   const weeks = Math.max(1, Math.min(12, Math.floor(input.weeks || 4)));
   const type = TYPE_DB[input.type] ?? 'class';
@@ -247,75 +248,71 @@ export async function bulkScheduleClasses(input: {
   const studentEmail = (student as any)?.email as string | undefined;
 
   for (const r of rows) {
-    // Collect the concrete class dates for this subject across the window.
-    const occ: { startIso: string; endIso: string }[] = [];
-    for (let d = 0; d < totalDays; d++) {
-      const pktDate = new Date(start.getTime() + d * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
-      const dow = new Date(`${pktDate}T12:00:00Z`).getUTCDay(); // 0=Sun..6=Sat
-      if (!r.weekdays.includes(dow)) continue;
-      const startIso = new Date(`${pktDate}T${r.startTime}:00+05:00`).toISOString();
-      const endIso = new Date(`${pktDate}T${r.endTime}:00+05:00`).toISOString();
-      if (new Date(endIso) <= new Date(startIso)) continue;
-      occ.push({ startIso, endIso });
-    }
-    if (occ.length === 0) continue;
-
-    // Wire the enrollment link for this subject+teacher (see ensureEnrollment).
-    await ensureEnrollment(supabase, orgId, input.studentId, r.subjectId, r.teacherId);
-
-    // One recurring Google Meet + calendar series per subject (best-effort). The
-    // same Meet link is shared by every session in the series. A failure is NOT
-    // fatal (the classes are still created) but IS recorded so the admin is told.
-    let meetLink: string | null = null;
-    let eventId: string | null = null;
+    // Resolve teacher + subject once per subject row.
     const [{ data: teacher }, { data: subject }] = await Promise.all([
       reader.from('teachers').select('name,email').eq('id', r.teacherId).eq('org_id', orgId).maybeSingle(),
       reader.from('subjects').select('name').eq('id', r.subjectId).eq('org_id', orgId).maybeSingle(),
     ]);
     const subjectName = (subject as any)?.name ?? 'Class';
     const attendees = [studentEmail, (teacher as any)?.email].filter(Boolean) as string[];
-    const invite = buildClassInvite({
-      subject: subjectName,
-      teacherName: (teacher as any)?.name,
-      studentName,
-    });
+    const invite = buildClassInvite({ subject: subjectName, teacherName: (teacher as any)?.name, studentName });
     const customLink = r.meetingLink?.trim();
-    const meet = await createMeetEvent({
-      summary: invite.summary,
-      description: invite.description,
-      startISO: occ[0].startIso,
-      endISO: occ[0].endIso,
-      attendees,
-      recurrence: weeklyRecurrence(r.weekdays, occ.length),
-      meetingLink: customLink,
-    });
-    if (meet.ok) {
-      meetLink = meet.meetLink;
-      eventId = meet.eventId;
-    } else {
-      // Keep the custom link on the sessions even if the calendar sync failed.
-      if (customLink) meetLink = customLink;
-      calendarFails.push(`${subjectName} (${calendarReasonText(meet.reason)})`);
-    }
 
-    // Insert each individual session (for the timetable + attendance), sharing the
-    // series' Meet link.
-    for (const o of occ) {
-      const { error } = await supabase.from('class_sessions').insert({
-        org_id: orgId,
-        student_id: input.studentId,
-        subject_id: r.subjectId,
-        teacher_id: r.teacherId,
-        type,
-        start_at: o.startIso,
-        end_at: o.endIso,
-        status: 'scheduled',
-        meeting_link: meetLink,
-        calendar_event_id: eventId,
+    // Wire the enrollment link for this subject+teacher (see ensureEnrollment).
+    await ensureEnrollment(supabase, orgId, input.studentId, r.subjectId, r.teacherId);
+
+    // Each DAY can have its own time, so we build a separate recurring series per
+    // weekday (a single Google recurring event can only carry one time).
+    for (const day of r.days) {
+      const occ: { startIso: string; endIso: string }[] = [];
+      for (let d = 0; d < totalDays; d++) {
+        const pktDate = new Date(start.getTime() + d * 86400000).toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+        const dow = new Date(`${pktDate}T12:00:00Z`).getUTCDay(); // 0=Sun..6=Sat
+        if (dow !== day.weekday) continue;
+        const startIso = new Date(`${pktDate}T${day.startTime}:00+05:00`).toISOString();
+        const endIso = new Date(`${pktDate}T${day.endTime}:00+05:00`).toISOString();
+        if (new Date(endIso) <= new Date(startIso)) continue;
+        occ.push({ startIso, endIso });
+      }
+      if (occ.length === 0) continue;
+
+      // One recurring Google Meet + calendar series for this weekday (best-effort).
+      let meetLink: string | null = null;
+      let eventId: string | null = null;
+      const meet = await createMeetEvent({
+        summary: invite.summary,
+        description: invite.description,
+        startISO: occ[0].startIso,
+        endISO: occ[0].endIso,
+        attendees,
+        recurrence: weeklyRecurrence([day.weekday], occ.length),
+        meetingLink: customLink,
       });
-      if (!error) created++;
-      else if ((error as any).code === '23P01') conflicts++;
-      else return { ok: false, created, conflicts, error: friendlyDbError(error) };
+      if (meet.ok) {
+        meetLink = meet.meetLink;
+        eventId = meet.eventId;
+      } else {
+        if (customLink) meetLink = customLink;
+        calendarFails.push(`${subjectName} (${calendarReasonText(meet.reason)})`);
+      }
+
+      for (const o of occ) {
+        const { error } = await supabase.from('class_sessions').insert({
+          org_id: orgId,
+          student_id: input.studentId,
+          subject_id: r.subjectId,
+          teacher_id: r.teacherId,
+          type,
+          start_at: o.startIso,
+          end_at: o.endIso,
+          status: 'scheduled',
+          meeting_link: meetLink,
+          calendar_event_id: eventId,
+        });
+        if (!error) created++;
+        else if ((error as any).code === '23P01') conflicts++;
+        else return { ok: false, created, conflicts, error: friendlyDbError(error) };
+      }
     }
   }
 
@@ -790,13 +787,44 @@ export async function listStudentEnrollments(
   } = await supabase.auth.getSession();
   if (!session?.user) return [];
 
-  const { data, error } = await supabase
+  // subjectId -> teacherId ('' when the subject is known but no teacher yet, e.g. a
+  // demo done by an external/not-yet-hired teacher). We keep such subjects so the
+  // wizard still pre-fills them and the admin just picks the teacher.
+  const map = new Map<string, string>();
+
+  // 1) Existing enrollments (teacher optional).
+  const { data: enr } = await supabase
     .from('student_subjects')
     .select('subject_id,teacher_id')
     .eq('student_id', studentId)
     .is('deleted_at', null);
-  if (error || !data) return [];
-  return (data as any[])
-    .filter((r) => r.subject_id && r.teacher_id)
-    .map((r) => ({ subjectId: r.subject_id as string, teacherId: r.teacher_id as string }));
+  for (const r of (enr as any[]) ?? []) {
+    if (!r.subject_id) continue;
+    // Prefer a row that has a teacher if one already recorded a blank.
+    if (!map.has(r.subject_id) || (r.teacher_id && !map.get(r.subject_id))) {
+      map.set(r.subject_id, r.teacher_id ?? '');
+    }
+  }
+
+  // 2) The subject the student did their DEMO for (via the converted lead), so a
+  //    demo-won student shows their subject even before any class is scheduled.
+  const { data: leadRows } = await supabase
+    .from('leads')
+    .select('id')
+    .eq('converted_student_id', studentId)
+    .is('deleted_at', null);
+  const leadIds = ((leadRows as any[]) ?? []).map((l) => l.id).filter(Boolean);
+  if (leadIds.length) {
+    const { data: demoRows } = await supabase
+      .from('demos')
+      .select('subject_id,teacher_id')
+      .in('lead_id', leadIds)
+      .is('deleted_at', null)
+      .not('subject_id', 'is', null);
+    for (const d of (demoRows as any[]) ?? []) {
+      if (d.subject_id && !map.has(d.subject_id)) map.set(d.subject_id, d.teacher_id ?? '');
+    }
+  }
+
+  return Array.from(map.entries()).map(([subjectId, teacherId]) => ({ subjectId, teacherId }));
 }
