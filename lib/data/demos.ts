@@ -58,6 +58,7 @@ function mapRow(r: any): DemoSession {
     meetingLink: r.meeting_link ?? '',
     status: STATUS_UI[r.status as string] ?? 'Scheduled',
     outcome: r.outcome ? OUTCOME_UI[r.outcome as string] : 'Pending',
+    conductedBy: (r.conducted_by as 'internal' | 'external' | null) ?? null,
     feedback: r.reason ?? '',
     parentEmail: lead?.email ?? '',
     subjects: lead?.subjects ?? '',
@@ -76,13 +77,22 @@ export async function getDemos(): Promise<DemoSession[]> {
   const user = session?.user;
   if (!user) return [];
 
-  const { data, error } = await supabase
+  const base = 'id,demo_no,lead_id,teacher_id,scheduled_at,meeting_link,status,outcome,reason,leads(name,parent_name,phone,email,program,subjects,source,school,city,area),subjects(name),teachers(name)';
+  let data: any = null;
+  let error: any = null;
+  ({ data, error } = await supabase
     .from('demos')
-    .select(
-      'id,demo_no,lead_id,teacher_id,scheduled_at,meeting_link,status,outcome,reason,leads(name,parent_name,phone,email,program,subjects,source,school,city,area),subjects(name),teachers(name)'
-    )
+    .select(`${base},conducted_by`)
     .is('deleted_at', null)
-    .order('scheduled_at', { ascending: true });
+    .order('scheduled_at', { ascending: true }));
+  // Fall back gracefully if the conducted_by migration has not been applied yet.
+  if (error && /conducted_by|column .* does not exist|schema cache/i.test(error.message)) {
+    ({ data, error } = await supabase
+      .from('demos')
+      .select(base)
+      .is('deleted_at', null)
+      .order('scheduled_at', { ascending: true }));
+  }
 
   if (error || !data) return [];
   return (data as any[]).map(mapRow);

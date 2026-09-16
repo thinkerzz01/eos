@@ -196,7 +196,25 @@ export function DemosClient({
   const [outcomeModalDemo, setOutcomeModalDemo] = useState<DemoSession | null>(null);
   const [selectedOutcome, setSelectedOutcome] = useState<'Won' | 'Lost' | 'No-show' | 'Pending'>('Won');
   const [outcomeFeedback, setOutcomeFeedback] = useState<string>('');
+  const [outcomeConductedBy, setOutcomeConductedBy] = useState<'internal' | 'external'>('external');
   const [enrollLink, setEnrollLink] = useState<string | null>(null);
+
+  // Open Log Outcome, defaulting "conducted by" to internal when a system teacher
+  // is already assigned, otherwise external (the background / not-yet-hired case).
+  const openOutcome = (d: DemoSession) => {
+    setSelectedOutcome(d.outcome && d.outcome !== 'Pending' ? d.outcome : 'Won');
+    setOutcomeFeedback(d.feedback ?? '');
+    setOutcomeConductedBy(d.conductedBy ?? (d.teacherId ? 'internal' : 'external'));
+    setOutcomeModalDemo(d);
+  };
+
+  // A demo is "conducted" once it has a final outcome or a conducted-by record.
+  // We never show the notifying Assign Teacher on a conducted demo (it would email
+  // the student about a class that already happened).
+  const isConducted = (d: DemoSession) =>
+    Boolean((d.outcome && d.outcome !== 'Pending') || d.conductedBy || d.status === 'Completed');
+  const conductedLabel = (d: DemoSession) =>
+    d.conductedBy === 'external' ? 'External teacher' : d.conductedBy === 'internal' ? 'Internal teacher' : '—';
 
   const filteredDemos = useMemo(() => {
     return demosList.filter((d) => {
@@ -264,6 +282,7 @@ export function DemosClient({
       demoId: outcomeModalDemo.id,
       outcome: selectedOutcome,
       reason: outcomeFeedback,
+      conductedBy: outcomeConductedBy,
     });
     setSavingOutcome(false);
 
@@ -578,6 +597,8 @@ export function DemosClient({
                             <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
                             <span>{d.teacherName}</span>
                           </span>
+                        ) : isConducted(d) ? (
+                          <span className="text-xs font-medium text-[#6B7185]">{conductedLabel(d)}</span>
                         ) : (
                           <button
                             onClick={() => setAssignModalDemo(d)}
@@ -623,7 +644,7 @@ export function DemosClient({
                       <td className="py-3.5 px-3 text-center">
                         <div className="flex items-center justify-center gap-1.5">
                           <button
-                            onClick={() => setOutcomeModalDemo(d)}
+                            onClick={() => openOutcome(d)}
                             className="px-2.5 py-1 bg-purple-50 text-[#5B47D6] font-medium text-[13px] rounded-lg border border-purple-200 hover:bg-purple-100 cursor-pointer"
                           >
                             Log Outcome
@@ -677,6 +698,8 @@ export function DemosClient({
                     {d.parentName && <span className="text-[#6B7185]">{d.parentName} · <span className="font-mono">{d.parentPhone}</span></span>}
                     {d.teacherName ? (
                       <span className="font-medium text-slate-900 dark:text-slate-100 inline-flex items-center gap-1"><UserCheck className="w-3.5 h-3.5 text-emerald-600" />{d.teacherName}</span>
+                    ) : isConducted(d) ? (
+                      <span className="text-[#6B7185]">{conductedLabel(d)}</span>
                     ) : (
                       <button onClick={() => setAssignModalDemo(d)} className="px-2.5 py-1 bg-orange-100 text-orange-700 font-medium text-xs rounded-lg inline-flex items-center gap-1 hover:bg-orange-200 transition-all"><UserPlus className="w-3 h-3" /> Assign Teacher</button>
                     )}
@@ -687,7 +710,7 @@ export function DemosClient({
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2 pt-1">
-                    <button onClick={() => setOutcomeModalDemo(d)} className="px-3 py-2 rounded-xl bg-purple-50 text-[#5B47D6] font-medium text-xs border border-purple-200 hover:bg-purple-100">Log Outcome</button>
+                    <button onClick={() => openOutcome(d)} className="px-3 py-2 rounded-xl bg-purple-50 text-[#5B47D6] font-medium text-xs border border-purple-200 hover:bg-purple-100">Log Outcome</button>
                     <button onClick={() => copyDemoMessage(d)} title="Copy a WhatsApp announcement for this booking" className="px-3 py-2 rounded-xl bg-[#25D366]/10 text-[#128C4A] dark:text-emerald-300 font-medium text-xs border border-[#25D366]/40 hover:bg-[#25D366]/20 inline-flex items-center gap-1"><Copy className="w-3.5 h-3.5" /> Copy</button>
                     {canManage && (
                       <RowActionsMenu
@@ -868,6 +891,15 @@ export function DemosClient({
                     <option value="No-show">No-show (Student/Parent Absent)</option>
                     <option value="Pending">Pending Decision</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="text-slate-700 block mb-1">Conducted By</label>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setOutcomeConductedBy('internal')} className={`flex-1 px-3 py-2 rounded-xl border font-medium transition-colors ${outcomeConductedBy === 'internal' ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>Internal teacher</button>
+                    <button type="button" onClick={() => setOutcomeConductedBy('external')} className={`flex-1 px-3 py-2 rounded-xl border font-medium transition-colors ${outcomeConductedBy === 'external' ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>External teacher</button>
+                  </div>
+                  <p className="mt-1 text-[11px] text-slate-400 font-medium normal-case">{outcomeConductedBy === 'external' ? 'Conducted by an outside / not-yet-hired teacher. Nothing is emailed — the outcome is just saved. You can add the teacher to the system later.' : 'Conducted by a teacher already in your system.'}</p>
                 </div>
 
                 <div>

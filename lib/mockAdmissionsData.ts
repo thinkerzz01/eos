@@ -37,6 +37,9 @@ export interface DemoSession {
   status: 'Scheduled' | 'Completed' | 'Cancelled' | 'Reassigned';
   outcome?: 'Won' | 'Lost' | 'No-show' | 'Pending';
   feedback?: string;
+  // Who ran the demo: an in-system ('internal') teacher or an outside/not-yet-hired
+  // ('external') one. Recorded at Log Outcome; external never triggers any email.
+  conductedBy?: 'internal' | 'external' | null;
   // Full booking details (from the lead the booking created) - shown in "View Demo".
   parentEmail?: string;
   subjects?: string;

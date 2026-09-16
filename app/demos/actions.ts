@@ -259,6 +259,7 @@ export async function recordOutcome(input: {
   demoId: string;
   outcome: 'Won' | 'Lost' | 'No-show' | 'Pending';
   reason?: string;
+  conductedBy?: 'internal' | 'external'; // who ran the demo; never sends any email
 }): Promise<ActionResult> {
   const { supabase, user } = await ctx();
   if (!user) return { ok: false, error: 'You are not signed in.' };
@@ -285,10 +286,16 @@ export async function recordOutcome(input: {
       break;
   }
 
-  const { error } = await supabase
-    .from('demos')
-    .update({ status, outcome, reason: input.reason?.trim() || null })
-    .eq('id', input.demoId);
+  const patch: Record<string, any> = { status, outcome, reason: input.reason?.trim() || null };
+  if (input.conductedBy) patch.conducted_by = input.conductedBy;
+
+  let { error } = await supabase.from('demos').update(patch).eq('id', input.demoId);
+  // If the conducted_by column isn't there yet (migration not applied), still save
+  // the outcome without it so nothing is blocked.
+  if (error && /conducted_by|column .* does not exist|schema cache/i.test(error.message)) {
+    const { conducted_by, ...rest } = patch;
+    ({ error } = await supabase.from('demos').update(rest).eq('id', input.demoId));
+  }
   if (error) return { ok: false, error: friendlyDbError(error) };
 
   revalidatePath('/demos');
