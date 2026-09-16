@@ -105,6 +105,7 @@ export async function createClassSession(input: {
   date: string; // YYYY-MM-DD (PKT)
   startTime: string; // HH:MM
   endTime: string; // HH:MM
+  meetingLink?: string; // optional custom link (e.g. Zoom); blank = auto Google Meet
 }): Promise<ActionResult> {
   if (!input.studentId) return { ok: false, error: 'Select a student.' };
   if (!input.subjectId) return { ok: false, error: 'Select a subject.' };
@@ -169,12 +170,14 @@ export async function createClassSession(input: {
     teacherName: (teacher as any)?.name,
     studentName: (student as any)?.name,
   });
+  const customLink = input.meetingLink?.trim();
   const meet = await createMeetEvent({
     summary: invite.summary,
     description: invite.description,
     startISO: startIso,
     endISO: endIso,
     attendees,
+    meetingLink: customLink,
   });
   if (meet.ok) {
     await supabase
@@ -182,7 +185,11 @@ export async function createClassSession(input: {
       .update({ meeting_link: meet.meetLink, calendar_event_id: meet.eventId })
       .eq('id', inserted.id);
   } else {
-    calendarWarning = `Class saved, but the calendar invite could not be sent: ${calendarReasonText(meet.reason)}. Add the Meet link manually or fix the issue and reschedule.`;
+    // Even if the calendar invite failed, keep the admin's custom link on the class.
+    if (customLink) {
+      await supabase.from('class_sessions').update({ meeting_link: customLink }).eq('id', inserted.id);
+    }
+    calendarWarning = `Class saved, but the calendar invite could not be sent: ${calendarReasonText(meet.reason)}. Add the meeting link manually or fix the issue and reschedule.`;
   }
 
   revalidatePath('/schedule');
@@ -202,7 +209,7 @@ export async function bulkScheduleClasses(input: {
   startDate: string; // YYYY-MM-DD (PKT)
   weeks: number;
   type: 'Class' | 'Makeup' | 'Test';
-  rows: { subjectId: string; teacherId: string; weekdays: number[]; startTime: string; endTime: string }[];
+  rows: { subjectId: string; teacherId: string; weekdays: number[]; startTime: string; endTime: string; meetingLink?: string }[];
 }): Promise<{ ok: boolean; created: number; conflicts: number; error?: string; calendarWarning?: string }> {
   if (!input.studentId) return { ok: false, created: 0, conflicts: 0, error: 'Select a student.' };
   if (!input.startDate) return { ok: false, created: 0, conflicts: 0, error: 'Pick a start date.' };
@@ -272,6 +279,7 @@ export async function bulkScheduleClasses(input: {
       teacherName: (teacher as any)?.name,
       studentName,
     });
+    const customLink = r.meetingLink?.trim();
     const meet = await createMeetEvent({
       summary: invite.summary,
       description: invite.description,
@@ -279,11 +287,14 @@ export async function bulkScheduleClasses(input: {
       endISO: occ[0].endIso,
       attendees,
       recurrence: weeklyRecurrence(r.weekdays, occ.length),
+      meetingLink: customLink,
     });
     if (meet.ok) {
       meetLink = meet.meetLink;
       eventId = meet.eventId;
     } else {
+      // Keep the custom link on the sessions even if the calendar sync failed.
+      if (customLink) meetLink = customLink;
       calendarFails.push(`${subjectName} (${calendarReasonText(meet.reason)})`);
     }
 
@@ -330,6 +341,7 @@ export async function updateClassSession(input: {
   date: string; // YYYY-MM-DD (PKT)
   startTime: string; // HH:MM
   endTime: string; // HH:MM
+  meetingLink?: string; // optional custom link; blank leaves the existing link untouched
 }): Promise<ActionResult> {
   if (!input.sessionId) return { ok: false, error: 'Missing class.' };
   if (!input.subjectId) return { ok: false, error: 'Select a subject.' };
@@ -347,6 +359,7 @@ export async function updateClassSession(input: {
   const { supabase, user, orgId } = await ctx();
   if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
 
+  const customLink = input.meetingLink?.trim();
   const { data: updated, error } = await supabase
     .from('class_sessions')
     .update({
@@ -355,6 +368,8 @@ export async function updateClassSession(input: {
       type: TYPE_DB[input.type] ?? 'class',
       start_at: startIso,
       end_at: endIso,
+      // Only overwrite the meeting link when the admin supplied one (blank keeps it).
+      ...(customLink ? { meeting_link: customLink } : {}),
     })
     .eq('id', input.sessionId)
     .select('id,student_id,calendar_event_id')
@@ -386,8 +401,9 @@ export async function updateClassSession(input: {
       teacherName: (teacher as any)?.name,
       studentName: (student as any)?.name,
     });
+    const description = customLink ? `Join link: ${customLink}\n\n${invite.description}` : invite.description;
     const upd = await updateCalendarEvent(eventId, {
-      startISO: startIso, endISO: endIso, summary: invite.summary, description: invite.description,
+      startISO: startIso, endISO: endIso, summary: invite.summary, description,
     });
     if (!upd.ok) {
       calendarWarning = `Class updated, but the calendar invite could not be moved: ${calendarReasonText(upd.reason ?? 'api_error')}. Fix the issue and re-save.`;
@@ -468,7 +484,7 @@ export async function rescheduleClass(input: {
     .from('class_sessions')
     .update({ start_at: startIso, end_at: endIso, status: 'scheduled' })
     .eq('id', input.sessionId)
-    .select('id,student_id,subject_id,calendar_event_id')
+    .select('id,student_id,subject_id,calendar_event_id,meeting_link')
     .single();
   if (error) {
     if ((error as any).code === '23P01') {
@@ -508,6 +524,7 @@ export async function rescheduleClass(input: {
       gender: (student as any)?.gender ?? '',
       class_subject: subjectName,
       class_time: classTimePKT,
+      meeting_link: (updated as any)?.meeting_link ?? '',
       calendar_url: buildGoogleCalUrl({
         text: `Thinkerzz ${subjectName} Class`,
         startISO: startIso,

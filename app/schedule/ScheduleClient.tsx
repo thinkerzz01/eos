@@ -84,8 +84,8 @@ export function ScheduleClient({
   const [savingCompletion, setSavingCompletion] = useState(false);
 
   // SCHEDULE WIZARD (set up a qualified student's whole timetable at once)
-  type WizRow = { subjectId: string; teacherId: string; weekdays: number[]; startTime: string; endTime: string };
-  const emptyRow = (): WizRow => ({ subjectId: '', teacherId: '', weekdays: [1, 2, 3, 4, 5], startTime: '', endTime: '' });
+  type WizRow = { subjectId: string; teacherId: string; weekdays: number[]; startTime: string; endTime: string; meetingLink?: string };
+  const emptyRow = (): WizRow => ({ subjectId: '', teacherId: '', weekdays: [1, 2, 3, 4, 5], startTime: '', endTime: '', meetingLink: '' });
   const todayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
   const [showAddClassModal, setShowAddClassModal] = useState<boolean>(false);
   const [studentTab, setStudentTab] = useState<'new' | 'scheduled'>('new');
@@ -109,6 +109,9 @@ export function ScheduleClient({
   const [scEnd, setScEnd] = useState('');
   const [scSaving, setScSaving] = useState(false);
   const [scError, setScError] = useState<string | null>(null);
+  // Meeting link: default is auto Google Meet; switch to a custom link (e.g. Zoom).
+  const [scUseCustomLink, setScUseCustomLink] = useState(false);
+  const [scMeetingLink, setScMeetingLink] = useState('');
 
   // A student's enrolled subjects+teachers (from admission). Loaded when a student
   // is picked in either scheduling modal so the subject/teacher pre-fill instead
@@ -168,7 +171,7 @@ export function ScheduleClient({
   const resetSingle = () => {
     setScStudentId(''); setScSubjectId(''); setScTeacherId('');
     setScType('Class'); setScDate(todayStr); setScStart(''); setScEnd('');
-    setScError(null);
+    setScError(null); setScUseCustomLink(false); setScMeetingLink('');
   };
 
   const handleAddSingleClass = async () => {
@@ -181,6 +184,7 @@ export function ScheduleClient({
     const res = await createClassSession({
       studentId: scStudentId, subjectId: scSubjectId, teacherId: scTeacherId,
       type: scType, date: scDate, startTime: scStart, endTime: scEnd,
+      meetingLink: scUseCustomLink ? scMeetingLink.trim() : undefined,
     });
     setScSaving(false);
     if (res.ok) {
@@ -208,6 +212,7 @@ export function ScheduleClient({
   const [edEnd, setEdEnd] = useState('');
   const [edSaving, setEdSaving] = useState(false);
   const [edError, setEdError] = useState<string | null>(null);
+  const [edMeetingLink, setEdMeetingLink] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
   // Raw UTC ISO -> PKT date (YYYY-MM-DD) / time (HH:MM) for prefilling the inputs.
@@ -225,6 +230,7 @@ export function ScheduleClient({
     setEdDate(isoToPktDate(cls.startAtISO));
     setEdStart(isoToPktTime(cls.startAtISO));
     setEdEnd(isoToPktTime(cls.endAtISO));
+    setEdMeetingLink(cls.meetingLink ?? '');
     setEdError(null);
   };
 
@@ -239,6 +245,7 @@ export function ScheduleClient({
     const res = await updateClassSession({
       sessionId: editClass.id, subjectId: edSubjectId, teacherId: edTeacherId,
       type: edType, date: edDate, startTime: edStart, endTime: edEnd,
+      meetingLink: edMeetingLink.trim() || undefined,
     });
     setEdSaving(false);
     if (res.ok) {
@@ -1127,6 +1134,25 @@ export function ScheduleClient({
                   </div>
                 </div>
 
+                {/* MEETING LINK — auto Google Meet (default) or a custom link (Zoom, etc.) */}
+                <div>
+                  <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Meeting Link</label>
+                  <div className="flex gap-2">
+                    <button type="button" onClick={() => setScUseCustomLink(false)} className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium border transition-colors ${!scUseCustomLink ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800'}`}>Google Meet (auto)</button>
+                    <button type="button" onClick={() => setScUseCustomLink(true)} className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium border transition-colors ${scUseCustomLink ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800'}`}>Custom link</button>
+                  </div>
+                  {scUseCustomLink && (
+                    <input
+                      type="url"
+                      value={scMeetingLink}
+                      onChange={(e) => setScMeetingLink(e.target.value)}
+                      placeholder="https://zoom.us/j/..."
+                      className="mt-2 w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                    />
+                  )}
+                  <p className="mt-1 text-[11px] text-slate-400 font-medium normal-case">{scUseCustomLink ? 'Paste the teacher’s own class link (Zoom, etc.). The student and teacher still get the calendar invite.' : 'A Google Meet link is created automatically and shared in the invite.'}</p>
+                </div>
+
                 {scError && (
                   <div className="flex items-start gap-2 bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">
                     <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
@@ -1238,6 +1264,18 @@ export function ScheduleClient({
                       className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
                     />
                   </div>
+                </div>
+
+                {/* MEETING LINK — edit the class join link (blank = keep current). */}
+                <div>
+                  <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Meeting Link <span className="text-slate-400 font-medium normal-case">(Zoom/custom; leave blank to keep the current link)</span></label>
+                  <input
+                    type="url"
+                    value={edMeetingLink}
+                    onChange={(e) => setEdMeetingLink(e.target.value)}
+                    placeholder="https://zoom.us/j/... (or leave blank)"
+                    className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
+                  />
                 </div>
 
                 {edError && (
@@ -1409,6 +1447,10 @@ export function ScheduleClient({
                         <label className="text-[11px] text-[#6B7185] font-medium block mb-1">End (PKT)</label>
                         <input type="time" value={r.endTime} onChange={(e) => updateRow(i, { endTime: e.target.value })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium" />
                       </div>
+                    </div>
+                    <div>
+                      <label className="text-[11px] text-[#6B7185] font-medium block mb-1">Meeting link <span className="normal-case text-slate-400">(optional — blank = auto Google Meet)</span></label>
+                      <input type="url" value={r.meetingLink ?? ''} onChange={(e) => updateRow(i, { meetingLink: e.target.value })} placeholder="https://zoom.us/j/... or leave blank" className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium" />
                     </div>
                     {wizRows.length > 1 && (
                       <button onClick={() => removeRow(i)} className="text-xs font-medium text-rose-600 hover:underline">Remove this subject</button>

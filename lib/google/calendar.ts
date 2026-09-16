@@ -59,6 +59,10 @@ export interface MeetEventInput {
   endISO: string;
   attendees: string[]; // emails (student, teacher)
   recurrence?: string[]; // e.g. ['RRULE:FREQ=WEEKLY;BYDAY=MO,WE,FR;COUNT=12']
+  // Optional custom join link (e.g. the teacher's own Zoom). When set, NO Google
+  // Meet is generated: the invite still goes out (calendar + reminders) but points
+  // to this link, which becomes the class meeting_link.
+  meetingLink?: string;
 }
 
 // Why a calendar sync did or did not happen, so callers can tell the admin
@@ -93,13 +97,18 @@ export async function createMeetEvent(input: MeetEventInput): Promise<MeetEventR
   if (!token) return { ok: false, reason: 'auth_failed' };
   const calendarId = process.env.GOOGLE_CALENDAR_ID || 'primary';
 
+  const custom = input.meetingLink?.trim();
   const body: any = {
     summary: input.summary,
-    description: input.description ?? '',
+    description: custom ? `Join link: ${custom}\n\n${input.description ?? ''}` : (input.description ?? ''),
     start: { dateTime: input.startISO, timeZone: 'Asia/Karachi' },
     end: { dateTime: input.endISO, timeZone: 'Asia/Karachi' },
     attendees: recipients.map((email) => ({ email })),
-    conferenceData: { createRequest: { requestId: requestId(), conferenceSolutionKey: { type: 'hangoutsMeet' } } },
+    // Custom link -> no Meet conference, put the link in the event location.
+    // Otherwise generate a Google Meet as before.
+    ...(custom
+      ? { location: custom }
+      : { conferenceData: { createRequest: { requestId: requestId(), conferenceSolutionKey: { type: 'hangoutsMeet' } } } }),
     // Guests can't invite others or edit; they join only.
     guestsCanInviteOthers: false,
     guestsCanModify: false,
@@ -125,6 +134,7 @@ export async function createMeetEvent(input: MeetEventInput): Promise<MeetEventR
     const json: any = await res.json();
     if (!json.id) return { ok: false, reason: 'api_error' };
     const meetLink =
+      custom ||
       json.hangoutLink ||
       json.conferenceData?.entryPoints?.find((e: any) => e.entryPointType === 'video')?.uri ||
       '';
