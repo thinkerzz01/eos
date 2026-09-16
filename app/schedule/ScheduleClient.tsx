@@ -196,6 +196,9 @@ export function ScheduleClient({
 
   // EDIT one existing class (subject / teacher / type / date / time).
   const canManage = role === 'admin' || role === 'manager';
+  // A teacher viewing their own classes doesn't need the Teacher column - it just
+  // repeats their own name on every row/card. Hide it for teachers.
+  const showTeacher = role !== 'teacher';
   const [editClass, setEditClass] = useState<ScheduledClass | null>(null);
   const [edSubjectId, setEdSubjectId] = useState('');
   const [edTeacherId, setEdTeacherId] = useState('');
@@ -564,7 +567,7 @@ export function ScheduleClient({
         <div className="font-medium text-slate-900 dark:text-slate-100">{cls.date}</div>
         <div className="font-mono text-xs text-[#6B7185]">{cls.startAt} - {cls.endAt}</div>
       </td>
-      <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{cls.teacherName}</td>
+      {showTeacher && <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{cls.teacherName}</td>}
       <td className="py-3.5 px-3 text-[#6B7185]">{cls.program}</td>
       <td className="py-3.5 px-3">
         <div className="font-medium text-sm text-slate-900 dark:text-slate-100">{cls.subject}</div>
@@ -619,7 +622,7 @@ export function ScheduleClient({
       </div>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
         {!child && <span className="font-medium text-slate-700 dark:text-slate-200">{cls.date}, {cls.startAt} - {cls.endAt}</span>}
-        <span className="text-[#6B7185]">{cls.teacherName}</span>
+        {showTeacher && <span className="text-[#6B7185]">{cls.teacherName}</span>}
         <span className={`px-2 py-0.5 rounded-full font-medium ${cls.classType === 'Makeup' ? 'bg-purple-100 text-purple-700' : cls.classType === 'Test' ? 'bg-amber-100 text-amber-700' : 'bg-blue-100 text-blue-700'}`}>{cls.classType}{!cls.isCharged && ' (Free)'}</span>
         {cls.meetingLink ? (
           <a href={cls.meetingLink} target="_blank" rel="noreferrer" className="text-[#5B47D6] font-medium">Join</a>
@@ -646,7 +649,7 @@ export function ScheduleClient({
     </div>
   );
 
-  const colCount = canManage ? 9 : 8;
+  const colCount = (canManage ? 9 : 8) - (showTeacher ? 0 : 1);
 
   return (
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager', 'teacher', 'student']}>
@@ -834,7 +837,7 @@ export function ScheduleClient({
                     )}
                     <th className="py-3.5 px-3">Student</th>
                     <th className="py-3.5 px-3">Time</th>
-                    <th className="py-3.5 px-3">Teacher</th>
+                    {showTeacher && <th className="py-3.5 px-3">Teacher</th>}
                     <th className="py-3.5 px-3">Program</th>
                     <th className="py-3.5 px-3">Subject</th>
                     <th className="py-3.5 px-3">Type</th>
@@ -877,7 +880,7 @@ export function ScheduleClient({
                               <div className="font-mono text-xs text-slate-900 dark:text-slate-100">{s.sample.startAt} - {s.sample.endAt}</div>
                               <div className="text-xs text-[#6B7185]">{s.weekdayLabel}</div>
                             </td>
-                            <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{s.sample.teacherName}</td>
+                            {showTeacher && <td className="py-3.5 px-3 font-medium text-slate-900 dark:text-slate-100">{s.sample.teacherName}</td>}
                             <td className="py-3.5 px-3 text-[#6B7185]">{s.sample.program}</td>
                             <td className="py-3.5 px-3 font-medium text-sm text-slate-900 dark:text-slate-100">{s.sample.subject}</td>
                             <td className="py-3.5 px-3">
@@ -927,7 +930,7 @@ export function ScheduleClient({
                         <div className="min-w-0">
                           <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{s.sample.subject} · {s.sample.studentName || '-'}</div>
                           <div className="text-xs text-[#6B7185] truncate">{s.sample.startAt}-{s.sample.endAt} · {s.weekdayLabel} · {s.count} classes{s.doneCount > 0 ? ` · ${s.doneCount} done` : ''}</div>
-                          <div className="text-xs text-[#6B7185] truncate">{s.sample.teacherName} · next {s.next?.date ?? '-'}</div>
+                          <div className="text-xs text-[#6B7185] truncate">{showTeacher ? `${s.sample.teacherName} · ` : ''}next {s.next?.date ?? '-'}</div>
                         </div>
                         <span className="shrink-0 flex items-center gap-1 text-xs font-medium text-[#5B47D6]">
                           {open ? 'Hide' : `View ${s.count}`}
