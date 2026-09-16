@@ -51,7 +51,8 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
   // LOCAL LEADS STATE (seeded from server, RLS-authorized)
   const [leadsList, setLeadsList] = useState<Lead[]>(initialLeads);
-  const [activeStageTab, setActiveStageTab] = useState<string>('All Leads');
+  // Default to the "New" tab so fresh leads are the first thing shown.
+  const [activeStageTab, setActiveStageTab] = useState<string>('New');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedProgram, setSelectedProgram] = useState<string>('All Programs');
   const [selectedTemperature, setSelectedTemperature] = useState<string>('All Temperatures');
@@ -468,7 +469,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
           </div>
         </div>
 
-        {/* BULK ACTION BAR — appears when rows are selected */}
+        {/* BULK ACTION BAR - appears when rows are selected */}
         {selectedLeadIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
             <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">

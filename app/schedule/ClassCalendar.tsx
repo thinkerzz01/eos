@@ -220,8 +220,8 @@ export function ClassCalendar({
     const fmt = (d: Date, withMonth: boolean) =>
       `${withMonth ? MONTH_NAMES[d.getUTCMonth()].slice(0, 3) + ' ' : ''}${d.getUTCDate()}`;
     return sameMonth
-      ? `${MONTH_NAMES[ws.getUTCMonth()].slice(0, 3)} ${ws.getUTCDate()} – ${we.getUTCDate()}, ${we.getUTCFullYear()}`
-      : `${fmt(ws, true)} – ${fmt(we, true)}, ${we.getUTCFullYear()}`;
+      ? `${MONTH_NAMES[ws.getUTCMonth()].slice(0, 3)} ${ws.getUTCDate()} - ${we.getUTCDate()}, ${we.getUTCFullYear()}`
+      : `${fmt(ws, true)} - ${fmt(we, true)}, ${we.getUTCFullYear()}`;
   }, [view, anchor]);
 
   return (
@@ -404,7 +404,7 @@ function WeekGrid({
   const days = Array.from({ length: 7 }, (_, i) => addDays(ws, i));
   const HOUR_PX = 48;
 
-  // Time window: fit the week's events, default 8:00–20:00, pad 1h, clamp 0–24.
+  // Time window: fit the week's events, default 8:00-20:00, pad 1h, clamp 0-24.
   const { winStart, winEnd } = useMemo(() => {
     let min = 8;
     let max = 20;
@@ -484,7 +484,7 @@ function WeekGrid({
                     <button
                       key={p.cls.id}
                       onClick={() => onSelect(p.cls)}
-                      title={`${p.cls.startAt}–${p.cls.endAt} · ${p.cls.subject}`}
+                      title={`${p.cls.startAt}-${p.cls.endAt} · ${p.cls.subject}`}
                       className={`absolute rounded-lg border px-1.5 py-1 text-left overflow-hidden text-[11px] font-medium leading-tight ${eventClasses(
                         p.cls
                       )}`}
@@ -560,7 +560,7 @@ function EventDetail({
 
         <div className="space-y-2.5 text-sm">
           <Row icon={<CalendarIcon className="w-4 h-4 text-[#5B47D6]" />} label={cls.date} />
-          <Row icon={<Clock className="w-4 h-4 text-[#5B47D6]" />} label={`${cls.startAt} – ${cls.endAt}`} />
+          <Row icon={<Clock className="w-4 h-4 text-[#5B47D6]" />} label={`${cls.startAt} - ${cls.endAt}`} />
           {cls.studentName && <Row icon={<GraduationCap className="w-4 h-4 text-[#5B47D6]" />} label={cls.studentName} />}
           <Row icon={<User className="w-4 h-4 text-[#5B47D6]" />} label={cls.teacherName} />
           <div className="flex flex-wrap items-center gap-2 pt-1">

@@ -272,7 +272,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
           </div>
         </div>
 
-        {/* SOURCE CHART — leads per source, split into Won / Pending / Lost.
+        {/* SOURCE CHART - leads per source, split into Won / Pending / Lost.
             Pure CSS bars (no chart lib), recomputed live from the filters. */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm p-4 sm:p-5">
           <div className="flex items-center justify-between gap-2 mb-3">
@@ -370,7 +370,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
           </div>
         </div>
 
-        {/* LEAD DETAIL TABLE — who the leads actually are, so they can be acted on */}
+        {/* LEAD DETAIL TABLE - who the leads actually are, so they can be acted on */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
           <div className="px-4 py-3 border-b border-[#EBEDF3] dark:border-slate-800 flex items-center justify-between gap-2">
             <h2 className="font-heading font-medium text-slate-900 dark:text-white text-[15px]">

@@ -148,11 +148,11 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
                   {toast.description && (
                     <p className="mt-0.5 text-[13px] leading-snug text-slate-500 dark:text-slate-400 break-words">{toast.description}</p>
                   )}
-                  {/* action — stacks under the text on narrow screens */}
+                  {/* action - stacks under the text on narrow screens */}
                   {ActionBtn && <div className="mt-2.5 sm:hidden">{ActionBtn}</div>}
                 </div>
 
-                {/* action — inline on wider screens */}
+                {/* action - inline on wider screens */}
                 {ActionBtn && <div className="hidden sm:flex self-center pr-1">{ActionBtn}</div>}
               </div>
 

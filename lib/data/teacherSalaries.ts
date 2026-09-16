@@ -32,7 +32,7 @@ export interface SalaryRow {
   studentName: string;
   subjectName: string;
   program: string;
-  periodLabel: string;             // exact pay cycle, e.g. "06 Sep – 05 Oct 2026"
+  periodLabel: string;             // exact pay cycle, e.g. "06 Sep - 05 Oct 2026"
   salaryStartMonth: string | null; // raw 'YYYY-MM' override, or null (auto)
   enrolledMonth: string;           // 'YYYY-MM' the student started (auto first-paid month)
   monthlySalary: number;
@@ -235,7 +235,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     return { ...t, balance, status };
   }).sort((a, b) => a.teacherName.localeCompare(b.teacherName));
 
-  // ACTUAL CASH for the month — wired to real records, not the agreed fee:
+  // ACTUAL CASH for the month - wired to real records, not the agreed fee:
   //   feesBilled   = sum of this month's voucher amounts
   //   feesReceived = actual payments collected on those vouchers (what's in bank)
   //   salariesPaid = actual teacher_payouts made this month

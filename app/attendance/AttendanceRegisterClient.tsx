@@ -194,7 +194,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
   const histByStudent = useMemo(() => {
     const m = new Map<string, { name: string; present: number; late: number; absent: number; total: number }>();
     for (const c of histRows) {
-      const name = c.studentName || '—';
+      const name = c.studentName || '-';
       const e = m.get(name) ?? { name, present: 0, late: 0, absent: 0, total: 0 };
       e.total++;
       if (c.attendanceStatus === 'present') e.present++;
@@ -341,7 +341,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
             </h1>
             <p className="text-sm text-[#6B7185]">
               {view === 'register'
-                ? 'All classes across every date. Tap Present/Late/Absent on the ones you want, then Save — only the classes you touch are written.'
+                ? 'All classes across every date. Tap Present/Late/Absent on the ones you want, then Save - only the classes you touch are written.'
                 : 'Every recorded attendance mark across all dates. Filter, review, or export it.'}
             </p>
           </div>
@@ -530,12 +530,12 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                       <td className="py-3 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.date}</td>
                       <td className="py-3 px-4 font-mono text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.startAt} - {c.endAt}</td>
                       <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">
-                        {c.studentName || '—'}
+                        {c.studentName || '-'}
                         {c.attendanceStatus && <span className="ml-2 text-[10px] font-medium text-emerald-600">✓ recorded</span>}
                       </td>
-                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.program || '—'}</td>
-                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.subject || '—'}</td>
-                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.teacherName || '—'}</td>
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.program || '-'}</td>
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.subject || '-'}</td>
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.teacherName || '-'}</td>
                       <td className="py-3 px-4">
                         <div className="flex gap-1.5 justify-center">
                           {(['Present', 'Late', 'Absent'] as const).map((m) => {
@@ -569,7 +569,7 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                             <Trash2 className="w-4 h-4" />
                           </button>
                         ) : (
-                          <span className="text-slate-300 dark:text-slate-600 text-xs">—</span>
+                          <span className="text-slate-300 dark:text-slate-600 text-xs">-</span>
                         )}
                       </td>
                     </tr>
@@ -605,10 +605,10 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                   <div className="flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <div className="font-medium text-slate-900 dark:text-slate-100 truncate">
-                        {c.studentName || '—'}
+                        {c.studentName || '-'}
                         {c.attendanceStatus && <span className="ml-2 text-[10px] font-medium text-emerald-600">✓ recorded</span>}
                       </div>
-                      <div className="text-xs text-[#6B7185] truncate">{c.subject || '—'}{c.program ? ` · ${c.program}` : ''} · {c.teacherName || '—'}</div>
+                      <div className="text-xs text-[#6B7185] truncate">{c.subject || '-'}{c.program ? ` · ${c.program}` : ''} · {c.teacherName || '-'}</div>
                     </div>
                     <div className="shrink-0 text-right">
                       <div className="text-xs text-slate-600 dark:text-slate-300">{c.date}</div>
@@ -776,13 +776,13 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                       <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                         <td className="py-3 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.date}</td>
                         <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">{c.startAt} - {c.endAt}</td>
-                        <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">{c.studentName || '—'}</td>
-                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.program || '—'}</td>
-                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.subject || '—'}</td>
-                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.teacherName || '—'}</td>
+                        <td className="py-3 px-4 font-medium text-slate-900 dark:text-slate-100">{c.studentName || '-'}</td>
+                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.program || '-'}</td>
+                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.subject || '-'}</td>
+                        <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.teacherName || '-'}</td>
                         <td className="py-3 px-4 text-center">
                           <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${markBadgeCls(c.attendanceStatus)}`}>
-                            {MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '—'}
+                            {MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '-'}
                           </span>
                         </td>
                       </tr>
@@ -800,12 +800,12 @@ export function AttendanceRegisterClient({ initialClasses }: { initialClasses: S
                 histRows.map((c) => (
                   <div key={c.id} className="p-4 flex items-center justify-between gap-2">
                     <div className="min-w-0">
-                      <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{c.studentName || '—'}</div>
-                      <div className="text-xs text-[#6B7185] truncate">{c.subject || '—'}{c.program ? ` · ${c.program}` : ''} · {c.teacherName || '—'}</div>
+                      <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{c.studentName || '-'}</div>
+                      <div className="text-xs text-[#6B7185] truncate">{c.subject || '-'}{c.program ? ` · ${c.program}` : ''} · {c.teacherName || '-'}</div>
                       <div className="text-xs text-[#6B7185]">{c.date} · {c.startAt} - {c.endAt}</div>
                     </div>
                     <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${markBadgeCls(c.attendanceStatus)}`}>
-                      {MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '—'}
+                      {MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '-'}
                     </span>
                   </div>
                 ))

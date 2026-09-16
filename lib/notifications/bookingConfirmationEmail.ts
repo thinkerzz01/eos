@@ -30,7 +30,7 @@ export interface BookingConfirmationData {
   parentName?: string;
   bookingRef: string;
   dateLabel: string; // "Sunday, 6 September 2026"
-  timeLabel: string; // "5:00 PM – 6:00 PM (PKT)"
+  timeLabel: string; // "5:00 PM - 6:00 PM (PKT)"
   subject?: string;
   program?: string;
   teacherName?: string; // present once the demo is assigned

@@ -203,7 +203,7 @@ export default function PublicBookingPage() {
                     <p className="mt-1 text-[11px] text-slate-400 font-medium">Only subjects offered for your selected program are shown.</p>
                   </div>
 
-                  {/* SUNDAY NOTICE — Sunday stays selectable; we just flag limited availability */}
+                  {/* SUNDAY NOTICE - Sunday stays selectable; we just flag limited availability */}
                   {isSunday && (
                     <div className="mt-4 flex items-start gap-2.5 p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800">
                       <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -316,7 +316,7 @@ export default function PublicBookingPage() {
             </div>
           </>
         ) : (
-          /* SUCCESS — premium, animated confirmation experience */
+          /* SUCCESS - premium, animated confirmation experience */
           <BookingSuccess
             bookingRef={bookingRef}
             studentName={studentName}

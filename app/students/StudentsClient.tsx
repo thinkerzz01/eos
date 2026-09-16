@@ -657,7 +657,7 @@ export function StudentsClient({
       .toUpperCase();
   };
 
-  // TEACHER VIEW — a read-only roster of the teacher's own assigned students.
+  // TEACHER VIEW - a read-only roster of the teacher's own assigned students.
   // Teachers see only academic info (name, program, performance, next class):
   // no admin KPIs, no parent/contact info, no fees, no filters, no actions.
   if (role === 'teacher') {
@@ -732,7 +732,7 @@ export function StudentsClient({
                               ))}
                             </div>
                           ) : (
-                            <span className="text-xs text-[#9AA0B4]">—</span>
+                            <span className="text-xs text-[#9AA0B4]">-</span>
                           )}
                         </td>
                         <td className="py-3.5 px-3 text-center">
@@ -1212,7 +1212,7 @@ export function StudentsClient({
           )}
         </div>
 
-        {/* BULK ACTION BAR — appears when rows are selected */}
+        {/* BULK ACTION BAR - appears when rows are selected */}
         {selectedStudentIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
             <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
@@ -2061,7 +2061,7 @@ export function StudentsClient({
                       </div>
                       )}
 
-                      {/* ADMISSION & ONBOARDING — details collected on the public onboarding form */}
+                      {/* ADMISSION & ONBOARDING - details collected on the public onboarding form */}
                       <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
                         <div className="flex items-center justify-between">
                           <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider">Admission &amp; Onboarding</h3>
@@ -2070,11 +2070,11 @@ export function StudentsClient({
                           </span>
                         </div>
                         <div className="space-y-2.5 text-xs sm:text-sm">
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">School</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.schoolName || '—'}</span></div>
-                          {isStaff && <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Emergency Contact</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.emergencyContact || '—'}</span></div>}
-                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Exam Session</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.examSession || '—'}</span></div>
-                          {isStaff && <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">City</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.city || '—'}</span></div>}
-                          {isStaff && <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium">Address</span><span className="font-medium text-slate-900 text-right max-w-[60%] truncate" title={profileModalStudent.address || ''}>{profileModalStudent.address || '—'}</span></div>}
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">School</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.schoolName || '-'}</span></div>
+                          {isStaff && <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Emergency Contact</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.emergencyContact || '-'}</span></div>}
+                          <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">Exam Session</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.examSession || '-'}</span></div>
+                          {isStaff && <div className="flex justify-between py-1.5 border-b border-slate-100"><span className="text-[#6B7185] font-medium">City</span><span className="font-medium text-slate-900 text-right">{profileModalStudent.city || '-'}</span></div>}
+                          {isStaff && <div className="flex justify-between py-1.5"><span className="text-[#6B7185] font-medium">Address</span><span className="font-medium text-slate-900 text-right max-w-[60%] truncate" title={profileModalStudent.address || ''}>{profileModalStudent.address || '-'}</span></div>}
                         </div>
                       </div>
                     </div>

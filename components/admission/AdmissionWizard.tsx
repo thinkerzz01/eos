@@ -77,7 +77,7 @@ export function AdmissionWizard({
   const [error, setError] = useState('');
   const [done, setDone] = useState(false);
 
-  // Step 1 — student
+  // Step 1 - student
   const [fullName, setFullName] = useState(initial?.fullName ?? '');
   const [dob, setDob] = useState(initial?.dob ?? '');
   const [gender, setGender] = useState(initial?.gender ?? '');
@@ -87,7 +87,7 @@ export function AdmissionWizard({
   const [examSession, setExamSession] = useState(initial?.examSession ?? '');
   const [grade, setGrade] = useState(initial?.grade ?? '');
   const [school, setSchool] = useState(initial?.school ?? '');
-  // Step 2 — parent + contact
+  // Step 2 - parent + contact
   const [parentName, setParentName] = useState(initial?.parentName ?? '');
   const [parentPhone, setParentPhone] = useState(initial?.parentPhone ?? '');
   const [parentWhatsapp, setParentWhatsapp] = useState(initial?.parentWhatsapp ?? '');
@@ -95,7 +95,7 @@ export function AdmissionWizard({
   const [parentOccupation, setParentOccupation] = useState(initial?.parentOccupation ?? '');
   const [city, setCity] = useState(initial?.city ?? '');
   const [address, setAddress] = useState(initial?.address ?? '');
-  // Step 3 — preferences + consent
+  // Step 3 - preferences + consent
   const [subjects, setSubjects] = useState('');
   const [previousResult, setPreviousResult] = useState('');
   const [timeOfDay, setTimeOfDay] = useState('Evening');

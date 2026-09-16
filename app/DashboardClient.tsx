@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 
 // Code-split by role: the admin dashboard ships only to admin/manager, and the
-// class calendar only to student/teacher — no role downloads the other's widget.
+// class calendar only to student/teacher - no role downloads the other's widget.
 const AdminDashboard = dynamic(
   () => import('./_components/AdminDashboard').then((m) => ({ default: m.AdminDashboard })),
   { loading: () => <div className="p-10 text-center text-sm text-[#6B7185]">Loading dashboard…</div> }
@@ -211,7 +211,7 @@ export function DashboardClient({
             ))}
           </div>
 
-          {/* MY CLASS CALENDAR — same role-scoped rows as the Classes tab */}
+          {/* MY CLASS CALENDAR - same role-scoped rows as the Classes tab */}
           <div>
             <h2 className="font-heading font-medium text-lg text-slate-900 dark:text-white mb-3">My Class Calendar</h2>
             <ClassCalendar
@@ -249,7 +249,7 @@ export function DashboardClient({
             ))}
           </div>
 
-          {/* QUICK NAVIGATION — jump straight to a teacher tab */}
+          {/* QUICK NAVIGATION - jump straight to a teacher tab */}
           <div>
             <div className="text-xs text-slate-500 uppercase font-medium mb-3">Quick actions</div>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -281,7 +281,7 @@ export function DashboardClient({
             </div>
           </div>
 
-          {/* MY CLASS CALENDAR — the teacher's own classes (RLS-scoped) */}
+          {/* MY CLASS CALENDAR - the teacher's own classes (RLS-scoped) */}
           <div>
             <h2 className="font-heading font-medium text-lg text-slate-900 dark:text-white mb-3">My Class Calendar</h2>
             <ClassCalendar

@@ -527,7 +527,7 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
           </div>
         </div>
 
-        {/* BULK ACTION BAR — appears when teachers are selected (admin only) */}
+        {/* BULK ACTION BAR - appears when teachers are selected (admin only) */}
         {role === 'admin' && selectedTeacherIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
             <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">{selectedTeacherIds.length} selected</span>

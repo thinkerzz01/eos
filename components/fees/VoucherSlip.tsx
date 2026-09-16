@@ -1,6 +1,6 @@
 'use client';
 
-// VoucherSlip — the premium, printable Thinkerzz fee-voucher document.
+// VoucherSlip - the premium, printable Thinkerzz fee-voucher document.
 // One shared component used by BOTH the admin Vouchers preview and the student
 // Fees "View voucher" modal, so the slip is pixel-identical everywhere.
 //
@@ -11,7 +11,7 @@
 //   4. Student     two-column labelled info grid
 //   5. Payment     Bank Transfer + Mobile Wallet cards with copy buttons
 //   6. After pay   Send via WhatsApp / Email Receipt
-//   7. Need Help   contact row — the final element (no footer/tagline below)
+//   7. Need Help   contact row - the final element (no footer/tagline below)
 //
 // The voucher number is an internal reference: shown only when `showVoucherId`
 // is true (admin), hidden on the student's own voucher & printout.
@@ -57,13 +57,13 @@ export interface VoucherSlipProps {
   sendToStudentHref?: string;
 }
 
-// Academy contact — same env convention used across the app (client-safe).
+// Academy contact - same env convention used across the app (client-safe).
 const ACADEMY_WA = (process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP || '923262324477').replace(/\D/g, '');
 const ACADEMY_EMAIL = process.env.NEXT_PUBLIC_ACADEMY_EMAIL || 'info@thinkerzz.com';
 
 // "2026-10-10" -> "10 October 2026" (falls back to the raw string if not a date).
 function prettyDate(ymd: string): string {
-  if (!ymd) return '—';
+  if (!ymd) return '-';
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
   if (!m) return ymd;
   const dt = new Date(`${ymd}T00:00:00+05:00`);
@@ -136,7 +136,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
       setCopied(key);
       setTimeout(() => setCopied((c) => (c === key ? null : c)), 1600);
     } catch {
-      /* clipboard unavailable — no-op */
+      /* clipboard unavailable - no-op */
     }
   };
 
@@ -204,7 +204,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
     `Hi Thinkerzz, I have paid my fee voucher${voucherNo ? ` (${voucherNo})` : ''} for ${studentName}. Sharing the payment receipt.`
   )}`;
   const receiptMail = `mailto:${ACADEMY_EMAIL}?subject=${encodeURIComponent(
-    `Fee Payment Receipt${voucherNo ? ` — ${voucherNo}` : ''}`
+    `Fee Payment Receipt${voucherNo ? ` - ${voucherNo}` : ''}`
   )}&body=${encodeURIComponent(
     `Hi Thinkerzz,\n\nPlease find my payment receipt attached for ${studentName}.\n\nThank you.`
   )}`;
@@ -233,7 +233,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
                   <div className="text-right leading-tight">
                     <div className="text-[13px] font-semibold text-[#5B47D6]">Fee Voucher</div>
                     {showVoucherId && (
-                      <div className="font-mono text-[12.5px] text-slate-500">{voucherNo || '—'}</div>
+                      <div className="font-mono text-[12.5px] text-slate-500">{voucherNo || '-'}</div>
                     )}
                   </div>
                 </div>
@@ -296,7 +296,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
                 </div>
                 <div className="voucher-info-grid grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
                   <InfoField icon={<GraduationCap className="w-4 h-4" />} label="Student">
-                    {studentName || '—'}
+                    {studentName || '-'}
                   </InfoField>
                   {parentName ? (
                     <InfoField icon={<Users className="w-4 h-4" />} label="Parent / Guardian">
@@ -315,7 +315,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
                   ) : null}
                   {showVoucherId ? (
                     <InfoField icon={<Hash className="w-4 h-4" />} label="Voucher Number">
-                      <span className="font-mono">{voucherNo || '—'}</span>
+                      <span className="font-mono">{voucherNo || '-'}</span>
                     </InfoField>
                   ) : null}
                   <InfoField icon={<Database className="w-4 h-4" />} label="Voucher Status">
@@ -423,7 +423,7 @@ export function VoucherSlip(props: VoucherSlipProps) {
             </div>
           </div>
 
-          {/* MODAL CONTROLS (never printed — outside the print container) */}
+          {/* MODAL CONTROLS (never printed - outside the print container) */}
           <div className="print:hidden mt-3 flex flex-wrap items-center justify-end gap-2">
             {sendToStudentHref && (
               <a

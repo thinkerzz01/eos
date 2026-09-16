@@ -95,7 +95,7 @@ export function DemosClient({
   const copyDemoMessage = async (d: DemoSession) => {
     try {
       await navigator.clipboard.writeText(demoAnnouncement(d));
-      showToast('Message copied — paste it in your WhatsApp group.', 'success');
+      showToast('Message copied - paste it in your WhatsApp group.', 'success');
     } catch {
       showToast('Could not copy automatically. Long-press the text to copy.', 'error');
     }
@@ -214,7 +214,7 @@ export function DemosClient({
   const isConducted = (d: DemoSession) =>
     Boolean((d.outcome && d.outcome !== 'Pending') || d.conductedBy || d.status === 'Completed');
   const conductedLabel = (d: DemoSession) =>
-    d.conductedBy === 'external' ? 'External teacher' : d.conductedBy === 'internal' ? 'Internal teacher' : '—';
+    d.conductedBy === 'external' ? 'External teacher' : d.conductedBy === 'internal' ? 'Internal teacher' : '-';
 
   const filteredDemos = useMemo(() => {
     return demosList.filter((d) => {
@@ -494,7 +494,7 @@ export function DemosClient({
           </div>
         </div>
 
-        {/* BULK ACTION BAR — appears when rows are selected */}
+        {/* BULK ACTION BAR - appears when rows are selected */}
         {canManage && selectedDemoIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
             <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
@@ -899,7 +899,7 @@ export function DemosClient({
                     <button type="button" onClick={() => setOutcomeConductedBy('internal')} className={`flex-1 px-3 py-2 rounded-xl border font-medium transition-colors ${outcomeConductedBy === 'internal' ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>Internal teacher</button>
                     <button type="button" onClick={() => setOutcomeConductedBy('external')} className={`flex-1 px-3 py-2 rounded-xl border font-medium transition-colors ${outcomeConductedBy === 'external' ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>External teacher</button>
                   </div>
-                  <p className="mt-1 text-[11px] text-slate-400 font-medium normal-case">{outcomeConductedBy === 'external' ? 'Conducted by an outside / not-yet-hired teacher. Nothing is emailed — the outcome is just saved. You can add the teacher to the system later.' : 'Conducted by a teacher already in your system.'}</p>
+                  <p className="mt-1 text-[11px] text-slate-400 font-medium normal-case">{outcomeConductedBy === 'external' ? 'Conducted by an outside / not-yet-hired teacher. Nothing is emailed - the outcome is just saved. You can add the teacher to the system later.' : 'Conducted by a teacher already in your system.'}</p>
                 </div>
 
                 <div>

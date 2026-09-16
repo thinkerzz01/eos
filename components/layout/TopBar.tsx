@@ -355,7 +355,7 @@ export function TopBar({ onMobileMenuToggle, onQuickAdd }: TopBarProps) {
         </div>
         )}
 
-        {/* Refresh (manual) — auto-refresh runs every 30s in the background */}
+        {/* Refresh (manual) - auto-refresh runs every 30s in the background */}
         <button
           onClick={doRefresh}
           aria-label="Refresh"

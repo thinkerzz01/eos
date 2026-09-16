@@ -169,7 +169,7 @@ export async function submitPublicBooking(input: {
     const dateLabel = new Date(`${input.date}T00:00:00+05:00`).toLocaleDateString('en-GB', {
       weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Karachi',
     });
-    const timeLabel = `${fmt12(input.time)} – ${fmt12(addHour(input.time))} (PKT)`;
+    const timeLabel = `${fmt12(input.time)} - ${fmt12(addHour(input.time))} (PKT)`;
 
     const waDigits = (process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP ?? '').replace(/\D/g, '');
     const whatsappUrl = waDigits

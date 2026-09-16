@@ -358,7 +358,7 @@ export function HomeworkClient({
           <button onClick={resetFilters} className="ml-auto text-[13px] font-medium text-[#5B47D6] hover:underline">Reset</button>
         </div>
 
-        {/* BULK ACTION BAR — appears when rows are selected (staff only) */}
+        {/* BULK ACTION BAR - appears when rows are selected (staff only) */}
         {canManage && selectedHwIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
             <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
@@ -548,7 +548,7 @@ export function HomeworkClient({
           <div className="p-3 bg-slate-50 border-t text-[13px] font-medium text-slate-600">Showing {filtered.length} of {homeworks.length} homework</div>
         </div>
 
-        {/* SUBMIT MODAL (student) — say what you did + where you uploaded the file */}
+        {/* SUBMIT MODAL (student) - say what you did + where you uploaded the file */}
         {submitHw && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
@@ -580,7 +580,7 @@ export function HomeworkClient({
           </div>
         )}
 
-        {/* GRADE MODAL — enter an actual mark + optional feedback */}
+        {/* GRADE MODAL - enter an actual mark + optional feedback */}
         {gradeHw && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">

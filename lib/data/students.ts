@@ -219,7 +219,7 @@ function redactContactForTeacher(s: Student): Student {
     city: '',
     emergencyContact: '',
     // onboardingExtra is a free-form answer blob that can carry contact PII
-    // (emergency numbers, home details) — drop it wholesale for teachers.
+    // (emergency numbers, home details) - drop it wholesale for teachers.
     onboardingExtra: {},
   };
 }

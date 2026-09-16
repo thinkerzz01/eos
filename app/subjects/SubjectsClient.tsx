@@ -117,7 +117,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
             <BookOpen className="w-6 h-6 text-[#5B47D6]" /> Subjects
           </h1>
           <p className="text-sm text-[#6B7185]">
-            The academy&apos;s subject list. Add or remove subjects here — changes apply instantly to the teacher &amp; student enrollment pickers and to classes/homework.
+            The academy&apos;s subject list. Add or remove subjects here - changes apply instantly to the teacher &amp; student enrollment pickers and to classes/homework.
           </p>
         </div>
 
@@ -186,7 +186,7 @@ export function SubjectsClient({ initialSubjects }: { initialSubjects: SubjectOp
           </select>
         </div>
 
-        {/* BULK ACTION BAR — appears when rows are selected */}
+        {/* BULK ACTION BAR - appears when rows are selected */}
         {selectedSubjectIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
             <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">

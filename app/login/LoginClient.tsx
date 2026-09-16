@@ -75,7 +75,7 @@ export function LoginClient() {
         showToast(error.message || 'Invalid email or password.', 'error');
       } else if (data.user) {
         // Greet by role (students by first name). A failed lookup just falls
-        // back to the neutral welcome — never blocks the redirect.
+        // back to the neutral welcome - never blocks the redirect.
         const { data: profile } = await supabase
           .from('profiles')
           .select('role,name')

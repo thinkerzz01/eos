@@ -169,7 +169,7 @@ export function AssessmentsClient({
               <span>Assessments</span>
             </h1>
             <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
-              Record monthly test results on the A*–U grade scale and generate Thinkerzz result slips.
+              Record monthly test results on the A*-U grade scale and generate Thinkerzz result slips.
             </p>
           </div>
           {role !== 'student' && (
@@ -258,7 +258,7 @@ export function AssessmentsClient({
             </div>
           </div>
 
-          {/* CAIE GRADE SCALE reference — admin only */}
+          {/* CAIE GRADE SCALE reference - admin only */}
           {role === 'admin' && (
           <div className="lg:col-span-5 space-y-4">
             <div className="bg-gradient-to-br from-[#0B0E23] to-[#1D2145] text-white rounded-[20px] p-5 shadow-lg space-y-3">
@@ -336,7 +336,7 @@ export function AssessmentsClient({
                 </div>
               </div>
 
-              {/* GRADE HERO — the strongest element */}
+              {/* GRADE HERO - the strongest element */}
               {(() => {
                 const total = selectedAssessmentForSlip.totalMarks || 100;
                 const pcts = selectedAssessmentForSlip.grades.map((g) => (g.marksObtained / ((g.maxScore ?? total) || 100)) * 100);

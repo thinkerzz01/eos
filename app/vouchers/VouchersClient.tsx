@@ -241,7 +241,7 @@ export function VouchersClient({
     }
   };
 
-  // QUICK "MARK AS PAID" — records a full payment for the running balance in one
+  // QUICK "MARK AS PAID" - records a full payment for the running balance in one
   // click (payments are entered manually). Use "+ Payment" for partial/specific method.
   const handleMarkPaid = async (v: FeeVoucher) => {
     if (v.status === 'Paid' || v.runningBalance <= 0) return;
@@ -440,7 +440,7 @@ export function VouchersClient({
                 <button onClick={() => setShowGenerate(false)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
               <p className="text-xs text-[#6B7185]">
-                Creates one voucher for every <strong>active</strong> student (using their monthly fee) who isn&apos;t already invoiced for this month. Safe to run more than once — existing ones are skipped.
+                Creates one voucher for every <strong>active</strong> student (using their monthly fee) who isn&apos;t already invoiced for this month. Safe to run more than once - existing ones are skipped.
               </p>
               <div className="space-y-3 text-sm">
                 <div>
@@ -538,7 +538,7 @@ export function VouchersClient({
           </div>
         </div>
 
-        {/* BULK ACTION BAR — appears when rows are selected */}
+        {/* BULK ACTION BAR - appears when rows are selected */}
         {selectedVoucherIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
             <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">
@@ -842,7 +842,7 @@ export function VouchersClient({
           </div>
         )}
 
-        {/* VOUCHER PREVIEW — shared premium slip (identical on admin & student). */}
+        {/* VOUCHER PREVIEW - shared premium slip (identical on admin & student). */}
         {previewVoucher && (
           <VoucherSlip
             voucherNo={previewVoucher.voucherNo}

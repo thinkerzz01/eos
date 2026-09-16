@@ -438,10 +438,10 @@ export async function markStudentPassout(id: string): Promise<ActionResult> {
 
 /** Soft-delete several students at once. RLS enforces admin/manager. */
 // Deleting a student should also remove the LEAD it converted from (and that
-// lead's demos), so the record disappears from Marketing / Leads / Demos too —
+// lead's demos), so the record disappears from Marketing / Leads / Demos too -
 // otherwise a deleted student still shows up as a lead there. This lets the team
 // wipe test/fake data everywhere in one action. Soft-delete (recoverable),
-// best-effort — a failure here never blocks the student delete.
+// best-effort - a failure here never blocks the student delete.
 async function cascadeDeleteForStudents(
   supabase: ReturnType<typeof createClient>,
   studentIds: string[]

@@ -429,7 +429,7 @@ export function OnboardStudentModal({
           </label>
           <div className="flex flex-wrap gap-2.5 max-h-44 overflow-y-auto p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl">
             {subjectChoices.length === 0 && (
-              <span className="text-xs text-slate-400">No subjects for this program yet — add them on the Subjects screen.</span>
+              <span className="text-xs text-slate-400">No subjects for this program yet - add them on the Subjects screen.</span>
             )}
             {subjectChoices.map((subj) => {
               const isSel = formData.selectedSubjects.includes(subj);

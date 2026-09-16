@@ -47,7 +47,7 @@ export function StudentAttendanceView({ initialClasses }: { initialClasses: Sche
           <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white flex items-center gap-2">
             <CalendarCheck className="w-6 h-6 text-[#5B47D6]" /> My Attendance
           </h1>
-          <p className="text-sm text-[#6B7185]">Your recorded attendance for each class. This is view-only — your teacher records it.</p>
+          <p className="text-sm text-[#6B7185]">Your recorded attendance for each class. This is view-only - your teacher records it.</p>
         </div>
 
         {/* SUMMARY */}
@@ -94,11 +94,11 @@ export function StudentAttendanceView({ initialClasses }: { initialClasses: Sche
                     <tr key={c.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40">
                       <td className="py-3 px-4 text-slate-700 dark:text-slate-300 whitespace-nowrap">{c.date}</td>
                       <td className="py-3 px-4 font-mono text-slate-600 dark:text-slate-300 whitespace-nowrap">{c.startAt} - {c.endAt}</td>
-                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.subject || '—'}</td>
-                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.teacherName || '—'}</td>
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.subject || '-'}</td>
+                      <td className="py-3 px-4 text-slate-700 dark:text-slate-300">{c.teacherName || '-'}</td>
                       <td className="py-3 px-4 text-center">
                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeCls(c.attendanceStatus)}`}>
-                          {MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '—'}
+                          {MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '-'}
                         </span>
                       </td>
                     </tr>
@@ -116,12 +116,12 @@ export function StudentAttendanceView({ initialClasses }: { initialClasses: Sche
               rows.map((c) => (
                 <div key={c.id} className="p-4 flex items-center justify-between gap-2">
                   <div className="min-w-0">
-                    <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{c.subject || '—'}</div>
-                    <div className="text-xs text-[#6B7185] truncate">{c.teacherName || '—'}</div>
+                    <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{c.subject || '-'}</div>
+                    <div className="text-xs text-[#6B7185] truncate">{c.teacherName || '-'}</div>
                     <div className="text-xs text-[#6B7185]">{c.date} · {c.startAt} - {c.endAt}</div>
                   </div>
                   <span className={`shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium ${badgeCls(c.attendanceStatus)}`}>
-                    {MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '—'}
+                    {MARK_FROM_STATUS[c.attendanceStatus ?? ''] ?? '-'}
                   </span>
                 </div>
               ))

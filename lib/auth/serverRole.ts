@@ -18,7 +18,7 @@ export interface Identity {
 // layout, the page, requireRole, data layers) shares a SINGLE DB round-trip
 // instead of each doing its own. Presence check uses getSession() (local, no
 // network). Reading role from `profiles` directly (own_profile_read RLS) replaces
-// the previous separate current_user_role RPC call — one query, not two, on every
+// the previous separate current_user_role RPC call - one query, not two, on every
 // navigation. Defaults to least-privilege 'student' on any failure / no session.
 export const getServerIdentity = cache(async (): Promise<Identity> => {
   const EMPTY: Identity = { role: 'student', name: '', orgId: null, teacherId: null, studentId: null };

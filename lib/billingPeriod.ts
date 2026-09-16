@@ -1,6 +1,6 @@
 // Billing period as an exact date range, anchored to the student's enrolment day.
 // Classes often start mid-month, so a voucher's month ("September 2026") is shown
-// as the real cycle it covers, e.g. "26 Sep – 25 Oct 2026" for a student who
+// as the real cycle it covers, e.g. "26 Sep - 25 Oct 2026" for a student who
 // enrolled on the 26th. Display-only: works for existing and new vouchers with no
 // data migration. Falls back to the raw period string if it can't be resolved.
 export function billingPeriodLabel(
@@ -32,7 +32,7 @@ export function billingPeriodLabel(
       month = d.getMonth();
     }
   }
-  if (year === null || month === null) return raw || '—';
+  if (year === null || month === null) return raw || '-';
 
   let cycleDay = 1;
   if (enrolledAt) {
@@ -44,5 +44,5 @@ export function billingPeriodLabel(
   const end = new Date(year, month + 1, cycleDay - 1); // day before next cycle
   const dm = (d: Date) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short' });
   const dmy = (d: Date) => d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
-  return `${dm(start)} – ${dmy(end)}`;
+  return `${dm(start)} - ${dmy(end)}`;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-// Dashboard alerts banner — surfaces the signed-in user's UNREAD in-app
+// Dashboard alerts banner - surfaces the signed-in user's UNREAD in-app
 // notifications right on their dashboard (e.g. "New homework assigned" for a
 // student, "Homework submitted" for a teacher), so they don't have to open the
 // bell. Reads the same app_notifications the TopBar bell uses (RLS-scoped to the

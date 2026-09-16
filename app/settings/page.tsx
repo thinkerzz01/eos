@@ -239,8 +239,8 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 <div className="rounded-xl border border-slate-200 bg-white p-3">
-                  <div className="font-heading text-lg text-slate-900 normal-case">Aa — Heading preview</div>
-                  <p className="text-sm text-slate-600 font-normal normal-case mt-0.5">The quick brown fox jumps over the lazy dog — body text preview.</p>
+                  <div className="font-heading text-lg text-slate-900 normal-case">Aa - Heading preview</div>
+                  <p className="text-sm text-slate-600 font-normal normal-case mt-0.5">The quick brown fox jumps over the lazy dog - body text preview.</p>
                 </div>
                 <p className="text-[11px] text-slate-400 normal-case font-medium">Defaults: Nunito headings, Jost body. Applies across the whole portal after you press Save.</p>
               </div>

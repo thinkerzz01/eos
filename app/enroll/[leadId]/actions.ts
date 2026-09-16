@@ -141,7 +141,7 @@ export async function submitEnrollment(input: {
           },
         })
         .eq('id', studentId);
-      // Portal login is NOT auto-created — an admin grants LMS access manually
+      // Portal login is NOT auto-created - an admin grants LMS access manually
       // later (the student still gets reminders/invites by email).
     } catch {
       /* onboarding payload is best-effort; enrollment already succeeded */

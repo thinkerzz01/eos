@@ -33,7 +33,7 @@ export const LOCAL_BOARD_PROGRAMS = [
 // Subjects grouped by the board/level they belong to, so a picker can show ONLY
 // the subjects relevant to the chosen program (see subjectsForProgram below).
 // Cambridge subjects offered across O Level / IGCSE / AS & A Level. Names are
-// shared across those levels (the code differs per level — see SUBJECT_CODES for
+// shared across those levels (the code differs per level - see SUBJECT_CODES for
 // the default, editable per subject in the Subjects manager). Compiled from the
 // official cambridgeinternational.org O Level and AS & A Level subject catalogs.
 export const CAIE_SUBJECTS = [
@@ -132,7 +132,7 @@ export function subjectsForProgram(program: string): readonly string[] {
 // Standard CAIE subject codes (one per subject; O-Level codes used as the common
 // default per the academy's choice). Matric/Inter subjects have no CAIE code and
 // are intentionally omitted. NOTE: verify these against your exact syllabus
-// variants — some subjects have alternates (e.g. Maths D 4024 vs 4029, Urdu 3247
+// variants - some subjects have alternates (e.g. Maths D 4024 vs 4029, Urdu 3247
 // second-language vs 3248 first-language).
 export const SUBJECT_CODES: Record<string, string> = {
   // Mathematics
@@ -251,7 +251,7 @@ export const A_LEVEL_CODES: Record<string, string> = {
 
 // Edexcel International Advanced Level cash-in codes. IAS = X-prefix, IAL = Y-prefix.
 // Verified pattern (Business YBS11 / Accounting YAC11); a few unit suffixes (01 vs
-// 11) may vary by spec version — verify vs the Pearson IAL information manual.
+// 11) may vary by spec version - verify vs the Pearson IAL information manual.
 export const EDEXCEL_IAS_CODES: Record<string, string> = {
   'Mathematics': 'XMA01', 'Further Mathematics': 'XFM01', 'Physics': 'XPH11',
   'Chemistry': 'XCH11', 'Biology': 'XBI11', 'Economics': 'XEC11', 'Business': 'XBS11',

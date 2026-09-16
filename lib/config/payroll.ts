@@ -1,4 +1,4 @@
-// Payroll model config — the ONE place to change the pay rules.
+// Payroll model config - the ONE place to change the pay rules.
 //
 // Thinkerzz pays each teacher a fixed monthly SALARY per student/subject they
 // teach (one student_subjects row = one salary). The only deduction is a

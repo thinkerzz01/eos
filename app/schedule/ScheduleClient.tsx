@@ -404,7 +404,7 @@ export function ScheduleClient({
       if (present.length >= 3) {
         const startIdx = WD_ORDER.indexOf(present[0]);
         const contiguous = present.every((d, i) => WD_ORDER[startIdx + i] === d);
-        if (contiguous) weekdayLabel = `${present[0]}–${present[present.length - 1]}`;
+        if (contiguous) weekdayLabel = `${present[0]}-${present[present.length - 1]}`;
       }
       const next = sessions.find((s) => isoToPktDate(s.startAtISO) >= todayStr) ?? sessions[sessions.length - 1];
       const doneCount = sessions.filter((s) => s.status === 'Completed').length;
@@ -424,7 +424,7 @@ export function ScheduleClient({
 
   const handleDeleteSeries = async (s: ClassSeries) => {
     const ids = s.sessions.map((x) => x.id);
-    if (!(await confirm({ title: `Delete all ${ids.length} classes?`, message: `Every "${s.sample.subject}" class for ${s.sample.studentName || 'this student'} (${s.sample.startAt}–${s.sample.endAt}) is cancelled, removed from the timetable, and its Google Calendar invite cancelled for the student and teacher. This is logged.`, confirmLabel: 'Delete series' }))) return;
+    if (!(await confirm({ title: `Delete all ${ids.length} classes?`, message: `Every "${s.sample.subject}" class for ${s.sample.studentName || 'this student'} (${s.sample.startAt}-${s.sample.endAt}) is cancelled, removed from the timetable, and its Google Calendar invite cancelled for the student and teacher. This is logged.`, confirmLabel: 'Delete series' }))) return;
     setBulkBusy(true);
     const res = await bulkDeleteClasses({ sessionIds: ids });
     setBulkBusy(false);
@@ -788,7 +788,7 @@ export function ScheduleClient({
           </div>
         </div>
 
-        {/* BULK ACTION BAR — appears when classes are selected (list view only) */}
+        {/* BULK ACTION BAR - appears when classes are selected (list view only) */}
         {viewMode === 'list' && canManage && selectedClassIds.length > 0 && (
           <div className="flex flex-wrap items-center gap-3 bg-[#EEEBFB] dark:bg-[#5B47D6]/15 border border-[#5B47D6]/30 rounded-[14px] px-4 py-2.5 text-sm">
             <span className="font-medium text-[#5B47D6] dark:text-[#b9adf2]">{selectedClassIds.length} selected</span>
@@ -817,7 +817,7 @@ export function ScheduleClient({
           </div>
         )}
 
-        {/* SCHEDULE TIMETABLE GRID / CALENDAR — same RLS-scoped rows, two views */}
+        {/* SCHEDULE TIMETABLE GRID / CALENDAR - same RLS-scoped rows, two views */}
         {viewMode === 'calendar' ? (
           <ClassCalendar
             classes={filteredClasses}
@@ -870,7 +870,7 @@ export function ScheduleClient({
                       const allSelected = ids.every((id) => selectedClassIds.includes(id));
                       return (
                         <React.Fragment key={s.key}>
-                          {/* SERIES SUMMARY ROW — collapses a recurring timetable into one line */}
+                          {/* SERIES SUMMARY ROW - collapses a recurring timetable into one line */}
                           <tr className="bg-[#FAFAFE] dark:bg-slate-800/40 hover:bg-[#F3F1FC] dark:hover:bg-slate-800/70 transition-colors cursor-pointer" onClick={() => toggleSeries(s.key)}>
                             {canManage && (
                               <td className="py-3.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
@@ -922,7 +922,7 @@ export function ScheduleClient({
               </table>
             </div>
 
-            {/* MOBILE CARD LIST (phones) — same rows as the table above */}
+            {/* MOBILE CARD LIST (phones) - same rows as the table above */}
             <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
               {seriesList.length === 0 ? (
                 <div className="py-8 text-center text-[#6B7185] text-sm">No classes in this view. Try widening the “Show” range above.</div>
@@ -1134,7 +1134,7 @@ export function ScheduleClient({
                   </div>
                 </div>
 
-                {/* MEETING LINK — auto Google Meet (default) or a custom link (Zoom, etc.) */}
+                {/* MEETING LINK - auto Google Meet (default) or a custom link (Zoom, etc.) */}
                 <div>
                   <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Meeting Link</label>
                   <div className="flex gap-2">
@@ -1266,7 +1266,7 @@ export function ScheduleClient({
                   </div>
                 </div>
 
-                {/* MEETING LINK — edit the class join link (blank = keep current). */}
+                {/* MEETING LINK - edit the class join link (blank = keep current). */}
                 <div>
                   <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Meeting Link <span className="text-slate-400 font-medium normal-case">(Zoom/custom; leave blank to keep the current link)</span></label>
                   <input
@@ -1313,7 +1313,7 @@ export function ScheduleClient({
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-heading font-medium text-lg text-slate-900 dark:text-white">Reschedule Class</h3>
-                  <p className="text-xs text-[#6B7185] mt-0.5">{rsClass.subject} · {rsClass.studentName || 'student'}. Pick a new time — the student is notified automatically.</p>
+                  <p className="text-xs text-[#6B7185] mt-0.5">{rsClass.subject} · {rsClass.studentName || 'student'}. Pick a new time - the student is notified automatically.</p>
                 </div>
                 <button onClick={() => setRsClass(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
@@ -1449,7 +1449,7 @@ export function ScheduleClient({
                       </div>
                     </div>
                     <div>
-                      <label className="text-[11px] text-[#6B7185] font-medium block mb-1">Meeting link <span className="normal-case text-slate-400">(optional — blank = auto Google Meet)</span></label>
+                      <label className="text-[11px] text-[#6B7185] font-medium block mb-1">Meeting link <span className="normal-case text-slate-400">(optional - blank = auto Google Meet)</span></label>
                       <input type="url" value={r.meetingLink ?? ''} onChange={(e) => updateRow(i, { meetingLink: e.target.value })} placeholder="https://zoom.us/j/... or leave blank" className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium" />
                     </div>
                     {wizRows.length > 1 && (

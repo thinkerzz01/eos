@@ -268,7 +268,7 @@ export async function convertLead(input: {
 /** Soft-delete a lead (admin action). RLS enforces admin/manager write. */
 // Deleting a lead also removes its demo(s), so a fake demo doesn't linger in the
 // Demos/Marketing tabs. Best-effort. NOTE: we do NOT auto-delete a converted
-// student here — that could wipe a real, active student; remove the student from
+// student here - that could wipe a real, active student; remove the student from
 // the Students tab instead (which cascades back to its lead + demo).
 async function cascadeDeleteDemosForLeads(
   supabase: ReturnType<typeof createClient>,

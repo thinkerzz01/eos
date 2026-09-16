@@ -3,13 +3,13 @@
 // Public DIRECT enrolment (no demo). The /admission page is unauthenticated, so
 // it calls the SECURITY DEFINER `create_direct_enrollment` routine, which creates
 // the student directly for the academy org (BOOKING_ORG_ID). Unlike /enroll (which
-// converts a won lead) this has no lead — the student self-enrols after watching a
+// converts a won lead) this has no lead - the student self-enrols after watching a
 // recorded demo. Fee is 0 / next-due +30d; the admin finalises fee + schedule.
 //
 // The form mirrors the /onboarding multi-step admission form, so after creating the
 // student we also save the fuller onboarding payload (school, subjects, timing,
 // etc.) onto students.onboarding_data via the service-role client (the page is
-// anonymous), and mark onboarding complete — same end state as /onboarding.
+// anonymous), and mark onboarding complete - same end state as /onboarding.
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { guardPublicSubmit } from '@/lib/publicFormGuard';
@@ -23,7 +23,7 @@ export interface AdmissionResult {
 }
 
 export async function submitDirectEnrollment(input: {
-  // Step 1 — student
+  // Step 1 - student
   studentName: string;
   dob?: string;
   gender?: string;
@@ -33,7 +33,7 @@ export async function submitDirectEnrollment(input: {
   examSession: string;
   grade?: string;
   school?: string;
-  // Step 2 — parent & contact
+  // Step 2 - parent & contact
   parentName: string;
   parentPhone?: string;
   parentWhatsapp: string;
@@ -41,7 +41,7 @@ export async function submitDirectEnrollment(input: {
   parentOccupation?: string;
   city?: string;
   address?: string;
-  // Step 3 — preferences & consent
+  // Step 3 - preferences & consent
   subjects?: string;
   previousResult?: string;
   timeOfDay?: string;
@@ -133,7 +133,7 @@ export async function submitDirectEnrollment(input: {
       /* onboarding payload is best-effort */
     }
 
-    // Portal login is NOT auto-created — an admin grants LMS access manually later
+    // Portal login is NOT auto-created - an admin grants LMS access manually later
     // (the student still gets reminders/invites by email).
   }
 

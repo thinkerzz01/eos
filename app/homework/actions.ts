@@ -200,7 +200,7 @@ export async function submitHomework(input: { homeworkId: string; note?: string 
         const studentName = (hw as any).students?.name ?? 'A student';
         await notifyTeacherById(org as string, tid as string, {
           title: 'Homework submitted',
-          body: `${studentName} submitted "${(hw as any).title ?? ''}"${note ? ` — ${note.slice(0, 120)}` : ''}`,
+          body: `${studentName} submitted "${(hw as any).title ?? ''}"${note ? ` - ${note.slice(0, 120)}` : ''}`,
           link: '/homework',
         });
       }

@@ -184,7 +184,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
           </div>
         </div>
 
-        {/* KPI CARDS — real cash for the month (in bank vs paid out) */}
+        {/* KPI CARDS - real cash for the month (in bank vs paid out) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
             { label: 'Fees Received', value: fmt(t.feesReceived), sub: `Collected in ${PERIOD}`, color: 'text-emerald-600' },
@@ -283,7 +283,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                     <span className="text-slate-700 dark:text-slate-200">{r.periodLabel}</span>
                     {r.isMonth1 && <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">Month 1 · 25%</span>}
-                    <span className="text-[#6B7185]">Salary: {r.hasSalary ? pkr(r.monthlySalary) : '—'}</span>
+                    <span className="text-[#6B7185]">Salary: {r.hasSalary ? pkr(r.monthlySalary) : '-'}</span>
                     {r.commission > 0 && <span className="text-amber-600 font-mono">Comm: {pkr(r.commission)}</span>}
                   </div>
                   <div className="flex flex-wrap items-center gap-2 pt-1">

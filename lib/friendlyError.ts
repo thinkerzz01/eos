@@ -14,7 +14,7 @@ export function friendlyDbError(err: any, fallback = 'Something went wrong. Plea
     case '23503':
       return 'This links to a record that no longer exists.';
     case '23514':
-      return 'Some values are not allowed — please check the form and try again.';
+      return 'Some values are not allowed - please check the form and try again.';
     case '23502':
       return 'A required field is missing.';
     case '42501':

@@ -31,7 +31,7 @@ export function EnrollForm({ leadId, initial }: { leadId: string; initial: Enrol
       gender: p.gender,
       city: p.city,
       address: p.address,
-      // Richer admission answers — stored on the student's onboarding record.
+      // Richer admission answers - stored on the student's onboarding record.
       dob: p.dob,
       studentMobile: p.studentMobile,
       grade: p.grade,

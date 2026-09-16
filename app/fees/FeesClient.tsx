@@ -17,7 +17,7 @@ export interface VoucherRow {
   parent_name?: string; // parent / guardian (shown on the voucher)
   program?: string;     // enrolment program (shown on the voucher)
   period: string;       // raw month (e.g. "September 2026") - used for the period filter
-  periodLabel: string;  // exact billing cycle (e.g. "26 Sep – 25 Oct 2026") - shown
+  periodLabel: string;  // exact billing cycle (e.g. "26 Sep - 25 Oct 2026") - shown
   amount: number;
   due_date: string;
   grace_deadline: string;
@@ -39,7 +39,7 @@ export function FeesClient({
   const { role } = useRole();
   const isAdmin = role === 'admin';
   // Default the period filter to THIS MONTH (fall back to All if there's no
-  // voucher for it yet). Other months — including upcoming/advance — stay
+  // voucher for it yet). Other months - including upcoming/advance - stay
   // selectable, and "All periods" shows everything.
   const nowLabel = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'Asia/Karachi' });
   const [status, setStatus] = useState('all');
@@ -154,7 +154,7 @@ export function FeesClient({
         emptyDescription="There are no fee vouchers matching these filters."
       />
 
-      {/* VOUCHER DETAIL / PRINT — shared premium slip (identical on admin & student). */}
+      {/* VOUCHER DETAIL / PRINT - shared premium slip (identical on admin & student). */}
       {view && (
         <VoucherSlip
           voucherNo={view.voucher_no}
