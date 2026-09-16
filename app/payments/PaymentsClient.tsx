@@ -257,7 +257,7 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
 
         {/* RECEIPTS TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[720px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -325,6 +325,45 @@ export function PaymentsClient({ initialPayments }: { initialPayments: PaymentTr
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* MOBILE CARD LIST (phones) */}
+          <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="py-8 text-center text-[#6B7185] text-sm">No receipts match these filters.</div>
+            ) : (
+              filtered.map((p) => (
+                <div key={p.id} className="p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{p.studentName}</div>
+                      <div className="text-xs text-[#6B7185] font-mono truncate">{p.receiptNo}</div>
+                    </div>
+                    <div className="font-mono font-medium shrink-0">
+                      <span className={p.amount < 0 ? 'text-rose-600' : 'text-emerald-600'}>
+                        {p.amount < 0 ? `-PKR ${Math.abs(p.amount).toLocaleString()}` : `+PKR ${p.amount.toLocaleString()}`}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <Badge tone={p.type === 'Refund' ? 'danger' : p.type === 'Partial Payment' ? 'warning' : 'success'}>{p.type}</Badge>
+                    <span className="text-slate-700 dark:text-slate-200">{humanDate(p.paymentDate)}</span>
+                    <span className="text-[#6B7185]">{p.paymentMethod}</span>
+                    <span className="text-[#6B7185]">{p.reason || (p.type === 'Refund' ? 'Refund' : 'Fee receipt')}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <RowActionsMenu
+                      actions={[
+                        { label: 'Preview', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setReceipt(p) },
+                        { label: 'Send on WhatsApp', icon: <MessageSquare className="w-3.5 h-3.5" />, tone: 'success', disabled: !p.studentPhone, onClick: () => sendReceiptWa(p) },
+                        { label: 'Edit', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEdit(p) },
+                        { label: 'Delete', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', onClick: () => handleDelete(p) },
+                      ]}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
           <div className="p-3 bg-slate-50 border-t text-[13px] font-medium text-slate-600">Showing {filtered.length} of {payments.length} receipts</div>
         </div>

@@ -522,7 +522,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
           
           {/* LEADS LIST TABLE (8 COLS) */}
           <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden flex flex-col justify-between">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-left text-sm border-collapse min-w-[700px]">
                 <thead>
                   <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -630,6 +630,59 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* MOBILE CARD LIST (phones) */}
+            <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+              {filteredLeads.length === 0 ? (
+                <div className="py-8 text-center text-[#6B7185] text-sm">No leads match the selected stage filter.</div>
+              ) : (
+                filteredLeads.map((l) => (
+                  <div key={l.id} className="p-4 space-y-2.5">
+                    <div
+                      onClick={() => setSelectedLeadDrawer(l)}
+                      className="flex items-start justify-between gap-2 cursor-pointer"
+                    >
+                      <div className="min-w-0">
+                        <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{l.studentName}</div>
+                        <div className="text-xs text-[#6B7185] font-mono truncate">{l.leadId}</div>
+                      </div>
+                      <div className="shrink-0">
+                        <Badge tone={l.stage === 'Won' ? 'success' : l.stage === 'Lost' ? 'neutral' : 'brand'}>{l.stage}</Badge>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                      <span className="text-slate-700 dark:text-slate-200">{l.program}<span className="text-[#6B7185]"> · {l.grade} · {l.subjects.join(', ')}</span></span>
+                      {l.parentName && <span className="text-[#6B7185]">{l.parentName} · <span className="font-mono">{l.parentPhone}</span></span>}
+                      <Badge tone="neutral">{l.source}</Badge>
+                      <Badge tone={l.temperature === 'Hot' ? 'danger' : l.temperature === 'Warm' ? 'warning' : 'info'}>
+                        {l.temperature === 'Hot' ? 'Hot' : l.temperature === 'Warm' ? 'Warm' : 'Cold'}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      <a href={`https://wa.me/${l.parentPhone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" title="WhatsApp Lead" className="w-9 h-9 rounded-xl bg-[#E7F9EE] text-[#12A150] flex items-center justify-center border border-[#BDE8CC]">
+                        <MessageSquare className="w-4 h-4" />
+                      </a>
+                      {l.stage !== 'Won' && (
+                        <button
+                          onClick={() => setConvertModalLead(l)}
+                          title="Convert Lead to Active Student"
+                          className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-xs shadow-xs transition-all"
+                        >
+                          Convert
+                        </button>
+                      )}
+                      <RowActionsMenu
+                        actions={[
+                          { label: 'Edit Lead', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => setSelectedLeadDrawer(l) },
+                          { label: 'Mark Not Converted', icon: <AlertTriangle className="w-3.5 h-3.5" />, tone: 'warning', hidden: l.stage === 'Won' || l.stage === 'Lost', onClick: () => openNotConverted(l) },
+                          { label: 'Delete Lead', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', hidden: role !== 'admin', onClick: () => handleDeleteLead(l.id, l.studentName) },
+                        ]}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
 
             <div className="p-3 bg-slate-50 border-t flex justify-between items-center text-xs font-medium text-slate-600">
@@ -839,7 +892,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 </div>
 
                 {/* Enrollment fee fields (required by the students table) */}
-                <div className="grid grid-cols-2 gap-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
                     <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Exam Session</label>
                     <input type="text" value={convertSession} onChange={(e) => setConvertSession(e.target.value)} placeholder="e.g. May/June 2027" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
@@ -894,7 +947,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   <label className="font-medium text-slate-700 block mb-1">Parent Name</label>
                   <input type="text" value={newLeadData.parentName} onChange={(e) => setNewLeadData({ ...newLeadData, parentName: e.target.value })} placeholder="e.g. Mr. Shahzaib Khan" className="w-full bg-slate-50 border rounded-xl p-2 font-medium" />
                 </div>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <div>
                     <label className="font-medium text-slate-700 block mb-1">Parent Phone</label>
                     <input type="text" value={newLeadData.parentPhone} onChange={(e) => setNewLeadData({ ...newLeadData, parentPhone: e.target.value })} placeholder="+92 300..." className="w-full bg-slate-50 border rounded-xl p-2 font-medium" />

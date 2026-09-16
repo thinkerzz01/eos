@@ -62,7 +62,7 @@ export function AuditLogClient({ initialLogs }: { initialLogs: AuditLogEntry[] }
 
         {/* AUDIT LOG TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[700px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -100,6 +100,29 @@ export function AuditLogClient({ initialLogs }: { initialLogs: AuditLogEntry[] }
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* MOBILE CARD LIST (phones) */}
+          <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="py-8 text-center text-[#6B7185] text-sm">No log entries match your search.</div>
+            ) : filtered.map((log) => (
+              <div key={log.id} className="p-4 space-y-2">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-medium text-sm text-purple-700 font-mono truncate">{log.action}</div>
+                    <div className="text-xs text-[#6B7185] font-mono truncate">{log.targetTable}</div>
+                  </div>
+                  <div className="text-xs text-slate-500 font-mono text-right shrink-0">{log.timestamp}</div>
+                </div>
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                  <span className="text-slate-700 dark:text-slate-200 font-medium">{log.actorName}</span>
+                  <span className="text-[#6B7185]">{log.actorRole}</span>
+                  <span className="text-slate-500 font-mono">{log.ipAddress}</span>
+                </div>
+                <div className="text-xs text-slate-800 dark:text-slate-200 font-medium">{log.details}</div>
+              </div>
+            ))}
           </div>
         </div>
 

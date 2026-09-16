@@ -491,7 +491,7 @@ export function AssessmentsClient({
                     {tSubjectOptions.map((s) => (<option key={s.id} value={s.id}>{labelWithCode(s.name, s.code)} · {s.program}</option>))}
                   </select>
                 </div>
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   <div>
                     <label className="text-slate-700 dark:text-slate-300 block mb-1">Date</label>
                     <input type="date" value={tDate} onChange={(e) => setTDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />

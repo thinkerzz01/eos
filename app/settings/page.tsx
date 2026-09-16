@@ -192,7 +192,7 @@ export default function SettingsPage() {
           {/* TAB 1: ACADEMY BRANDING & GENERAL SETTINGS */}
           {activeTab === 'Branding' && (
             <div className="space-y-4 max-w-2xl text-xs font-medium animate-in fade-in">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-700 block mb-1">Academy Name</label>
                   <input type="text" value={academyName} onChange={(e) => setAcademyName(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />
@@ -203,7 +203,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="text-slate-700 block mb-1">Academic Year</label>
                   <input type="text" value={academicYear} onChange={(e) => setAcademicYear(e.target.value)} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />
@@ -279,7 +279,7 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-slate-700 block mb-1">Grace Period Duration (Days)</label>
                   <input type="number" value={gracePeriodDays} onChange={(e) => setGracePeriodDays(parseInt(e.target.value))} className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900" />

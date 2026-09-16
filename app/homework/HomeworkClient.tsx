@@ -749,7 +749,7 @@ export function HomeworkClient({
                     {students.map((s) => (<option key={s.id} value={s.id}>{s.name}</option>))}
                   </select>
                 </div>
-                <div className={`grid gap-2 ${canManage ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                <div className={`grid gap-2 ${canManage ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
                   <div>
                     <label className="text-slate-700 dark:text-slate-300 block mb-1">Subject</label>
                     <select

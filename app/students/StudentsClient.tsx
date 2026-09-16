@@ -1286,7 +1286,7 @@ export function StudentsClient({
 
         {/* 100% MATCHING MAIN STUDENTS TABLE */}
         <div className="w-full bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[900px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -1447,6 +1447,102 @@ export function StudentsClient({
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* MOBILE CARD LIST (phones) */}
+          <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+            {paginatedStudents.length === 0 ? (
+              <div className="py-10 text-center text-[#6B7185] text-sm">No students match the selected filter criteria.</div>
+            ) : (
+              paginatedStudents.map((s, idx) => {
+                const isSelected = selectedStudentIds.includes(s.id);
+                const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+                return (
+                  <div key={s.id} className={`p-4 space-y-2.5 ${isSelected ? 'bg-purple-50/40' : ''}`}>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <input type="checkbox" checked={isSelected} onChange={() => toggleSelectRow(s.id)} className="rounded accent-[#5B47D6] shrink-0" />
+                        <div className={`w-9 h-9 rounded-full font-medium text-xs flex items-center justify-center shrink-0 shadow-sm ${avatarColor}`}>
+                          {getInitials(s.name)}
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm text-slate-900 dark:text-slate-100 truncate">{s.name}</div>
+                          <div className="text-xs text-[#6B7185] font-mono">{s.stuId}</div>
+                        </div>
+                      </div>
+                      <span
+                        className={`shrink-0 font-medium text-sm font-mono px-3 py-1 rounded-full border-2 ${
+                          s.performanceScore < 60 ? 'bg-rose-50 border-rose-400 text-rose-600'
+                          : s.performanceScore < 80 ? 'bg-amber-50 border-amber-400 text-amber-600'
+                          : 'bg-emerald-50 border-emerald-400 text-emerald-600'}`}
+                      >
+                        {s.performanceScore}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                      <span className="text-slate-700 dark:text-slate-200 font-medium">{s.program}</span>
+                      {s.grade && <span className="text-[#6B7185]">{s.grade}</span>}
+                      <Badge tone={s.feeStatus === 'Paid' ? 'success' : 'danger'}>{s.feeStatus}</Badge>
+                      {isStaff && s.parentName && <span className="text-[#6B7185]">{s.parentName}{s.parentRelation ? ` (${s.parentRelation})` : ''}</span>}
+                    </div>
+                    {s.enrolledSubjects.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {s.enrolledSubjects.map((sub, sIdx) => (
+                          <span key={sIdx} className="px-2 py-0.5 rounded-full bg-[#EEEBFB] text-[#5B47D6] text-[11px] font-medium">{sub.subject} ({sub.teacherName})</span>
+                        ))}
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5 text-xs text-slate-700 dark:text-slate-200">
+                      <Calendar className="w-3.5 h-3.5 text-[#5B47D6] shrink-0" />
+                      <span className="font-medium">{s.nextClassTime}</span>
+                      {s.nextClassSubject && <span className="text-[#6B7185]">· {s.nextClassSubject}</span>}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                      {isStaff && (
+                        <>
+                          <a
+                            href={`https://wa.me/${s.parentPhone.replace(/[^0-9]/g, '')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            title="WhatsApp Parent"
+                            className="w-8 h-8 rounded-xl bg-[#E7F9EE] hover:bg-[#D3F3DE] text-[#12A150] border border-[#BDE8CC] flex items-center justify-center transition-colors"
+                          >
+                            <MessageSquare className="w-4 h-4" />
+                          </a>
+                          <a
+                            href={`mailto:${s.parentEmail}`}
+                            title="Invoice / Email Parent"
+                            className="w-8 h-8 rounded-xl bg-[#E9F1FE] hover:bg-[#CBE0FE] text-[#2E7BEE] border border-[#CBE0FE] flex items-center justify-center transition-colors"
+                          >
+                            <FileText className="w-4 h-4" />
+                          </a>
+                        </>
+                      )}
+                      <button
+                        onClick={() => { setProfileModalStudent(s); setIsEditMode(false); }}
+                        title="View Full Profile Modal"
+                        className="h-8 px-3.5 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium rounded-xl flex items-center gap-1 shadow-sm transition-all cursor-pointer"
+                      >
+                        <span>Profile</span>
+                      </button>
+                      <RowActionsMenu
+                        width={200}
+                        actions={[
+                          { label: 'Edit Profile', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', hidden: !isStaff, onClick: () => { setProfileModalStudent(s); setEditFormData(s); setIsEditMode(true); } },
+                          { label: 'Assign Teacher & Subjects', icon: <GraduationCap className="w-3.5 h-3.5" />, tone: 'primary', hidden: !isStaff, onClick: () => openAssign(s) },
+                          { label: 'View Profile', icon: <UserCog className="w-3.5 h-3.5" />, onClick: () => setProfileModalStudent(s) },
+                          { label: 'Admission Form', icon: <GraduationCap className="w-3.5 h-3.5" />, tone: 'success', hidden: !isStaff, onClick: () => copyOnboardingLink(s.id) },
+                          { label: hasPortalAccess.has(s.id) ? 'Resend portal access' : 'Send portal access', icon: <Send className="w-3.5 h-3.5" />, tone: hasPortalAccess.has(s.id) ? undefined : 'success', hidden: !isStaff, onClick: () => handleSendAccess(s) },
+                          { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, hidden: !isStaff, onClick: () => setResetStudent(s) },
+                          { label: 'Pass Out', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: !(isStaff && s.status !== 'alumni'), onClick: () => handlePassoutStudent(s) },
+                          { label: 'Delete Student', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', hidden: !isStaff, onClick: () => handleDeleteStudent(s.id) },
+                        ]}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            )}
           </div>
 
           {/* PAGINATION */}

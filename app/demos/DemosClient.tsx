@@ -510,7 +510,7 @@ export function DemosClient({
 
         {/* DEMOS DATA TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -651,6 +651,57 @@ export function DemosClient({
               </tbody>
             </table>
           </div>
+
+          {/* MOBILE CARD LIST (phones) */}
+          <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+            {filteredDemos.length === 0 ? (
+              <div className="py-8 text-center text-[#6B7185] text-sm">No demo sessions match the filter criteria.</div>
+            ) : (
+              filteredDemos.map((d) => (
+                <div key={d.id} className="p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{d.studentName}</div>
+                      <div className="text-xs text-[#6B7185] font-mono truncate">{d.demoId}</div>
+                    </div>
+                    <div className="shrink-0">
+                      <Badge tone={d.outcome === 'Won' ? 'success' : d.outcome === 'Lost' ? 'danger' : d.outcome === 'No-show' ? 'warning' : 'neutral'}>
+                        {d.outcome || 'Pending'}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <span className="text-slate-700 dark:text-slate-200">{d.subject}<span className="text-[#6B7185]"> · {d.program}</span></span>
+                    <span className="text-[#6B7185] font-mono">{d.scheduledTime}</span>
+                    {d.parentName && <span className="text-[#6B7185]">{d.parentName} · <span className="font-mono">{d.parentPhone}</span></span>}
+                    {d.teacherName ? (
+                      <span className="font-medium text-slate-900 dark:text-slate-100 inline-flex items-center gap-1"><UserCheck className="w-3.5 h-3.5 text-emerald-600" />{d.teacherName}</span>
+                    ) : (
+                      <button onClick={() => setAssignModalDemo(d)} className="px-2.5 py-1 bg-orange-100 text-orange-700 font-medium text-xs rounded-lg inline-flex items-center gap-1 hover:bg-orange-200 transition-all"><UserPlus className="w-3 h-3" /> Assign Teacher</button>
+                    )}
+                    {d.meetingLink ? (
+                      <a href={d.meetingLink} target="_blank" rel="noreferrer" className="px-2.5 py-1 bg-blue-50 text-blue-700 font-medium text-xs rounded-lg border border-blue-200 inline-flex items-center gap-1 hover:bg-blue-100"><Video className="w-3 h-3 text-blue-600" /> Join Link</a>
+                    ) : (
+                      <span title="No Google Calendar invite / Meet link for this demo. Assign a teacher (with student & teacher emails on file) or reconnect Google." className="px-2.5 py-1 bg-amber-50 text-amber-700 font-medium text-xs rounded-lg border border-amber-200 inline-flex items-center gap-1">No invite</span>
+                    )}
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <button onClick={() => setOutcomeModalDemo(d)} className="px-3 py-2 rounded-xl bg-purple-50 text-[#5B47D6] font-medium text-xs border border-purple-200 hover:bg-purple-100">Log Outcome</button>
+                    <button onClick={() => copyDemoMessage(d)} title="Copy a WhatsApp announcement for this booking" className="px-3 py-2 rounded-xl bg-[#25D366]/10 text-[#128C4A] dark:text-emerald-300 font-medium text-xs border border-[#25D366]/40 hover:bg-[#25D366]/20 inline-flex items-center gap-1"><Copy className="w-3.5 h-3.5" /> Copy</button>
+                    {canManage && (
+                      <RowActionsMenu
+                        actions={[
+                          { label: 'View Demo', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setViewDemo(d) },
+                          { label: 'Edit / Reschedule', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditDemo(d) },
+                          { label: 'Delete Demo', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', onClick: () => handleDeleteDemo(d) },
+                        ]}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         {/* NEW DEMO MODAL (staff-created lead + needs_teacher demo) */}
@@ -668,7 +719,7 @@ export function DemosClient({
               </div>
 
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Student Name *</label>
                     <input value={ndName} onChange={(e) => setNdName(e.target.value)} placeholder="e.g. Ahmed Raza" className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
@@ -687,7 +738,7 @@ export function DemosClient({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Program</label>
                     <select value={ndProgram} onChange={(e) => { setNdProgram(e.target.value); setNdSubjectId(''); }} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]">
@@ -704,7 +755,7 @@ export function DemosClient({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Date *</label>
                     <input type="date" value={ndDate} onChange={(e) => setNdDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />
@@ -860,7 +911,7 @@ export function DemosClient({
                 </div>
                 <button onClick={() => setEditDemo(null)} className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"><X className="w-5 h-5 text-slate-500" /></button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Date *</label>
                   <input type="date" value={edDate} onChange={(e) => setEdDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]" />

@@ -1048,7 +1048,7 @@ export function ScheduleClient({
                   </select>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Subject *</label>
                     <select
@@ -1079,7 +1079,7 @@ export function ScheduleClient({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Class Type</label>
                     <select
@@ -1103,7 +1103,7 @@ export function ScheduleClient({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Start Time *</label>
                     <input
@@ -1167,7 +1167,7 @@ export function ScheduleClient({
               </div>
 
               <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Subject *</label>
                     <select
@@ -1192,7 +1192,7 @@ export function ScheduleClient({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Class Type</label>
                     <select
@@ -1216,7 +1216,7 @@ export function ScheduleClient({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Start Time *</label>
                     <input
@@ -1286,7 +1286,7 @@ export function ScheduleClient({
                   className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-sm px-3 py-2.5 rounded-xl focus:outline-none focus:border-[#5B47D6]"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Start Time *</label>
                   <input
@@ -1397,7 +1397,7 @@ export function ScheduleClient({
                         ))}
                       </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <label className="text-[11px] text-[#6B7185] font-medium block mb-1">Start (PKT)</label>
                         <input type="time" value={r.startTime} onChange={(e) => updateRow(i, { startTime: e.target.value, endTime: addOneHour(e.target.value) })} className="w-full bg-white dark:bg-slate-900 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium" />
@@ -1425,7 +1425,7 @@ export function ScheduleClient({
                   </select>
                   <p className="text-[11px] text-[#6B7185] mt-1 leading-relaxed">Regular = normal teaching class · Makeup = a free replacement for a missed class · Test = an assessment session.</p>
                 </div>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-slate-700 dark:text-slate-300 font-medium block mb-1">Start date</label>
                     <input type="date" value={wizStartDate} min={todayStr} onChange={(e) => setWizStartDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium" />

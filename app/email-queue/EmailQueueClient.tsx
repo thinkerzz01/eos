@@ -101,7 +101,7 @@ export function EmailQueueClient({ initialNotifications }: { initialNotification
 
         {/* NOTIFICATION QUEUE TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -153,6 +153,35 @@ export function EmailQueueClient({ initialNotifications }: { initialNotification
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* MOBILE CARD LIST (phones) */}
+          <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+            {filtered.length === 0 ? (
+              <div className="py-10 text-center text-slate-400 font-medium text-sm">
+                {notifications.length === 0 ? 'The notification queue is empty. Reminders and reports are enqueued by the cron jobs.' : 'No queue items match your search.'}
+              </div>
+            ) : (
+              filtered.map((item) => (
+                <div key={item.id} className="p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{item.recipientEmail}</div>
+                      <div className="text-xs text-[#6B7185] font-mono truncate">{item.uniqueKey}</div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge tone={item.status === 'Sent' ? 'success' : item.status === 'Failed' ? 'danger' : 'warning'}>{item.status}</Badge>
+                      {item.retryCount > 0 && <div className="text-xs text-rose-600">Retries: {item.retryCount}</div>}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <Badge tone={item.priority === 1 ? 'danger' : item.priority === 2 ? 'brand' : 'neutral'}>Priority {item.priority}</Badge>
+                    <span className="text-slate-700 dark:text-slate-200">{item.templateName}</span>
+                  </div>
+                  <div className="text-xs font-mono text-slate-800 dark:text-slate-300 break-words">{item.messageBody}</div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

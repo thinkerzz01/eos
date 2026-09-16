@@ -574,7 +574,7 @@ export function VouchersClient({
 
         {/* VOUCHERS DATA TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[800px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -689,6 +689,71 @@ export function VouchersClient({
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* MOBILE CARD LIST (phones) */}
+          <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+            {filteredVouchers.length === 0 ? (
+              <div className="py-8 text-center text-[#6B7185] text-sm">No fee vouchers match the filter criteria.</div>
+            ) : (
+              filteredVouchers.map((v) => (
+                <div key={v.id} className="p-4 space-y-2.5">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{v.studentName}</div>
+                      <div className="text-xs text-[#6B7185] font-mono truncate">{v.voucherNo}</div>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <Badge tone={v.status === 'Paid' ? 'success' : v.status === 'In Grace' ? 'brand' : v.status === 'Stopped' ? 'neutral' : 'danger'}>
+                        {v.status}
+                      </Badge>
+                      {v.needsAdminDecision && (
+                        <span className="text-xs font-medium text-rose-600">Needs Admin Decision</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <span className="text-slate-700 dark:text-slate-200">{v.parentName}</span>
+                    <span className="text-[#6B7185] font-mono">{v.parentPhone}</span>
+                    <span className="text-slate-700 dark:text-slate-200 font-mono">Due: <strong className="text-slate-900 dark:text-slate-100">{v.dueDate}</strong></span>
+                    <span className="text-purple-600 font-mono font-medium">Grace: {v.graceDeadlineDate}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono font-medium">
+                    <span className="text-slate-900 dark:text-slate-100">PKR {v.totalAmount.toLocaleString()}</span>
+                    <span className="text-emerald-600">Paid PKR {v.paidAmount.toLocaleString()}</span>
+                    <span className="text-rose-600">Bal PKR {v.runningBalance.toLocaleString()}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    {v.needsAdminDecision && (
+                      <button
+                        onClick={() => setDecisionVoucher(v)}
+                        className="px-3 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-medium"
+                      >
+                        Fee Decision
+                      </button>
+                    )}
+                    {!v.needsAdminDecision && v.status !== 'Paid' && (
+                      <button
+                        onClick={() => { setPartialPayVoucher(v); setPayAmountInput(v.runningBalance.toString()); }}
+                        className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium"
+                      >
+                        + Payment
+                      </button>
+                    )}
+                    <RowActionsMenu
+                      actions={[
+                        { label: 'Mark as Paid', icon: <CheckCircle2 className="w-3.5 h-3.5" />, tone: 'success', hidden: v.status === 'Paid' || v.runningBalance <= 0, onClick: () => handleMarkPaid(v) },
+                        { label: 'Review Voucher', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setPreviewVoucher(v) },
+                        { label: 'Send to Student', icon: <MessageSquare className="w-3.5 h-3.5" />, tone: 'success', onClick: () => sendVoucherWa(v) },
+                        { label: 'Modify Voucher', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditVoucher(v) },
+                        { label: 'Refund', icon: <ArrowDownRight className="w-3.5 h-3.5" />, tone: 'danger', hidden: !(v.paidAmount > 0), onClick: () => setRefundVoucher(v) },
+                        { label: 'Fee Decision', icon: <ShieldCheck className="w-3.5 h-3.5" />, tone: 'warning', hidden: v.needsAdminDecision, onClick: () => setDecisionVoucher(v) },
+                      ]}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 

@@ -576,7 +576,7 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
           
           {/* CLEAN TEACHERS DATA TABLE (8 COLS) */}
           <div className="lg:col-span-8 bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden flex flex-col justify-between">
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-left text-sm border-collapse min-w-[700px]">
                 <thead>
                   <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -697,6 +697,66 @@ export function TeachersClient({ initialTeachers, portalAccessIds = [] }: { init
                   )}
                 </tbody>
               </table>
+            </div>
+
+            {/* MOBILE CARD LIST (phones) */}
+            <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+              {filteredTeachers.length === 0 ? (
+                <div className="py-8 text-center text-[#6B7185] text-sm">No teachers match the selected filter criteria.</div>
+              ) : (
+                filteredTeachers.map((t, idx) => {
+                  const isSelected = selectedTeacherIds.includes(t.id);
+                  const avatarColor = AVATAR_COLORS[idx % AVATAR_COLORS.length];
+                  const loadPct = Math.round((t.currentLoad / t.capacity) * 100);
+                  return (
+                    <div key={t.id} className={`p-4 space-y-2.5 ${isSelected ? 'bg-purple-50/30' : ''}`}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-9 h-9 rounded-full font-medium text-xs flex items-center justify-center shrink-0 shadow-sm ${avatarColor}`}>
+                            {getInitials(t.name)}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-slate-900 dark:text-slate-100 truncate">{t.name}</div>
+                            <div className="text-xs text-[#6B7185] truncate">{t.subjects.join(' · ')}</div>
+                          </div>
+                        </div>
+                        <Badge tone={t.status === 'Teaching' ? 'success' : t.status === 'At Capacity' ? 'danger' : 'brand'}>
+                          {t.status}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                        {t.programs.length > 0 && <span className="text-[#5B47D6] font-medium">{t.programs.join(' · ')}</span>}
+                        <span className="text-[#6B7185]">Joined {t.joinDate}</span>
+                        <span className="text-[#6B7185] font-mono">Emp ID: {t.empId}</span>
+                        <span className="text-slate-700 dark:text-slate-200 font-mono">Load {t.currentLoad}/{t.capacity} ({loadPct}%)</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
+                        <a href={`https://wa.me/${t.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" title="WhatsApp Teacher" className="w-9 h-9 rounded-lg bg-[#E7F9EE] text-[#12A150] flex items-center justify-center border border-[#BDE8CC]">
+                          <MessageSquare className="w-4 h-4" />
+                        </a>
+                        <a href={`mailto:${t.email}`} title="Email Teacher" className="w-9 h-9 rounded-lg bg-[#E9F1FE] text-[#2E7BEE] flex items-center justify-center border border-[#CBE0FE]">
+                          <Mail className="w-4 h-4" />
+                        </a>
+                        <button onClick={() => setSelectedDrawerTeacher(t)} title="View Teacher Profile" className="px-3 py-2 rounded-xl bg-[#5B47D6] hover:bg-[#4F3DC7] text-white text-xs font-medium">
+                          View
+                        </button>
+                        {role === 'admin' && (
+                          <RowActionsMenu
+                            actions={[
+                              { label: 'View Profile', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setSelectedDrawerTeacher(t) },
+                              { label: 'Edit Teacher', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditTeacher(t) },
+                              { label: hasPortalAccess.has(t.id) ? 'Resend portal access' : 'Send portal access', icon: <Send className="w-3.5 h-3.5" />, tone: hasPortalAccess.has(t.id) ? undefined : 'success', onClick: () => handleSendAccess(t) },
+                              { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, onClick: () => setResetTeacher(t) },
+                              { label: 'Left the Academy', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: t.status === 'Left', onClick: () => openLeaveTeacher(t) },
+                              { label: 'Delete Teacher', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', onClick: () => handleDeleteTeacher(t) },
+                            ]}
+                          />
+                        )}
+                      </div>
+                    </div>
+                  );
+                })
+              )}
             </div>
 
             <div className="p-3 bg-slate-50 border-t flex justify-between items-center text-xs font-medium text-slate-600">

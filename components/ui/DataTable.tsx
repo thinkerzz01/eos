@@ -61,7 +61,7 @@ export function DataTable<T>({
       <div className="p-4 border-b border-slate-200/80 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50 dark:bg-slate-950/40">
         {/* Status Chips */}
         {filterChips && filterChips.length > 0 ? (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {filterChips.map((chip) => (
               <button
                 key={chip.id}
@@ -79,7 +79,7 @@ export function DataTable<T>({
         ) : <div />}
 
         {/* Right Controls: Import, Export, Compact Search */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           {onImportCSV && (
             <button
               onClick={onImportCSV}
@@ -101,7 +101,7 @@ export function DataTable<T>({
           )}
 
           {/* Compact Search Bar */}
-          <div className="relative w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"

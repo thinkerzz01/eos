@@ -310,7 +310,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
 
         {/* SOURCE TABLE */}
         <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-[18px] shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[720px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 tracking-wide text-[13px]">
@@ -342,6 +342,32 @@ export function MarketingClient({ data }: { data: MarketingData }) {
               </tbody>
             </table>
           </div>
+
+          {/* MOBILE CARD LIST (phones) */}
+          <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+            {stats.length === 0 || totalLeads === 0 ? (
+              <div className="py-8 text-center text-[#6B7185] text-sm">No leads match these filters.</div>
+            ) : (
+              stats.map((r) => (
+                <div key={r.key} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 font-medium text-slate-900 dark:text-slate-100 truncate">{r.source}</div>
+                    <div className="text-right shrink-0">
+                      <span className="font-medium text-slate-900 dark:text-slate-100 tabular-nums">{r.leads}</span>
+                      <span className="text-xs text-[#6B7185]"> leads</span>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    <span className="text-emerald-600 font-medium">{r.won} converted</span>
+                    <span className="text-rose-600 font-medium">{r.lost ?? 0} lost</span>
+                    <span className="text-purple-600 font-medium">{r.conversionPct}%</span>
+                    <span className="font-mono text-slate-700 dark:text-slate-200">Spend: {r.spend > 0 ? `PKR ${r.spend.toLocaleString()}` : '-'}</span>
+                    <span className="font-mono text-slate-700 dark:text-slate-200">Cost/Student: {r.costPerStudent != null ? `PKR ${r.costPerStudent.toLocaleString()}` : '-'}</span>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         {/* LEAD DETAIL TABLE — who the leads actually are, so they can be acted on */}
@@ -352,7 +378,7 @@ export function MarketingClient({ data }: { data: MarketingData }) {
             </h2>
             <p className="text-[12px] text-[#6B7185]">Name, city and contact for every lead in the current filter.</p>
           </div>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto hidden md:block">
             <table className="w-full text-left text-sm border-collapse min-w-[760px]">
               <thead>
                 <tr className="bg-[#F6F7FB] dark:bg-slate-800/90 border-b border-[#EBEDF3] dark:border-slate-800 font-medium text-slate-900 dark:text-slate-100 text-[13px]">
@@ -404,6 +430,43 @@ export function MarketingClient({ data }: { data: MarketingData }) {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* MOBILE CARD LIST (phones) */}
+          <div className="md:hidden divide-y divide-[#F1F2F7] dark:divide-slate-800">
+            {visibleLeads.length === 0 ? (
+              <div className="py-8 text-center text-[#6B7185] text-sm">No leads match these filters.</div>
+            ) : (
+              visibleLeads.map((l) => (
+                <div key={l.id} className="p-4 space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 font-medium text-slate-900 dark:text-slate-100 truncate">{l.name || '-'}</div>
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[11px] font-medium ${l.status === 'won' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600 border border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700'}`}>
+                      {l.status === 'won' ? 'Converted' : (l.status ? l.status.charAt(0).toUpperCase() + l.status.slice(1) : 'New')}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
+                    {(l.city || l.area) && <span className="text-slate-700 dark:text-slate-300">{[l.city, l.area].filter(Boolean).join(' · ')}</span>}
+                    {l.phone && <span className="font-mono text-slate-700 dark:text-slate-300">{l.phone}</span>}
+                    {l.program && <span className="text-slate-700 dark:text-slate-300">{l.program}</span>}
+                    <span className="text-slate-700 dark:text-slate-300">{MARKETING_SOURCE_LABEL[l.source] ?? l.source}</span>
+                    <span className="text-slate-500">{fmtDate(l.createdISO)}</span>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    {waNumber(l.phone) && (
+                      <a href={`https://wa.me/${waNumber(l.phone)}`} target="_blank" rel="noreferrer" title="WhatsApp" className="p-2 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100">
+                        <MessageSquare className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {l.phone && (
+                      <a href={`tel:${l.phone.replace(/\s/g, '')}`} title="Call" className="p-2 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100">
+                        <Phone className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
 
