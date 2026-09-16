@@ -9,6 +9,9 @@ import { cleanupOrphanSchedule } from '@/lib/scheduling/cascade';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
+// Never serve the Supabase reads inside this handler from Next's fetch cache -
+// otherwise a repeat run reports stale rows even after the DB was cleaned.
+export const fetchCache = 'force-no-store';
 
 export async function GET(req: NextRequest) {
   if (!verifyCronBearerHeader(req.headers.get('authorization'), cronSecret())) {

@@ -240,7 +240,26 @@ export function VoucherSlip(props: VoucherSlipProps) {
               </div>
 
               {/* 3 · PAYMENT SUMMARY */}
-              <div className="voucher-summary rounded-[20px] bg-[#5B47D6]/[0.06] border border-[#5B47D6]/[0.12] p-5 sm:p-6 flex flex-col md:flex-row md:items-center gap-5">
+              <div className="voucher-summary relative rounded-[20px] bg-[#5B47D6]/[0.06] border border-[#5B47D6]/[0.12] p-5 sm:p-6 flex flex-col md:flex-row md:items-center gap-5">
+                {/* PAID stamp - shown only when the voucher is fully paid. Solid,
+                    flat, upper-right, tilted ~12deg; never overlaps amount/due date.
+                    Guarded so a future "Partially Paid" status never triggers it. */}
+                {status.toLowerCase().includes('paid') && !status.toLowerCase().includes('partial') && (
+                  <div
+                    className="pointer-events-none select-none absolute top-3 right-4 sm:right-6 -rotate-12 z-10"
+                    style={{ WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }}
+                    aria-label="Paid"
+                  >
+                    <div className="flex items-center gap-2 rounded-lg bg-[#16A34A] px-4 py-2 sm:px-5 sm:py-2.5">
+                      <span className="font-heading font-extrabold tracking-wide text-white leading-none text-[24px] sm:text-[30px]">
+                        PAID
+                      </span>
+                      <span className="flex items-center justify-center rounded-full border-2 border-white w-6 h-6 sm:w-7 sm:h-7">
+                        <Check className="w-4 h-4 sm:w-[18px] sm:h-[18px] text-white" strokeWidth={3} />
+                      </span>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center gap-4 md:flex-1">
                   <div className="w-14 h-14 rounded-2xl bg-[#5B47D6]/[0.12] flex items-center justify-center shrink-0">
                     <CreditCard className="w-6 h-6 text-[#5B47D6]" />
