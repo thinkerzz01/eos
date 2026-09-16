@@ -32,7 +32,9 @@ function mapRow(r: any, demo: DemoStat, subjects: string[], programs: string[], 
     .sort((a, b) => String(b.effective_from).localeCompare(String(a.effective_from)))[0];
   return {
     id: r.id,
-    empId: `TCH-${r.id.split('-')[0].toUpperCase()}`,
+    // Prefer the sequential human-readable code (TZ-TCH-0001); fall back to a
+    // stable UUID-derived code if a row predates the strategic-codes migration.
+    empId: r.code ?? `TCH-${r.id.split('-')[0].toUpperCase()}`,
     name: r.name,
     email: r.email,
     phone: r.phone,
@@ -73,7 +75,7 @@ export async function getTeachers(): Promise<Teacher[]> {
   let error: any = null;
   const rich = await supabase
     .from('teachers')
-    .select(`${baseCols},left_at,leaving_reason`)
+    .select(`${baseCols},code,left_at,leaving_reason`)
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
   if (rich.error) {
