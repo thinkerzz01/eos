@@ -105,7 +105,8 @@ export function DemosClient({
 
   // LOCAL DEMOS STATE STORE (seeded from server, RLS-authorized)
   const [demosList, setDemosList] = useState<DemoSession[]>(initialDemos);
-  const [selectedStatusTab, setSelectedStatusTab] = useState<string>('All Demos');
+  // Default to "Needs Teacher" so admins immediately see the demos awaiting a teacher.
+  const [selectedStatusTab, setSelectedStatusTab] = useState<string>('Needs Teacher');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [dateRange, setDateRange] = useState<'all' | '7' | '30' | 'custom'>('all');
   const [fromDate, setFromDate] = useState('');
