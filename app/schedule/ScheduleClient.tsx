@@ -97,6 +97,7 @@ export function ScheduleClient({
   const [wizStartDate, setWizStartDate] = useState(todayStr);
   const [wizWeeks, setWizWeeks] = useState(4);
   const [wizDurCustom, setWizDurCustom] = useState(false); // "Custom" duration picker
+  const [wizEndDate, setWizEndDate] = useState(''); // custom end date (calendar)
   const [wizRows, setWizRows] = useState<WizRow[]>([emptyRow()]);
   const [overlapWarning, setOverlapWarning] = useState<string | null>(null);
   const [scheduling, setScheduling] = useState(false);
@@ -174,6 +175,15 @@ export function ScheduleClient({
     const d = new Date(2000, 0, 1, h, m);
     d.setHours(d.getHours() + 1);
     return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  };
+
+  // Format a 24h "HH:MM" into 12h "h:mm am/pm" for display (inputs still hold 24h).
+  const to12h = (hhmm: string): string => {
+    if (!/^\d{2}:\d{2}$/.test(hhmm)) return '--:--';
+    const [h, m] = hhmm.split(':').map(Number);
+    const ap = h < 12 ? 'am' : 'pm';
+    const hr = h % 12 === 0 ? 12 : h % 12;
+    return `${hr}:${String(m).padStart(2, '0')} ${ap}`;
   };
 
   const resetSingle = () => {
@@ -524,7 +534,7 @@ export function ScheduleClient({
   const addRow = () => setWizRows((rows) => [...rows, emptyRow()]);
   const removeRow = (i: number) => setWizRows((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
   const resetWizard = () => {
-    setWizStudentId(''); setWizType('Class'); setWizStartDate(todayStr); setWizWeeks(4); setWizDurCustom(false); setWizRows([emptyRow()]); setOverlapWarning(null);
+    setWizStudentId(''); setWizType('Class'); setWizStartDate(todayStr); setWizWeeks(4); setWizDurCustom(false); setWizEndDate(''); setWizRows([emptyRow()]); setOverlapWarning(null);
   };
 
   // Bulk-generate the student's timetable. Teacher time conflicts are skipped by
@@ -538,9 +548,17 @@ export function ScheduleClient({
       .map((r) => ({ ...r, days: r.days.filter((d) => d.startTime && d.endTime) }))
       .filter((r) => r.subjectId && r.teacherId && r.days.length > 0);
     if (rows.length === 0) { setOverlapWarning('Add at least one subject with a teacher, and a time for at least one day.'); return; }
+    if (wizDurCustom && !wizEndDate) { setOverlapWarning('Pick an end date for the custom range.'); return; }
+    if (wizDurCustom && wizEndDate < wizStartDate) { setOverlapWarning('End date must be on or after the start date.'); return; }
 
     setScheduling(true);
-    const res = await bulkScheduleClasses({ studentId: wizStudentId, startDate: wizStartDate, weeks: wizWeeks, type: wizType, rows });
+    const res = await bulkScheduleClasses({
+      studentId: wizStudentId,
+      startDate: wizStartDate,
+      type: wizType,
+      rows,
+      ...(wizDurCustom ? { endDate: wizEndDate } : { weeks: wizWeeks }),
+    });
     setScheduling(false);
 
     if (res.ok) {
@@ -1477,7 +1495,7 @@ export function ScheduleClient({
                                 <span className="w-10 shrink-0 text-xs font-medium text-slate-700 dark:text-slate-300">{label}</span>
                                 <input type="time" value={d.startTime} onChange={(e) => setDayTime(i, d.weekday, e.target.value)} className="flex-1 bg-white dark:bg-slate-900 border rounded-xl p-2 text-slate-900 dark:text-slate-100 font-medium" />
                                 <span className="text-xs text-slate-400 font-medium">to</span>
-                                <span className="w-16 shrink-0 text-xs font-mono text-slate-500">{d.endTime || '--:--'}</span>
+                                <span className="w-20 shrink-0 text-xs font-mono text-slate-500">{d.endTime ? to12h(d.endTime) : '--:--'}</span>
                               </div>
                             );
                           })}
@@ -1529,16 +1547,15 @@ export function ScheduleClient({
                       <option value="custom">Custom…</option>
                     </select>
                     {wizDurCustom && (
-                      <div className="mt-2 flex items-center gap-2">
+                      <div className="mt-2">
                         <input
-                          type="number"
-                          min={1}
-                          max={52}
-                          value={wizWeeks}
-                          onChange={(e) => setWizWeeks(Math.max(1, Math.min(52, Number(e.target.value) || 1)))}
-                          className="w-20 bg-slate-50 dark:bg-slate-950 border rounded-xl p-2 text-slate-900 dark:text-slate-100 font-medium"
+                          type="date"
+                          value={wizEndDate}
+                          min={wizStartDate || todayStr}
+                          onChange={(e) => setWizEndDate(e.target.value)}
+                          className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100 font-medium"
                         />
-                        <span className="text-xs text-[#6B7185] font-medium">week(s)</span>
+                        <span className="text-[11px] text-[#6B7185] font-medium normal-case">Classes are generated from the start date through this end date.</span>
                       </div>
                     )}
                   </div>

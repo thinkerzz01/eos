@@ -207,7 +207,8 @@ export async function createClassSession(input: {
 export async function bulkScheduleClasses(input: {
   studentId: string;
   startDate: string; // YYYY-MM-DD (PKT)
-  weeks: number;
+  weeks?: number; // preset duration in weeks (ignored when endDate is given)
+  endDate?: string; // YYYY-MM-DD (PKT) - custom end date; generate through this day
   type: 'Class' | 'Makeup' | 'Test';
   // Each row is a subject+teacher with a list of days; EACH day has its own time.
   rows: { subjectId: string; teacherId: string; days: { weekday: number; startTime: string; endTime: string }[]; meetingLink?: string }[];
@@ -220,14 +221,24 @@ export async function bulkScheduleClasses(input: {
   if (rows.length === 0) {
     return { ok: false, created: 0, conflicts: 0, error: 'Add at least one subject with a teacher, and a time for at least one day.' };
   }
-  const weeks = Math.max(1, Math.min(12, Math.floor(input.weeks || 4)));
   const type = TYPE_DB[input.type] ?? 'class';
 
   const { supabase, user, orgId } = await ctx();
   if (!user || !orgId) return { ok: false, created: 0, conflicts: 0, error: 'You are not signed in.' };
 
   const start = new Date(`${input.startDate}T00:00:00+05:00`);
-  const totalDays = weeks * 7;
+  // Custom end date wins over the weeks preset. totalDays counts days from the
+  // start date through the end date, inclusive (capped at ~1 year for safety).
+  let totalDays: number;
+  if (input.endDate) {
+    const end = new Date(`${input.endDate}T00:00:00+05:00`);
+    const diff = Math.floor((end.getTime() - start.getTime()) / 86400000) + 1;
+    if (!(diff > 0)) return { ok: false, created: 0, conflicts: 0, error: 'End date must be on or after the start date.' };
+    totalDays = Math.min(diff, 366);
+  } else {
+    const weeks = Math.max(1, Math.min(12, Math.floor(input.weeks || 4)));
+    totalDays = weeks * 7;
+  }
   let created = 0;
   let conflicts = 0;
   const calendarFails: string[] = []; // "Subject: reason" for any series that did not sync
