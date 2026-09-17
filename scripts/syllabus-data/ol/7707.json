@@ -1,0 +1,184 @@
+[
+ {
+  "code": "1",
+  "name": "The fundamentals of accounting",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "The purpose of accounting",
+    "objectives": []
+   },
+   {
+    "code": "1.2",
+    "name": "The accounting equation",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Sources and recording of data",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "The double entry system of book-keeping",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "Business documents",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "Books of prime entry",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Verification of accounting records",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "The trial balance",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "Corrections of errors",
+    "objectives": []
+   },
+   {
+    "code": "3.3",
+    "name": "Bank reconciliation",
+    "objectives": []
+   },
+   {
+    "code": "3.4",
+    "name": "Control accounts",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Accounting procedures",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "Capital and revenue expenditure and receipts",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "Accounting for depreciation and disposal of non-current assets",
+    "objectives": []
+   },
+   {
+    "code": "4.3",
+    "name": "Other payables and other receivables",
+    "objectives": []
+   },
+   {
+    "code": "4.4",
+    "name": "Irrecoverable debts and allowance for irrecoverable debts",
+    "objectives": []
+   },
+   {
+    "code": "4.5",
+    "name": "Valuation of inventory",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Preparation of financial statements",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Sole traders",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "Partnerships",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "Limited companies",
+    "objectives": []
+   },
+   {
+    "code": "5.4",
+    "name": "Manufacturing accounts",
+    "objectives": []
+   },
+   {
+    "code": "5.5",
+    "name": "Clubs and societies",
+    "objectives": []
+   },
+   {
+    "code": "5.6",
+    "name": "Incomplete records",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "Analysis and interpretation",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Calculation and understanding of accounting ratios",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "Interpretation of accounting ratios",
+    "objectives": []
+   },
+   {
+    "code": "6.3",
+    "name": "Inter-business comparison",
+    "objectives": []
+   },
+   {
+    "code": "6.4",
+    "name": "Interested parties",
+    "objectives": []
+   },
+   {
+    "code": "6.5",
+    "name": "Limitations of accounting statements",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "7",
+  "name": "Accounting concepts and modern practice",
+  "subtopics": [
+   {
+    "code": "7.1",
+    "name": "Accounting concepts",
+    "objectives": []
+   },
+   {
+    "code": "7.2",
+    "name": "Ethical considerations",
+    "objectives": []
+   },
+   {
+    "code": "7.3",
+    "name": "Technology and sustainability",
+    "objectives": []
+   }
+  ]
+ }
+]

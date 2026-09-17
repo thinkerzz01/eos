@@ -1,0 +1,576 @@
+[
+ {
+  "code": "1",
+  "name": "Number Notes and examples",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "Types of number Example tasks include:",
+    "objectives": [
+     "Number (continued) Notes and examples"
+    ]
+   },
+   {
+    "code": "1.2",
+    "name": "Sets Venn diagrams are limited to two or three sets.",
+    "objectives": []
+   },
+   {
+    "code": "1.3",
+    "name": "Powers and roots",
+    "objectives": [
+     "Number (continued) Notes and examples"
+    ]
+   },
+   {
+    "code": "1.4",
+    "name": "Fractions, decimals and percentages Candidates are expected to be able to write",
+    "objectives": [
+     "\u0007Use the language and notation of the following in Recurring decimal notation is required, e.g. appropriate contexts: • 0.17o =0.1777f • proper fractions • 0.12o 3o =0.1232323f • improper fractions • 0.123 =0.123123f • mixed numbers • decimals Includes converting between recurring decimals • percentages. and fractions and vice versa, e.g. write 0.17o as a fraction.",
+     "\u0007Recognise equivalence and convert between these forms."
+    ]
+   },
+   {
+    "code": "1.5",
+    "name": "Ordering Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "1.6",
+    "name": "The four operations Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "1.7",
+    "name": "Indices I Notes and examples",
+    "objectives": [
+     "\u0007Understand and use indices (positive, zero, Examples include: negative and fractional). 1",
+     "Understand and use the rules of indices. • 62 = 6 • 1 =4 16 16 4 • find the value of 7 -2, 1 8- 2 . 3 81 2 , e.g. find the value of 2 -3 × 24, (23)2, 23 ÷ 24 ."
+    ]
+   },
+   {
+    "code": "1.8",
+    "name": "Standard form Notes and examples",
+    "objectives": [
+     "\u0007Use the standard form A × 10n where n is a positive or negative integer and 1 ⩽ A < 10.",
+     "Convert numbers into and out of standard form.",
+     "Calculate with values in standard form. 1 Number (continued) Notes and examples Includes decimal places and significant figures."
+    ]
+   },
+   {
+    "code": "1.9",
+    "name": "Estimation e.g. Write 5764 correct to the nearest thousand.",
+    "objectives": [
+     "Round values to a specified degree of accuracy. e.g. By writing each number correct to 1 significant",
+     "\u0007Make estimates for calculations involving 41.3 numbers, quantities and measurements. figure, estimate the value of 9.79 # 0.765 .",
+     "\u0007Round answers to a reasonable degree of accuracy in the context of a given problem."
+    ]
+   },
+   {
+    "code": "1.10",
+    "name": "Limits of accuracy Notes and examples",
+    "objectives": [
+     "\u0007Give upper and lower bounds for data rounded e.g. write down the upper bound of a length to a specified accuracy. measured correct to the nearest metre.",
+     "\u0007Find upper and lower bounds of the results of Example calculations include: • calculate the upper bound of the perimeter calculations which have used data rounded to a specified accuracy. or the area of a rectangle given dimensions measured to the nearest centimetre"
+    ]
+   },
+   {
+    "code": "1.11",
+    "name": "Ratio and proportion • find the lower bound of the speed given",
+    "objectives": [
+     "Number (continued) Notes and examples"
+    ]
+   },
+   {
+    "code": "1.12",
+    "name": "Rates e.g. calculate with:",
+    "objectives": [
+     "Use common measures of rate. • hourly rates of pay • exchange rates between currencies",
+     "Apply other measures of rate. • flow rates • fuel consumption.",
+     "Solve problems involving average speed. e.g. calculate with: • pressure"
+    ]
+   },
+   {
+    "code": "1.13",
+    "name": "Percentages • density",
+    "objectives": [
+     "Calculate a given percentage of a quantity. • population density.",
+     "Express one quantity as a percentage of another. Required formulas will be given in the question.",
+     "Calculate percentage increase or decrease. Knowledge of speed/distance/time formula is",
+     "Calculate with simple and compound interest. required.",
+     "Calculate using reverse percentages. e.g. A cyclist travels 45 km in 3 hours 45 minutes. What is their average speed? The notation used for rates will be in the form, e.g. m/s (metres per second), g/cm3 (grams per cubic centimetre). Notes and examples Problems may include repeated percentage change. Formulas are not given. e.g. find the cost price given the selling price and the percentage profit. Percentage calculations may include: • deposit • discount • profit and loss (as an amount or a percentage) • earnings • percentages over 100%."
+    ]
+   },
+   {
+    "code": "1.14",
+    "name": "Using a calculator Notes and examples",
+    "objectives": [
+     "Use a calculator efficiently.",
+     "Enter values appropriately on a calculator. e.g. know not to round values within a calculation",
+     "Interpret the calculator display appropriately. and to only round the final answer. e.g. enter 2 hours 30 minutes as 2.5 hours or 2° 30’ 0’’. e.g. in money 4.8 means $4.80; in time 3.25 means 3 hours 15 minutes. 1 Number (continued) Notes and examples 1 year = 365 days."
+    ]
+   },
+   {
+    "code": "1.15",
+    "name": "Time",
+    "objectives": [
+     "\u0007Calculate with time: seconds (s), minutes (min), denoted by 03 15 and 3.15 p.m. by 15 15. hours (h), days, weeks, months, years, including Includes problems involving time zones, local times the relationship between units. and time differences.",
+     "\u0007Calculate times in terms of the 24-hour and 12-hour clock.",
+     "Read clocks and timetables."
+    ]
+   },
+   {
+    "code": "1.16",
+    "name": "Money Notes and examples",
+    "objectives": [
+     "Calculate with money.",
+     "Convert from one currency to another."
+    ]
+   },
+   {
+    "code": "1.17",
+    "name": "Exponential growth and decay Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "1.18",
+    "name": "Surds Notes and examples",
+    "objectives": [
+     "\u0007Understand and use surds, including simplifying Examples include: expressions. • 20 = 2 5",
+     "Rationalise the denominator. • 200 − 32 = 6 2 . Examples include: • 10 =2 5 5 1 1+ 3 • = . −1+ 3 2"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Algebra and graphs Notes and examples",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "Introduction to algebra",
+    "objectives": [
+     "\u0007Know that letters can be used to represent generalised numbers.",
+     "\u0007Substitute numbers into expressions and formulas."
+    ]
+   },
+   {
+    "code": "2.2",
+    "name": "Algebraic manipulation Notes and examples",
+    "objectives": [
+     "Simplify expressions by collecting like terms. Simplify means give the answer in its simplest form,",
+     "Expand products of algebraic expressions. e.g. 2a2 + 3ab - 1 + 5a2 - 9ab + 4 = 7a2 - 6ab + 3.",
+     "Factorise by extracting common factors. e.g. expand 3x(2x - 4y), (3x + y)(x - 4y). Includes products of more than two brackets,",
+     "Factorise expressions of the form: e.g. expand (x - 2)(x + 3)(2x + 1). • ax + bx + kay + kby Factorise means factorise fully, • a2x2 − b2y2 e.g. 9x2 + 15xy = 3x(3x + 5y). • a2 + 2ab + b2 • ax2 + bx + c • ax3 + bx2 + cx .",
+     "\u0007Complete the square for expressions in the form ax2 + bx + c ."
+    ]
+   },
+   {
+    "code": "2.3",
+    "name": "Algebraic fractions Notes and examples",
+    "objectives": [
+     "Manipulate algebraic fractions. Examples include:",
+     "Factorise and simplify rational expressions. • x + x - 4",
+     "2 • 2x - 3(x -5) 32 • 3a × 9a",
+     "10 • 3a ÷ 9a 4 10 • 1 +x+1. x-2 x-3 e.g. x2 - 2x 6 . x2 - 5x + 2 Algebra and graphs (continued)"
+    ]
+   },
+   {
+    "code": "2.4",
+    "name": "Indices II Notes and examples",
+    "objectives": [
+     "\u0007Understand and use indices (positive, zero, e.g. solve: negative and fractional). • 32x = 2 • 5x + 1 = 25x.",
+     "\u0007Understand and use the rules of indices. e.g. simplify: • 3x− 4 # 2 1 3 x2 • 2 1 ' 2x− 2 5 x2 • KJKL23x5NOOP3 . Knowledge of logarithms is not required."
+    ]
+   },
+   {
+    "code": "2.5",
+    "name": "Equations Notes and examples",
+    "objectives": [
+     "Construct expressions, equations and formulas. e.g. write an expression for the product of two",
+     "\u0007Solve linear equations in one unknown. consecutive even numbers.",
+     "\u0007Solve fractional equations with numerical and Includes constructing simultaneous equations. linear algebraic denominators. Examples include:",
+     "\u0007Solve simultaneous linear equations in two unknowns. • 3x + 4 = 10",
+     "\u0007Solve quadratic equations by factorisation, • 5 - 2x = 3(x + 7). completing the square and by use of the quadratic formula. Examples include:",
+     "\u0007Change the subject of formulas. • 2x x 1 = 4 + • x 2 2 + 3 1 = 1 + 2x - • x x 2 = x 3 6 . + - Includes writing a quadratic expression in completed square form. Candidates may be expected to give solutions in surd form. The quadratic formula is given in the List of formulas. e.g. change the subject of a formula where: • the subject appears twice • there is a power or root of the subject. 2 Algebra and graphs (continued)"
+    ]
+   },
+   {
+    "code": "2.6",
+    "name": "Inequalities Notes and examples",
+    "objectives": [
+     "\u0007Represent and interpret inequalities, including on When representing and interpreting inequalities on a number line. a number line: • open circles should be used to represent strict inequalities (<, >) • closed circles should be used to represent inclusive inequalities (⩽, ⩾) e.g. - 3 ⩽ x < 1 x - 3 - 2 - 1 0 1",
+     "Construct, solve and interpret linear inequalities. Examples include:",
+     "\u0007Represent and interpret linear inequalities in two • 3x < 2x + 4 • -3 ⩽ 3x - 2 < 7 . variables graphically. The following conventions should be used:",
+     "List inequalities that define a given region. • broken lines should be used to represent strict inequalities (<, >) • solid lines should be used to represent inclusive inequalities (⩽, ⩾) • shading should be used to represent unwanted regions (unless otherwise directed in the question). e.g. y x<1 y 2 1 2 y⩾1 1 0 12 x 0 x 12 Linear programming problems are not included."
+    ]
+   },
+   {
+    "code": "2.7",
+    "name": "Sequences Notes and examples",
+    "objectives": [
+     "Continue a given number sequence or pattern. Subscript notation may be used, e.g. Tn is the nth term of sequence T.",
+     "\u0007Recognise patterns in sequences, including the Includes linear, quadratic, cubic and exponential term-to-term rule, and relationships between sequences and simple combinations of these. different sequences.",
+     "Find and use the nth term of sequences. 2 Algebra and graphs (continued)"
+    ]
+   },
+   {
+    "code": "2.8",
+    "name": "Proportion Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "2.9",
+    "name": "Graphs in practical situations Notes and examples",
+    "objectives": [
+     "\u0007Use and interpret graphs in practical situations gradient of a tangent at a point. including travel graphs and conversion graphs. Areas will involve linear sections only.",
+     "\u0007Draw graphs from given data.",
+     "\u0007Apply the idea of rate of change to simple kinematics involving distance-time and speed-time graphs, acceleration and deceleration.",
+     "\u0007Calculate distance travelled as area under a speed-time graph."
+    ]
+   },
+   {
+    "code": "2.10",
+    "name": "Graphs of functions Notes and examples",
+    "objectives": [
+     "\u0007Construct tables of values, and draw, recognise Examples include: and interpret graphs for functions of the following forms: • y = x3 + x - 4 • axn (includes sums of no more than three of • y = 2x + 3 x2 these) y = 1 × 2x . 4 • abx + c • w\u0007 here n = -2, -1, − 1 , 0, 1 , 1, 2, 3; a and c are",
+     "2 rational numbers; and b is a positive integer. 2 \u0007Solve associated equations graphically, including e.g. finding the intersection of a line and a curve. finding and interpreting roots by graphical methods.",
+     "\u0007Draw and interpret graphs representing exponential growth and decay problems.",
+     "\u0007Estimate gradients of curves by drawing tangents. 2 Algebra and graphs (continued)"
+    ]
+   },
+   {
+    "code": "2.11",
+    "name": "Sketching curves Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "2.12",
+    "name": "Functions Notes and examples",
+    "objectives": [
+     "\u0007Understand functions, domain and range, and Examples include: use function notation. • f(x) = 3x - 5",
+     "\u0007Understand and find inverse functions f -1(x).",
+     "\u0007Form composite functions as defined by • g(x) = 3(x + 4) 5 gf(x) = g(f(x)). • h(x) = 2x2 + 3 . e.g. f(x) = x 3 2 and g(x) = (3x + 5)2. Find fg(x). + Give your answer as a fraction in its simplest form. Candidates are not expected to find the domains and ranges of composite functions. This topic may include mapping diagrams."
+    ]
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Coordinate geometry Notes and examples",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "Coordinates",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "Drawing linear graphs Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "3.3",
+    "name": "Gradient of linear graphs • y = 7 - 4x",
+    "objectives": [
+     "Find the gradient of a straight line. • 3x + 2y = 5 .",
+     "\u0007Calculate the gradient of a straight line from the Notes and examples coordinates of two points on it."
+    ]
+   },
+   {
+    "code": "3.4",
+    "name": "Length and midpoint Notes and examples",
+    "objectives": [
+     "Calculate the length of a line segment.",
+     "\u0007Find the coordinates of the midpoint of a line segment."
+    ]
+   },
+   {
+    "code": "3.5",
+    "name": "Equations of linear graphs Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "3.6",
+    "name": "Parallel lines Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "3.7",
+    "name": "Perpendicular lines Notes and examples",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Geometry Notes and examples",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "Geometrical terms Candidates are not expected to show that two",
+    "objectives": [
+     "\u0007Use and interpret the following geometrical terms: Includes the following terms. • point Triangles: • vertex • equilateral • line • isosceles • plane • scalene • parallel • right-angled. • perpendicular • perpendicular bisector Quadrilaterals: • bearing • square • right angle • rectangle • acute, obtuse and reflex angles • kite • interior and exterior angles • rhombus • similar • parallelogram • congruent • trapezium. • scale factor.",
+     "Use and interpret the vocabulary of: • triangles • special quadrilaterals • polygons • nets • solids. continued 4 Geometry (continued) Notes and examples"
+    ]
+   },
+   {
+    "code": "4.1",
+    "name": "Geometrical terms (continued) Polygons:",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "Geometrical constructions A ruler should be used for all straight edges.",
+    "objectives": [
+     "Measure and draw lines and angles. Constructions of perpendicular bisectors and angle bisectors are not required.",
+     "\u0007Construct a triangle, given the lengths of all e.g. construct a rhombus by drawing two triangles. sides, using a ruler and pair of compasses only. Construction arcs must be shown. Examples include:",
+     "Draw, use and interpret nets. • draw nets of cubes, cuboids, prisms and"
+    ]
+   },
+   {
+    "code": "4.3",
+    "name": "Scale drawings pyramids",
+    "objectives": [
+     "Draw and interpret scale drawings. • use measurements from nets to calculate",
+     "Use and interpret three-figure bearings. volumes and surface areas. Notes and examples A ruler must be used for all straight edges. Bearings are measured clockwise from north (000° to 360°), e.g. Find the bearing of A from B if the bearing of B from A is 025°. Includes an understanding of the terms north, east, south and west, e.g. point D is due east of point C."
+    ]
+   },
+   {
+    "code": "4.4",
+    "name": "Similarity Notes and examples",
+    "objectives": [
+     "Calculate lengths of similar shapes. Includes use of scale factor, e.g.",
+     "\u0007Use the relationships between lengths and areas Volume of A `Length of Aj3 of similar shapes and lengths, surface areas and Volume of B = `Length of Bj3 volumes of similar solids. Includes showing that two triangles are similar",
+     "\u0007Solve problems and give simple explanations using geometric reasons. involving similarity."
+    ]
+   },
+   {
+    "code": "4.5",
+    "name": "Symmetry Notes and examples",
+    "objectives": [
+     "\u0007Recognise line symmetry and order of rotational Includes properties of triangles, quadrilaterals and symmetry in two dimensions. polygons directly related to their symmetries. e.g. identify planes and axes of symmetry.",
+     "\u0007Recognise symmetry properties of prisms, cylinders, pyramids and cones. 4 Geometry (continued) Notes and examples Knowledge of three-letter notation for angles is"
+    ]
+   },
+   {
+    "code": "4.6",
+    "name": "Angles required, e.g. angle ABC. Candidates are expected",
+    "objectives": [
+     "\u0007Calculate unknown angles and give simple giving reasons for answers. explanations using the following geometrical properties: Includes exterior and interior angles, and angle • sum of angles at a point = 360° sum. • sum of angles at a point on a straight line = 180° • vertically opposite angles are equal • angle sum of a triangle = 180° and angle sum of a quadrilateral = 360°.",
+     "\u0007Calculate unknown angles and give geometric explanations for angles formed within parallel lines: • corresponding angles are equal • alternate angles are equal • co-interior angles sum to 180° (supplementary).",
+     "\u0007Know and use angle properties of regular and irregular polygons."
+    ]
+   },
+   {
+    "code": "4.7",
+    "name": "Circle theorems I Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "4.8",
+    "name": "Circle theorems II Notes and examples",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Mensuration Notes and examples",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Units of measure Units include:",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "Area and perimeter Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "Circles, arcs and sectors Notes and examples",
+    "objectives": [
+     "\u0007Carry out calculations involving the Answers may be asked for in terms of π. circumference and area of a circle. Formulas are given in the List of formulas. Includes minor and major sectors.",
+     "\u0007Carry out calculations involving arc length and sector area as fractions of the circumference and area of a circle."
+    ]
+   },
+   {
+    "code": "5.4",
+    "name": "Surface area and volume Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "5.5",
+    "name": "Compound shapes and parts of shapes",
+    "objectives": [
+     "\u0007Carry out calculations and solve problems involving perimeters and areas of: • compound shapes • parts of shapes.",
+     "\u0007Carry out calculations and solve problems involving surface areas and volumes of: • compound solids • parts of solids."
+    ]
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "Trigonometry Notes and examples",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Pythagoras’ theorem",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "Right-angled triangles Notes and examples",
+    "objectives": [
+     "\u0007Know and use the sine, cosine and tangent Angles will be given in degrees and answers should ratios for acute angles in calculations involving be written in degrees, with decimals correct to one sides and angles of a right-angled triangle. decimal place.",
+     "\u0007Solve problems in two dimensions using Knowledge of bearings may be required. Pythagoras’ theorem and trigonometry.",
+     "\u0007Know that the perpendicular distance from a point to a line is the shortest distance to the line.",
+     "\u0007Carry out calculations involving angles of elevation and depression."
+    ]
+   },
+   {
+    "code": "6.3",
+    "name": "Non-right-angled triangles Notes and examples",
+    "objectives": [
+     "\u0007Use the sine and cosine rules in calculations Includes problems involving obtuse angles and the involving lengths and angles for any triangle. ambiguous case.",
+     "\u0007Use the formula 1 The sine and cosine rules and the formula for area 2 of a triangle are given in the List of formulas. area of triangle = ab sin C ."
+    ]
+   },
+   {
+    "code": "6.4",
+    "name": "\u0007Pythagoras’ theorem and trigonometry Notes and examples",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "7",
+  "name": "Transformations and vectors",
+  "subtopics": [
+   {
+    "code": "7.1",
+    "name": "Transformations Notes and examples",
+    "objectives": [
+     "Reflection of a shape in a straight line. Positive, fractional and negative scale factors may be used.",
+     "\u0007Rotation of a shape about a centre through multiples of 90°. Notes and examples Vectors will be printed as AB or a.",
+     "\u0007Enlargement of a shape from a centre by a",
+     "scale factor. a shape by a vector KKLJxyONOP. Translation of"
+    ]
+   },
+   {
+    "code": "7.2",
+    "name": "Vectors in two dimensions",
+    "objectives": [
+     "\u0007Describe a translation using a vector represented by KLJKxyONOP, AB or a.",
+     "Add and subtract vectors.",
+     "Multiply a vector by a scalar."
+    ]
+   },
+   {
+    "code": "7.3",
+    "name": "Magnitude of a vector Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "7.4",
+    "name": "Vector geometry",
+    "objectives": [
+     "Represent vectors by directed line segments. Examples include:",
+     "Use position vectors. • show that vectors are parallel",
+     "\u0007Use the sum and difference of two or more • show that 3 points are collinear • solve vector problems involving ratio and vectors to express given vectors in terms of two coplanar vectors. similarity.",
+     "\u0007Use vectors to reason and to solve geometric problems."
+    ]
+   }
+  ]
+ },
+ {
+  "code": "8",
+  "name": "Probability Notes and examples",
+  "subtopics": [
+   {
+    "code": "8.1",
+    "name": "Introduction to probability P(A) is the probability of A.",
+    "objectives": [
+     "\u0007Understand and use the probability scale from P(A′) is the probability of not A. Probabilities should be given as a fraction, decimal 0 to 1. or percentage.",
+     "Understand and use probability notation. Problems may require using information from tables, graphs or Venn diagrams.",
+     "Calculate the probability of a single event. e.g. P(B) = 0.8, find P(B′) .",
+     "\u0007Understand that the probability of an event not occurring = 1 - the probability of the event occurring."
+    ]
+   },
+   {
+    "code": "8.2",
+    "name": "Relative and expected frequencies Notes and examples",
+    "objectives": [
+     "\u0007Understand relative frequency as an estimate of e.g. use results of experiments with a spinner to probability. estimate the probability of a given outcome.",
+     "Calculate expected frequencies. e.g. use probability to estimate an expected value from a population. Includes understanding what is meant by fair, bias and random."
+    ]
+   },
+   {
+    "code": "8.3",
+    "name": "Probability of combined events Notes and examples",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "9",
+  "name": "Statistics Notes and examples",
+  "subtopics": [
+   {
+    "code": "9.1",
+    "name": "Classifying statistical data",
+    "objectives": []
+   },
+   {
+    "code": "9.2",
+    "name": "Interpreting statistical data Notes and examples",
+    "objectives": [
+     "\u0007Read, interpret and draw inferences from tables e.g. compare averages and measures of spread and statistical diagrams. between two data sets.",
+     "\u0007Compare sets of data using tables, graphs and statistical measures.",
+     "\u0007Appreciate restrictions on drawing conclusions from given data."
+    ]
+   },
+   {
+    "code": "9.3",
+    "name": "Averages and measures of spread Notes and examples",
+    "objectives": [
+     "\u0007Calculate the mean, median, mode and range for individual data and distinguish between the purposes for which these are used.",
+     "\u0007Calculate an estimate of the mean for grouped discrete or grouped continuous data.",
+     "\u0007Identify the modal class from a grouped frequency distribution."
+    ]
+   },
+   {
+    "code": "9.4",
+    "name": "Statistical charts and diagrams Notes and examples",
+    "objectives": []
+   },
+   {
+    "code": "9.5",
+    "name": "Scatter diagrams Plotted points should be clearly marked, for",
+    "objectives": [
+     "Draw and interpret scatter diagrams. example as small crosses (×).",
+     "\u0007Understand what is meant by positive, negative A line of best fit: and zero correlation. • should be a single ruled line drawn by",
+     "\u0007Draw by eye, interpret and use a straight line of inspection best fit. • should extend across the full data set • does not need to coincide exactly with any of the points but there should be a roughly even distribution of points either side of the line over its entire length."
+    ]
+   },
+   {
+    "code": "9.6",
+    "name": "Cumulative frequency diagrams Notes and examples",
+    "objectives": [
+     "\u0007Draw and interpret cumulative frequency tables Plotted points on a cumulative frequency diagram and diagrams. should be clearly marked, for example as small crosses (×), and be joined with a smooth curve.",
+     "\u0007Estimate and interpret the median, percentiles, quartiles and interquartile range from cumulative frequency diagrams."
+    ]
+   },
+   {
+    "code": "9.7",
+    "name": "Histograms Notes and examples",
+    "objectives": [
+     "Draw and interpret histograms.",
+     "Calculate with frequency density. On histograms, the vertical axis is labelled ‘Frequency density’. Frequency density is defined as frequency density = frequency ÷ class width ."
+    ]
+   }
+  ]
+ }
+]

@@ -1,0 +1,226 @@
+[
+ {
+  "code": "1",
+  "name": "The basic economic problem",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "The nature of the basic economic problem",
+    "objectives": [
+     ".1.1 Finite resources and infinite wants • definition of the basic economic problem • the concept of scarcity • examples of the basic economic problem in the context of: - consumers - workers - producers/firms - governments 1.1.2 Resource allocation decisions The three basic economic questions which determine resource allocation: • what to produce • how to produce • who to produce for 1.1.3 Economic goods and free goods • the difference between economic goods and free goods"
+    ]
+   },
+   {
+    "code": "1.2",
+    "name": "Factors of production",
+    "objectives": [
+     ".2.1 Factors of production and their rewards • definitions of factors of production: land, labour, capital and enterprise • rewards to factors of production: rent, wages, interest and profit 1.2.2 Quantity and quality of factors of production • causes of changes in the quantity and quality of factors of production"
+    ]
+   },
+   {
+    "code": "1.3",
+    "name": "Opportunity cost",
+    "objectives": [
+     ".3.1 Opportunity cost • definition of opportunity cost • examples of opportunity cost in different contexts 1.3.2 The influence of opportunity cost on decision-making • decisions made by consumers, workers, producers/firms and governments when allocating their resources"
+    ]
+   },
+   {
+    "code": "1.4",
+    "name": "Production possibility curve (PPC) diagrams",
+    "objectives": [
+     ".4.1 Production possibility curves (PPC) • definition • drawing and interpretation of the PPC diagram 1.4.2 Points under, on and beyond a PPC • the significance of the location of different production points 1.4.3 Movements along a PPC • the significance of movements along a PPC and opportunity cost 1.4.4 Shifts of a PPC • causes and consequences of shifts of a PPC in terms of an economy’s growth"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "The allocation of resources",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "The role of markets in allocating resources",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "Demand",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "Supply",
+    "objectives": []
+   },
+   {
+    "code": "2.4",
+    "name": "Price determination",
+    "objectives": []
+   },
+   {
+    "code": "2.5",
+    "name": "Price changes",
+    "objectives": []
+   },
+   {
+    "code": "2.6",
+    "name": "Price elasticity of demand (PED)",
+    "objectives": []
+   },
+   {
+    "code": "2.7",
+    "name": "Price elasticity of supply (PES)",
+    "objectives": []
+   },
+   {
+    "code": "2.8",
+    "name": "Market economic system",
+    "objectives": []
+   },
+   {
+    "code": "2.9",
+    "name": "Market failure",
+    "objectives": []
+   },
+   {
+    "code": "2.10",
+    "name": "Mixed economic system",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Microeconomic decision-makers",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "Money and banking",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "Households",
+    "objectives": []
+   },
+   {
+    "code": "3.3",
+    "name": "Workers",
+    "objectives": []
+   },
+   {
+    "code": "3.4",
+    "name": "Firms",
+    "objectives": []
+   },
+   {
+    "code": "3.5",
+    "name": "Firms and production",
+    "objectives": []
+   },
+   {
+    "code": "3.6",
+    "name": "Firms’ costs, revenue and objectives",
+    "objectives": []
+   },
+   {
+    "code": "3.7",
+    "name": "Types of markets",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Government and the macroeconomy",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "Government macroeconomic intervention",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "Fiscal policy",
+    "objectives": []
+   },
+   {
+    "code": "4.3",
+    "name": "Monetary policy",
+    "objectives": []
+   },
+   {
+    "code": "4.4",
+    "name": "Supply-side policy",
+    "objectives": []
+   },
+   {
+    "code": "4.5",
+    "name": "Economic growth",
+    "objectives": []
+   },
+   {
+    "code": "4.6",
+    "name": "Employment and unemployment",
+    "objectives": []
+   },
+   {
+    "code": "4.7",
+    "name": "Inflation",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Economic development",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Living standards",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "Poverty",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "Population",
+    "objectives": []
+   },
+   {
+    "code": "5.4",
+    "name": "Differences in economic development between countries",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "International trade and globalisation",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Specialisation and free trade",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "Globalisation and trade restrictions",
+    "objectives": []
+   },
+   {
+    "code": "6.3",
+    "name": "Foreign exchange rates",
+    "objectives": []
+   },
+   {
+    "code": "6.4",
+    "name": "Current account of the balance of payments",
+    "objectives": []
+   }
+  ]
+ }
+]

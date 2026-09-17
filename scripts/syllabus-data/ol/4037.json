@@ -1,0 +1,427 @@
+[
+ {
+  "code": "1",
+  "name": "Functions a function.",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "Understand the terms: function, domain, The domain of f may need to be restricted for",
+    "objectives": []
+   },
+   {
+    "code": "1.2",
+    "name": "Find the domain and range of functions.",
+    "objectives": [
+     "Functions (continued)"
+    ]
+   },
+   {
+    "code": "1.3",
+    "name": "Recognise and use function notation. Examples include:",
+    "objectives": []
+   },
+   {
+    "code": "1.4",
+    "name": "Understand the relationship between If f(x) is trigonometric it will be one of the following:",
+    "objectives": []
+   },
+   {
+    "code": "1.5",
+    "name": "Explain in words why a given function does",
+    "objectives": []
+   },
+   {
+    "code": "1.6",
+    "name": "Find the inverse of a one-one function. Correct notation must be used. For example:",
+    "objectives": []
+   },
+   {
+    "code": "1.7",
+    "name": "Form and use composite functions. Understand that order of functions is important, i.e.",
+    "objectives": []
+   },
+   {
+    "code": "1.8",
+    "name": "Use sketch graphs to show the relationship Understand that each function is the reflection of the",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Quadratic functions",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "Find the maximum or minimum value of the",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "Use the maximum or minimum value of f(x) to Candidates should use correct notation to write a",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "Know the conditions for f(x) = 0 to have: Understand how the discriminant relates to the roots",
+    "objectives": []
+   },
+   {
+    "code": "2.4",
+    "name": "Solve quadratic equations for real roots. Students are expected to be able to use",
+    "objectives": []
+   },
+   {
+    "code": "2.5",
+    "name": "Find the solution set for quadratic inequalities the square.",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Factors of polynomials Notes/Examples",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "Know and use the remainder and factor For a cubic polynomial, students are first expected",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "Find factors of polynomials. long division.",
+    "objectives": []
+   },
+   {
+    "code": "3.3",
+    "name": "Solve cubic equations.",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Equations, inequalities and graphs Notes/Examples",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "Solve equations of the type acceptable.",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "Solve graphically or algebraically inequalities",
+    "objectives": []
+   },
+   {
+    "code": "4.3",
+    "name": "Use substitution to form and solve a quadratic For example:",
+    "objectives": []
+   },
+   {
+    "code": "4.4",
+    "name": "Sketch the graphs of cubic polynomials and The points of intersection of the graph with the",
+    "objectives": []
+   },
+   {
+    "code": "4.5",
+    "name": "Solve graphically cubic inequalities of the form",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Simultaneous equations Notes/Examples",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Solve simultaneous equations in two • y - x + 3 = 0 and x2 - 3xy + y2 + 19 = 0",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "Logarithmic and exponential functions",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Know and use simple properties and graphs Logarithms may be given to any base.",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "Know and use the laws of logarithms, For example:",
+    "objectives": []
+   },
+   {
+    "code": "6.3",
+    "name": "Solve equations of the form ax = b. logarithm.",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "7",
+  "name": "Straight-line graphs",
+  "subtopics": [
+   {
+    "code": "7.1",
+    "name": "Use the equation of a straight line.",
+    "objectives": []
+   },
+   {
+    "code": "7.2",
+    "name": "Know and use the condition for two lines to",
+    "objectives": []
+   },
+   {
+    "code": "7.3",
+    "name": "Solve problems involving midpoint and length",
+    "objectives": []
+   },
+   {
+    "code": "7.4",
+    "name": "Transform given relationships to and from For example:",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "8",
+  "name": "Coordinate geometry of the circle Notes/Examples",
+  "subtopics": [
+   {
+    "code": "8.1",
+    "name": "Know and use the equation of a circle with Identify the centre and radius of a circle using a circle",
+    "objectives": []
+   },
+   {
+    "code": "8.2",
+    "name": "Solve problems involving the intersection of a • x2 + y2 + 2gx + 2fy + c = 0",
+    "objectives": []
+   },
+   {
+    "code": "8.3",
+    "name": "Solve problems involving tangents to a circle. Includes finding equations of tangents.",
+    "objectives": []
+   },
+   {
+    "code": "8.4",
+    "name": "Solve problems involving the intersection of Includes finding points of intersection, finding the",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "9",
+  "name": "Circular measure Notes/Examples",
+  "subtopics": [
+   {
+    "code": "9.1",
+    "name": "Solve problems involving the arc length and Formulas are not given.",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "10",
+  "name": "Trigonometry Notes/Examples",
+  "subtopics": [
+   {
+    "code": "10.1",
+    "name": "Know and use the six trigonometric functions The period may be in either degrees or radians.",
+    "objectives": []
+   },
+   {
+    "code": "10.2",
+    "name": "Understand and use the amplitude and may be in either degrees or radians.",
+    "objectives": []
+   },
+   {
+    "code": "10.3",
+    "name": "Draw and use the graphs of",
+    "objectives": []
+   },
+   {
+    "code": "10.4",
+    "name": "Use the relationships:",
+    "objectives": []
+   },
+   {
+    "code": "10.5",
+    "name": "Solve, for a given domain, trigonometric",
+    "objectives": []
+   },
+   {
+    "code": "10.6",
+    "name": "Prove trigonometric relationships involving the Includes the use of the relationships in 10.4.",
+    "objectives": [
+     "+ cos i sin i"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "11",
+  "name": "Permutations and combinations",
+  "subtopics": [
+   {
+    "code": "11.1",
+    "name": "Recognise the difference between",
+    "objectives": []
+   },
+   {
+    "code": "11.2",
+    "name": "Know and use the notation n! and Includes 0! = 1.",
+    "objectives": []
+   },
+   {
+    "code": "11.3",
+    "name": "Solve problems on arrangement and selection Problems will be either in an everyday context or",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "12",
+  "name": "Series Notes/Examples",
+  "subtopics": [
+   {
+    "code": "12.1",
+    "name": "Use the binomial theorem for expansion of",
+    "objectives": []
+   },
+   {
+    "code": "12.2",
+    "name": "Use the general term For example:",
+    "objectives": []
+   },
+   {
+    "code": "12.3",
+    "name": "Recognise arithmetic and geometric",
+    "objectives": []
+   },
+   {
+    "code": "12.4",
+    "name": "Use the formulas for the nth term and for the Problems may be in context.",
+    "objectives": []
+   },
+   {
+    "code": "12.5",
+    "name": "Use the condition for the convergence of a Includes explaining why a particular geometric",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "13",
+  "name": "Vectors in two dimensions Notes/Examples",
+  "subtopics": [
+   {
+    "code": "13.1",
+    "name": "Understand and use vector notation. Vectors will be given in any form including:",
+    "objectives": []
+   },
+   {
+    "code": "13.2",
+    "name": "Know and use position vectors and unit Candidates are expected to use correct vector",
+    "objectives": []
+   },
+   {
+    "code": "13.3",
+    "name": "Find the magnitude of a vector; add and",
+    "objectives": []
+   },
+   {
+    "code": "13.4",
+    "name": "Compose and resolve velocities.",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "14",
+  "name": "Calculus",
+  "subtopics": [
+   {
+    "code": "14.1",
+    "name": "Understand the idea of a derived function. Only an informal understanding of the idea of a limit",
+    "objectives": []
+   },
+   {
+    "code": "14.2",
+    "name": "Use the notations RS ddx JLKKddxyNOPOWWXWV",
+    "objectives": []
+   },
+   {
+    "code": "14.3",
+    "name": "Know and use the derivatives of the standard Includes constant multiples, sums and composite",
+    "objectives": []
+   },
+   {
+    "code": "14.4",
+    "name": "Differentiate products and quotients of",
+    "objectives": []
+   },
+   {
+    "code": "14.5",
+    "name": "Use differentiation to find gradients, tangents",
+    "objectives": []
+   },
+   {
+    "code": "14.6",
+    "name": "Use differentiation to find stationary points. Points of inflexion are not included.",
+    "objectives": []
+   },
+   {
+    "code": "14.7",
+    "name": "Apply differentiation to connected rates of",
+    "objectives": []
+   },
+   {
+    "code": "14.8",
+    "name": "Apply differentiation to practical problems",
+    "objectives": []
+   },
+   {
+    "code": "14.9",
+    "name": "Use the first and second derivative tests to Points of inflexion are not included.",
+    "objectives": []
+   },
+   {
+    "code": "14.10",
+    "name": "Understand integration as the reverse process Solutions for indefinite integrals should include an",
+    "objectives": []
+   },
+   {
+    "code": "14.11",
+    "name": "Integrate sums of terms in powers of x, Solutions for indefinite integrals should include an",
+    "objectives": [
+     "1 arbitrary constant. including x and ax + b. 14 Calculus (continued)"
+    ]
+   },
+   {
+    "code": "14.12",
+    "name": "Integrate functions of the form: Includes the case where n = -1.",
+    "objectives": []
+   },
+   {
+    "code": "14.13",
+    "name": "Evaluate definite integrals and apply Plane areas include:",
+    "objectives": []
+   },
+   {
+    "code": "14.14",
+    "name": "Apply differentiation and integration For example:",
+    "objectives": []
+   },
+   {
+    "code": "14.15",
+    "name": "Make use of the relationships in 14.14 to draw For example:",
+    "objectives": []
+   }
+  ]
+ }
+]

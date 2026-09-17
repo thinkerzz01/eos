@@ -20,6 +20,20 @@ import {
   ListChecks, Plus, Edit3, Trash2, Check, X, ChevronUp, ChevronDown, BookOpen, Search, RefreshCw,
 } from 'lucide-react';
 
+// Core subjects float to the top of the picker (in this order); the rest follow
+// alphabetically. Keeps the subjects the academy teaches most within easy reach.
+const MAIN_SUBJECTS = [
+  'Mathematics', 'Additional Mathematics', 'Further Mathematics', 'Statistics',
+  'Physics', 'Chemistry', 'Biology', 'Combined Science',
+  'Computer Science', 'Information Technology',
+  'Accounting', 'Economics', 'Business', 'Business Studies',
+  'English (First Language)', 'English (Second Language)', 'Literature in English',
+];
+const mainRank = (name: string) => {
+  const i = MAIN_SUBJECTS.indexOf(name);
+  return i === -1 ? MAIN_SUBJECTS.length : i;
+};
+
 type EditState =
   | { kind: 'topic'; id: string; code: string; name: string }
   | { kind: 'subtopic'; id: string; code: string; name: string; objectivesText: string }
@@ -56,7 +70,14 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
   const filtered = useMemo(() => {
     return initialSubjects
       .filter((s) => programFilter === 'All Programs' || s.program === programFilter)
-      .filter((s) => !query.trim() || s.name.toLowerCase().includes(query.trim().toLowerCase()) || (s.code ?? '').includes(query.trim()));
+      .filter((s) => !query.trim() || s.name.toLowerCase().includes(query.trim().toLowerCase()) || (s.code ?? '').includes(query.trim()))
+      .slice()
+      .sort((a, b) => {
+        const ra = mainRank(a.name), rb = mainRank(b.name);
+        if (ra !== rb) return ra - rb;              // main subjects first, in priority order
+        if (a.program !== b.program) return a.program.localeCompare(b.program);
+        return a.name.localeCompare(b.name);        // then alphabetical
+      });
   }, [initialSubjects, programFilter, query]);
 
   const selectedSubject = initialSubjects.find((s) => s.id === selectedId) ?? null;

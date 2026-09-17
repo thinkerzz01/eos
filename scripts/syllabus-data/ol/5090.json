@@ -1,0 +1,720 @@
+[
+ {
+  "code": "1",
+  "name": "Cells",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "Cell structure and function",
+    "objectives": [
+     "Examine under the microscope, animal cells and plant cells from any suitable locally available material, using an appropriate temporary staining technique, such as methylene blue or iodine solution",
+     "Draw diagrams to represent observations of the animal and plant cells examined above",
+     "Identify on diagrams, photomicrographs or electron micrographs, the ribosomes, mitochondria, nucleus, cytoplasm and cell membrane in an animal cell",
+     "Identify on diagrams, photomicrographs or electron micrographs, the ribosomes, mitochondria, chloroplasts, nucleus, sap vacuole, cytoplasm, cell membrane and cellulose cell wall in a plant cell",
+     "Describe the structure of a bacterial cell, limited to: ribosomes, circular deoxyribonucleic acid (DNA) and plasmids, cytoplasm, cell membrane and cell wall",
+     "Describe the functions of the above structures in animal, plant and bacterial cells"
+    ]
+   },
+   {
+    "code": "1.2",
+    "name": "Specialised cells, tissues and organs",
+    "objectives": [
+     "Understand that cells can become specialised and that their structures are related to their specific functions, as illustrated by examples covered in the syllabus"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Understand the terms cell, tissue, organ, organ system and organism as illustrated by examples",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "Concept and use of a classification system",
+    "objectives": [
+     "Understand that organisms can be classified into groups by the features they share",
+     "Describe a species as a group of organisms that can reproduce to produce fertile offspring",
+     "Describe the binomial system of naming species as an internationally agreed system in which the scientiﬁc name of an organism is made up of two parts showing the genus and species",
+     "Construct and use dichotomous keys based on identifiable features"
+    ]
+   },
+   {
+    "code": "2.2",
+    "name": "Features of organisms",
+    "objectives": [
+     "State the main features used to place all organisms into one of the five kingdoms: Animal, Plant, Fungus, Prokaryote, Protoctist",
+     "State the main features used to place organisms into groups within the animal kingdom, limited to: (a) the main groups of vertebrates: mammals, birds, reptiles, amphibians, fish (b) the main groups of arthropods: myriapods, insects, arachnids, crustaceans"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "State the main features used to place organisms into groups within the plant kingdom, limited to ferns",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "Diffusion and osmosis",
+    "objectives": [
+     "Describe the role of water as a solvent in organisms with reference to digestion, excretion and transport",
+     "Understand that the energy for diffusion and osmosis comes from the kinetic energy of random movement of molecules and ions",
+     "Understand diffusion as the net movement of molecules or ions from a region of their higher concentration to a region of their lower concentration (i.e. down a concentration gradient), as a result of their random movement",
+     "Investigate the factors that influence diffusion, limited to: surface area, temperature, concentration gradient and distance",
+     "Understand osmosis as the net movement of water molecules from a region of higher water potential to a region of lower water potential, through a partially permeable membrane",
+     "Understand that plants are supported by the pressure of water inside the cells pressing outwards on the cell wall",
+     "Describe the effects of osmosis on plant and animal tissues and explain the importance of water potential gradient and osmosis in the uptake and loss of water",
+     "Investigate and explain the effects on plant tissues of immersing them in solutions of different concentrations, using the terms turgid, turgor pressure, plasmolysis and flaccid",
+     "Investigate osmosis using materials such as dialysis tubing"
+    ]
+   },
+   {
+    "code": "3.2",
+    "name": "Active transport",
+    "objectives": [
+     "Understand active transport as the movement of molecules or ions into or out of a cell through the cell membrane, from a region of their lower concentration to a region of their higher concentration (i.e. against a concentration gradient), using energy released during respiration",
+     "Explain the importance of active transport in ion uptake by root hair cells"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Biological molecules",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "Biological molecules",
+    "objectives": [
+     "List the chemical elements that make up: (a) carbohydrates (b) lipids (fats and oils) (c) proteins (d) DNA",
+     "State that large molecules are made from smaller molecules, limited to: starch, cellulose and glycogen from glucose; proteins from amino acids; lipids from fatty acids and glycerol; DNA from nucleotides",
+     "Describe and be able to do chemical tests for: (a) starch (iodine solution) (b) glucose and maltose (Benedict’s solution) (c) protein (biuret test) (d) lipids (ethanol emulsion test)"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Enzymes",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Enzyme action",
+    "objectives": [
+     "Describe a catalyst as a substance that increases the rate of a chemical reaction and is not changed by the reaction",
+     "Describe enzymes as proteins that function as biological catalysts and are involved in all metabolic reactions",
+     "Explain enzyme action with reference to the substrate, active site, enzyme-substrate complex, and product",
+     "Explain the specificity of enzymes in terms of the complementary shape and fit of the active site with the substrate (‘lock and key’ hypothesis)"
+    ]
+   },
+   {
+    "code": "5.2",
+    "name": "Effects of temperature and pH",
+    "objectives": [
+     "Understand that the progress of enzyme-catalysed reactions can be followed by measuring the concentrations of reactants and products",
+     "Investigate and describe the effects of temperature and pH on enzyme activity",
+     "Explain the effect of changes in temperature and pH on enzyme activity in terms of kinetic energy, shape and fit, denaturation and the frequency of effective collisions"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "Plant nutrition",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Photosynthesis",
+    "objectives": [
+     "Understand that photosynthesis is the process by which plants make carbohydrates from raw materials using energy from light",
+     "State that chlorophyll is a green pigment that is found in chloroplasts",
+     "State that chlorophyll transfers light energy into chemical energy for the formation of glucose and other carbohydrates",
+     "Outline the subsequent use and storage of the carbohydrates made in photosynthesis, limited to: (a) starch as an energy store (b) cellulose to build cell walls (c) glucose used in respiration to provide energy (d) sucrose for transport through the plant",
+     "State the word equation and balanced chemical equation for photosynthesis",
+     "Investigate the need for chlorophyll, light and carbon dioxide for photosynthesis, using appropriate controls",
+     "Describe and explain the effect of varying light intensity, carbon dioxide concentration and temperature on the rate of photosynthesis",
+     "Investigate the effect of varying light intensity, carbon dioxide concentration and temperature on the rate of photosynthesis using submerged aquatic plants and hydrogencarbonate indicator solution",
+     "Identify and explain the limiting factors of photosynthesis in different environmental conditions"
+    ]
+   },
+   {
+    "code": "6.2",
+    "name": "Leaf structure",
+    "objectives": [
+     "State that most leaves have a large surface area and are thin, and explain how these features are adaptations for photosynthesis",
+     "Identify and label the cuticle, cellular and tissue structures of a dicotyledonous leaf, as seen in diagrams or photomicrographs, and explain how these structures are adaptations for photosynthesis and gas exchange, limited to: (a) stomata and guard cells (b) spongy and palisade mesophyll cells (c) air spaces (d) vascular bundles (xylem and phloem) (e) distribution of chloroplasts (f) upper and lower epidermis"
+    ]
+   },
+   {
+    "code": "6.3",
+    "name": "Mineral nutrition",
+    "objectives": [
+     "Explain the importance of nitrate ions for making amino acids, required for the production of proteins",
+     "Explain the importance of magnesium ions for making chlorophyll"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "7",
+  "name": "Transport in flowering plants",
+  "subtopics": [
+   {
+    "code": "7.1",
+    "name": "Uptake and transport of water and ions",
+    "objectives": [
+     "Relate the structure of root hair cells to their function of water and ion uptake",
+     "Outline the pathway taken by water through the root, stem and leaf, limited to: root hair cells, root cortex cells, xylem and mesophyll cells",
+     "Investigate, using a suitable stain, the pathway of water in a cut stem"
+    ]
+   },
+   {
+    "code": "7.2",
+    "name": "Transpiration and translocation",
+    "objectives": [
+     "Describe transpiration as the loss of water vapour from leaves",
+     "Understand that water evaporates from the surfaces of the mesophyll cells into air spaces and then diffuses out of the leaves through the stomata as water vapour",
+     "Explain: (a) \u0007the effects of wind speed, and the variation of temperature, humidity and light intensity on transpiration rate (b) how wilting occurs",
+     "Investigate the effects of wind speed, light intensity and temperature variation on transpiration rate",
+     "Explain the mechanism by which water moves upwards in the xylem in terms of a transpiration pull that draws up a column of water molecules, held together by forces of attraction between water molecules",
+     "Describe translocation as the movement of sucrose and amino acids in the phloem from parts of plants that produce or release them (sources) to parts of plants that use or store them (sinks)",
+     "Identify the positions of tissues as seen in transverse sections of non-woody dicotyledonous roots and stems, limited to: xylem, phloem and cortex"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "8",
+  "name": "State the functions of xylem as transport of water and mineral ions, and support",
+  "subtopics": [
+   {
+    "code": "8.1",
+    "name": "Diet",
+    "objectives": [
+     "List the principal sources of, and describe the dietary importance of, carbohydrates, lipids, proteins, vitamins (C and D only), mineral salts (calcium and iron only), fibre (roughage) and water",
+     "Name the diseases and describe the symptoms resulting from deficiencies of vitamin C (scurvy), vitamin D (rickets), calcium (rickets) and iron (anaemia)",
+     "Understand the concept of a balanced diet"
+    ]
+   },
+   {
+    "code": "8.2",
+    "name": "Human digestive system",
+    "objectives": [
+     "Identify the main regions of the digestive system: mouth, salivary glands, oesophagus, stomach, small intestine (duodenum and ileum), pancreas, liver, gall bladder and large intestine (colon, rectum and anus)",
+     "Explain why most foods must be digested before they can be absorbed",
+     "Describe physical digestion as the breakdown of food into smaller pieces without chemical change to the food molecules",
+     "Describe chemical digestion as the breakdown of large molecules into small molecules",
+     "State that physical digestion increases the surface area of food for the action of enzymes in chemical digestion",
+     "Identify the types of human teeth (incisors, canines, premolars and molars)",
+     "Describe the structure of human teeth, limited to: enamel, dentine, pulp, nerves and cement, and understand that teeth are embedded in the gum",
+     "Describe the functions of the types of human teeth in physical digestion of food",
+     "Describe the functions of the main regions of the digestive system, limited to: (a) mouth - ingestion, physical digestion, chemical digestion of starch by amylase (b) salivary glands - secretion of saliva containing amylase (c) \u0007stomach - physical digestion, chemical digestion of protein by protease, presence of hydrochloric acid in gastric secretions (d) \u0007small intestine (duodenum and ileum) - chemical digestion of starch by amylase, maltose by maltase, protein by protease and lipids by lipase (e) liver - production of bile and storage of glycogen (f) gall bladder - storage of bile (g) pancreas - alkaline secretion containing amylase, protease and lipase (h) ileum and colon - absorption (i) rectum and anus - egestion",
+     "Describe the functions of amylase, maltase, protease and lipase, listing the substrates and end- products, limited to: (a) amylase breaks down starch to maltose (b) maltase breaks down maltose to glucose (c) protease (pepsin and trypsin) breaks down protein to amino acids (d) lipase breaks down lipids to fatty acids and glycerol",
+     "Describe the function of hydrochloric acid in the stomach as killing ingested bacteria",
+     "Understand that the different proteases present in the stomach and the duodenum work best at different pH levels",
+     "Outline the role of bile in emulsifying fats to increase the surface area for the chemical digestion of fat to fatty acids and glycerol by lipase",
+     "Describe peristalsis as waves of contractions of longitudinal and circular muscles which move food through the digestive system"
+    ]
+   },
+   {
+    "code": "8.3",
+    "name": "Absorption and assimilation",
+    "objectives": [
+     "State that the small intestine is the region where nutrients are absorbed",
+     "Understand that absorption (by diffusion, osmosis and active transport) is the movement of nutrients from the intestines into cells lining the digestive system and then into the blood",
+     "Understand that assimilation is the uptake and use by cells of nutrients from the blood",
+     "Describe the structure of a villus and the roles of capillaries and lacteals",
+     "Explain the significance of villi and microvilli in increasing the internal surface area of the ileum",
+     "Understand that water is absorbed from the lumen of the small intestine and the colon, but that most absorption of water happens in the small intestine",
+     "State the function of the hepatic portal vein as the route taken to the liver by most of the molecules and ions absorbed from the ileum"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "9",
+  "name": "Human gas exchange",
+  "subtopics": [
+   {
+    "code": "9.1",
+    "name": "Human gas exchange",
+    "objectives": [
+     "Describe the features of gas exchange surfaces in humans, limited to: large surface area, thin surface, good blood and air supply",
+     "State the percentages of the gases in atmospheric air",
+     "Investigate and explain the differences between inspired and expired air",
+     "Identify, on diagrams and images, the larynx, trachea, lungs, bronchi, bronchioles, alveoli and associated capillaries",
+     "State the characteristics of, and describe the role of, the exchange surface of the alveoli in gas exchange",
+     "Identify, on diagrams and images, the ribs, internal and external intercostal muscles and the diaphragm",
+     "Explain the role of the ribs, the internal and external intercostal muscles and the diaphragm in producing volume and pressure changes in the thorax, causing the movement of air into and out of the lungs (breathing)",
+     "Investigate and explain the effect of physical activity on rate and depth of breathing",
+     "Explain the role of goblet cells, ciliated cells and mucus in protecting the gas exchange system from pathogens and particles"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "10",
+  "name": "Respiration",
+  "subtopics": [
+   {
+    "code": "10.1",
+    "name": "Respiration",
+    "objectives": [
+     "Describe respiration as the chemical reactions in all living cells that release energy from glucose",
+     "State the uses of energy in living organisms including muscle contraction, protein synthesis, cell division, active transport, growth, the passage of electrical impulses along neurones and the maintenance of a constant body temperature",
+     "Investigate and describe the effect of temperature on respiration in yeast"
+    ]
+   },
+   {
+    "code": "10.2",
+    "name": "Aerobic respiration",
+    "objectives": [
+     "Describe aerobic respiration as the release of a relatively large amount of energy by the breakdown of glucose in the presence of oxygen",
+     "State the word equation and balanced chemical equation for aerobic respiration"
+    ]
+   },
+   {
+    "code": "10.3",
+    "name": "Anaerobic respiration",
+    "objectives": [
+     "Describe anaerobic respiration as the release of a relatively small amount of energy by the breakdown of glucose without using oxygen",
+     "State the word equation for anaerobic respiration in humans",
+     "State the word equation for anaerobic respiration in yeast",
+     "Explain why lactic acid builds up in muscles and blood during vigorous exercise causing Excess Post‑exercise Oxygen Consumption (EPOC) or an ‘oxygen debt’",
+     "Outline how the oxygen debt is removed after exercise, limited to: (a) continuation of fast heart rate to transport lactic acid in blood from muscles to the liver (b) \u0007continuation of deeper and faster breathing to supply oxygen for the breakdown of lactic acid in the liver"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "11",
+  "name": "Transport in humans",
+  "subtopics": [
+   {
+    "code": "11.1",
+    "name": "Circulatory system",
+    "objectives": [
+     "Describe the circulatory system as a system of blood vessels with a pump and valves to ensure one- way flow of blood",
+     "Describe a double circulation as a system in which blood passes through the heart twice for each complete circuit",
+     "Understand that a double circulation provides a low pressure circulation to the lungs and a high pressure circulation to the body tissues"
+    ]
+   },
+   {
+    "code": "11.2",
+    "name": "Heart",
+    "objectives": [
+     "Identify the structures of the mammalian heart, limited to: the muscular wall, the septum, the left and right ventricles and atria, atrioventricular and semilunar valves and coronary arteries",
+     "Explain the relative thickness: (a) of the muscle walls of the left and right ventricles (b) of the muscle walls of the atria compared to those of the ventricles",
+     "Describe the functioning of the heart in terms of the contraction of muscles of the atria and ventricles and the action of the valves in a heartbeat",
+     "State that blood is pumped away from the heart in arteries and returns to the heart in veins",
+     "State that the activity of the heart may be monitored by electrocardiogram (ECG), pulse rate and listening to sounds of valves closing",
+     "Investigate and explain the effect of physical activity on heart rate",
+     "Describe coronary heart disease in terms of the blockage of coronary arteries and state the possible risk factors including diet, sedentary lifestyle, stress, smoking, genetic predisposition, age and gender",
+     "Discuss the role of diet and exercise in reducing the risk of coronary heart disease"
+    ]
+   },
+   {
+    "code": "11.3",
+    "name": "Blood vessels",
+    "objectives": [
+     "Name the main blood vessels that carry blood to and from the heart, lungs, liver and kidneys, limited to: aorta, vena cava, pulmonary artery, pulmonary vein, hepatic vein, hepatic artery, hepatic portal vein, renal artery and renal vein",
+     "Describe, and identify on diagrams and photomicrographs, the structure of arteries, veins and capillaries, limited to: (a) relative thickness of wall (b) composition of wall (muscle and elastic tissue) (c) diameter of lumen (d) presence of valves",
+     "Explain how the structure of arteries, veins and capillaries is related to the pressure of the blood that they transport"
+    ]
+   },
+   {
+    "code": "11.4",
+    "name": "Blood",
+    "objectives": [
+     "Identify red and white blood cells (lymphocytes and phagocytes) as seen under the light microscope on prepared slides, and in diagrams and photomicrographs",
+     "List the components of blood as red blood cells, white blood cells, platelets and plasma",
+     "State the functions of the components of blood: (a) red blood cells - oxygen transport (b) white blood cells - antibody production by lymphocytes and engulfing pathogens by phagocytes (c) \u0007platelets - clotting by converting soluble fibrinogen to insoluble fibrin to prevent blood loss and the entry of pathogens (d) \u0007plasma - transport, limited to: blood cells, ions, glucose, amino acids, hormones, carbon dioxide, urea, vitamins and plasma proteins",
+     "Describe the transfer of substances between blood in capillaries, tissue fluid and body cells"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "12",
+  "name": "Disease and immunity",
+  "subtopics": [
+   {
+    "code": "12.1",
+    "name": "Disease",
+    "objectives": [
+     "Describe a pathogen as a disease-causing organism",
+     "Describe a transmissible disease as a disease in which the pathogen can be passed from one host to another",
+     "Understand that a pathogen may be transmitted: (a) through direct contact, including through blood or other body fluids (b) indirectly, including from contaminated surfaces or food, from animals, or from the air",
+     "Describe the human body’s barriers to the entry of pathogens, limited to: skin, hairs in the nose, mucus, stomach acid",
+     "Understand the role of the mosquito as a vector of disease",
+     "Describe the malarial pathogen as an example of a parasite and explain how it is transmitted",
+     "Describe the control of the mosquito that transmits malaria with reference to its life cycle",
+     "Explain that human immunodeficiency virus (HIV) is a viral pathogen",
+     "Describe how HIV is transmitted",
+     "Understand that HIV infection may lead to Acquired Immune Deficiency Syndrome (AIDS)",
+     "Describe the methods by which HIV may be controlled",
+     "Describe cholera as a disease caused by a bacterium, which is transmitted in contaminated water",
+     "Explain the importance of a clean water supply, hygienic food preparation, good personal hygiene, waste disposal and sewage treatment in controlling the spread of cholera (details of the stages of sewage treatment are not required)",
+     "Explain that the cholera bacterium produces a toxin that causes secretion of chloride ions into the small intestine, causing osmotic movement of water into the gut, resulting in diarrhoea, dehydration and loss of ions from the blood",
+     "Describe the effects of excessive consumption of alcohol: reduced self-control, depressant, effect on reaction times, damage to liver and social implications",
+     "Describe the effects of tobacco smoke and its major toxic components (nicotine, tar and carbon monoxide): strong association with bronchitis, emphysema, lung cancer, heart disease, and the association between smoking during pregnancy and reduced birth weight of the baby"
+    ]
+   },
+   {
+    "code": "12.2",
+    "name": "Antibiotics",
+    "objectives": [
+     "Describe a drug as any substance taken into the body that modifies or affects chemical reactions in the body",
+     "Describe the use of antibiotics for the treatment of bacterial infection",
+     "State that antibiotics kill bacteria but do not affect viruses",
+     "Explain how development of antibiotic-resistant bacteria, including MRSA, can be minimised by using antibiotics only when essential"
+    ]
+   },
+   {
+    "code": "12.3",
+    "name": "Immunity",
+    "objectives": [
+     "Describe active immunity as defence against a pathogen by antibody production in the body",
+     "State that each pathogen has its own antigens, which have specific shapes",
+     "Describe antibodies as proteins that bind to antigens leading to direct destruction of pathogens, or marking of pathogens for destruction by phagocytes",
+     "State that specific antibodies have complementary shapes which fit specific antigens",
+     "Explain that active immunity is gained after an infection by a pathogen, or by vaccination",
+     "Outline the process of vaccination: (a) weakened pathogens or their antigens are given (b) the antigens stimulate an immune response by lymphocytes which produce antibodies (c) memory cells are produced that give long-term immunity",
+     "Explain the role of vaccination in controlling the spread of transmissible diseases",
+     "Explain that passive immunity is a short-term defence against a pathogen by antibodies acquired from another individual, limited to: across the placenta and in breast milk",
+     "Explain the importance of breast-feeding for the development of passive immunity in infants",
+     "State that memory cells are not produced in passive immunity",
+     "Outline how HIV affects the immune system, limited to: decreased lymphocyte numbers and reduced ability to produce antibodies, which weakens the immune system"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "13",
+  "name": "Excretion",
+  "subtopics": [
+   {
+    "code": "13.1",
+    "name": "Excretion",
+    "objectives": [
+     "Describe excretion as the removal of toxic materials and the waste products of metabolism from organisms",
+     "State that carbon dioxide is a waste product of respiration, which is excreted through the lungs",
+     "State that urea is a toxic waste product produced in the liver from the breakdown of excess amino acids"
+    ]
+   },
+   {
+    "code": "13.2",
+    "name": "Urinary system",
+    "objectives": [
+     "Identify, on diagrams, the kidneys, ureters, bladder and urethra and state the function of each (the function of the kidney should be described simply as removing urea and excess salts and water from the blood as urine)",
+     "Explain the need for excretion, limited to toxicity of urea",
+     "Outline the structure of a nephron and its associated blood vessels, limited to: Bowman’s capsule, glomerulus, tubules, loop of Henle and collecting duct",
+     "Outline the function of a nephron and its associated blood vessels, limited to: (a) the role of the glomerulus in the filtration from the blood of water, glucose, urea and ions (b) \u0007the role of the nephron in the reabsorption of all of the glucose, some of the ions and most of the water back into the blood (c) \u0007the formation of urine containing urea, excess water and excess ions (details of these processes are not required)",
+     "Describe the role of the liver in the assimilation of amino acids by converting them to proteins",
+     "Describe deamination in the liver as the removal of the nitrogen-containing part of amino acids, resulting in the formation of urea"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "14",
+  "name": "Coordination and control",
+  "subtopics": [
+   {
+    "code": "14.1",
+    "name": "Mammalian nervous system",
+    "objectives": [
+     "State that the nervous system (brain, spinal cord and nerves) coordinates and regulates body functions",
+     "Describe the mammalian nervous system in terms of: (a) the central nervous system (CNS) consisting of the brain and the spinal cord (b) the peripheral nervous system (PNS) consisting of the nerves outside the brain and spinal cord",
+     "Identify, on diagrams, sensory, relay and motor neurones",
+     "State that electrical impulses travel along neurones",
+     "Describe simple reflex arcs in terms of receptor, sensory neurone, relay neurone, motor neurone and effector (muscles and glands)",
+     "Describe a reflex action as a rapid and automatic response to a stimulus",
+     "Describe a synapse as a junction between two neurones",
+     "Describe the structure of a synapse, including the presence of vesicles containing neurotransmitter molecules, the synaptic gap and receptor proteins",
+     "Describe the events at a synapse: (a) \u0007an impulse stimulates the release of neurotransmitter molecules from vesicles into the synaptic gap (b) the neurotransmitter molecules diffuse across the gap and bind with receptor proteins (c) an impulse is stimulated in the next neurone",
+     "State that synapses ensure that impulses travel in one direction only"
+    ]
+   },
+   {
+    "code": "14.2",
+    "name": "Mammalian sense organs",
+    "objectives": [
+     "Describe sense organs as groups of receptor cells responding to specific stimuli: light, sound, touch, temperature and chemicals",
+     "Identify, on a diagram, the structures of the eye, limited to: cornea, iris, pupil, lens, ciliary muscles, suspensory ligaments, retina, fovea, optic nerve and blind spot",
+     "Describe the function of each part of the eye, limited to: (a) cornea - refracts light (b) iris - controls how much light enters the pupil (c) lens - focuses light onto the retina (d) ciliary muscles and suspensory ligaments - control the shape of the lens (e) retina - contains light receptors, some sensitive to light of different colours (f) fovea - contains the greatest density of light receptors (g) optic nerve - carries impulses to the brain",
+     "Explain the pupil reflex in terms of light intensity and antagonistic action of circular and radial muscles in the iris",
+     "Explain accommodation to view near and distant objects in terms of the contraction and relaxation of the ciliary muscles, tension in the suspensory ligaments, shape of the lens and refraction of light"
+    ]
+   },
+   {
+    "code": "14.3",
+    "name": "Mammalian hormones",
+    "objectives": [
+     "Describe a hormone as a chemical substance, produced by a gland and carried by the blood, which alters the activity of one or more specific target organs",
+     "Identify, on a diagram, endocrine glands that produce hormones and state the hormones they produce, limited to: (a) the adrenal glands - produce adrenaline (b) the pancreas - produces insulin and glucagon (c) the pituitary gland - produces follicle-stimulating hormone (FSH) and luteinising hormone (LH) (d) the testes - produce testosterone (e) the ovaries - produce oestrogen and progesterone",
+     "Understand the role of the hormone adrenaline, produced by the adrenal glands, in increasing the blood glucose concentration and heart rate and give examples of situations in which these may occur",
+     "Compare nervous and hormonal control, limited to speed of action and duration of effect"
+    ]
+   },
+   {
+    "code": "14.4",
+    "name": "Homeostasis",
+    "objectives": [
+     "Describe homeostasis as the maintenance of a constant internal environment",
+     "Explain the concept of control by negative feedback with reference to a set point"
+    ]
+   },
+   {
+    "code": "14.5",
+    "name": "Temperature control",
+    "objectives": [
+     "Identify, on a diagram of the skin: hairs, hair erector muscles, sweat glands, receptors, sensory neurones, blood vessels and fatty tissue",
+     "Describe the role of insulation in maintaining a constant internal body temperature in mammals",
+     "Describe the roles of the hypothalamus and of temperature receptors in the skin in maintaining a constant internal body temperature in mammals",
+     "Explain how each of the following processes contributes to the maintenance of constant internal body temperature in mammals: (a) sweating (b) shivering (c) contraction of hair erector muscles (d) vasodilation and vasoconstriction of arterioles supplying skin surface capillaries"
+    ]
+   },
+   {
+    "code": "14.6",
+    "name": "Blood glucose control",
+    "objectives": [
+     "Explain the need to control blood glucose concentration",
+     "Describe the control of blood glucose concentration by the liver and pancreas and the roles of insulin and glucagon",
+     "Describe the signs of Type 1 diabetes (limited to increased blood glucose concentration and glucose in urine) and its treatment (administration of insulin)"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "15",
+  "name": "Coordination and response in plants",
+  "subtopics": [
+   {
+    "code": "15.1",
+    "name": "Coordination and response in plants",
+    "objectives": [
+     "Describe gravitropism as a response in which parts of a plant grow towards or away from gravity",
+     "Describe phototropism as a response in which parts of a plant grow towards or away from light",
+     "Explain the role of auxin in controlling shoot growth, limited to: (a) auxin is made in the shoot tip (b) auxin spreads through the plant from the shoot tip (c) auxin is unequally distributed in response to light and gravity (d) auxin stimulates cell elongation",
+     "Investigate gravitropism and phototropism in shoots and roots"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "16",
+  "name": "Development of organisms and continuity of life",
+  "subtopics": [
+   {
+    "code": "16.1",
+    "name": "Nuclear division",
+    "objectives": [
+     "\u0007Understand that chromosomes contain DNA, which carries genetic information in the form of genes",
+     "Describe a haploid nucleus as a nucleus containing a single set of chromosomes",
+     "Describe a diploid nucleus as a nucleus containing two sets of chromosomes",
+     "State that in a diploid cell there is a pair of each type of chromosome and in a human diploid cell there are 23 pairs",
+     "Describe mitosis as nuclear division giving rise to genetically identical cells in which the chromosome number is maintained (details of stages are not required)",
+     "Outline the role of mitosis in growth, repair of damaged tissues, replacement of dying cells and asexual reproduction",
+     "Describe stem cells as unspecialised cells that divide by mitosis to produce daughter cells that can become specialised for specific functions",
+     "State that meiosis is involved in the production of gametes",
+     "Describe meiosis as a reduction division in which the chromosome number is halved from diploid to haploid resulting in genetically different cells (details of stages are not required)",
+     "Understand that cancers form as a result of uncontrolled cell division"
+    ]
+   },
+   {
+    "code": "16.2",
+    "name": "Asexual and sexual reproduction",
+    "objectives": [
+     "Describe asexual reproduction as a process resulting in the production of genetically identical offspring from one parent",
+     "Identify examples of asexual reproduction",
+     "Describe sexual reproduction as the process involving the fusion of haploid nuclei (fertilisation) to form a diploid zygote and the production of genetically different offspring",
+     "Discuss the advantages and disadvantages of asexual reproduction and sexual reproduction"
+    ]
+   },
+   {
+    "code": "16.3",
+    "name": "Sexual reproduction in plants",
+    "objectives": [
+     "Identify and draw the sepals, petals, stamens (anthers and filaments) and carpels (stigmas, styles, ovaries and ovules) of an insect-pollinated flower",
+     "Identify and draw the anthers and stigmas of a wind-pollinated flower",
+     "Relate the structure of the parts of flowers to their functions, limited to the parts listed in 16.3.1",
+     "Compare the flower structure and the pollen from insect-pollinated and wind-pollinated flowers",
+     "Outline the process of pollination and distinguish between self-pollination and cross-pollination",
+     "Discuss the potential effects of self-pollination and cross-pollination on a population, in terms of variation, capacity to respond to changes in the environment and reliance on pollinators",
+     "Describe the growth of the pollen tube and its entry into the ovule followed by fertilisation (production of endosperm and details of development are not required)",
+     "Understand that after fertilisation the ovules develop into seeds and the ovary develops into a fruit",
+     "Investigate and describe the structure of a seed, limited to embryo (radicle, plumule and cotyledons) and testa",
+     "Understand that seed and fruit dispersal by wind and by animals is a means of colonising new areas and of reducing competition",
+     "Relate the features of wind-dispersed fruits and animal-dispersed fruits to their functions",
+     "Investigate and state the environmental conditions that affect germination of seeds, limited to: suitable temperature, water and oxygen",
+     "Describe the process of germination, including the role of enzymes"
+    ]
+   },
+   {
+    "code": "16.4",
+    "name": "Sexual reproduction in humans",
+    "objectives": [
+     "Identify, on diagrams of the male reproductive system: the testes, scrotum, sperm ducts, prostate gland, urethra and penis, and describe their functions",
+     "Identify, on diagrams of the female reproductive system: the ovaries, oviducts, uterus, cervix and vagina, and describe their functions",
+     "Explain how the structure of a sperm cell is related to its function, limited to: flagellum, mitochondria and enzymes in the acrosome",
+     "Explain how the structure of an egg cell is related to its function, limited to energy stores and the jelly coat that changes at fertilisation",
+     "Describe fertilisation as the fusion of the nuclei from a male gamete (sperm) and a female gamete (egg cell)",
+     "Compare male and female gametes in terms of size, structure, numbers and motility",
+     "Describe the roles of testosterone and oestrogen in the development and regulation of secondary sexual characteristics during puberty",
+     "Describe the menstrual cycle in terms of development and release of an egg and changes in the lining of the uterus",
+     "Explain the roles of follicle-stimulating hormone (FSH), luteinising hormone (LH), oestrogen and progesterone in controlling the menstrual cycle",
+     "Describe the early development of the zygote, limited to the formation of a ball of cells (embryo) that becomes implanted in the lining of the uterus",
+     "State the functions of the amniotic sac and the amniotic fluid",
+     "Identify, on diagrams, the placenta and umbilical cord and describe their functions in relation to the exchange of dissolved nutrients, gases and excretory products between the blood of the mother and the blood of the fetus (structural details are not required)",
+     "State that some viruses can pass across the placenta and affect the fetus"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "17",
+  "name": "Inheritance",
+  "subtopics": [
+   {
+    "code": "17.1",
+    "name": "Variation",
+    "objectives": [
+     "Describe variation as differences between individuals of the same species",
+     "Understand that continuous variation results in a range of phenotypes between two extremes, including body length and body mass",
+     "Understand that discontinuous variation results in a limited number of phenotypes with no intermediates, including ABO blood groups, seed shape and seed colour in peas",
+     "Understand that discontinuous variation is usually caused by genes only and continuous variation is caused by genes and the environment",
+     "Investigate and describe examples of continuous and discontinuous variation"
+    ]
+   },
+   {
+    "code": "17.2",
+    "name": "DNA",
+    "objectives": [
+     "Describe the structure of a DNA molecule: (a) two strands coiled together to form a double helix (b) each strand is made up of a chain of nucleotides (c) each nucleotide contains a base (A, T, C, G; full names are not required) (d) bonds between pairs of bases hold the strands together (e) the bases always pair up in the same way: A with T, and C with G",
+     "Define a gene as a length of DNA that codes for a protein",
+     "Explain that DNA controls cell function by controlling the production of proteins, including enzymes",
+     "State that the sequence of bases in a gene determines the sequence of amino acids needed to make a specific protein (knowledge of the details of nucleotide structure is not required)",
+     "Understand that different sequences of amino acids give different shapes to protein molecules"
+    ]
+   },
+   {
+    "code": "17.3",
+    "name": "Inheritance",
+    "objectives": [
+     "Describe inheritance as the transmission of genetic information from generation to generation",
+     "Define an allele as an alternative form of a gene",
+     "Understand and use the terms: dominant, recessive, phenotype, genotype, homozygous and heterozygous",
+     "Use genetic diagrams, including Punnett squares, to predict the results of monohybrid crosses and calculate phenotypic ratios, limited to 1 : 1 and 3 : 1 ratios",
+     "Explain why observed ratios often differ from expected ratios, especially when there are small numbers of offspring",
+     "State that two identical homozygous individuals that breed together will be pure-breeding",
+     "Explain codominance by reference to the inheritance of the ABO blood groups (phenotypes A, B, AB, O, gene alleles IA, IB and Io)",
+     "Describe the determination of sex in humans (XX and XY chromosomes)",
+     "Describe a gene mutation as a random change in the base sequence of DNA, using sickle cell anaemia as an example",
+     "Describe a chromosome mutation as a change in the chromosome number or structure, using Down’s syndrome as an example (47 chromosomes instead of 46)",
+     "State that mutation, meiosis, random mating and random fertilisation are sources of genetic variation in populations",
+     "Understand that ionising radiation and some chemicals increase the rate of mutation"
+    ]
+   },
+   {
+    "code": "17.4",
+    "name": "Selection",
+    "objectives": [
+     "Describe natural selection with reference to: (a) variation within populations (b) production of many offspring (c) struggle for survival, including competition for resources (d) reproduction by individuals that are better adapted to the environment than others (e) passing on of their alleles to the next generation",
+     "Describe how the inherited features of a population can evolve over time as a result of natural selection",
+     "Describe the development of strains of antibiotic-resistant bacteria, including MRSA, as an example of natural selection",
+     "Describe artificial selection (selective breeding) with reference to: (a) selection by humans of animals or plants with desirable features (b) crossing these to produce the next generation (c) selection of offspring showing the desirable features (d) repetition over many generations",
+     "Describe the role of artificial selection in the production of economically important plants and animals"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "18",
+  "name": "Biotechnology and genetic modification",
+  "subtopics": [
+   {
+    "code": "18.1",
+    "name": "Biotechnology",
+    "objectives": [
+     "Explain the role of yeast in the production of bread and ethanol",
+     "Understand that bacteria are useful in biotechnology and genetic modification due to their rapid reproduction rate and their ability to make complex molecules",
+     "Discuss why bacteria are useful in biotechnology and genetic modification, limited to: (a) no ethical concerns over their manipulation and growth (b) presence of plasmids",
+     "Describe how fermenters can be used for the large-scale production of useful products by bacteria and fungi, including the conditions that need to be controlled, limited to: temperature, pH, oxygen, nutrient supply and waste products",
+     "Describe the use of: (a) enzymes in biological washing powders (b) pectinase for fruit juice production (c) lactase for lactose-free milk"
+    ]
+   },
+   {
+    "code": "18.2",
+    "name": "Genetic modification",
+    "objectives": [
+     "Describe genetic modification as changing the genetic material of an organism by removing, changing or inserting individual genes",
+     "Understand that the gene that controls the production of human insulin has been inserted into bacterial DNA, for commercial production of insulin",
+     "Outline the use of genetic modification in crop plants by inserting genes: (a) to confer resistance to herbicides (b) to confer resistance to insect pests (c) to provide additional vitamins",
+     "Discuss potential advantages and risks of genetic modification, limited to modifying crop plants and bacteria"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "19",
+  "name": "Relationships of organisms with one another and with the environment",
+  "subtopics": [
+   {
+    "code": "19.1",
+    "name": "Energy flow",
+    "objectives": [
+     "Understand that the Sun is the principal source of energy input to most biological systems",
+     "Explain why most forms of life are completely dependent on photosynthesis",
+     "Describe the flow of energy through food chains and webs including energy from light and energy in living organisms and its eventual transfer to the environment",
+     "Construct and interpret simple food chains",
+     "Understand the terms producer, consumer, herbivore, carnivore and decomposer",
+     "Describe food webs as networks of interconnected food chains and construct and interpret them",
+     "Explain why the transfer of energy from one trophic level to another is inefficient",
+     "Explain why food chains usually have fewer than five trophic levels",
+     "Explain why it is more energy efficient for humans to eat crop plants than to eat livestock that have been fed on crop plants",
+     "Construct and interpret pyramids of numbers, biomass and energy"
+    ]
+   },
+   {
+    "code": "19.2",
+    "name": "Nutrient cycles",
+    "objectives": [
+     "Describe the carbon cycle, limited to: photosynthesis, respiration, feeding, decomposition, formation of fossil fuels and combustion",
+     "Outline the nitrogen cycle in making nitrogen available for plant and animal protein, limited to: (a) decomposition of plant and animal protein to ammonium ions (b) nitrification (c) nitrogen fixation by lightning and bacteria (d) absorption of nitrate ions by plants (e) production of amino acids and protein (f) feeding and digestion of proteins (g) denitrification (the names of individual bacteria are not required)",
+     "Outline the role of fungi and bacteria in decomposition"
+    ]
+   },
+   {
+    "code": "19.3",
+    "name": "Ecosystems and biodiversity",
+    "objectives": [
+     "Describe a population as a group of organisms of one species, living in the same area, at the same time",
+     "Describe a community as all of the populations of different species in an ecosystem",
+     "Describe an ecosystem as a unit containing the community of organisms and their environment, interacting together",
+     "Describe biodiversity as the number of different species that live in an area",
+     "Identify and state the factors affecting the rate of population growth for a population of an organism, limited to: food supply, competition, predation and disease",
+     "Understand that the growth of the human population is increasing the demand for global resources"
+    ]
+   },
+   {
+    "code": "19.4",
+    "name": "Effects of humans on ecosystems",
+    "objectives": [
+     "Outline the causes and describe the consequences of deforestation, limited to its effects on: biodiversity, extinction, loss of soil, flooding and concentration of carbon dioxide in the atmosphere",
+     "Describe the impacts humans have through: (a) over-harvesting of plant and animal species (b) introducing a non-native species to an ecosystem",
+     "Describe the harmful effects of: (a) \u0007water pollution by untreated sewage and nitrogen-containing fertilisers leading to eutrophication, limited to: (i) increased availability of nitrate and other ions (ii) increased growth of producers (iii) increased decomposition after death of producers (iv) increased aerobic respiration by decomposers (v) reduction in dissolved oxygen (vi) death of organisms requiring dissolved oxygen in water (b) \u0007air pollution by greenhouse gases (carbon dioxide and methane), contributing to global warming and its likely effects (c) pollution due to insecticides and herbicides (d) non-biodegradable plastics in the environment, in both aquatic and terrestrial ecosystems"
+    ]
+   },
+   {
+    "code": "19.5",
+    "name": "Conservation",
+    "objectives": [
+     "Discuss reasons for conservation of species with reference to: (a) maintenance of biodiversity (b) reducing extinction (c) protecting vulnerable environments",
+     "Explain how forests can be conserved using education, protected areas, quotas and replanting",
+     "Explain how fish stocks can be conserved using education, closed seasons, protected areas, controlled net types and mesh size, quotas and monitoring",
+     "Describe a sustainable resource as one which is produced as rapidly as it is removed from the environment so that it does not run out"
+    ]
+   }
+  ]
+ }
+]
