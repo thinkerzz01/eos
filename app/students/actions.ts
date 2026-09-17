@@ -11,6 +11,7 @@ import { provisionLogin } from '@/lib/auth/provision';
 import { findEmailAccountOwner, emailTakenMessage } from '@/lib/auth/emailUniqueness';
 import { friendlyDbError } from '@/lib/friendlyError';
 import { cancelScheduleForStudents, cancelDemoCalendarForLeads } from '@/lib/scheduling/cascade';
+import { ensureEnrollmentSnapshot } from '@/lib/syllabus/snapshot';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE', 'Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
 const SOURCES = ['google', 'facebook', 'instagram', 'whatsapp', 'referral', 'walk_in'];
@@ -142,7 +143,14 @@ async function enrollStudentSubjects(
       };
     })
     .filter(Boolean) as Record<string, any>[];
-  if (rows.length) await supabase.from('student_subjects').insert(rows);
+  if (rows.length) {
+    await supabase.from('student_subjects').insert(rows);
+    // Freeze a per-enrollment syllabus snapshot (best-effort; no-op if the subject
+    // has no master outline yet - the admin "Generate snapshots" action backfills).
+    for (const r of rows) {
+      await ensureEnrollmentSnapshot(supabase, orgId, studentId, r.subject_id as string);
+    }
+  }
 }
 
 export async function createStudent(input: CreateStudentInput): Promise<ActionResult> {

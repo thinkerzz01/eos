@@ -19,6 +19,7 @@ import {
   FolderLock,
   Settings,
   ClipboardList,
+  ListChecks,
   DollarSign,
   CreditCard,
   Mail,
@@ -112,6 +113,12 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
           label: 'Subjects',
           href: '/subjects',
           icon: BookOpen,
+          allowedRoles: ['admin', 'manager'],
+        },
+        {
+          label: 'Syllabus',
+          href: '/syllabus',
+          icon: ListChecks,
           allowedRoles: ['admin', 'manager'],
         },
         {

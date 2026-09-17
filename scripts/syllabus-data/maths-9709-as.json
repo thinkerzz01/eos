@@ -1,0 +1,27 @@
+[
+ {
+  "code": "1",
+  "name": "Pure Mathematics 1",
+  "subtopics": [
+   { "code": "1.1", "name": "Quadratics", "objectives": [] },
+   { "code": "1.2", "name": "Functions", "objectives": [] },
+   { "code": "1.3", "name": "Coordinate geometry", "objectives": [] },
+   { "code": "1.4", "name": "Circular measure", "objectives": [] },
+   { "code": "1.5", "name": "Trigonometry", "objectives": [] },
+   { "code": "1.6", "name": "Series", "objectives": [] },
+   { "code": "1.7", "name": "Differentiation", "objectives": [] },
+   { "code": "1.8", "name": "Integration", "objectives": [] }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Mechanics",
+  "subtopics": [
+   { "code": "4.1", "name": "Forces and equilibrium", "objectives": [] },
+   { "code": "4.2", "name": "Kinematics of motion in a straight line", "objectives": [] },
+   { "code": "4.3", "name": "Momentum", "objectives": [] },
+   { "code": "4.4", "name": "Newton's laws of motion", "objectives": [] },
+   { "code": "4.5", "name": "Energy, work and power", "objectives": [] }
+  ]
+ }
+]
