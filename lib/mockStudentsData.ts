@@ -1,5 +1,6 @@
 export interface EnrolledSubject {
   subject: string;
+  code?: string; // syllabus code, e.g. 9702 (shown in brackets)
   teacherName: string;
   assessedGrade: string; // Blank "" for new students until first test!
   targetGrade: string; // Defaults to A*

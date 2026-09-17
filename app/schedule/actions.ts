@@ -806,15 +806,19 @@ export async function listStudentEnrollments(
     }
   }
 
-  // 2) The subject the student did their DEMO for (via the converted lead), so a
+  // 2) The subject the student chose at their DEMO (via the converted lead), so a
   //    demo-won student shows their subject even before any class is scheduled.
+  //    The subject can live either as demos.subject_id OR, for public bookings,
+  //    only as the lead's `subjects` text - we resolve both.
   const { data: leadRows } = await supabase
     .from('leads')
-    .select('id')
+    .select('id,subjects,program')
     .eq('converted_student_id', studentId)
     .is('deleted_at', null);
-  const leadIds = ((leadRows as any[]) ?? []).map((l) => l.id).filter(Boolean);
+  const leads = (leadRows as any[]) ?? [];
+  const leadIds = leads.map((l) => l.id).filter(Boolean);
   if (leadIds.length) {
+    // 2a) Demos that recorded a subject_id.
     const { data: demoRows } = await supabase
       .from('demos')
       .select('subject_id,teacher_id')
@@ -823,6 +827,21 @@ export async function listStudentEnrollments(
       .not('subject_id', 'is', null);
     for (const d of (demoRows as any[]) ?? []) {
       if (d.subject_id && !map.has(d.subject_id)) map.set(d.subject_id, d.teacher_id ?? '');
+    }
+    // 2b) Fall back to the lead's chosen subject text -> resolve to a subject id,
+    //     scoped to the lead's program so we pick the right syllabus row.
+    for (const l of leads) {
+      const names = String(l.subjects ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      for (const name of names) {
+        let q = supabase.from('subjects').select('id,program').ilike('name', name).is('deleted_at', null);
+        if (l.program) q = q.eq('program', l.program);
+        const { data: subjRows } = await q.limit(1);
+        const sid = (subjRows as any[])?.[0]?.id as string | undefined;
+        if (sid && !map.has(sid)) map.set(sid, '');
+      }
     }
   }
 

@@ -727,7 +727,7 @@ export function StudentsClient({
                             <div className="flex flex-wrap gap-1 max-w-[220px]">
                               {s.enrolledSubjects.map((sub) => (
                                 <span key={sub.subject} className="px-2.5 py-0.5 rounded-full bg-[#EEEBFB] text-[#5B47D6] text-xs font-medium">
-                                  {sub.subject}
+                                  {labelWithCode(sub.subject, sub.code)}
                                 </span>
                               ))}
                             </div>
@@ -803,7 +803,7 @@ export function StudentsClient({
                     {s.enrolledSubjects.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {s.enrolledSubjects.map((sub) => (
-                          <span key={sub.subject} className="px-2 py-0.5 rounded-full bg-[#EEEBFB] text-[#5B47D6] text-[11px] font-medium">{sub.subject}</span>
+                          <span key={sub.subject} className="px-2 py-0.5 rounded-full bg-[#EEEBFB] text-[#5B47D6] text-[11px] font-medium">{labelWithCode(sub.subject, sub.code)}</span>
                         ))}
                       </div>
                     )}
@@ -1355,8 +1355,8 @@ export function StudentsClient({
                           <div className="space-y-1">
                             {s.enrolledSubjects.map((sub, sIdx) => (
                               <div key={sIdx} className="text-[12px] leading-tight">
-                                <span className="font-medium text-slate-900 dark:text-slate-100">{sub.subject}</span>
-                                <span className="text-[#6B7185] font-medium"> ({sub.teacherName})</span>
+                                <span className="font-medium text-slate-900 dark:text-slate-100">{labelWithCode(sub.subject, sub.code)}</span>
+                                {sub.teacherName && <span className="text-[#6B7185] font-medium"> · {sub.teacherName}</span>}
                               </div>
                             ))}
                           </div>
@@ -1488,7 +1488,7 @@ export function StudentsClient({
                     {s.enrolledSubjects.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {s.enrolledSubjects.map((sub, sIdx) => (
-                          <span key={sIdx} className="px-2 py-0.5 rounded-full bg-[#EEEBFB] text-[#5B47D6] text-[11px] font-medium">{sub.subject} ({sub.teacherName})</span>
+                          <span key={sIdx} className="px-2 py-0.5 rounded-full bg-[#EEEBFB] text-[#5B47D6] text-[11px] font-medium">{labelWithCode(sub.subject, sub.code)}{sub.teacherName ? ` · ${sub.teacherName}` : ''}</span>
                         ))}
                       </div>
                     )}
@@ -2247,8 +2247,8 @@ export function StudentsClient({
                             <tbody className="divide-y divide-slate-100">
                               {profileModalStudent.enrolledSubjects.map((row, idx) => (
                                 <tr key={idx} className="hover:bg-slate-50">
-                                  <td className="py-3 px-3 font-medium text-slate-900">{row.subject}</td>
-                                  <td className="py-3 px-3 text-slate-700">{row.teacherName}</td>
+                                  <td className="py-3 px-3 font-medium text-slate-900">{labelWithCode(row.subject, row.code)}</td>
+                                  <td className="py-3 px-3 text-slate-700">{row.teacherName || '—'}</td>
                                   <td className="py-3 px-3 font-medium text-emerald-600">{row.assessedGrade || '\u2014'}</td>
                                   <td className="py-3 px-3 font-medium text-[#5B47D6]">{row.targetGrade}</td>
                                   <td className="py-3 px-3 font-medium">{row.avgScore}%</td>

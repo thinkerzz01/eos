@@ -265,14 +265,16 @@ export async function getStudents(): Promise<Student[]> {
     supabase.from('homework').select('student_id,status').is('deleted_at', null),
     supabase
       .from('class_sessions')
-      .select('student_id,start_at,status,meeting_link,subjects(name)')
+      .select('student_id,start_at,status,meeting_link,subjects(name,code)')
       .is('deleted_at', null)
       .order('start_at', { ascending: true }),
-    supabase.from('student_subjects').select('student_id,subjects(name)').is('deleted_at', null),
+    supabase.from('student_subjects').select('student_id,subjects(name,code),teachers(name)').is('deleted_at', null),
   ]);
 
   const embedName = (rel: any): string =>
     (Array.isArray(rel) ? rel[0]?.name : rel?.name) ?? '';
+  const embedCode = (rel: any): string =>
+    (Array.isArray(rel) ? rel[0]?.code : rel?.code) ?? '';
 
   const sessions = (sessRes.data as any[]) ?? [];
   const completed = sessions.filter((r) => r.status === 'completed').map((r) => ({ student_id: r.student_id }));
@@ -281,13 +283,15 @@ export async function getStudents(): Promise<Student[]> {
   // Subjects the student is taught (by this viewer's scope) = subject enrollments
   // + any scheduled/held classes. Next class = the earliest upcoming scheduled one.
   const now = Date.now();
-  const subjectsByStudent = new Map<string, Set<string>>();
+  const subjectsByStudent = new Map<string, Map<string, { code: string; teacher: string }>>(); // sid -> (name -> {code,teacher})
   const nextByStudent = new Map<string, { time: string; subject: string }>();
-  const addSubject = (sid: string, name: string) => {
+  const addSubject = (sid: string, name: string, code = '', teacher = '') => {
     if (!sid || !name) return;
-    const set = subjectsByStudent.get(sid) ?? new Set<string>();
-    set.add(name);
-    subjectsByStudent.set(sid, set);
+    const m = subjectsByStudent.get(sid) ?? new Map<string, { code: string; teacher: string }>();
+    const prev = m.get(name);
+    // Keep the first non-empty code/teacher we see for this subject.
+    m.set(name, { code: prev?.code || code, teacher: prev?.teacher || teacher });
+    subjectsByStudent.set(sid, m);
   };
   const fmtNext = (iso: string): string =>
     new Date(iso).toLocaleString('en-GB', {
@@ -296,7 +300,7 @@ export async function getStudents(): Promise<Student[]> {
     });
   for (const r of sessions) {
     const name = embedName(r.subjects);
-    addSubject(r.student_id, name);
+    addSubject(r.student_id, name, embedCode(r.subjects));
     if (r.status === 'scheduled' && r.start_at && new Date(r.start_at).getTime() >= now) {
       const prev = nextByStudent.get(r.student_id);
       if (!prev || new Date(r.start_at).getTime() < new Date(prev.time).getTime()) {
@@ -305,15 +309,15 @@ export async function getStudents(): Promise<Student[]> {
       }
     }
   }
-  for (const r of (ssRes.data as any[]) ?? []) addSubject(r.student_id, embedName(r.subjects));
+  for (const r of (ssRes.data as any[]) ?? []) addSubject(r.student_id, embedName(r.subjects), embedCode(r.subjects), embedName(r.teachers));
 
   const mapped = (data as StudentRow[]).map((r) => mapRow(r, acad.get(r.id)));
 
   for (const s of mapped) {
-    const subs = Array.from(subjectsByStudent.get(s.id) ?? []);
+    const subs = Array.from(subjectsByStudent.get(s.id)?.entries() ?? []);
     if (subs.length) {
-      s.enrolledSubjects = subs.map((name) => ({
-        subject: name, teacherName: '', assessedGrade: '', targetGrade: 'A*',
+      s.enrolledSubjects = subs.map(([name, info]) => ({
+        subject: name, code: info.code, teacherName: info.teacher, assessedGrade: '', targetGrade: 'A*',
         avgScore: 0, assignments: '', quizScore: 0, status: 'Good', trend: 'stable',
       }));
     }
