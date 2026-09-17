@@ -303,6 +303,7 @@ const STAGE_DB: Record<string, string> = {
   Contacted: 'contacted',
   'Demo Set': 'demo_booked',
   'Demo Done': 'demo_booked',
+  'Demo Won': 'demo_won',
   Won: 'won',
   Lost: 'lost',
 };

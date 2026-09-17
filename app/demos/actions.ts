@@ -304,10 +304,10 @@ export async function recordOutcome(input: {
 
   // Keep the lead pipeline in sync with the demo outcome so a decided demo leaves
   // the "New" stage. NOTE: lead status 'won' means ENROLLED (set only by Convert),
-  // so a won demo maps to 'demo_booked' (Demo Set) - it stays convertible. Lost ->
-  // lost; No-show -> contacted (follow up). Pending leaves the lead untouched.
+  // so a won demo maps to 'demo_won' (Demo Won - won but not yet enrolled; stays
+  // convertible). Lost -> lost; No-show -> contacted. Pending leaves it untouched.
   const leadStatus =
-    input.outcome === 'Won' ? 'demo_booked'
+    input.outcome === 'Won' ? 'demo_won'
     : input.outcome === 'Lost' ? 'lost'
     : input.outcome === 'No-show' ? 'contacted'
     : null;

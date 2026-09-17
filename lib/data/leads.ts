@@ -12,7 +12,7 @@ interface LeadRow {
   program: string | null;
   subjects: string | null;
   source: 'google' | 'facebook' | 'instagram' | 'whatsapp' | 'referral' | 'walk_in';
-  status: 'new' | 'contacted' | 'demo_booked' | 'won' | 'lost';
+  status: 'new' | 'contacted' | 'demo_booked' | 'demo_won' | 'won' | 'lost';
   temperature: 'hot' | 'warm' | 'cold';
   next_follow_up: string | null;
   lost_reason: string | null;
@@ -23,6 +23,7 @@ const STAGE_UI: Record<LeadRow['status'], Lead['stage']> = {
   new: 'New',
   contacted: 'Contacted',
   demo_booked: 'Demo Set',
+  demo_won: 'Demo Won',
   won: 'Won',
   lost: 'Lost',
 };

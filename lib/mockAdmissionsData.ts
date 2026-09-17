@@ -10,7 +10,7 @@ export interface Lead {
   program: string;
   grade: string;
   subjects: string[];
-  stage: 'New' | 'Contacted' | 'Demo Set' | 'Demo Done' | 'Won' | 'Lost';
+  stage: 'New' | 'Contacted' | 'Demo Set' | 'Demo Done' | 'Demo Won' | 'Won' | 'Lost';
   temperature: 'Hot' | 'Warm' | 'Cold';
   source: 'Google' | 'Instagram' | 'Public Booking' | 'WhatsApp' | 'Walk-in' | 'Facebook' | 'Referral';
   createdDate: string;

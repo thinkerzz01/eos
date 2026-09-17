@@ -140,6 +140,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       new: leadsList.filter((l) => l.stage === 'New').length,
       contacted: leadsList.filter((l) => l.stage === 'Contacted').length,
       demoSet: leadsList.filter((l) => l.stage === 'Demo Set').length,
+      demoWon: leadsList.filter((l) => l.stage === 'Demo Won').length,
       won: leadsList.filter((l) => l.stage === 'Won').length,
       lost: leadsList.filter((l) => l.stage === 'Lost').length,
     };
@@ -151,6 +152,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       if (activeStageTab === 'Contacted' && l.stage !== 'Contacted') return false;
       if (activeStageTab === 'Demo Set' && l.stage !== 'Demo Set') return false;
       if (activeStageTab === 'Demo Done' && l.stage !== 'Demo Done') return false;
+      if (activeStageTab === 'Demo Won' && l.stage !== 'Demo Won') return false;
       if (activeStageTab === 'Won' && l.stage !== 'Won') return false;
       if (activeStageTab === 'Lost' && l.stage !== 'Lost') return false;
 
@@ -384,6 +386,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 { name: 'New', count: stageCounts.new },
                 { name: 'Contacted', count: stageCounts.contacted },
                 { name: 'Demo Set', count: stageCounts.demoSet },
+                { name: 'Demo Won', count: stageCounts.demoWon },
                 { name: 'Won', count: stageCounts.won },
                 { name: 'Lost', count: stageCounts.lost },
               ].map((tab) => (
@@ -488,6 +491,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               <option value="New">New</option>
               <option value="Contacted">Contacted</option>
               <option value="Demo Set">Demo Set</option>
+              <option value="Demo Won">Demo Won</option>
               <option value="Won">Won</option>
               <option value="Lost">Lost</option>
             </select>
@@ -596,7 +600,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <Badge tone={l.stage === 'Won' ? 'success' : l.stage === 'Lost' ? 'neutral' : 'brand'}>
+                          <Badge tone={l.stage === 'Won' ? 'success' : l.stage === 'Demo Won' ? 'warning' : l.stage === 'Lost' ? 'neutral' : 'brand'}>
                             {l.stage}
                           </Badge>
                         </td>
@@ -649,7 +653,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                         <div className="text-xs text-[#6B7185] font-mono truncate">{l.leadId}</div>
                       </div>
                       <div className="shrink-0">
-                        <Badge tone={l.stage === 'Won' ? 'success' : l.stage === 'Lost' ? 'neutral' : 'brand'}>{l.stage}</Badge>
+                        <Badge tone={l.stage === 'Won' ? 'success' : l.stage === 'Demo Won' ? 'warning' : l.stage === 'Lost' ? 'neutral' : 'brand'}>{l.stage}</Badge>
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
@@ -745,7 +749,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       }}
                       className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100"
                     >
-                      {['New', 'Contacted', 'Demo Set', 'Won', 'Lost'].map((s) => (
+                      {['New', 'Contacted', 'Demo Set', 'Demo Won', 'Won', 'Lost'].map((s) => (
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
