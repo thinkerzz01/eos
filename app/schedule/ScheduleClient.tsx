@@ -11,6 +11,7 @@ import { ScheduledClass } from '@/lib/mockAcademicsData';
 import type { SubjectOption } from '@/lib/data/subjects';
 import { subjectLabel, labelWithCode } from '@/lib/syllabiSeed';
 import { bulkScheduleClasses, completeClassWithAttendance, createClassSession, updateClassSession, deleteClassSession, rescheduleClass, saveClassNote, bulkDeleteClasses, listStudentEnrollments } from './actions';
+import { SessionSyllabusPanel } from '@/components/syllabus/SessionSyllabusPanel';
 import { downloadCsv } from '@/lib/export/csv';
 import { ClassCalendar } from './ClassCalendar';
 import {
@@ -1060,6 +1061,17 @@ export function ScheduleClient({
                   />
                 </div>
               </div>
+
+              {/* SYLLABUS COVERAGE - tick what was taught this class (Phase 2) */}
+              {selectedClassForCompletion.studentId && selectedClassForCompletion.subjectId && (
+                <div className="pt-4 border-t">
+                  <SessionSyllabusPanel
+                    studentId={selectedClassForCompletion.studentId}
+                    subjectId={selectedClassForCompletion.subjectId}
+                    sessionId={selectedClassForCompletion.id}
+                  />
+                </div>
+              )}
 
               <div className="flex justify-end gap-2 pt-3 border-t">
                 <button onClick={() => setSelectedClassForCompletion(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Close</button>
