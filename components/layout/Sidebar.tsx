@@ -122,6 +122,12 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
           allowedRoles: ['admin', 'manager'],
         },
         {
+          label: 'My Syllabus',
+          href: '/my-syllabus',
+          icon: ListChecks,
+          allowedRoles: ['student'],
+        },
+        {
           label: 'Attendance',
           href: '/attendance',
           icon: CalendarCheck,

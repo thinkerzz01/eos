@@ -75,7 +75,9 @@ import {
   FileSpreadsheet,
   CheckCircle,
   HelpCircle,
+  ListChecks,
 } from 'lucide-react';
+import { StudentSyllabusProgress } from '@/components/syllabus/StudentSyllabusProgress';
 
 const ALL_SUBJECTS_LIST = [
   'All Subjects',
@@ -2263,6 +2265,14 @@ export function StudentsClient({
                           </table>
                         </div>
                       )}
+                    </div>
+
+                    {/* SYLLABUS PROGRESS (read-only; teacher marks it in class) */}
+                    <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
+                      <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider flex items-center gap-1.5">
+                        <ListChecks className="w-3.5 h-3.5" /> Syllabus Progress
+                      </h3>
+                      <StudentSyllabusProgress studentId={profileModalStudent.id} />
                     </div>
                   </div>
                 )}
