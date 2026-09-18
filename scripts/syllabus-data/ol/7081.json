@@ -1,0 +1,189 @@
+[
+ {
+  "code": "1",
+  "name": "Understanding business activity",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "Business activity",
+    "objectives": [
+     ".1.1 \u0007The nature of business activity • factors of production: land, labour, capital and enterprise • concept of adding value and how added value can be increased • concept of opportunity cost"
+    ]
+   },
+   {
+    "code": "1.2",
+    "name": "Economic sectors",
+    "objectives": [
+     ".2.1 Types of economic sector • primary, secondary and tertiary sectors • private and public sectors"
+    ]
+   },
+   {
+    "code": "1.3",
+    "name": "Enterprise, business growth and size",
+    "objectives": [
+     ".3.1 Enterprise and entrepreneurship • characteristics of successful entrepreneurs • \u0007purpose and key elements of a business plan: overview/summary, objectives, resources, market research, marketing, finance, people, operations • the importance of having a business plan • why governments support business start-ups • how governments support business start-ups, e.g. grants, advice, low-cost loans, training schemes continued",
+     ".3.2 The methods and problems of measuring business size • methods of measuring business size, e.g. number of people employed, value of output/sales, volume of output/sales, capital employed (profit is not a method of measuring business size) • problems when measuring business size 1.3.3 Why some businesses grow and others remain small • why the owners of a business may want to grow the business • how and why businesses can grow internally, e.g. develop new products, develop new markets • how and why businesses can grow externally: mergers and takeovers, including horizontal integration, vertical integration • advantages and disadvantages of methods of growth • problems linked to business growth • why some businesses remain small 1.3.4 Why some businesses succeed and others fail • reasons why businesses succeed or fail, e.g. management skills, availability of finance, suitability of product, demand for products, changes in the economy, level of competition"
+    ]
+   },
+   {
+    "code": "1.4",
+    "name": "Types of business organisation",
+    "objectives": [
+     ".4.1 Different types of business organisation • sole traders, partnerships, private limited companies and public limited companies • advantages and disadvantages of different types of business organisation • recommend and justify a suitable type of business organisation to owners/management for a given situation • different forms of business organisation: franchises, joint ventures, social enterprises • advantages and disadvantages of franchises for the franchisor and franchisee • advantages and disadvantages of joint ventures"
+    ]
+   },
+   {
+    "code": "1.5",
+    "name": "Business objectives and stakeholder objectives",
+    "objectives": [
+     ".5.1 Business objectives • businesses can have several objectives, e.g. survival, growth, profit, market share • the importance of business objectives 1.5.2 The role of stakeholder groups • internal stakeholder groups: owners (sole traders, partnerships, shareholders), managers, employees • external stakeholder groups: customers, suppliers, lenders/banks, government, local community • objectives of different stakeholder groups • how these objectives may conflict with each other"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "People in business",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "Human resource management (HRM)",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "Organisation and management",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "Methods of communication",
+    "objectives": []
+   },
+   {
+    "code": "2.4",
+    "name": "Motivating employees",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Marketing",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "Marketing and the market",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "Market research",
+    "objectives": []
+   },
+   {
+    "code": "3.3",
+    "name": "Marketing mix",
+    "objectives": []
+   },
+   {
+    "code": "3.4",
+    "name": "Legal controls",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Operations management",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "Production of goods and services",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "Technology and production of goods and services",
+    "objectives": []
+   },
+   {
+    "code": "4.3",
+    "name": "Sustainable production of goods and services",
+    "objectives": []
+   },
+   {
+    "code": "4.4",
+    "name": "Costs, scale of production and break-even analysis",
+    "objectives": []
+   },
+   {
+    "code": "4.5",
+    "name": "Quality of goods and services",
+    "objectives": []
+   },
+   {
+    "code": "4.6",
+    "name": "Location decisions",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Financial information and decisions",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Business finance",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "Cash flow forecast",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "Profit and loss",
+    "objectives": []
+   },
+   {
+    "code": "5.4",
+    "name": "Statement of financial position",
+    "objectives": []
+   },
+   {
+    "code": "5.5",
+    "name": "Analysis of accounts",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "External influences on business activity",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Economic issues",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "Business and the international economy",
+    "objectives": []
+   },
+   {
+    "code": "6.3",
+    "name": "Business and the environment",
+    "objectives": []
+   },
+   {
+    "code": "6.4",
+    "name": "Business and ethical issues",
+    "objectives": []
+   }
+  ]
+ }
+]

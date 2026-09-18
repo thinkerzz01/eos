@@ -1,0 +1,168 @@
+[
+ {
+  "code": "1",
+  "name": "Textile materials",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "Fibres",
+    "objectives": []
+   },
+   {
+    "code": "1.2",
+    "name": "Yarns",
+    "objectives": []
+   },
+   {
+    "code": "1.3",
+    "name": "Fabrics",
+    "objectives": []
+   },
+   {
+    "code": "1.4",
+    "name": "Fabric finishes",
+    "objectives": []
+   },
+   {
+    "code": "1.5",
+    "name": "Smart fabrics and modern/technical textiles",
+    "objectives": []
+   },
+   {
+    "code": "1.6",
+    "name": "Components and fastenings",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Fashion and design",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "Style features",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "Influences on fashion design",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "The fashion cycle",
+    "objectives": []
+   },
+   {
+    "code": "2.4",
+    "name": "Theory of design",
+    "objectives": []
+   },
+   {
+    "code": "2.5",
+    "name": "The design process",
+    "objectives": []
+   },
+   {
+    "code": "2.6",
+    "name": "Computer-aided design",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Manufacture of garments and textile fashion accessories",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "Production methods",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "Computer-aided manufacture",
+    "objectives": []
+   },
+   {
+    "code": "3.3",
+    "name": "Order of work",
+    "objectives": []
+   },
+   {
+    "code": "3.4",
+    "name": "Health and safety in the classroom and the workplace",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Patterns",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "Commercial patterns",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "Pattern drafting",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Processes used to make garments and textile fashion accessories",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Joining fabrics",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "Edge finishes and seam-neatening methods",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "Stitches",
+    "objectives": []
+   },
+   {
+    "code": "5.4",
+    "name": "Collars and pockets",
+    "objectives": []
+   },
+   {
+    "code": "5.5",
+    "name": "Control of fullness",
+    "objectives": []
+   },
+   {
+    "code": "5.6",
+    "name": "Pressing",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "Dyeing and surface decoration techniques",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Application of colour",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "Surface decoration techniques",
+    "objectives": []
+   }
+  ]
+ }
+]

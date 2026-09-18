@@ -37,7 +37,27 @@ export interface SyllabusSubjectRow {
   hasOutline: boolean;
   topicCount: number;
   subtopicCount: number;
+  // How many of the subtopics carry at least one learning objective. Drives the
+  // Complete / Partial / Empty status shown in the manager overview.
+  objectiveCount: number;
   examYears: string | null;
+}
+
+// Fetch every row of a table for this org in 1000-row pages. Supabase caps a
+// single select at 1000 rows, so aggregating counts across the whole org (now
+// >1000 subtopics) MUST paginate or the totals silently under-report.
+async function fetchAll<T>(
+  run: (from: number, to: number) => Promise<{ data: T[] | null }>
+): Promise<T[]> {
+  const out: T[] = [];
+  const page = 1000;
+  for (let from = 0; ; from += page) {
+    const { data } = await run(from, from + page - 1);
+    const rows = data ?? [];
+    out.push(...rows);
+    if (rows.length < page) break;
+  }
+  return out;
 }
 
 function toStringArray(v: any): string[] {
@@ -142,39 +162,56 @@ export async function listSyllabusSubjects(): Promise<SyllabusSubjectRow[]> {
     const tplIds = Array.from(tplBySubject.values()).map((t) => t.id);
     const topicCountByTpl = new Map<string, number>();
     const topicIdsByTpl = new Map<string, string[]>();
+    const tplByTopic = new Map<string, string>();
     if (tplIds.length) {
-      const { data: topics } = await admin
-        .from('syllabus_topics')
-        .select('id, template_id')
-        .in('template_id', tplIds)
-        .is('deleted_at', null);
-      for (const t of (topics ?? []) as any[]) {
+      // Paginated: topics fit in one page today, but do not depend on that.
+      const topics = await fetchAll<any>(async (from, to) => {
+        const { data } = await admin
+          .from('syllabus_topics')
+          .select('id, template_id')
+          .in('template_id', tplIds)
+          .is('deleted_at', null)
+          .range(from, to);
+        return { data };
+      });
+      for (const t of topics) {
         topicCountByTpl.set(t.template_id, (topicCountByTpl.get(t.template_id) ?? 0) + 1);
         const arr = topicIdsByTpl.get(t.template_id) ?? [];
         arr.push(t.id);
         topicIdsByTpl.set(t.template_id, arr);
+        tplByTopic.set(t.id, t.template_id);
       }
     }
-    // Subtopic counts per template.
-    const allTopicIds: string[] = [];
-    for (const arr of Array.from(topicIdsByTpl.values())) for (const id of arr) allTopicIds.push(id);
-    const subCountByTopic = new Map<string, number>();
+    // Subtopic + objective counts per template. MUST paginate: the org has
+    // >1000 subtopics, so a single select would cap and under-count.
+    const subCountByTpl = new Map<string, number>();
+    const objCountByTpl = new Map<string, number>();
+    const allTopicIds = Array.from(tplByTopic.keys());
     if (allTopicIds.length) {
-      const { data: subs } = await admin
-        .from('syllabus_subtopics')
-        .select('id, topic_id')
-        .in('topic_id', allTopicIds)
-        .is('deleted_at', null);
-      for (const s of (subs ?? []) as any[]) {
-        subCountByTopic.set(s.topic_id, (subCountByTopic.get(s.topic_id) ?? 0) + 1);
+      const subs = await fetchAll<any>(async (from, to) => {
+        const { data } = await admin
+          .from('syllabus_subtopics')
+          .select('topic_id, objectives')
+          .in('topic_id', allTopicIds)
+          .is('deleted_at', null)
+          .range(from, to);
+        return { data };
+      });
+      for (const s of subs) {
+        const tplId = tplByTopic.get(s.topic_id);
+        if (!tplId) continue;
+        subCountByTpl.set(tplId, (subCountByTpl.get(tplId) ?? 0) + 1);
+        if (Array.isArray(s.objectives) && s.objectives.length > 0) {
+          objCountByTpl.set(tplId, (objCountByTpl.get(tplId) ?? 0) + 1);
+        }
       }
     }
 
     return subjectRows.map((s) => {
       const tpl = tplBySubject.get(s.id);
-      const topicIds = tpl ? topicIdsByTpl.get(tpl.id) ?? [] : [];
-      const subtopicCount = topicIds.reduce((n, tid) => n + (subCountByTopic.get(tid) ?? 0), 0);
       const topicCount = tpl ? topicCountByTpl.get(tpl.id) ?? 0 : 0;
+      const subtopicCount = tpl ? subCountByTpl.get(tpl.id) ?? 0 : 0;
+      const objectiveCount = tpl ? objCountByTpl.get(tpl.id) ?? 0 : 0;
       return {
         id: s.id,
         name: s.name,
@@ -183,6 +220,7 @@ export async function listSyllabusSubjects(): Promise<SyllabusSubjectRow[]> {
         hasOutline: !!tpl && topicCount > 0,
         topicCount,
         subtopicCount,
+        objectiveCount,
         examYears: tpl?.examYears ?? null,
       };
     });

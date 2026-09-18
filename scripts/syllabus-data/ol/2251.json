@@ -1,0 +1,186 @@
+[
+ {
+  "code": "1",
+  "name": "Research Methods",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "How do sociologists approach the study of society?",
+    "objectives": [
+     ".1.1 The positivist approach: • The scientific method • A macro view • Social facts • Quantitative data • Causation and correlation • Patterns and trends • Objectivity and reliability 1.1.2 The interpretivist approach: • A micro view • Meanings and motivations • Qualitative data • In-depth • Subjectivity • Validity and verstehen 1.1.3 Approaches that combine different research methods and evidence: • Triangulation • Longitudinal studies 1.1.4 The analysis and evaluation of research choices: • Bias • Interviewer effect • Hawthorne/Observer effect • Validity • Reliability • Representativeness • Generalisability"
+    ]
+   },
+   {
+    "code": "1.2",
+    "name": "What types of data and evidence do sociologists use?",
+    "objectives": [
+     ".2.1 Sources of data: • Differences between primary and secondary sources of data • Differences between qualitative and quantitative data • Strengths and limitations of each type of data 1.2.2 Secondary evidence: • Examples of: - official statistics - historical and personal documents - digital sources - media content • Strengths and limitations of each type of evidence 1.2.3 Analysis, interpretation and evaluation of data from qualitative and quantitative sources: • Summaries of sociological studies • Diagrams • Tables • Charts • Graphs"
+    ]
+   },
+   {
+    "code": "1.3",
+    "name": "How do sociologists investigate society?",
+    "objectives": [
+     ".3.1 The stages in research design: • Selection of topic • Aims • Hypothesis • Target population • Methods • Operationalisation • Pilot studies 1.3.2 Sampling: • Sampling frames • Sampling techniques: - random - systematic - stratified - snowball - quota • Strengths and limitations of each technique"
+    ]
+   },
+   {
+    "code": "1.3",
+    "name": "How do sociologists investigate society? (continued)",
+    "objectives": [
+     ".3.3 Quantitative and qualitative primary research methods: • Surveys • Questionnaires • Interviews (structured, semi-structured, unstructured, group) • Observations (participant, non-participant, covert, overt) • Strengths and limitations of each method 1.3.4 Types of question: • Open • Closed • Multiple choice • Scaled 1.3.5 The theoretical and practical issues affecting research: • Researcher perspective (positivist/interpretivist) • Access to sample • Response rate • Funding/cost • Time 1.3.6 Ethical issues affecting research: • Informed consent • Privacy/confidentiality • Deception • Prevention of harm • Legality"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Identity: self and society",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "How do we learn our identity?",
+    "objectives": []
+   },
+   {
+    "code": "2.1",
+    "name": "How do we learn our identity? (continued)",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "How does society control us?",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "How does society control us? (continued)",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "What influences our social identity?",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "What influences our social identity? (continued)",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Social stratification and inequality",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "What is social stratification?",
+    "objectives": []
+   },
+   {
+    "code": "3.1",
+    "name": "What is social stratification? (continued)",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "What attempts have been made to reduce social inequalities?",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "What attempts have been made to reduce social inequalities? (continued)",
+    "objectives": []
+   },
+   {
+    "code": "3.3",
+    "name": "How has globalisation affected inequalities between societies?",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Family",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "What are the different types of families?",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "What is the role of the family for the individual and society?",
+    "objectives": []
+   },
+   {
+    "code": "4.3",
+    "name": "How is family life changing?",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Education",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "What is education and schooling?",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "What are the roles and functions of education?",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "What are the roles and functions of education? (continued)",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "What factors help to explain differences in educational achievement and experience?",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "What factors help to explain differences in educational achievement and experience?",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "Crime, deviance and social control",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "What are crime, deviance and social control?",
+    "objectives": []
+   },
+   {
+    "code": "6.1",
+    "name": "What are crime, deviance and social control? (continued)",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "What are the patterns of and explanations for crime and deviance?",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "What are the patterns of and explanations for crime and deviance? (continued)",
+    "objectives": []
+   },
+   {
+    "code": "6.3",
+    "name": "How is crime dealt with in different societies?",
+    "objectives": []
+   }
+  ]
+ }
+]

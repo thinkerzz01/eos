@@ -1,0 +1,243 @@
+[
+ {
+  "code": "1",
+  "name": "Changing river environments",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "\u0007The main hydrological characteristics and processes which operate in rivers and",
+    "objectives": [
+     ".1.1 \u0007Characteristics of rivers and drainage basins: the long profile, width, depth, speed of flow/ velocity, discharge, wetted perimeter, channel, watershed, tributary, confluence, source, mouth. 1.1.2 The Bradshaw model. 1.1.3 How the drainage basin operates within the water cycle. 1.1.4 \u0007Processes which operate in a drainage basin: precipitation, interception, infiltration, percolation, overland flow, channel flow, throughflow, groundwater flow, transpiration, evaporation, evapotranspiration. 1.1.5 \u0007Processes which operate within a river: • erosion; hydraulic action, abrasion, attrition, solution • transportation; traction, suspension, saltation, solution • deposition."
+    ]
+   },
+   {
+    "code": "1.2",
+    "name": "The main landforms associated with these processes",
+    "objectives": [
+     ".2.1 \u0007The characteristics and formation of landforms: waterfalls, rapids, gorges, V-shaped valleys, meanders, oxbow lakes, levées, floodplains, deltas, interlocking spurs, potholes."
+    ]
+   },
+   {
+    "code": "1.3",
+    "name": "Rivers present opportunities and hazards for people",
+    "objectives": [
+     ".3.1 The opportunities and hazards of living near a river. 1.3.2 The human and natural causes of river flooding. 1.3.3 The impacts of river flooding. 1.3.4 \u0007An evaluation of the strategies and techniques used to manage river flooding; including sustainable. 1.3.5 The human causes of river pollution. 1.3.6 The impacts of river pollution. 1.3.7 \u0007An evaluation of the strategies and techniques used to manage river pollution; including sustainable. 1.3.8 One detailed specific example to include: • the causes and impacts of a flood for a named river • the strategies and techniques used to manage the flooding of the river; including sustainable. 1.3.9 One detailed specific example to include: • the causes and impacts of pollution in a named river • the strategies and techniques used to manage pollution levels in the river; including sustainable."
+    ]
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Changing coastal environments",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "Physical processes that shape the coast",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "The main landforms associated with these processes",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "Coasts present opportunities and hazards for people",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Changing ecosystems",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "Characteristics of the Antarctic ecosystem",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "Threats to the Antarctic ecosystem and how they can be managed",
+    "objectives": []
+   },
+   {
+    "code": "3.3",
+    "name": "Characteristics of the tropical rainforest ecosystem",
+    "objectives": []
+   },
+   {
+    "code": "3.4",
+    "name": "Threats to tropical rainforest ecosystems and how they can be managed",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Tectonic hazards",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "The structure of the Earth and distribution of earthquakes and volcanoes",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "The processes and features associated with earthquakes and volcanoes",
+    "objectives": []
+   },
+   {
+    "code": "4.3",
+    "name": "The impacts of tectonic hazards",
+    "objectives": []
+   },
+   {
+    "code": "4.4",
+    "name": "Managing the impacts of tectonic hazards",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Climate change",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "The natural and human causes of climate change",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "The impacts of climate change at a range of geographic scales",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "Responses to climate change",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "Changing populations",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Populations grow and decline",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "Population structures change over time",
+    "objectives": []
+   },
+   {
+    "code": "6.3",
+    "name": "The causes and impacts of international migration",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "7",
+  "name": "Changing towns and cities",
+  "subtopics": [
+   {
+    "code": "7.1",
+    "name": "Where people live",
+    "objectives": []
+   },
+   {
+    "code": "7.2",
+    "name": "Opportunities and challenges of urbanisation",
+    "objectives": []
+   },
+   {
+    "code": "7.3",
+    "name": "The management of urban growth",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "8",
+  "name": "Development",
+  "subtopics": [
+   {
+    "code": "8.1",
+    "name": "Measuring development",
+    "objectives": []
+   },
+   {
+    "code": "8.2",
+    "name": "The world is developing unevenly",
+    "objectives": []
+   },
+   {
+    "code": "8.3",
+    "name": "Achieving sustainable development",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "9",
+  "name": "Changing economies",
+  "subtopics": [
+   {
+    "code": "9.1",
+    "name": "Changing employment structures",
+    "objectives": []
+   },
+   {
+    "code": "9.2",
+    "name": "The impact of globalisation and the role of transnational corporations",
+    "objectives": []
+   },
+   {
+    "code": "9.3",
+    "name": "Tourism is a growing industry",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "10",
+  "name": "Resource provision",
+  "subtopics": [
+   {
+    "code": "10.1",
+    "name": "How food is produced",
+    "objectives": []
+   },
+   {
+    "code": "10.2",
+    "name": "The global patterns of food supply and demand",
+    "objectives": []
+   },
+   {
+    "code": "10.3",
+    "name": "The challenges of food supply",
+    "objectives": []
+   },
+   {
+    "code": "10.4",
+    "name": "How our energy is produced",
+    "objectives": []
+   },
+   {
+    "code": "10.5",
+    "name": "The global patterns of energy supply and demand",
+    "objectives": []
+   },
+   {
+    "code": "10.6",
+    "name": "The impacts of energy production",
+    "objectives": []
+   }
+  ]
+ }
+]

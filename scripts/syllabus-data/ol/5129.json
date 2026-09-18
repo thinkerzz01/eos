@@ -1,0 +1,836 @@
+[
+ {
+  "code": "1",
+  "name": "Cells",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "Cell structure and function",
+    "objectives": [
+     "Identify on diagrams, photomicrographs or electron micrographs, the mitochondria, nucleus, cytoplasm and cell membrane in an animal cell",
+     "Identify on diagrams, photomicrographs or electron micrographs, the mitochondria, chloroplasts, nucleus, sap vacuole, cytoplasm, cell membrane and cellulose cell wall in a plant cell",
+     "Describe the functions of the above structures in animal and plant cells",
+     "Understand that cells can become specialised and that their structures are related to their specific functions, as illustrated by examples covered in the syllabus"
+    ]
+   },
+   {
+    "code": "1.2",
+    "name": "Movement into and out of cells",
+    "objectives": [
+     "Describe the role of water as a solvent in organisms with reference to digestion, excretion and transport",
+     "Understand diffusion as the net movement of molecules or ions from a region of their higher concentration to a region of their lower concentration (i.e. down a concentration gradient), as a result of their random movement",
+     "Describe how the rate of diffusion is affected by surface area, temperature, concentration gradients and distance",
+     "Understand osmosis as the net movement of water molecules from a region of higher water potential to a region of lower water potential, through a partially permeable membrane (calculations of water potential are not required)",
+     "Describe the effects of osmosis on plant and animal tissues and explain the importance of water potential gradient and osmosis in the uptake and loss of water",
+     "Investigate and explain the effects on plant tissues of immersing them in solutions of different concentrations, using the terms turgid, turgor pressure, plasmolysis and flaccid"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Enzymes",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "Enzyme action",
+    "objectives": [
+     "Describe a catalyst as a substance that increases the rate of a chemical reaction and is not changed by the reaction",
+     "Describe enzymes as proteins that function as biological catalysts",
+     "Understand that most enzymes act within the cell that produces them and that this is how the cell controls its metabolic activities",
+     "Explain enzyme action with reference to the substrate, active site, enzyme-substrate complex, and product",
+     "Explain the specificity of enzymes in terms of the complementary shape and fit of the active site with the substrate",
+     "Investigate and explain the effects of changes of temperature and pH on enzyme activity in terms of kinetic energy, shape and fit, denaturation and the frequency of effective collisions"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Plant nutrition and transport",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "Photosynthesis",
+    "objectives": [
+     "Understand that photosynthesis is the process by which plants make carbohydrates from raw materials using energy from light",
+     "State the word equation and balanced chemical equation for photosynthesis",
+     "State that chlorophyll is a green pigment that is found in chloroplasts",
+     "State that chlorophyll transfers light energy into chemical energy for the formation of glucose and other carbohydrates",
+     "Outline the subsequent use and storage of the carbohydrates made in photosynthesis, limited to: (a) starch as an energy store (b) cellulose to build cell walls (c) glucose used in respiration to provide energy (d) sucrose for transport through the plant (e) glucose and mineral ions to synthesise other biological molecules e.g. proteins",
+     "Investigate and explain the effect of varying light intensity on the rate of photosynthesis using submerged aquatic plants"
+    ]
+   },
+   {
+    "code": "3.2",
+    "name": "Leaf structure",
+    "objectives": [
+     "State that most leaves have a large surface area and are thin, and explain how these features are adaptations for photosynthesis",
+     "Identify and label the cuticle, cellular and tissue structures of a dicotyledonous leaf, as seen in diagrams or photomicrographs, and explain how these structures are adaptations for photosynthesis and gas exchange, limited to: (a) stomata and guard cells (b) spongy and palisade mesophyll cells (c) air spaces (d) vascular bundles (xylem and phloem) (e) distribution of chloroplasts"
+    ]
+   },
+   {
+    "code": "3.3",
+    "name": "Transport in flowering plants",
+    "objectives": [
+     "Relate the structure of root hair cells to their function of water and mineral ion uptake",
+     "Explain the importance of: (a) nitrate ions for making amino acids, required for the production of proteins (b) magnesium ions for making chlorophyll",
+     "Outline the pathway taken by water through the root, stem and leaf, limited to: root hair cells, root cortex cells, xylem and mesophyll cells"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Describe transpiration as the evaporation of water from the surfaces of the mesophyll cells into air",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "Diet",
+    "objectives": [
+     "List the chemical elements that make up: (a) carbohydrates (b) lipids (fats and oils) (c) proteins",
+     "State that starch, cellulose and glycogen are made from glucose, proteins from amino acids and lipids from glycerol and fatty acids",
+     "Describe and be able to do chemical tests for: (a) starch (iodine solution) (b) glucose and maltose (Benedict’s solution) (c) protein (biuret test) (d) lipids (ethanol emulsion test)",
+     "List the principal sources of, and describe the dietary importance of carbohydrates, lipids, proteins, vitamins (C and D only), mineral ions (calcium and iron only), fibre (roughage) and water",
+     "Understand the concept of a balanced diet",
+     "Describe the signs of Type 2 diabetes (limited to increased blood glucose concentration and glucose in urine) and its treatment by diet, exercise and/or administration of insulin"
+    ]
+   },
+   {
+    "code": "4.2",
+    "name": "Human digestive system",
+    "objectives": [
+     "Identify the main regions of the digestive system: mouth, salivary glands, oesophagus, stomach, small intestine (duodenum and ileum), pancreas, liver and large intestine (colon, rectum and anus)",
+     "Explain why most foods must be digested before they can be absorbed",
+     "Describe physical digestion as the breakdown of food into smaller pieces without chemical change to the food molecules",
+     "State that physical digestion increases the surface area of food for the action of enzymes in chemical digestion",
+     "Describe chemical digestion as the breakdown of large molecules into small molecules",
+     "Describe the functions of the main regions of the digestive system, limited to: (a) mouth - ingestion, physical digestion, chemical digestion of starch by amylase (b) salivary glands - secretion of saliva containing amylase (c) stomach - physical digestion, chemical digestion of protein by protease, presence of hydrochloric acid in gastric secretions (d) small intestine (duodenum and ileum) - chemical digestion of starch by amylase, maltose by maltase, protein by protease and lipids by lipase (e) liver - storage of glycogen, breakdown of excess amino acids to produce urea which is excreted by the kidneys (f) pancreas - alkaline secretion containing amylase, protease and lipase (g) ileum and colon - absorption (h) rectum and anus - egestion 7 Describe the functions of amylase, maltase, protease and lipase, listing the substrates and products, limited to: (a) amylase breaks down starch to maltose (b) maltase breaks down maltose to glucose (c) protease breaks down protein to amino acids (d) lipase breaks down lipids to fatty acids and glycerol 8 Describe the function of hydrochloric acid in the stomach as killing ingested bacteria 9 Understand that the different proteases present in the stomach and the duodenum work best at different pH levels"
+    ]
+   },
+   {
+    "code": "4.3",
+    "name": "Absorption and assimilation",
+    "objectives": [
+     "State that the small intestine is the region where nutrients are absorbed",
+     "Understand that absorption is the movement of nutrients from the intestines into cells lining the digestive system and then into the blood",
+     "Understand that assimilation is the uptake and use by cells of nutrients from the blood",
+     "Explain the significance of villi in increasing the internal surface area of the ileum"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Understand that water is absorbed from the lumen of the small intestine and the colon, but that most",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Human gas exchange",
+    "objectives": [
+     "State and explain the differences between inspired and expired air",
+     "Identify, on diagrams and images, the larynx, trachea, lungs, bronchi, bronchioles, alveoli and associated capillaries",
+     "State that the alveoli are sites where oxygen passes into the blood and where carbon dioxide passes out of the blood and that these transfers occur by diffusion",
+     "Investigate and explain the effect of physical activity on the rate and depth of breathing"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "Respiration",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Respiration",
+    "objectives": [
+     "Describe respiration as the chemical reactions in all living cells that release energy from glucose"
+    ]
+   },
+   {
+    "code": "6.2",
+    "name": "Aerobic and anaerobic respiration",
+    "objectives": [
+     "Describe aerobic respiration as the release of a relatively large amount of energy by the breakdown of glucose in the presence of oxygen",
+     "State the word equation and balanced chemical equation for aerobic respiration",
+     "State that carbon dioxide is a waste product of respiration, which is excreted through the lungs in humans",
+     "Describe anaerobic respiration as the release of a relatively small amount of energy by the breakdown of glucose without using oxygen",
+     "State the word equation for anaerobic respiration in humans",
+     "Explain why lactic acid builds up in muscles and blood during vigorous exercise causing an ‘oxygen debt’"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "7",
+  "name": "Outline how the oxygen debt is removed after exercise, limited to:",
+  "subtopics": [
+   {
+    "code": "7.1",
+    "name": "Circulatory system",
+    "objectives": [
+     "Describe the circulatory system as a system of blood vessels with a pump and valves to ensure one- way flow of blood",
+     "Identify on diagrams and photographs the structures of the mammalian heart, limited to: the muscular wall, the septum, the left and right ventricles and atria, atrioventricular and semilunar valves and coronary arteries",
+     "Explain the relative thickness: (a) of the muscle walls of the left and right ventricles (b) of the muscle walls of the atria compared to those of the ventricles",
+     "Describe the functioning of the heart in terms of the contraction of muscles of the atria and ventricles and the action of the valves in a heartbeat",
+     "Investigate and explain the effect of physical activity on heart rate",
+     "Describe coronary heart disease in terms of the blockage of coronary arteries and state the possible risk factors including diet, sedentary lifestyle, stress, smoking, genetic predisposition, age and gender",
+     "Discuss the role of diet and exercise in reducing the risk of coronary heart disease"
+    ]
+   },
+   {
+    "code": "7.2",
+    "name": "Blood vessels",
+    "objectives": [
+     "Name the main blood vessels that carry blood to and from the heart, lungs and liver, limited to: aorta, vena cava, pulmonary artery, pulmonary vein, hepatic artery, hepatic vein and hepatic portal vein",
+     "Describe, and identify on diagrams and photomicrographs, the structure of arteries, veins and capillaries, limited to: (a) relative thickness of wall (b) composition of wall (muscle and elastic tissue) (c) diameter of lumen (d) presence of valves",
+     "Explain how the structure of arteries, veins and capillaries is related to the pressure of the blood that they transport"
+    ]
+   },
+   {
+    "code": "7.3",
+    "name": "Blood",
+    "objectives": [
+     "Identify red and white blood cells (lymphocytes and phagocytes) as seen in diagrams and photomicrographs",
+     "State the functions of the components of blood: (a) red blood cells - oxygen transport (b) white blood cells - antibody production by lymphocytes and engulfing pathogens by phagocytes (c) platelets - clotting to prevent blood loss and the entry of pathogens (clotting mechanism is not required) (d) plasma (consisting mainly of water) - transport, limited to: blood cells, ions, glucose, amino acids, hormones, carbon dioxide, urea, vitamins and antibodies"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "8",
+  "name": "Drugs and their effects",
+  "subtopics": [
+   {
+    "code": "8.1",
+    "name": "Drugs and their effects",
+    "objectives": [
+     "Describe a drug as any substance taken into the body that modifies or affects chemical reactions in the body",
+     "Describe the use of antibiotics for the treatment of bacterial infection",
+     "State that the development of antibiotic-resistant bacteria can be minimised by using antibiotics only when essential",
+     "Describe the effects of excessive consumption of alcohol: reduced self-control, depressant, effect on reaction times, damage to liver and social implications",
+     "Describe the effects of tobacco smoke and its major toxic components (nicotine, tar and carbon monoxide): strong association with bronchitis, emphysema, lung cancer, heart disease, and the association between smoking during pregnancy and reduced birth weight of the baby"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "9",
+  "name": "Coordination and control",
+  "subtopics": [
+   {
+    "code": "9.1",
+    "name": "Human nervous system and hormones",
+    "objectives": [
+     "State that the nervous system (brain, spinal cord and nerves) coordinates and regulates body functions",
+     "Describe the human nervous system in terms of: (a) the central nervous system (CNS) consisting of the brain and the spinal cord (b) the peripheral nervous system (PNS) consisting of the nerves outside the brain and spinal cord",
+     "State that sensory receptors detect changes in the environment to which the body can respond via the nervous system",
+     "Describe simple reflex arcs in terms of receptor, sensory neurone, relay neurone, motor neurone and effector (muscles and glands)",
+     "Describe a reflex action as a rapid and automatic response to a stimulus",
+     "Describe a hormone as a chemical substance, e.g. insulin, produced by a gland and carried by the blood, which alters the activity of one or more specific target organs"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "10",
+  "name": "Development of organisms and continuity of life",
+  "subtopics": [
+   {
+    "code": "10.1",
+    "name": "Nuclear division",
+    "objectives": [
+     "Understand that chromosomes contain DNA (deoxyribonucleic acid), which carries genetic information in the form of genes",
+     "State that a gene is a specific section of DNA carrying the code needed to make a specific protein, which is usually an enzyme",
+     "State that most cells contain a diploid nucleus containing two sets of chromosomes and that human cells contain 23 pairs of chromosomes",
+     "Describe mitosis as nuclear division giving rise to genetically identical cells in which the chromosome number is maintained (detail of stages are not required)",
+     "Outline the role of mitosis in growth, repair of damaged tissues and replacement of dying cells",
+     "State that meiosis is involved in the production of gametes and in humans occurs only in the testes and ovaries",
+     "Describe meiosis as a reduction division in which the chromosome number is halved from diploid to haploid resulting in genetically different cells (details of stages are not required)"
+    ]
+   },
+   {
+    "code": "10.2",
+    "name": "Sexual reproduction in humans",
+    "objectives": [
+     "Identify, on diagrams of the male reproductive system: the testes, scrotum, sperm ducts, prostate gland, urethra and penis, and describe their functions",
+     "Identify, on diagrams of the female reproductive system: the ovaries, oviducts, uterus, cervix and vagina, and describe their functions",
+     "Compare male and female gametes in terms of size, structure, numbers and motility",
+     "Describe fertilisation as the fusion of the nuclei from a male gamete (sperm) and a female gamete (egg cell) to form a zygote which develops into an embryo",
+     "Describe the menstrual cycle in terms of development and release of an egg and changes in the lining of the uterus (knowledge of hormones is not required)",
+     "Describe how the human immunodeficiency virus (HIV) is transmitted",
+     "Understand that HIV infection may lead to Acquired Immune Deficiency Syndrome (AIDS)",
+     "Describe the methods by which HIV may be controlled"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "11",
+  "name": "Biotechnology and genetic modification",
+  "subtopics": [
+   {
+    "code": "11.1",
+    "name": "Biotechnology and genetic modification",
+    "objectives": [
+     "Describe genetic modification as changing the genetic material of an organism by removing, inserting or changing individual genes",
+     "Understand that bacteria are useful in biotechnology and genetic modification due to: (a) their rapid reproduction rate (b) their ability to make complex molecules (c) no ethical concerns over their manipulation and growth",
+     "Understand that the gene that controls the production of human insulin is inserted into bacterial DNA for commercial production of insulin",
+     "State that crop plants can be genetically modified so that they: (a) are resistant to herbicides (b) are resistant to insect pests (c) can produce additional vitamins"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "12",
+  "name": "Relationships of organisms with one another and with the environment",
+  "subtopics": [
+   {
+    "code": "12.1",
+    "name": "Nutrient cycles and energy flow",
+    "objectives": [
+     "Understand that the Sun is the principal source of energy input to most biological systems",
+     "Explain why most forms of life are completely dependent on photosynthesis",
+     "Describe the flow of energy through food chains including energy from light and energy in living organisms and its eventual transfer to the environment",
+     "Explain why it is more energy efficient for humans to eat crop plants than to eat livestock that have been fed on crop plants",
+     "Understand that the growth of the human population is increasing the demand for global resources",
+     "Describe the carbon cycle, limited to: (a) photosynthesis (b) respiration (c) feeding (d) decomposition and the role of decomposers (e) formation of fossil fuels (f) combustion"
+    ]
+   },
+   {
+    "code": "12.2",
+    "name": "Effects of humans on ecosystems",
+    "objectives": [
+     "Outline the causes and describe the consequences of deforestation, limited to its effects on biodiversity, extinction, loss of soil, flooding and concentration of carbon dioxide in the atmosphere",
+     "Describe the impacts humans have through: (a) over-harvesting of plant and animal species (b) introducing a non-native species to an ecosystem (c) water pollution by untreated sewage and nitrogen-containing fertilisers, limited to the reduction in dissolved oxygen and death of organisms (d) non-biodegradable plastics in the environment, in both aquatic and terrestrial ecosystems Chemistry"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "13",
+  "name": "States of matter",
+  "subtopics": [
+   {
+    "code": "13.1",
+    "name": "Solids, liquids and gases",
+    "objectives": [
+     "State the distinguishing properties of solids, liquids and gases",
+     "Describe the structures of solids, liquids and gases in terms of particle separation, arrangement and motion",
+     "Describe and explain changes of state (melting, boiling, evaporation, freezing and condensing) in terms of kinetic particle theory",
+     "Describe and explain, in terms of kinetic particle theory, the effects of temperature and pressure on the volume of a gas"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "14",
+  "name": "Atoms, elements and compounds",
+  "subtopics": [
+   {
+    "code": "14.1",
+    "name": "Elements, compounds and mixtures",
+    "objectives": [
+     "Describe the differences between elements, molecules, compounds and mixtures",
+     "Describe a: (a) solvent as a substance that dissolves a solute (b) solute as a substance that is dissolved in a solvent (c) solution as a mixture composed of one or more solutes dissolved in a solvent",
+     "Describe how to use paper chromatography to separate mixtures of soluble substances, using a suitable solvent",
+     "Interpret simple chromatograms to identify: (a) unknown substances by comparison with known substances (b) pure and impure substances"
+    ]
+   },
+   {
+    "code": "14.2",
+    "name": "Atomic structure and the Periodic Table",
+    "objectives": [
+     "Describe the structure of the atom as a central nucleus containing neutrons and protons surrounded by electrons in shells",
+     "State the relative charges and relative masses of a proton, a neutron and an electron",
+     "Define proton number / atomic number as the number of protons in the nucleus of an atom",
+     "Define mass number / nucleon number as the total number of protons and neutrons in the nucleus of an atom",
+     "Determine the electronic configuration of elements with proton number 1 to 20, e.g. 2,8,3",
+     "State that: (a) Group VIII, the noble gases, are unreactive monatomic gases, with a full outer shell, e.g. 2,8 (b) the number of outer shell electrons is equal to the group number in Groups I to VII (c) the number of occupied electron shells is equal to the period number"
+    ]
+   },
+   {
+    "code": "14.3",
+    "name": "Ions and ionic bonds",
+    "objectives": [
+     "Describe the formation of positive ions, known as cations, and negative ions, known as anions, with noble gas electronic configurations",
+     "Describe the giant lattice structure of ionic compounds as a regular arrangement of alternating positive and negative ions",
+     "State that an ionic bond is a strong electrostatic attraction between oppositely charged ions",
+     "Describe the formation of ionic bonds between ions of metallic and non-metallic elements, including between sodium and chlorine to form NaCl and magnesium and chlorine to form MgCl2",
+     "Use dot-and-cross diagrams to show the formation of ionic bonds",
+     "Describe and explain in terms of structure and bonding the properties of ionic compounds: (a) high melting points and boiling points (b) good electrical conductivity when aqueous or molten and poor when solid"
+    ]
+   },
+   {
+    "code": "14.4",
+    "name": "Simple molecules and covalent bonds",
+    "objectives": [
+     "State that a covalent bond is formed when a pair of electrons is shared between two atoms leading to noble gas electronic configurations",
+     "Describe the formation of covalent bonds in simple molecules, including H2, Cl 2, H2O, CH4, NH3, HCl , O2 and CO2. Use dot-and-cross diagrams to show the electronic configurations in these and similar molecules.",
+     "Describe and explain in terms of structure and bonding the properties of simple molecular compounds: (a) low melting points and boiling points in terms of weak intermolecular forces (specific types of intermolecular forces are not required) (b) poor electrical conductivity"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "15",
+  "name": "Stoichiometry",
+  "subtopics": [
+   {
+    "code": "15.1",
+    "name": "Formulae",
+    "objectives": []
+   },
+   {
+    "code": "15.2",
+    "name": "Relative masses of atoms and molecules",
+    "objectives": [
+     "Define relative molecular mass, Mr, as the sum of the relative atomic masses. Relative formula mass, Mr, will be used for ionic compounds.",
+     "Calculate relative molecular mass and relative formula mass",
+     "Calculate stoichiometric reacting masses",
+     "Calculate concentration as the mass of solute dissolved in a given volume of solution, measured in g / dm3",
+     "Use volumetric pipettes, volumetric flasks and balances to prepare solutions of known concentration"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "16",
+  "name": "Chemical energetics",
+  "subtopics": [
+   {
+    "code": "16.1",
+    "name": "Exothermic and endothermic reactions",
+    "objectives": [
+     "State that an exothermic reaction transfers thermal energy to the surroundings leading to an increase in the temperature of the surroundings",
+     "State that neutralisation and combustion are exothermic reactions",
+     "State that an endothermic reaction transfers thermal energy from the surroundings leading to a decrease in the temperature of the surroundings",
+     "State that dissolving ammonium nitrate and cracking are endothermic reactions",
+     "Interpret data, including graphs, from temperature changes in endothermic and exothermic reactions"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "17",
+  "name": "Chemical reactions",
+  "subtopics": [
+   {
+    "code": "17.1",
+    "name": "Physical and chemical changes",
+    "objectives": [
+     "Identify physical and chemical changes, and describe the differences between them"
+    ]
+   },
+   {
+    "code": "17.2",
+    "name": "Rate of reaction",
+    "objectives": [
+     "Describe the effect on the rate of reactions of (a) changing the concentration of solutions (b) changing the surface area of solids (c) changing the temperature (d) adding or removing catalysts",
+     "Explain that a catalyst is unchanged at the end of a reaction",
+     "Describe, use and evaluate practical methods for investigating the rate of a reaction, including the formation of a gas",
+     "Interpret data, including graphs, from rate of reaction experiments"
+    ]
+   },
+   {
+    "code": "17.3",
+    "name": "Redox",
+    "objectives": [
+     "Define redox reactions as involving simultaneous reduction and oxidation",
+     "Define oxidation in terms of gain of oxygen",
+     "Define reduction in terms of loss of oxygen",
+     "Identify redox reactions as reactions involving gain and loss of oxygen",
+     "Describe and use a test to identify oxygen gas, O2, using a glowing splint"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "18",
+  "name": "Acids, bases and salts",
+  "subtopics": [
+   {
+    "code": "18.1",
+    "name": "The characteristic properties of acids and bases",
+    "objectives": [
+     "State that aqueous solutions of acids contain H+ ions and aqueous solutions of alkalis contain OH- ions",
+     "State that bases are oxides or hydroxides of metals and that alkalis are soluble bases",
+     "Describe the characteristic properties of acids in terms of their reactions with: (a) some metals (b) bases (c) carbonates",
+     "Describe and use tests to identify the gases: (a) carbon dioxide, CO2, using limewater (b) hydrogen, H2, using a lighted splint",
+     "Describe the characteristic properties of bases in terms of their reactions with: (a) acids (b) ammonium salts",
+     "Describe and use damp red litmus paper to identify ammonia gas, NH3",
+     "State that a neutralisation reaction occurs between an acid and a base",
+     "Describe the reaction between an acid and an alkali to produce water as a neutralisation reaction",
+     "Describe acids and alkalis in terms of their effects on: (a) universal indicator (b) litmus",
+     "Describe how and be able to compare neutrality, relative acidity and relative alkalinity in terms of colour and pH using universal indicator",
+     "State that acids and alkalis may be corrosive"
+    ]
+   },
+   {
+    "code": "18.2",
+    "name": "Preparation of salts",
+    "objectives": [
+     "Describe the preparation of soluble salts by reaction of an acid with: (a) excess metal (b) excess insoluble base (c) excess insoluble carbonate",
+     "Describe the preparation of insoluble salts by precipitation (knowledge of solubility of compounds is not required)",
+     "Describe and explain methods of separation and purification using: (a) a suitable solvent (b) filtration (c) crystallisation",
+     "Describe a: (a) residue as a substance that remains after evaporation, filtration or any similar process (b) filtrate as a liquid or solution that has passed through a filter"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "19",
+  "name": "The Periodic Table",
+  "subtopics": [
+   {
+    "code": "19.1",
+    "name": "Arrangement of elements",
+    "objectives": [
+     "Describe the Periodic Table as an arrangement of elements in periods and groups and in order of increasing proton number / atomic number",
+     "Describe the change from metallic to non-metallic character across a period",
+     "Describe the relationship between group number and the charge on ions formed from elements in that group",
+     "Explain similarities in the chemical properties of elements in the same group of the Periodic Table in terms of their electronic configuration",
+     "Explain how the position of an element in the Periodic Table can be used to predict its properties"
+    ]
+   },
+   {
+    "code": "19.2",
+    "name": "Group I properties",
+    "objectives": [
+     "Describe the Group I alkali metals, lithium, sodium and potassium, as relatively soft metals with general trends down the group, limited to: (a) decreasing melting point (b) increasing reactivity with water",
+     "Describe Group I metals as flammable",
+     "Describe and use flame tests to identify Group I cations, limited to: (a) lithium, Li+, red (b) sodium, Na+, yellow (c) potassium, K+, lilac",
+     "Predict the properties of other elements in Group I, given information about the elements"
+    ]
+   },
+   {
+    "code": "19.3",
+    "name": "Group VII properties",
+    "objectives": [
+     "Describe the Group VII halogens, chlorine, bromine and iodine, as diatomic non-metals with general trends down the group, limited to: (a) increasing density (b) decreasing reactivity",
+     "State the appearance of the halogens at r.t.p. as: (a) chlorine, a pale yellow-green gas (b) bromine, a red-brown liquid (c) iodine, a grey-black solid",
+     "Describe chlorine, Cl2, and bromine, Br2, as toxic",
+     "Describe how to use damp litmus paper to identify chlorine gas, Cl 2",
+     "Describe and explain the displacement reactions of halogens with other halide ions and use these reactions to place the halogens in order of reactivity",
+     "State the appearance of the halogens in aqueous solution as: (a) chlorine, colourless (b) bromine, orange (c) iodine, brown 7 Describe the reactions of the halide ions with acidified aqueous silver nitrate to form insoluble silver halides, limited to (a) AgCl, white (b) AgBr , cream (c) AgI, pale yellow 8 Predict the properties of other elements in Group VII, given information about the elements"
+    ]
+   },
+   {
+    "code": "19.4",
+    "name": "Identification of ions",
+    "objectives": [
+     "Do tests and use information provided on the reactions of aqueous anions to identify: (a) carbonate, CO32- , by reaction with dilute acid and then testing for carbon dioxide gas (b) \u0007chloride, Cl -, bromide, Br -, and iodide, I -, by acidifying with dilute nitric acid then adding aqueous silver nitrate (c) sulfate, SO42- , by reaction with aqueous barium nitrate and dilute nitric acid",
+     "Do tests and use information provided on the reactions of aqueous cations with aqueous sodium hydroxide and aqueous ammonia to identify: (a) aluminium, Al 3+ (b) ammonium, NH4+ (c) calcium, Ca2+ (d) chromium(III), Cr3+ (e) copper(II), Cu2+ (f) iron(II), Fe2+ (g) iron(III), Fe3+ (h) zinc, Zn2+"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "20",
+  "name": "Metals",
+  "subtopics": [
+   {
+    "code": "20.1",
+    "name": "Properties and uses of metals",
+    "objectives": [
+     "Compare the general physical properties of metals and non-metals, including: (a) thermal conductivity (b) electrical conductivity (c) malleability and ductility",
+     "Describe the uses of metals in terms of their physical properties, including: (a) aluminium in the manufacture of aircraft because of its low density (b) aluminium in the manufacture of overhead electrical cables because of its low density and good electrical conductivity (c) aluminium in food containers because of its resistance to corrosion (d) copper in electrical wiring because of its good electrical conductivity and ductility"
+    ]
+   },
+   {
+    "code": "20.2",
+    "name": "Reactivity series",
+    "objectives": [
+     "State that the reactivity series is an arrangement of metals in decreasing order of their reactivity",
+     "Describe the relative reactivities of metals in terms of their tendency to form positive ions, by displacement reactions, if any, with the aqueous ions of magnesium, zinc, iron, hydrogen, copper and silver",
+     "Deduce an order of reactivity by using a given set of experimental results from: (a) reactions of metals to displace hydrogen from cold water, steam and dilute hydrochloric acid (b) displacement reactions of metals",
+     "Explain the apparent unreactivity of aluminium in terms of its oxide layer"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "21",
+  "name": "Chemistry of the environment",
+  "subtopics": [
+   {
+    "code": "21.1",
+    "name": "Water",
+    "objectives": [
+     "Describe distillation as the separation of a liquid by evaporation and condensation",
+     "Explain that distilled water is used in practical chemistry rather than tap water because it contains fewer chemical impurities",
+     "State that water needs to be treated to make it suitable for drinking",
+     "Describe the treatment of the domestic water supply in terms of: (a) sedimentation and filtration to remove insoluble solids (b) use of carbon to remove tastes and odours (c) chlorination to kill microbes",
+     "Describe desalination as a process to obtain drinking water from sea water"
+    ]
+   },
+   {
+    "code": "21.2",
+    "name": "Air quality and climate",
+    "objectives": [
+     "State the composition of clean, dry air as approximately 78% nitrogen, N2, 21% oxygen, O2, and the remainder as a mixture of noble gases and carbon dioxide, CO2",
+     "State the source of each of these air pollutants: (a) carbon dioxide from the complete combustion of carbon-containing fuels (b) carbon monoxide and particulates from the incomplete combustion of carbon-containing fuels (c) methane from the decomposition of vegetation and waste gases from digestion in animals (d) gases from the burning of plastics",
+     "State the adverse effect of these air pollutants: (a) carbon dioxide: higher levels of carbon dioxide leading to increased global warming, which leads to climate change (b) carbon monoxide: toxic gas (c) particulates: increased risk of respiratory problems and cancer (d) methane: higher levels of methane leading to increased global warming, which leads to climate change (e) gases from the burning of plastics: toxic",
+     "State and explain strategies to reduce global warming, limited to increasing use of renewable energy, decreasing use of fossil fuels, limiting deforestation and reduction in livestock farming",
+     "State that a hydrogen-oxygen fuel cell uses hydrogen and oxygen to produce electricity, with water as the only chemical product",
+     "Describe the advantages and disadvantages of using hydrogen-oxygen fuel cells in comparison with gasoline/petrol engines in vehicles"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "22",
+  "name": "Organic chemistry",
+  "subtopics": [
+   {
+    "code": "22.1",
+    "name": "Names and formulae of organic compounds",
+    "objectives": [
+     "State that a structural formula is an unambiguous description of the way the atoms in a molecule are arranged",
+     "Draw and interpret the displayed formula of a molecule to show all the atoms and all the bonds",
+     "Name, draw and interpret the structural and displayed formulae of unbranched: (a) alkanes (b) alkenes containing up to three carbon atoms per molecule",
+     "State the type of compound present given the chemical name ending in -ane or -ene, or from a molecular, structural or displayed formula"
+    ]
+   },
+   {
+    "code": "22.2",
+    "name": "Fuels",
+    "objectives": [
+     "Name the fossil fuels: coal, natural gas and petroleum",
+     "Name methane as the main constituent of natural gas",
+     "State that hydrocarbons are compounds that contain hydrogen and carbon only",
+     "State that petroleum is a mixture of hydrocarbons",
+     "Describe the separation of petroleum into useful fractions by fractional distillation",
+     "Describe how the properties of fractions obtained from petroleum change as they are collected in a fractionating column from the bottom to the top of the column, limited to: (a) decreasing chain length (b) higher volatility (c) higher flammability (d) lower boiling points (e) lower viscosity",
+     "Name the uses of the fractions as: (a) refinery gas fraction for gas used for heating and cooking (b) gasoline/petrol fraction for fuel used in cars (c) naphtha fraction as a chemical feedstock (d) kerosene/paraffin fraction for jet fuel (e) diesel oil / gas oil fraction for fuel used in diesel engines (f) fuel oil fraction for fuel used in ships and home heating systems (g) lubricating oil fraction for lubricants, waxes and polishes (h) bitumen fraction for making roads"
+    ]
+   },
+   {
+    "code": "22.3",
+    "name": "Alkanes",
+    "objectives": [
+     "State that the bonding in alkanes is single covalent and that alkanes are saturated hydrocarbons",
+     "Describe the properties of alkanes as being generally unreactive, except in terms of combustion"
+    ]
+   },
+   {
+    "code": "22.4",
+    "name": "Alkenes",
+    "objectives": [
+     "State that the bonding in alkenes includes a double carbon-carbon covalent bond and that alkenes are unsaturated hydrocarbons",
+     "Describe the manufacture of alkenes and hydrogen by the cracking of large alkane molecules using a high temperature, and a catalyst",
+     "Describe the reasons for the cracking of large alkane molecules",
+     "Describe the test to distinguish between saturated and unsaturated hydrocarbons by their reaction with aqueous bromine",
+     "State that in an addition reaction only one product is formed",
+     "Describe the formation of poly(ethene) from ethene by addition polymerisation, identifying the repeat unit",
+     "State that poly(ethene) is a widely used plastic Physics"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "23",
+  "name": "Motion, forces and energy",
+  "subtopics": [
+   {
+    "code": "23.1",
+    "name": "Physical quantities and measurement techniques",
+    "objectives": [
+     "Describe how and be able to measure a variety of lengths with appropriate precision using tapes and rulers",
+     "Describe how and be able to use a measuring cylinder to measure the volume of a liquid and to determine the volume of a solid by displacement",
+     "Describe how and be able to measure a variety of time intervals using clocks and digital timers"
+    ]
+   },
+   {
+    "code": "23.2",
+    "name": "Motion",
+    "objectives": [
+     "Define speed as distance travelled per unit time",
+     "Recall and use the equation speed = distance time v= s t",
+     "Recall and use the equation average speed = total distance travelled total time taken",
+     "Define acceleration as change in speed per unit time; recall and use the equation acceleration = change in speed time taken ∆v a = ∆t",
+     "State what is meant by and describe examples of uniform acceleration and non-uniform acceleration",
+     "Sketch, plot and interpret distance-time and speed-time graphs",
+     "Determine from the shape of a distance-time graph when an object is: (a) at rest (b) moving with constant speed (c) accelerating (d) decelerating",
+     "Determine from the shape of a speed-time graph when an object is: (a) at rest (b) moving with constant speed (c) moving with constant acceleration (d) moving with changing acceleration"
+    ]
+   },
+   {
+    "code": "23.3",
+    "name": "Mass and weight",
+    "objectives": [
+     "Describe how and be able to determine mass using an electronic balance",
+     "Describe how and be able to measure weight using a force meter",
+     "Define gravitational field strength as force per unit mass; recall and use the equation gravitational field strength = weight mass W g= m and know that this is equivalent to the acceleration of free fall"
+    ]
+   },
+   {
+    "code": "23.4",
+    "name": "Density",
+    "objectives": [
+     "Define density as mass per unit volume; recall and use the equation mass density = volume ρ= m V",
+     "Describe how and be able to determine the density of a liquid, of a regularly shaped solid and of an irregularly shaped solid which sinks in a liquid (volume by displacement), including appropriate calculations"
+    ]
+   },
+   {
+    "code": "23.5",
+    "name": "Forces",
+    "objectives": [
+     "Identify and use different types of force, including weight (gravitational force), friction, drag, air resistance, tension (elastic force), electrostatic force, magnetic force, thrust (driving force) and contact force",
+     "State that a force may change the motion of an object by changing its direction or speed",
+     "Determine the resultant of two or more forces acting along the same straight line",
+     "Recall and use the equation resultant force = mass × acceleration F = ma 23.5.2 Friction 1 Describe friction as a force that may impede motion and produce heating 23.5.3 Elastic deformation 1 Know that forces may produce a change in size and shape of an object 2 Define the spring constant as force per unit extension; recall and use the equation spring constant= force extension k= F x 3 Sketch, plot and interpret load-extension graphs for an elastic solid and describe the associated experimental procedures 23.5.4 Turning effect of forces",
+     "Describe the moment of a force as a measure of its turning effect and give everyday examples",
+     "Define the moment of a force as moment = force × perpendicular distance from the pivot; recall and use this equation",
+     "Describe and be able to do an experiment to verify the principle of moments"
+    ]
+   },
+   {
+    "code": "23.6",
+    "name": "Energy, work and power",
+    "objectives": [
+     "State that energy may be stored as: kinetic, gravitational potential, chemical, elastic (strain), nuclear, electrostatic and internal (thermal)",
+     "Describe how energy is transferred between stores during events and processes, including examples of transfer by forces (mechanical work done), electrical currents (electrical work done), heating and by electromagnetic, sound and other waves",
+     "Know the principle of the conservation of energy and apply this principle to the transfer of energy between stores during events and processes 23.6.2 Work 1 Recall and use the equation work done = force × distance moved in the direction of the force W = Fd 23.6.3 Energy resources",
+     "List renewable and non-renewable energy sources",
+     "Describe how useful energy may be obtained, or electrical power generated, from: (a) chemical energy stored in fossil fuels (b) chemical energy stored in biofuels (c) hydroelectric resources (d) solar radiation (e) nuclear fuel (f) geothermal resources (g) wind (h) tides (i) waves in the sea including references to a boiler, turbine and generator where they are used",
+     "Give advantages and disadvantages of each method limited to whether it is renewable, when and whether it is available, and its impact on the environment"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "24",
+  "name": "Thermal physics",
+  "subtopics": [
+   {
+    "code": "24.1",
+    "name": "Kinetic particle model of matter",
+    "objectives": [
+     "Describe qualitatively the particle structure of solids, liquids and gases, relating their properties to the forces and distances between particles and to the motion of the particles (atoms, molecules, ions and electrons)"
+    ]
+   },
+   {
+    "code": "24.2",
+    "name": "Thermal expansion of solids, liquids and gases",
+    "objectives": [
+     "Explain some of the applications and consequences of thermal expansion in the context of common examples, including the liquid-in-glass thermometer",
+     "Explain, in terms of the motion, arrangement and separation of particles, the thermal expansion of solids, liquids and gases"
+    ]
+   },
+   {
+    "code": "24.3",
+    "name": "Transfer of thermal energy",
+    "objectives": [
+     "Describe and be able to do experiments to distinguish between good and bad thermal conductors",
+     "Explain convection in liquids and gases in terms of density changes and describe experiments to illustrate convection",
+     "Describe and be able to do experiments to distinguish between good and bad emitters of infrared radiation",
+     "Describe and be able to do experiments to distinguish between good and bad absorbers of infrared radiation",
+     "Explain everyday applications using ideas about conduction, convection and radiation, including: (a) heating objects such as kitchen pans (b) heating a room by convection (c) measuring temperature using an infrared thermometer (d) using thermal insulation to maintain the temperature of a liquid and to reduce thermal energy transfer in buildings"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "25",
+  "name": "Waves",
+  "subtopics": [
+   {
+    "code": "25.1",
+    "name": "General properties of waves",
+    "objectives": [
+     "Know that waves transfer energy without transferring matter",
+     "Describe what is meant by wave motion as illustrated by vibrations in ropes and springs and by experiments using water waves",
+     "Define the terms: (a) frequency as the number of wavelengths that pass a point per unit time (b) wavelength as the distance between two consecutive, identical points such as two consecutive crests (c) amplitude as the maximum distance from the mean position",
+     "Recall and use the equation wave speed = frequency × wavelength v = f λ",
+     "Know that for a transverse wave, the direction of vibration is at right-angles to the direction of the energy transfer, and give examples such as electromagnetic radiation, waves on the surface of water, and seismic S-waves (secondary)",
+     "Know that for a longitudinal wave, the direction of vibration is parallel to the direction of the energy transfer, and give examples such as sound waves, seismic P-waves (primary) and longitudinal waves in compressed helical springs e.g. slinky toys"
+    ]
+   },
+   {
+    "code": "25.2",
+    "name": "Light",
+    "objectives": [
+     "Define and use the terms normal, angle of incidence and angle of reflection",
+     "Describe and be able to do experiments to illustrate the law of reflection",
+     "State that for reflection, the angle of incidence is equal to the angle of reflection and use this in constructions, measurements and calculations 25.2.2 Refraction of light 1 Define and use the terms normal, angle of incidence and angle of refraction 2 Describe and be able to do experiments to show refraction of light by transparent blocks of different shapes (refraction through lenses is not required)"
+    ]
+   },
+   {
+    "code": "25.3",
+    "name": "Electromagnetic spectrum",
+    "objectives": [
+     "Know the main regions of the electromagnetic spectrum in order of frequency and in order of wavelength",
+     "Know that the speed of all electromagnetic waves in: (a) a vacuum is 3.0 × 108 m / s (b) air is approximately the same as in a vacuum",
+     "Describe the role of the following regions in the stated applications: (a) radio waves - radio and television communications (b) microwaves -mobile (cell) phone, Bluetooth, microwave ovens (c) infrared - household electrical appliances, remote controllers, thermal imaging (d) visible light -photography, vision (e) ultraviolet - security marking and sterilising water (f) X-rays - hospital use in medical imaging, security scanners, killing cancerous cells (g) gamma rays - medical treatment in detecting and killing cancerous cells, sterilising food and medical equipment, engineering applications such as detecting cracks in metal"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "26",
+  "name": "Electricity",
+  "subtopics": [
+   {
+    "code": "26.1",
+    "name": "Electrical quantities",
+    "objectives": [
+     "State that there are positive and negative charges and that charge is measured in coulombs",
+     "State that unlike charges attract and like charges repel",
+     "Describe and be able to do experiments to show electrostatic charging by friction",
+     "Explain that the charging of solids by friction involves only a transfer of negative charge (electrons)",
+     "State examples of electrical conductors and insulators",
+     "Describe examples where electrostatic charge is a problem, including lightning and aircraft refuelling",
+     "Describe examples where electrostatic charge is helpful, including photocopiers, insecticide sprayers and spray painting 26.1.2 Electrical current 1 Define electric current as charge passing a point per unit time; recall and use the equation charge electric current = time I = Q t 2 Describe electrical conduction in metals in terms of the movement of free (delocalised) electrons 3 Describe the use of and be able to use ammeters (analogue and digital) with different ranges 26.1.3 Potential difference",
+     "Describe the use of and be able to use voltmeters (analogue and digital) with different ranges",
+     "Calculate the total voltage available from several sources arranged in series 26.1.4 Resistance 1 Recall and use the equation resistance = p.d. current R= V I 2 Describe and be able to do an experiment to determine resistance using a voltmeter and an ammeter and do the appropriate calculations",
+     "Calculate the combined resistance of two or more resistors in series"
+    ]
+   },
+   {
+    "code": "26.2",
+    "name": "Electrical circuits",
+    "objectives": [
+     "Draw and interpret circuit diagrams with cells, batteries, power supplies, switches, resistors (fixed and variable), heaters, thermistors (NTC only), light-dependent resistors (LDRs), lamps, motors, ammeters, voltmeters, coils, fuses, diodes and light-emitting diodes (LEDS) 26.2.2 Series and parallel circuits 1 Recall and use in calculations, the fact that: (a) the current at every point in a series circuit is the same (b) the sum of the currents entering a junction in a parallel circuit is equal to the sum of the currents that leave the junction (c) the total p.d. across the components in a series circuit is equal to the sum of the individual p.d.s across each component (d) the p.d. across an arrangement of parallel resistances is the same as the p.d. across one branch in the arrangement of the parallel resistances"
+    ]
+   },
+   {
+    "code": "26.3",
+    "name": "Practical electricity",
+    "objectives": [
+     "State common uses of electricity, including heating, lighting, battery charging and powering motors and electronic systems",
+     "Recall and use the equation power = current × voltage P = IV",
+     "Recall and use the equation energy = current × voltage × time E = IVt",
+     "Define the kilowatt-hour (kW h) and calculate the cost of using electrical appliances where the energy unit is the kW h 26.3.2 Electrical safety 1 State the hazards of: (a) damaged insulation (b) overheating cables (c) damp conditions (d) excess current from overloading of plugs, extension leads, single and multiple sockets when using a mains supply 2 Explain the use and operation of trip switches and fuses and choose appropriate fuse ratings and trip switch settings 3 Explain what happens when a live wire touches a metal case that is earthed 4 Explain why the outer casing of an electrical appliance must be either non-conducting (double insulated) or earthed",
+     "Know that a mains circuit consists of a live wire (line wire), a neutral wire and an earth wire and explain why a switch must be connected in to the live wire for the circuit to be switched off safely",
+     "Explain why fuses and circuit breakers are connected into the live wire"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "27",
+  "name": "Nuclear physics",
+  "subtopics": [
+   {
+    "code": "27.1",
+    "name": "The nuclear model of the atom",
+    "objectives": [
+     "Describe the structure of the atom in terms of a positively charged nucleus and negatively charged electrons in orbit around the nucleus",
+     "Describe the composition of the nucleus in terms of protons and neutrons",
+     "Define the terms (a) proton number / atomic number, Z (b) nucleon number / mass number, A and be able to calculate the number of neutrons in a nucleus",
+     "Explain what is meant by an isotope and state that an element may have more than one isotope"
+    ]
+   },
+   {
+    "code": "27.2",
+    "name": "Radioactivity",
+    "objectives": [
+     "Describe the detection of alpha particles (α-particles) using a cloud chamber or spark counter, and the detection of beta particles (β-particles) (β-particles will be taken to refer to β−) and gamma radiation (γ-radiation) by using a Geiger-Müller (GM) tube and counter",
+     "Use count rate measured in counts / s or counts / minute",
+     "Know what is meant by background radiation 27.2.2 The three types of emission 1 Know that radioactive decay is a change in an unstable nucleus that can result in the emission of α, β and γ radiation and know that these changes are spontaneous and random 2 Describe α-particles as two protons and two neutrons (helium nuclei), β-particles as high-speed electrons from the nucleus and γ-radiation as high-frequency electromagnetic waves 3 State, for α-particles, β-particles and γ-radiation: (a) their relative ionising effects (b) their relative penetrating powers 27.2.3 Half-life and uses of radioactive isotopes 1 Define the half-life of a particular isotope as the time taken for half the nuclei of that isotope in any sample to decay 2 Explain how the type of radiation emitted and the half-life of the isotope determine which isotope is used for applications including: (a) household fire (smoke) alarms (b) irradiating food to kill bacteria (c) sterilisation of equipment using gamma rays (d) measuring and controlling thicknesses with the choice of radiations used linked to penetration and absorption (e) diagnosis and treatment of cancer using gamma rays 27.2.4 Safety precautions 1 Explain how radioactive materials are moved, used and stored in a safe way, with reference to: (a) reducing exposure time (b) increasing distance between source and living tissue (c) use of shielding to absorb radiation"
+    ]
+   }
+  ]
+ }
+]

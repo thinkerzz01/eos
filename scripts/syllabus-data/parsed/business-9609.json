@@ -1,0 +1,1255 @@
+{
+  "AS": [
+    {
+      "code": "1.1",
+      "name": "Enterprise",
+      "subtopics": [
+        {
+          "code": "1.1.1",
+          "name": "The nature of business activity",
+          "objectives": [
+            "the purpose of business activity",
+            "the factors of production needed for business activity: land, labour, capital and enterprise",
+            "the concept of adding value",
+            "the nature of economic activity, the problem of choice and opportunity cost",
+            "the dynamic business environment",
+            "why businesses succeed or fail",
+            "differences between local, national, international and multinational businesses"
+          ]
+        },
+        {
+          "code": "1.1.2",
+          "name": "The role of entrepreneurs and intrapreneurs",
+          "objectives": [
+            "the qualities entrepreneurs and intrapreneurs need for success",
+            "the role of entrepreneurship in creating and starting up a business",
+            "the role of intrapreneurship in the ongoing success of a business",
+            "barriers to entrepreneurship",
+            "business risk and uncertainty",
+            "the role of business enterprise in the development of a country Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 14 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "1.1.3",
+          "name": "Business plans",
+          "objectives": [
+            "the meaning and purpose of business plans",
+            "the key elements of business plans",
+            "the benefits and limitations of business plans"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1.2",
+      "name": "Business structure",
+      "subtopics": [
+        {
+          "code": "1.2.1",
+          "name": "Economic sectors",
+          "objectives": [
+            "the primary, secondary, tertiary and quaternary sectors and businesses within those sectors",
+            "the public and private sectors and businesses within those sectors",
+            "the reasons for and consequences of the changing relative importance of these sectors"
+          ]
+        },
+        {
+          "code": "1.2.2",
+          "name": "Business ownership",
+          "objectives": [
+            "the main features of different types of business ownership: sole traders, partnerships, private limited companies, public limited companies, franchises, co-operatives, joint ventures and social enterprises",
+            "the appropriateness of different types of business ownership",
+            "the concepts of unlimited liability and limited liability and their importance",
+            "the advantages and disadvantages of changing from one type of business ownership to another"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1.3",
+      "name": "Size of business",
+      "subtopics": [
+        {
+          "code": "1.3.1",
+          "name": "Measurements of business size",
+          "objectives": [
+            "the appropriateness of different methods of measuring the size of a business"
+          ]
+        },
+        {
+          "code": "1.3.2",
+          "name": "Significance of small businesses",
+          "objectives": [
+            "the advantages and disadvantages of being a small business",
+            "the strengths and weaknesses of family businesses",
+            "the importance of small businesses and their role in the economy",
+            "the role of small businesses as part of the industrial structure in some industries"
+          ]
+        },
+        {
+          "code": "1.3.3",
+          "name": "Business growth",
+          "objectives": [
+            "why and how a business might grow internally (organic growth)",
+            "the different types of external growth through merger and takeover: horizontal, vertical (backward and forward), conglomerate diversification, friendly merger, hostile takeover",
+            "the impact of a merger/takeover on stakeholders",
+            "why a merger/takeover may or may not achieve objectives",
+            "the importance of joint ventures and strategic alliances as methods of external growth Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 15 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1.4",
+      "name": "Business objectives",
+      "subtopics": [
+        {
+          "code": "1.4.1",
+          "name": "Business objectives in the private sector and public sector",
+          "objectives": [
+            "the objectives of businesses - private sector, public sector, and social enterprises",
+            "the importance of business objectives",
+            "corporate social responsibility (CSR) and the triple bottom line - economic (financial), social and environmental objectives",
+            "the relationship between mission statement, aims, objectives, strategy and tactics"
+          ]
+        },
+        {
+          "code": "1.4.2",
+          "name": "Objectives and business decisions",
+          "objectives": [
+            "the different stages of business decision-making and the role of objectives in the stages of business decision-making",
+            "how objectives might change over time",
+            "the translation of objectives into targets and budgets",
+            "the need for communication of objectives and their likely impact on the workforce",
+            "SMART (specific, measurable, achievable, realistic, time-limited) objectives",
+            "how ethics may influence business objectives and activities"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1.5",
+      "name": "Stakeholders in a business",
+      "subtopics": [
+        {
+          "code": "1.5.1",
+          "name": "Business stakeholders",
+          "objectives": [
+            "individuals or groups with an interest in the activities of a business",
+            "internal stakeholders and external stakeholders",
+            "the roles, rights and responsibilities of stakeholders"
+          ]
+        },
+        {
+          "code": "1.5.2",
+          "name": "The relative importance and infuence of stakeholders on business activities",
+          "objectives": [
+            "the impact of business decisions on stakeholders, and their reactions",
+            "the impact of stakeholder aims on business decisions",
+            "how and why a business needs to be accountable to its stakeholders",
+            "how conflict might arise from stakeholders having different aims and objectives",
+            "how changing business objectives might affect its stakeholders Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 16 www.cambridgeinternational.org/alevel Back to contents page Human resource management (AS Level) The focus of this topic is on how a business can effectively manage its workforce to achieve its objectives. Candidates will develop an understanding of the human resource management process from planning and recruiting workers through to their dismissal. Candidates will learn about motivation in management. They will learn about the theory behind motivation as well as how to implement it in practice."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2.1",
+      "name": "Human resource management (HRM)",
+      "subtopics": [
+        {
+          "code": "2.1.1",
+          "name": "Purpose and roles of HRM",
+          "objectives": [
+            "the role of HRM in meeting organisational objectives"
+          ]
+        },
+        {
+          "code": "2.1.2",
+          "name": "Workforce planning",
+          "objectives": [
+            "the reasons for and role of a workforce plan",
+            "measurement of labour turnover",
+            "the implications of high and low labour turnover for a business"
+          ]
+        },
+        {
+          "code": "2.1.3",
+          "name": "Recruitment and selection",
+          "objectives": [
+            "recruitment of employees: process (job descriptions and person specifications) and recruitment methods (job advertisements, employment agencies, online recruitment)",
+            "internal and external recruitment",
+            "selection methods: curriculum vitae, résumé, application forms, interviews, references, testing, assessment centres",
+            "employment contracts"
+          ]
+        },
+        {
+          "code": "2.1.4",
+          "name": "Redundancy and dismissal",
+          "objectives": [
+            "the difference between redundancy (voluntary and involuntary) and dismissal (fair, unfair)"
+          ]
+        },
+        {
+          "code": "2.1.5",
+          "name": "Morale and welfare",
+          "objectives": [
+            "the relationship between HRM, employee morale and welfare in a business including the concept of work-life balance",
+            "the impact of diversity and equality in the workplace on a business"
+          ]
+        },
+        {
+          "code": "2.1.6",
+          "name": "Training and development",
+          "objectives": [
+            "different types of training: induction, on-the-job, off-the-job",
+            "the impact of training and development on a business",
+            "employee development to encourage intrapreneurship",
+            "employee development to encourage multi-skilling and flexibility Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 17 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "2.1.7",
+          "name": "Management and workforce relations",
+          "objectives": [
+            "how cooperation between management and the workforce can be of benefit to both",
+            "the impact on employers and employees of trade union involvement in the workplace including their role in collective bargaining"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2.2",
+      "name": "Motivation",
+      "subtopics": [
+        {
+          "code": "2.2.1",
+          "name": "Motivation as a tool of management and leadership",
+          "objectives": [
+            "the need to motivate employees to achieve the objectives of a business"
+          ]
+        },
+        {
+          "code": "2.2.2",
+          "name": "Human needs",
+          "objectives": [
+            "a simple explanation of human need",
+            "how human needs may or may not be satisfied at work"
+          ]
+        },
+        {
+          "code": "2.2.3",
+          "name": "Motivation theories",
+          "objectives": [
+            "the ideas of the main content theories (Taylor, Mayo, Maslow, Herzberg and McClelland) and process theory (Vroom)"
+          ]
+        },
+        {
+          "code": "2.2.4",
+          "name": "Motivation methods in practice: financial motivators, non-financial motivators",
+          "objectives": [
+            "the theories in practical situations",
+            "different payment methods: time based, salary, piece rates, commission, bonuses, profit sharing, performance-related pay, fringe benefits",
+            "different types of non-financial motivators: training, opportunities for promotion, development, status, job re-design, team working, empowerment, participation, job enrichment",
+            "ways in which employees can participate in the management and control of business activity"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2.3",
+      "name": "Management",
+      "subtopics": [
+        {
+          "code": "2.3.1",
+          "name": "Management and managers",
+          "objectives": [
+            "traditional manager functions: planning, organising, directing, controlling",
+            "the role of managers: Fayol, Mintzberg",
+            "the contribution of managers to business performance",
+            "management styles: autocratic, democratic, laissez-faire, paternalistic",
+            "McGregor's Theory X and Theory Y managers Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 18 www.cambridgeinternational.org/alevel Back to contents page Marketing (AS Level) The focus of this topic is on how a business finds out the needs of potential customers, and provides for their needs. Candidates will develop an understanding of the marketing mix. Candidates will have the opportunity to study in further depth one or more of the elements of the marketing mix, and to develop the skills to be able to recommend a suitable marketing mix for a business in a specific context."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3.1",
+      "name": "The nature of marketing",
+      "subtopics": [
+        {
+          "code": "3.1.1",
+          "name": "The role of marketing and its relationship with other business activities",
+          "objectives": [
+            "marketing objectives",
+            "the link between marketing objectives and corporate objectives"
+          ]
+        },
+        {
+          "code": "3.1.2",
+          "name": "Demand and supply",
+          "objectives": [
+            "the factors influencing the demand for and supply of the products of a business",
+            "interactions between demand, supply and price"
+          ]
+        },
+        {
+          "code": "3.1.3",
+          "name": "Markets",
+          "objectives": [
+            "how markets may differ: consumer and industrial markets; local, national and international markets",
+            "the difference between product orientation and customer (market) orientation",
+            "measurement of market share and market growth",
+            "the implications of changes in market share and market growth"
+          ]
+        },
+        {
+          "code": "3.1.4",
+          "name": "Consumer and industrial marketing",
+          "objectives": [
+            "the classification of products",
+            "how marketing might differ for consumer products (B2C - business to consumer) and industrial products (B2B - business to business)"
+          ]
+        },
+        {
+          "code": "3.1.5",
+          "name": "Mass marketing and niche marketing",
+          "objectives": [
+            "the features of mass and niche markets",
+            "the advantages and disadvantages of mass marketing and niche marketing"
+          ]
+        },
+        {
+          "code": "3.1.6",
+          "name": "Market segmentation",
+          "objectives": [
+            "methods of market segmentation: geographic, demographic and psychographic",
+            "the advantages and disadvantages of market segmentation"
+          ]
+        },
+        {
+          "code": "3.1.7",
+          "name": "Customer relationship marketing (CRM)",
+          "objectives": [
+            "the aims of CRM",
+            "the costs and benefits of CRM Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 19 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3.2",
+      "name": "Market research",
+      "subtopics": [
+        {
+          "code": "3.2.1",
+          "name": "The purposes of market research",
+          "objectives": [
+            "identification of main features of a market: size, growth, competitors",
+            "identification of customer and consumer characteristics, profiles, wants and needs"
+          ]
+        },
+        {
+          "code": "3.2.2",
+          "name": "Primary research and secondary research",
+          "objectives": [
+            "the distinction between primary research and secondary research, and the main features of each",
+            "usefulness of data collected using primary research methods",
+            "usefulness of data collected from secondary research sources"
+          ]
+        },
+        {
+          "code": "3.2.3",
+          "name": "Sampling",
+          "objectives": [
+            "the need for and limitations of sampling"
+          ]
+        },
+        {
+          "code": "3.2.4",
+          "name": "Market research data",
+          "objectives": [
+            "the reliability of the data collected",
+            "analysis of quantitative and qualitative data",
+            "interpretation of information presented in tables, charts and graphs"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3.3",
+      "name": "The marketing mix",
+      "subtopics": [
+        {
+          "code": "3.3.1",
+          "name": "The elements of the marketing mix (the 4Ps)",
+          "objectives": [
+            "the 4Ps: Product, Price, Promotion, Place (distribution channels)"
+          ]
+        },
+        {
+          "code": "3.3.2",
+          "name": "Product",
+          "objectives": [
+            "the difference between goods and services",
+            "tangible and intangible attributes of products",
+            "the importance of product development",
+            "product differentiation and unique selling point (USP)"
+          ]
+        },
+        {
+          "code": "3.3.3",
+          "name": "Product portfolio analysis",
+          "objectives": [
+            "product life cycle and decisions about extension strategies",
+            "Boston Matrix analysis and its uses",
+            "impact of product portfolio analysis on marketing decisions Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 20 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "3.3.4",
+          "name": "Pricing methods",
+          "objectives": [
+            "objectives and usefulness of different pricing methods: competitive, penetration, skimming, price discrimination, dynamic, cost-based and psychological"
+          ]
+        },
+        {
+          "code": "3.3.5",
+          "name": "Promotion methods",
+          "objectives": [
+            "the objectives and usefulness of different promotion methods",
+            "advertising promotion",
+            "sales promotion",
+            "direct promotion",
+            "developments in digital promotion",
+            "the role of packaging in promotion",
+            "the role of branding in promotion"
+          ]
+        },
+        {
+          "code": "3.3.6",
+          "name": "Place (channels of distribution)",
+          "objectives": [
+            "the objectives and usefulness of different channels of distribution",
+            "digital and physical distribution Operations management (AS Level) The focus of this topic is on operations management from the production of physical products to managing the process of creating services. There are different ways a business can produce a product, with a range of aspects to consider in its production. Candidates are provided with the opportunity to apply their understanding of production methods in a variety of business contexts."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4.1",
+      "name": "The nature of operations",
+      "subtopics": [
+        {
+          "code": "4.1.1",
+          "name": "The transformational process",
+          "objectives": [
+            "the use of factors of production: land, labour, capital and enterprise",
+            "the stages of the transformational process: inputs to outputs",
+            "the contribution of operations to added value"
+          ]
+        },
+        {
+          "code": "4.1.2",
+          "name": "Efficiency, effectiveness, productivity and sustainability",
+          "objectives": [
+            "the importance of efficiency, effectiveness, productivity and sustainability",
+            "measurement of labour productivity",
+            "the impact on a business of measures to improve sustainability of operations Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 21 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "4.1.3",
+          "name": "Capital intensive and labour intensive operations",
+          "objectives": [
+            "the benefits and limitations of capital intensive operations",
+            "the benefits and limitations of labour intensive operations"
+          ]
+        },
+        {
+          "code": "4.1.4",
+          "name": "Operations methods: job, batch, flow, mass customisation",
+          "objectives": [
+            "differences between methods - advantages and disadvantages of each method",
+            "the problems of changing from one method to another"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4.2",
+      "name": "Inventory management",
+      "subtopics": [
+        {
+          "code": "4.2.1",
+          "name": "Managing inventory",
+          "objectives": [
+            "the purpose of inventory within a business (raw materials, work in progress, finished products)",
+            "the costs and benefits of holding inventory",
+            "buffer inventory, re-order level and lead time",
+            "interpretation of simple inventory control charts",
+            "the importance of Supply Chain Management"
+          ]
+        },
+        {
+          "code": "4.2.2",
+          "name": "Just in Time (JIT)",
+          "objectives": [
+            "the purpose of JIT and JIC (Just in Case) inventory management",
+            "the impact of adopting a JIT approach on a business"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4.3",
+      "name": "Capacity utilisation and outsourcing",
+      "subtopics": [
+        {
+          "code": "4.3.1",
+          "name": "Significance and measurement of capacity utilisation",
+          "objectives": [
+            "the measurement of capacity utilisation",
+            "the impact of operating under or over maximum capacity on a business",
+            "methods of improving capacity utilisation"
+          ]
+        },
+        {
+          "code": "4.3.2",
+          "name": "Outsourcing",
+          "objectives": [
+            "the impact of outsourcing on a business Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 22 www.cambridgeinternational.org/alevel Back to contents page Finance and accounting (AS Level) The focus of this topic is on the areas more traditionally associated with finance such as how a business can fund itself and where that money goes. Candidates will learn why a business requires finance to operate, and the importance for businesses to successfully manage their finance."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5.1",
+      "name": "Business finance",
+      "subtopics": [
+        {
+          "code": "5.1.1",
+          "name": "The need for business finance",
+          "objectives": [
+            "reasons why businesses need finance to start up, to grow and to survive",
+            "the distinction between short and long term need for finance",
+            "the difference between cash and profits",
+            "business failure as a consequence of lack of finance: bankruptcy, liquidation and administration"
+          ]
+        },
+        {
+          "code": "5.1.2",
+          "name": "Working capital",
+          "objectives": [
+            "the meaning and importance of working capital",
+            "managing trade receivables and trade payables",
+            "the distinction between capital expenditure and revenue expenditure"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5.2",
+      "name": "Sources of finance",
+      "subtopics": [
+        {
+          "code": "5.2.1",
+          "name": "Business ownership and sources of finance",
+          "objectives": [
+            "the relationship between the form of business ownership and availability of sources of finance"
+          ]
+        },
+        {
+          "code": "5.2.2",
+          "name": "Internal and external sources of finance",
+          "objectives": [
+            "internal sources of finance: owners investment, retained earnings, sale of unwanted assets, sale and leaseback of non-current assets, working capital",
+            "external sources of finance: share capital, debentures, new partners, venture capital, bank overdrafts, leasing, hire purchase, bank loans, mortgages, debt factoring, trade credit, micro-finance, crowd funding and government grants"
+          ]
+        },
+        {
+          "code": "5.2.3",
+          "name": "Factors affecting the sources of finance",
+          "objectives": [
+            "the factors influencing the choice of sources of finance in a given situation: cost, flexibility, need to retain control, the use to which it is put, level of existing debt"
+          ]
+        },
+        {
+          "code": "5.2.4",
+          "name": "Selecting the source of finance",
+          "objectives": [
+            "the appropriateness of each possible source in a given situation Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 23 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5.3",
+      "name": "Forecasting and managing cash flows",
+      "subtopics": [
+        {
+          "code": "5.3.1",
+          "name": "Cash flow forecasts",
+          "objectives": [
+            "the meaning and purpose of cash flow forecasts",
+            "the interpretation and amendment of simple cash flow forecasts: calculating opening and closing balances",
+            "different methods of improving cash flow"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5.4",
+      "name": "Costs",
+      "subtopics": [
+        {
+          "code": "5.4.1",
+          "name": "Cost information",
+          "objectives": [
+            "the need for accurate cost information",
+            "different types of costs: fixed, variable, direct and indirect"
+          ]
+        },
+        {
+          "code": "5.4.2",
+          "name": "Approaches to costing: full, contribution",
+          "objectives": [
+            "the differences between full and contribution costing",
+            "the uses and limitations of the full costing method",
+            "the nature of the technique of contribution costing",
+            "the difference between contribution and profit",
+            "the limitations of contribution costing",
+            "situations in which contribution costing would be and would not be used"
+          ]
+        },
+        {
+          "code": "5.4.3",
+          "name": "Uses of cost information",
+          "objectives": [
+            "cost information for decision-making purposes, e.g. average, marginal, total costs",
+            "how costs can be used for pricing decisions",
+            "how costs can be used to monitor and improve business performance, including using cost information to calculate profits",
+            "contribution costing as a means to help make special order decisions"
+          ]
+        },
+        {
+          "code": "5.4.4",
+          "name": "Break-even analysis",
+          "objectives": [
+            "the meaning and importance of break-even analysis",
+            "calculation and interpretation of break-even level of output, contribution, margin of safety and level of profit (in numeric and graphic form)",
+            "the uses and limitations of break-even analysis Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 24 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5.5",
+      "name": "Budgets",
+      "subtopics": [
+        {
+          "code": "5.5.1",
+          "name": "The meaning and purpose of budgets",
+          "objectives": [
+            "the measurement of performance",
+            "the benefits and drawbacks from the use of budgets",
+            "the meaning and use of incremental budgets, flexible budgets and zero budgeting",
+            "the uses of budgets for measuring performance, allocating resources, controlling and monitoring a business"
+          ]
+        },
+        {
+          "code": "5.5.2",
+          "name": "Variances",
+          "objectives": [
+            "the meaning of adverse variances and favourable variances",
+            "the calculation and interpretation of variances"
+          ]
+        }
+      ]
+    }
+  ],
+  "A2": [
+    {
+      "code": "6.1",
+      "name": "External influences on business activity",
+      "subtopics": [
+        {
+          "code": "6.1.1",
+          "name": "Political and legal",
+          "objectives": [
+            "the advantages and disadvantages of privatisation in a given situation",
+            "the advantages and disadvantages of nationalisation in a given situation",
+            "how a government might use the law to seek to control: employment practices, conditions of work (including health and safety), wage levels, marketing behaviour, competition, location decisions, particular goods and services",
+            "the impact of changes in political and legal factors on business and business decisions Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 25 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "6.1.2",
+          "name": "Economic",
+          "objectives": [
+            "how government might intervene to help businesses and encourage enterprise",
+            "how government might intervene to constrain business activity",
+            "how government might deal with market failure",
+            "the key macroeconomic objectives of governments: low unemployment, low inflation, economic growth",
+            "how macroeconomic objectives and performance of an economy can have an impact on business activity",
+            "government policies used to achieve macroeconomic objectives: monetary, fiscal, supply-side and exchange rate policies",
+            "the impact of changes in these government policies on business and business decisions"
+          ]
+        },
+        {
+          "code": "6.1.3",
+          "name": "Social and demographic",
+          "objectives": [
+            "the impact of and issues associated with corporate social responsibility (CSR), e.g. accounting practices, paying incentives for the award of contracts, social auditing",
+            "why businesses need to consider the needs of the community including pressure groups",
+            "demographic changes at a local, national and global level",
+            "the impact of social and demographic change on business and business decisions"
+          ]
+        },
+        {
+          "code": "6.1.4",
+          "name": "Technological",
+          "objectives": [
+            "the impact of technological change on business and business decisions"
+          ]
+        },
+        {
+          "code": "6.1.5",
+          "name": "Competitors and suppliers",
+          "objectives": [
+            "the impact of competitors and suppliers on business and business decisions"
+          ]
+        },
+        {
+          "code": "6.1.6",
+          "name": "International",
+          "objectives": [
+            "the importance of international trading links and their impact on business and business decisions",
+            "how international trade agreements might have an impact on businesses",
+            "the role of technology in international trade",
+            "the advantages and disadvantages that a multinational might bring to a country",
+            "relationships between multinationals and governments"
+          ]
+        },
+        {
+          "code": "6.1.7",
+          "name": "Environmental",
+          "objectives": [
+            "how physical environmental issues might influence business behaviour",
+            "how a business and its stakeholders may use an environmental audit",
+            "the impact of the growing importance of sustainability on business and business decisions Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 26 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "6.2",
+      "name": "Business strategy",
+      "subtopics": [
+        {
+          "code": "6.2.1",
+          "name": "Developing business strategy",
+          "objectives": [
+            "the meaning and purpose of business strategy",
+            "the meaning and purpose of strategic management: analysis, choice and implementation",
+            "approaches to develop business strategy, including: - blue ocean strategy - scenario planning - SWOT analysis - PEST analysis - Porter's five forces - core competence framework - Ansoff matrix - force field analysis - decision trees"
+          ]
+        },
+        {
+          "code": "6.2.2",
+          "name": "Corporate planning and implementation",
+          "objectives": [
+            "the meaning and importance of corporate planning",
+            "the meaning of corporate culture and its impact on business decision-making",
+            "the meaning and importance of transformational leadership",
+            "the management and control of strategic change",
+            "the meaning and importance of contingency planning and crisis management"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "7.1",
+      "name": "Organisational structure",
+      "subtopics": [
+        {
+          "code": "7.1.1",
+          "name": "The relationship between business objectives and organisational structure",
+          "objectives": [
+            "the purpose and attributes of an organisational structure such as flexibility, meeting the needs of the business, allowing for growth and development and encouraging intrapreneurship Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 27 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "7.1.2",
+          "name": "Types of structure: functional, hierarchical (flat and narrow), matrix",
+          "objectives": [
+            "the advantages and disadvantages of the different types of structure",
+            "why some organisations are structured by product and others by function or geographical area",
+            "the reasons and ways structures change e.g. due to growth or delayering",
+            "the features of a formal structure: levels of hierarchy, chain of command, span of control, responsibility, authority, delegation, accountability, centralised, decentralised"
+          ]
+        },
+        {
+          "code": "7.1.3",
+          "name": "Delegation and accountability",
+          "objectives": [
+            "the relationship between delegation and accountability",
+            "the processes of accountability in a business",
+            "the impact of delegation on a business"
+          ]
+        },
+        {
+          "code": "7.1.4",
+          "name": "Control, authority and trust",
+          "objectives": [
+            "the relationship between span of control and levels of hierarchy",
+            "the difference between authority and responsibility",
+            "the conflicts between control and trust that might arise when delegating"
+          ]
+        },
+        {
+          "code": "7.1.5",
+          "name": "Centralisation and decentralisation",
+          "objectives": [
+            "the impact of centralisation and decentralisation on a business"
+          ]
+        },
+        {
+          "code": "7.1.6",
+          "name": "Line and staff",
+          "objectives": [
+            "examples of and distinctions between line and staff functions and the conflicts between them"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "7.2",
+      "name": "Business communication",
+      "subtopics": [
+        {
+          "code": "7.2.1",
+          "name": "Purposes of communication",
+          "objectives": [
+            "situations in which communication is essential"
+          ]
+        },
+        {
+          "code": "7.2.2",
+          "name": "Methods of communication",
+          "objectives": [
+            "the standard methods of communication used in business: spoken, written, electronic, visual",
+            "the strengths and weaknesses of the different methods of communication Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 28 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "7.2.3",
+          "name": "Channels of communication",
+          "objectives": [
+            "how communication works within a business",
+            "the difference between one- and two-way communication; the difference between vertical and horizontal communication",
+            "problems associated with different channels of communication"
+          ]
+        },
+        {
+          "code": "7.2.4",
+          "name": "Barriers to communication",
+          "objectives": [
+            "barriers to communication and how to overcome them"
+          ]
+        },
+        {
+          "code": "7.2.5",
+          "name": "The role of management in facilitating communication",
+          "objectives": [
+            "the role of informal communications within a business",
+            "ways in which communication can influence the efficiency of a business",
+            "ways of improving communication in a given situation"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "7.3",
+      "name": "Leadership",
+      "subtopics": [
+        {
+          "code": "7.3.1",
+          "name": "Leadership",
+          "objectives": [
+            "the purpose of leadership",
+            "leadership roles in business (directors, managers, supervisors, worker representatives)",
+            "the qualities of a good leader"
+          ]
+        },
+        {
+          "code": "7.3.2",
+          "name": "Theories of leadership",
+          "objectives": [
+            "key leadership theories: trait, behavioural, contingency, power and influence and transformational"
+          ]
+        },
+        {
+          "code": "7.3.3",
+          "name": "Emotional intelligence/emotional quotient (EQ)",
+          "objectives": [
+            "Goleman's four competencies of emotional intelligence: self-awareness, social awareness, self- management and social skills"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "7.4",
+      "name": "Human resource management (HRM) strategy",
+      "subtopics": [
+        {
+          "code": "7.4.1",
+          "name": "Approaches to human resource management (HRM)",
+          "objectives": [
+            "the difference between 'hard' and 'soft' HRM",
+            "flexible working contracts: advantages and disadvantages of temporary contracts or flexible contracts including zero hours contracts, part-time, full-time, annualised hours, flexi-time, home working, shift working, job sharing, compressed working hours, the gig economy",
+            "the measurement, causes and consequences of poor employee performance",
+            "strategies for improving employee performance",
+            "Management by Objectives (MBO) - implementation and usefulness",
+            "the changing role of Information Technology (IT) and Artificial Intelligence (AI) in HRM Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 29 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "8.1",
+      "name": "Marketing analysis",
+      "subtopics": [
+        {
+          "code": "8.1.1",
+          "name": "Elasticity",
+          "objectives": [
+            "the concept of elasticity of demand: price, income and promotional",
+            "calculation of price, income and promotional elasticity of demand",
+            "interpretation of elasticity results",
+            "the impact of elasticity measures on business decisions",
+            "the limitations of the concept of elasticity in its various forms"
+          ]
+        },
+        {
+          "code": "8.1.2",
+          "name": "Product development",
+          "objectives": [
+            "the process of product development",
+            "sources of new ideas for product development",
+            "the importance of Research and Development (R&D)"
+          ]
+        },
+        {
+          "code": "8.1.3",
+          "name": "Sales forecasting",
+          "objectives": [
+            "the need to forecast sales",
+            "time series analysis: calculation and use of four period centred moving average method to forecast sales",
+            "qualitative sales forecasting",
+            "the impact of sales forecasting on business decisions"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "8.2",
+      "name": "Marketing strategy",
+      "subtopics": [
+        {
+          "code": "8.2.1",
+          "name": "Planning the marketing strategy",
+          "objectives": [
+            "the contents of a marketing plan: objectives, resources, research, marketing mix",
+            "the benefits and limitations of marketing planning"
+          ]
+        },
+        {
+          "code": "8.2.2",
+          "name": "Approaches to marketing strategy",
+          "objectives": [
+            "the need for the marketing strategy to be consistent with the business, the product and the market",
+            "the need for and development of a coordinated marketing strategy",
+            "the development of marketing strategies that are focused towards achieving specific marketing objectives",
+            "the changing role of Information Technology (IT) and Artificial Intelligence (AI) in marketing Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 30 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "8.2.3",
+          "name": "Strategies for international marketing",
+          "objectives": [
+            "the implications for marketing of increased globalisation and economic collaboration",
+            "the importance of international marketing for a business",
+            "international markets - identification, selection and entry",
+            "whether a business in a given situation should develop an international market through pan-global marketing or maintain local differences",
+            "choosing a strategy, in a given situation, to develop a global market",
+            "the factors influencing the method of entry into international markets"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "9.1",
+      "name": "Location and scale",
+      "subtopics": [
+        {
+          "code": "9.1.1",
+          "name": "Location",
+          "objectives": [
+            "the factors that determine location and relocation",
+            "the differences between local, national and international location decisions",
+            "the reasons for and impact of offshoring and reshoring",
+            "the impact of globalisation on location and relocation decisions"
+          ]
+        },
+        {
+          "code": "9.1.2",
+          "name": "Scale of operations",
+          "objectives": [
+            "the factors that influence the scale of a business",
+            "causes and examples of internal and external economies and diseconomies of scale",
+            "the links between economies and diseconomies of scale and unit costs Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 31 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "9.2",
+      "name": "Quality management",
+      "subtopics": [
+        {
+          "code": "9.2.1",
+          "name": "Quality control and quality assurance",
+          "objectives": [
+            "quality in terms of meeting customer expectations",
+            "the importance of quality",
+            "the impact of methods of quality control on a business",
+            "the impact of methods of quality assurance on a business",
+            "the impact of Total Quality Management (TQM) on a business"
+          ]
+        },
+        {
+          "code": "9.2.2",
+          "name": "Benchmarking",
+          "objectives": [
+            "the importance of benchmarking in quality management"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "9.3",
+      "name": "Operations strategy",
+      "subtopics": [
+        {
+          "code": "9.3.1",
+          "name": "Operational decisions",
+          "objectives": [
+            "the influence of human, marketing and finance resource availability on operations decisions",
+            "the changing role of Information Technology (IT) and Artificial Intelligence (AI) in operations management"
+          ]
+        },
+        {
+          "code": "9.3.2",
+          "name": "Flexibility and innovation",
+          "objectives": [
+            "the need for flexibility with regard to volume, delivery time and specification",
+            "process innovation: changing current processes or adopting new ways of producing products or delivering services"
+          ]
+        },
+        {
+          "code": "9.3.3",
+          "name": "Enterprise resource planning (ERP)",
+          "objectives": [
+            "the main features of an ERP programme",
+            "how ERP can improve a business' efficiency in relation to: inventory control, costing and pricing, capacity utilisation, responses to change, workforce flexibility, management information"
+          ]
+        },
+        {
+          "code": "9.3.4",
+          "name": "Lean production",
+          "objectives": [
+            "the aims and purposes of lean production",
+            "Kaizen, quality circles, simultaneous engineering, cell production, JIT manufacturing and waste management as operational strategies to achieve lean production",
+            "the limitations of operational strategies to achieve lean production",
+            "the links between lean production and inventory control, quality, employees roles, capacity management and efficiency Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 32 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "9.3.5",
+          "name": "Operations planning",
+          "objectives": [
+            "the need for planning operations",
+            "network diagrams as tools to plan operations",
+            "the main elements of a network diagram: activities, dummy activities, nodes",
+            "network diagrams as means of performing Critical Path Analysis (CPA), including identification of the minimum project duration and the critical path, calculation of total and free float, interpretation of the results of the analysis of a network, how minimum duration and floats might be used in project management",
+            "the benefits and limitations of CPA as a management tool"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "10.1",
+      "name": "Financial statements",
+      "subtopics": [
+        {
+          "code": "10.1.1",
+          "name": "Statement of profit or loss",
+          "objectives": [
+            "the meaning and purpose of the statement of profit or loss",
+            "the contents of a statement of profit or loss: revenue, cost of sales, gross profit, expenses, profit from operations (operating profit), taxation, profit for the year, dividends, retained earnings",
+            "amendment of a statement of profit or loss",
+            "the impact on the statement of profit or loss of a given change"
+          ]
+        },
+        {
+          "code": "10.1.2",
+          "name": "Statement of financial position",
+          "objectives": [
+            "the meaning and purpose of statement of financial position",
+            "the contents of a statement of financial position including non-current assets, current assets, current liabilities, net current assets, net assets, non-current liabilities, reserves and equity",
+            "amendment of a statement of financial position",
+            "the relationships between items in the statement of profit or loss and the statement of financial position"
+          ]
+        },
+        {
+          "code": "10.1.3",
+          "name": "Inventory valuation",
+          "objectives": [
+            "the difficulties of valuing inventory",
+            "the net realisable value method Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 33 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        },
+        {
+          "code": "10.1.4",
+          "name": "Depreciation",
+          "objectives": [
+            "the role of depreciation in the accounts",
+            "the impact of depreciation (straight-line method only) on the statement of financial position and the statement of profit or loss"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "10.2",
+      "name": "Analysis of published accounts",
+      "subtopics": [
+        {
+          "code": "10.2.1",
+          "name": "Liquidity ratios",
+          "objectives": [
+            "the meaning and importance of liquidity",
+            "current ratio: calculation and interpretation",
+            "acid test ratio: calculation and interpretation",
+            "methods of improving liquidity"
+          ]
+        },
+        {
+          "code": "10.2.2",
+          "name": "Profitability ratios",
+          "objectives": [
+            "the meaning and importance of profitability",
+            "return on capital employed: calculation and interpretation",
+            "gross profit margin: calculation and interpretation",
+            "profit margin: calculation and interpretation",
+            "methods of improving profitability"
+          ]
+        },
+        {
+          "code": "10.2.3",
+          "name": "Financial efficiency ratios",
+          "objectives": [
+            "the meaning and importance of financial efficiency",
+            "rate of inventory turnover: calculation and interpretation",
+            "trade receivables turnover (days): calculation and interpretation",
+            "trade payables turnover (days): calculation and interpretation",
+            "methods of improving financial efficiency"
+          ]
+        },
+        {
+          "code": "10.2.4",
+          "name": "Gearing ratio",
+          "objectives": [
+            "the meaning and importance of gearing",
+            "gearing ratio: calculation and interpretation",
+            "methods of improving gearing"
+          ]
+        },
+        {
+          "code": "10.2.5",
+          "name": "Investment ratios",
+          "objectives": [
+            "the meaning and importance of return to investors",
+            "dividend yield: calculation and interpretation",
+            "dividend cover: calculation and interpretation",
+            "price/earnings ratio: calculation and interpretation",
+            "methods of improving investor return Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 34 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "10.3",
+      "name": "Investment appraisal",
+      "subtopics": [
+        {
+          "code": "10.3.1",
+          "name": "The concept of investment appraisal",
+          "objectives": [
+            "the need for investment appraisal"
+          ]
+        },
+        {
+          "code": "10.3.2",
+          "name": "Basic methods: payback, accounting rate of return (ARR)",
+          "objectives": [
+            "the meaning, calculation and interpretation of payback and ARR (ARR = (average profit / average investment) × 100)"
+          ]
+        },
+        {
+          "code": "10.3.3",
+          "name": "Discounted cash flow method: net present value (NPV)",
+          "objectives": [
+            "the meaning, calculation and interpretation of NPV"
+          ]
+        },
+        {
+          "code": "10.3.4",
+          "name": "Investment appraisal decisions",
+          "objectives": [
+            "quantitative results and their impact on investment decisions",
+            "qualitative factors and their impact on investment decisions",
+            "comparison of investment appraisal methods, including their limitations"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "10.4",
+      "name": "Finance and accounting strategy",
+      "subtopics": [
+        {
+          "code": "10.4.1",
+          "name": "The use of accounting data to enable strategic decision-making",
+          "objectives": [
+            "the use of financial statements in developing strategies",
+            "the contents of an annual report and their usefulness to business and other stakeholders"
+          ]
+        },
+        {
+          "code": "10.4.2",
+          "name": "The use of accounting data and ratio analysis in strategic decision-making",
+          "objectives": [
+            "assessment of business performance over time and against competitors",
+            "the impact of accounting data including ratio results on business strategy",
+            "the impact of debt or equity decisions on ratio results",
+            "the impact of changes in dividend strategy on ratio results",
+            "the impact of business growth on ratio results",
+            "the impact of other business strategies on ratio results",
+            "the limitations of using published accounts and ratio analyses Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 35 www.cambridgeinternational.org/alevel Back to contents page Ratios to support analysis of published accounts Liquidity ratios Current ratio Current assets Current liabilities Answer presented as a ratio Acid test ratio Current assets - inventory Current liabilities Answer presented as a ratio Profitability ratios Gross profit margin (%) Gross profit Revenue × 100 Operating profit margin (%) Profit from operations Revenue × 100 Return on capital employed (%) Profit from operations Capital employed × 100 Capital employed = issued shares + reserves + non-current liabilities Financial efficiency ratios Trade receivables turnover (days) Trade receivables Credit sales × 365 days Trade payables turnover (days) Trade payables Credit purchases × 365 days Rate of inventory turnover (times) Cost of sales Average inventory Gearing ratio Gearing (%) Non-current liabilities Capital employed × 100 Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. Subject content 36 www.cambridgeinternational.org/alevel Back to contents page Investment ratios Price/earnings ratio Market price per share Earnings per share Dividend yield (%) Dividend per share Market price per share × 100 Dividend cover Profit for the year Annual dividend Cambridge International AS & A Level Business 9609 syllabus for 2026, 2027 and 2028. 37 www.cambridgeinternational.org/alevel Back to contents page"
+          ]
+        }
+      ]
+    }
+  ]
+}

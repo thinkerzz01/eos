@@ -1,0 +1,207 @@
+[
+ {
+  "code": "1",
+  "name": "Natural resources",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "Formation of rocks",
+    "objectives": [
+     ".1.1 Describe the formation of named igneous, sedimentary and metamorphic rocks, limited to: (a) igneous: granite and basalt (b) sedimentary: limestone, sandstone and shale (c) metamorphic: marble and slate. 1.1.2 Describe and interpret the rock cycle, limited to: (a) weathering (b) erosion (c) transportation (d) sedimentation (e) compaction (f) cementation (g) crystallisation (h) deposition. 1.1.3 Define permeability as the ability of water to pass through the pore spaces of rock and soil. 1.1.4 Classify rocks as permeable and impermeable, limited to: (a) permeable: most sedimentary rocks (limestone and sandstone) (b) impermeable: igneous, metamorphic and some sedimentary rocks (shale)."
+    ]
+   },
+   {
+    "code": "1.2",
+    "name": "Extraction of rocks, ores and minerals",
+    "objectives": [
+     ".2.1 Define an ore as rock containing minerals and metals. 1.2.2 Describe the methods of extracting rocks, ores and minerals from mines, limited to: (a) surface extraction: opencast, open-pit, open-cut and strip mining (b) subsurface extraction: deep mining and shaft mining (c) biological extraction: phytomining and bioleaching. 1.2.3 Describe the factors that affect the decision to extract rocks, ores and minerals, limited to: (a) exploration (b) geology (c) accessibility and terrain (d) quantity and quality of deposit (ore grade) (e) climate (f) environmental impact assessment (g) supply and demand (h) cost and profit. 1.2.4 \u0007Describe and explain the environmental, economic and social impacts of extracting rocks, ores and minerals, limited to: (a) loss of habitat and biodiversity (b) air, land, noise, visual and water pollution (c) water usage (d) waste management (e) changes in employment opportunities (f) local and national economies (g) facilities and infrastructure. 1.2.5 \u0007Describe strategies for managing landscapes damaged by extracting rocks, ores and minerals, limited to: (a) land restoration: replacement of overburden, soil improvement, bioremediation and tree planting (b) repurposing land: landfill, lakes, recreation and nature reserves. 1.2.6 \u0007Discuss the benefits and limitations of strategies for managing landscapes damaged by extracting rocks, ores and minerals."
+    ]
+   },
+   {
+    "code": "1.3",
+    "name": "Sustainable management of rocks, ores and minerals",
+    "objectives": [
+     ".3.1 \u0007Define a finite resource as a natural resource that is used up at a faster rate than it is replaced. 1.3.2 \u0007Define sustainable management of resources as the use of strategies that ensure the needs of the present are met without compromising the ability of future generations to meet their own needs. continued",
+     ".3.3 \u0007Describe sustainable management strategies for rocks, ores and minerals, limited to: (a) reduce and reuse (b) recycling: accessibility, ease and education (c) increased efficiency of extraction (d) avoiding resource depletion (e) legislation (f) enforcement (g) use of alternative materials. 1.3.4 \u0007Discuss the benefits and limitations of sustainable management strategies for rocks, ores and minerals."
+    ]
+   },
+   {
+    "code": "1.4",
+    "name": "Energy resources",
+    "objectives": [
+     ".4.1 \u0007Describe the formation of fossil fuels, limited to: (a) coal (b) petroleum (oil) (c) natural gas (methane). 1.4.2 \u0007Classify energy resources as renewable (non-finite) and non-renewable (finite), limited to: (a) \u0007renewable (non-finite): biofuels (bioethanol, biomass, biogas and wood), geothermal power, hydro-electric power, tidal power, wave power, solar power and wind power (b) non-renewable (finite): fossil fuels and nuclear power using uranium. 1.4.3 Describe how the energy resources in 1.4.2 are used to generate electricity. 1.4.4 Discuss the benefits and limitations of the energy resources in 1.4.2. 1.4.5 Describe and explain the factors affecting demand for energy, limited to: (a) transport (b) personal and national wealth (c) climate (d) human population size (e) industry (f) disruption to supply (g) unreliable supply (h) scarcity of resources."
+    ]
+   },
+   {
+    "code": "1.5",
+    "name": "Conservation and management of energy resources",
+    "objectives": [
+     ".5.1 Describe strategies for the management of energy resources, limited to: (a) reducing consumption (b) insulation (c) energy-efficient devices including vehicles and electrically propelled vehicles (d) exploiting existing energy resources (e) education on energy conservation (f) transport policies (g) battery storage (h) development of new energy resources. 1.5.2 Describe the development of new energy resources, limited to: (a) blue hydrogen fuel: produced from natural gas (b) green hydrogen fuel: produced using renewable resources (c) ground source heat pumps: transfer of heat from the ground for heating (d) air source heat pumps: transfer of heat from the air for heating. 1.5.3 Discuss the benefits and limitations of strategies for the management of energy resources."
+    ]
+   },
+   {
+    "code": "1.6",
+    "name": "Fracking",
+    "objectives": [
+     ".6.1 Define fracking as the extraction of natural gas or petroleum from shale rock by hydraulic fracturing. 1.6.2 Discuss the benefits and limitations of fracking."
+    ]
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Land",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "Soils and crop growth",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "Food production and crop yield",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "Soil erosion",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Water",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "Water sources and supply",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "Water pollution",
+    "objectives": []
+   },
+   {
+    "code": "3.3",
+    "name": "Water-related diseases",
+    "objectives": []
+   },
+   {
+    "code": "3.4",
+    "name": "Marine aquaculture",
+    "objectives": []
+   },
+   {
+    "code": "3.5",
+    "name": "Oil pollution",
+    "objectives": []
+   },
+   {
+    "code": "3.6",
+    "name": "Plastic pollution",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "The atmosphere and human activities",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "The atmosphere",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "Climate change",
+    "objectives": []
+   },
+   {
+    "code": "4.3",
+    "name": "Acid rain",
+    "objectives": []
+   },
+   {
+    "code": "4.4",
+    "name": "Ozone depletion",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Ecosystems, biodiversity and fieldwork",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Ecosystems",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "Forest ecosystems",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "Managing biodiversity",
+    "objectives": []
+   },
+   {
+    "code": "5.4",
+    "name": "Fieldwork investigations",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "Natural hazards",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Earthquakes and volcanoes",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "Tropical cyclones",
+    "objectives": []
+   },
+   {
+    "code": "6.3",
+    "name": "Flooding",
+    "objectives": []
+   },
+   {
+    "code": "6.4",
+    "name": "Drought",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "7",
+  "name": "Human population",
+  "subtopics": [
+   {
+    "code": "7.1",
+    "name": "Human population density, distribution and structure",
+    "objectives": []
+   },
+   {
+    "code": "7.2",
+    "name": "Human population size",
+    "objectives": []
+   },
+   {
+    "code": "7.3",
+    "name": "Managing human population size",
+    "objectives": []
+   }
+  ]
+ }
+]

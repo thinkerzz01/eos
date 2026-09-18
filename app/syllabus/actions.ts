@@ -246,6 +246,77 @@ export async function deleteSubtopic(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+/**
+ * Bulk-fill learning objectives for a subject's subtopics from a pasted block.
+ * One subtopic per line: `CODE: objective one; objective two; objective three`.
+ * The CODE (e.g. 1.1) is matched to an existing subtopic in this subject's active
+ * outline; objectives are split on ';'. Lines whose code is not found are reported
+ * back as `unmatched` rather than silently dropped. Never creates subtopics - this
+ * only fills the blanks the manager already built. Mode 'replace' (default)
+ * overwrites; 'append' adds to whatever the subtopic already has.
+ */
+export async function bulkSetObjectives(input: {
+  subjectId: string;
+  text: string;
+  mode?: 'replace' | 'append';
+}): Promise<ActionResult & { updated?: number; unmatched?: string[] }> {
+  const { supabase, orgId, error } = await guard();
+  if (error) return { ok: false, error };
+  if (!input.subjectId) return { ok: false, error: 'Missing subject.' };
+  if (!input.text?.trim()) return { ok: false, error: 'Paste some objectives first.' };
+
+  const { data: tpl } = await supabase
+    .from('syllabus_templates')
+    .select('id')
+    .eq('org_id', orgId)
+    .eq('subject_id', input.subjectId)
+    .eq('status', 'active')
+    .is('deleted_at', null)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!tpl?.id) return { ok: false, error: 'This subject has no outline yet.' };
+
+  const { data: topics } = await supabase
+    .from('syllabus_topics')
+    .select('id')
+    .eq('template_id', tpl.id)
+    .is('deleted_at', null);
+  const topicIds = ((topics ?? []) as any[]).map((t) => t.id);
+  if (!topicIds.length) return { ok: false, error: 'This outline has no topics yet.' };
+
+  const { data: subs } = await supabase
+    .from('syllabus_subtopics')
+    .select('id, code, objectives')
+    .in('topic_id', topicIds)
+    .is('deleted_at', null);
+  const byCode = new Map<string, { id: string; objectives: string[] }>();
+  for (const s of (subs ?? []) as any[]) {
+    if (s.code) byCode.set(String(s.code).trim(), { id: s.id, objectives: Array.isArray(s.objectives) ? s.objectives.map(String) : [] });
+  }
+
+  const lines = input.text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  let updated = 0;
+  const unmatched: string[] = [];
+  for (const line of lines) {
+    // Numeric code (1, 1.1, 1.1a) then a : | or tab separator, then objectives.
+    const m = line.match(/^([0-9][0-9A-Za-z.]*)\s*[:|\t]\s*(.+)$/);
+    if (!m) { unmatched.push(line.slice(0, 40)); continue; }
+    const code = m[1].trim();
+    const objectives = m[2].split(/\s*;\s*/).map((s) => s.trim()).filter(Boolean);
+    const target = byCode.get(code);
+    if (!target) { unmatched.push(code); continue; }
+    const next = input.mode === 'append' ? [...target.objectives, ...objectives] : objectives;
+    const { error: e } = await supabase
+      .from('syllabus_subtopics')
+      .update({ objectives: next, updated_at: new Date().toISOString() })
+      .eq('id', target.id);
+    if (!e) updated++;
+  }
+  revalidatePath('/syllabus');
+  return { ok: true, updated, unmatched };
+}
+
 export async function moveSubtopic(input: { topicId: string; id: string; dir: 'up' | 'down' }): Promise<ActionResult> {
   const { supabase, error } = await guard();
   if (error) return { ok: false, error };

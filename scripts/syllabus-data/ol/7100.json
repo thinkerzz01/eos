@@ -1,0 +1,143 @@
+[
+ {
+  "code": "1",
+  "name": "Commerce and production",
+  "subtopics": [
+   {
+    "code": "1.1",
+    "name": "Trade and commerce",
+    "objectives": [
+     ".1.1 Trade • the meaning of the terms trade and commerce, showing the differences between the two terms • the meaning of home trade (retail and wholesale) • the meaning of international trade (exports and imports) 1.1.2 Aids to trade and logistics • the meaning of aids to trade • the types of aids to trade: communications, transport, warehousing, advertising, banking and insurance • the meaning of logistics • the elements of logistics in a supply chain: transport, freight forwarders and warehousing 1.1.3 Types of commerce • the meaning of traditional commerce: buying and selling goods and/or services at a physical location • the meaning of ecommerce (electronic commerce): buying and selling goods and/or services via the internet/websites • the meaning of mcommerce (mobile commerce): buying and selling goods and/or services via a mobile device, such as a smartphone or tablet • the meaning of scommerce (social commerce): buying and selling goods and/or services via social media channels 1.1.4 The relationship between production, trade and commerce • understand how production, trade and commerce are interdependent"
+    ]
+   },
+   {
+    "code": "1.2",
+    "name": "Production",
+    "objectives": [
+     ".2.1 Sectors of production and specialisation • the features of primary (extractive) industries, secondary (manufacturing and construction) industries, tertiary activities (commercial services and direct services) and quaternary activities (digital technology) • the meaning of specialisation • the advantages and disadvantages of specialisation for an individual, factory and country 1.2.2 In-house production and outsourced production • the meaning of in-house production and outsourced production • the benefits of in-house production over outsourced production, including control on quality and information • the benefits of outsourced production over in-house production, including accessing expertise and cost savings 1.2.3 Global supply chains • the meaning of a global supply chain and a domestic supply chain 1.2.4 Intermediaries in a supply chain • the role of home trade intermediaries in a supply chain: wholesaler and retailer • the role of international trade intermediaries in a supply chain: agent and factor 1.2.5 Effects of digital technology on production • the impact of automation, e.g. using robotics in production • the impact on production of digital communication with suppliers, e.g. using electronic data interchange (EDI) 1.2.6 Costs involved in trade, commerce and production • identifying the different types of costs used in trade, commerce and production: advertising, bank charges, commission, customs duties, inventory, labour, packaging, transport, utilities and warehousing • complete simple calculations of costs in given situations"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "2",
+  "name": "Commercial operations",
+  "subtopics": [
+   {
+    "code": "2.1",
+    "name": "Commercial enterprises",
+    "objectives": []
+   },
+   {
+    "code": "2.2",
+    "name": "Outsourcing",
+    "objectives": []
+   },
+   {
+    "code": "2.3",
+    "name": "Retailing",
+    "objectives": []
+   },
+   {
+    "code": "2.4",
+    "name": "Wholesaling",
+    "objectives": []
+   },
+   {
+    "code": "2.5",
+    "name": "Trading documents",
+    "objectives": []
+   },
+   {
+    "code": "2.6",
+    "name": "Communication",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "3",
+  "name": "Globalisation of trade",
+  "subtopics": [
+   {
+    "code": "3.1",
+    "name": "International trade",
+    "objectives": []
+   },
+   {
+    "code": "3.2",
+    "name": "Global supply chain management",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "4",
+  "name": "Logistics in commerce",
+  "subtopics": [
+   {
+    "code": "4.1",
+    "name": "Transport",
+    "objectives": []
+   },
+   {
+    "code": "4.2",
+    "name": "Warehousing",
+    "objectives": []
+   }
+  ]
+ },
+ {
+  "code": "5",
+  "name": "Aids to trade that support commerce",
+  "subtopics": [
+   {
+    "code": "5.1",
+    "name": "Advertising",
+    "objectives": []
+   },
+   {
+    "code": "5.2",
+    "name": "Banking",
+    "objectives": []
+   },
+   {
+    "code": "5.3",
+    "name": "Insurance",
+    "objectives": []
+   },
+   {
+    "code": "5.4",
+    "name": "Sources of finance and commercial performance",
+    "objectives": [
+     "\u0007Revenue (Sales or Turnover) = Selling price per unit × Number of units sold",
+     "\u0007Gross profit = Revenue - Cost of Sales (the cost of purchasing inventory)",
+     "\u0007Gross profit margin (%) = Gross profit ÷ Revenue × 100",
+     "\u0007Net profit/net loss for the year = Gross profit - Expenses",
+     "\u0007Working capital Current assets - Current liabilities"
+    ]
+   }
+  ]
+ },
+ {
+  "code": "6",
+  "name": "\u0007Mark-up percentage",
+  "subtopics": [
+   {
+    "code": "6.1",
+    "name": "Sustainability",
+    "objectives": []
+   },
+   {
+    "code": "6.2",
+    "name": "Ethics",
+    "objectives": []
+   },
+   {
+    "code": "6.3",
+    "name": "Consumer protection",
+    "objectives": []
+   }
+  ]
+ }
+]

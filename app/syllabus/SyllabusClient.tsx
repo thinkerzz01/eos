@@ -15,10 +15,26 @@ import {
   getOutline, ensureTemplate, updateTemplate,
   addTopic, updateTopic, deleteTopic, moveTopic,
   addSubtopic, updateSubtopic, deleteSubtopic, moveSubtopic, generateSnapshots,
+  bulkSetObjectives,
 } from './actions';
 import {
   ListChecks, Plus, Edit3, Trash2, Check, X, ChevronUp, ChevronDown, BookOpen, Search, RefreshCw,
+  ClipboardPaste,
 } from 'lucide-react';
+
+// A subject is Complete when every subtopic carries at least one objective,
+// Partial when it has an outline but objectives are still missing, Empty when no
+// outline exists yet. This is the single source of truth for the review status.
+type SubStatus = 'complete' | 'partial' | 'empty';
+function subjectStatus(s: SyllabusSubjectRow): SubStatus {
+  if (!s.hasOutline || s.subtopicCount === 0) return 'empty';
+  return s.objectiveCount >= s.subtopicCount ? 'complete' : 'partial';
+}
+const STATUS_META: Record<SubStatus, { label: string; dot: string; text: string }> = {
+  complete: { label: 'Complete', dot: 'bg-emerald-500', text: 'text-emerald-600' },
+  partial: { label: 'Needs objectives', dot: 'bg-amber-500', text: 'text-amber-600' },
+  empty: { label: 'No outline', dot: 'bg-slate-300 dark:bg-slate-600', text: 'text-slate-500' },
+};
 
 // Core subjects float to the top of the picker (in this order); the rest follow
 // alphabetically. Keeps the subjects the academy teaches most within easy reach.
@@ -46,7 +62,13 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
 
   const [query, setQuery] = useState('');
   const [programFilter, setProgramFilter] = useState('All Programs');
+  const [statusFilter, setStatusFilter] = useState<'all' | SubStatus>('all');
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  // Bulk objectives paste modal
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkText, setBulkText] = useState('');
+  const [bulkMode, setBulkMode] = useState<'replace' | 'append'>('replace');
   const [outline, setOutline] = useState<SubjectSyllabus | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -70,6 +92,7 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
   const filtered = useMemo(() => {
     return initialSubjects
       .filter((s) => programFilter === 'All Programs' || s.program === programFilter)
+      .filter((s) => statusFilter === 'all' || subjectStatus(s) === statusFilter)
       .filter((s) => !query.trim() || s.name.toLowerCase().includes(query.trim().toLowerCase()) || (s.code ?? '').includes(query.trim()))
       .slice()
       .sort((a, b) => {
@@ -78,7 +101,22 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
         if (a.program !== b.program) return a.program.localeCompare(b.program);
         return a.name.localeCompare(b.name);        // then alphabetical
       });
-  }, [initialSubjects, programFilter, query]);
+  }, [initialSubjects, programFilter, statusFilter, query]);
+
+  // Completeness roll-up for the review overview - overall and per program.
+  const overview = useMemo(() => {
+    const blank = () => ({ complete: 0, partial: 0, empty: 0, total: 0 });
+    const overall = blank();
+    const perProgram = new Map<string, ReturnType<typeof blank>>();
+    for (const s of initialSubjects) {
+      const st = subjectStatus(s);
+      overall[st]++; overall.total++;
+      const p = perProgram.get(s.program) ?? blank();
+      p[st]++; p.total++;
+      perProgram.set(s.program, p);
+    }
+    return { overall, perProgram: Array.from(perProgram.entries()).sort((a, b) => a[0].localeCompare(b[0])) };
+  }, [initialSubjects]);
 
   const selectedSubject = initialSubjects.find((s) => s.id === selectedId) ?? null;
 
@@ -132,6 +170,23 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
     } else {
       showToast(res.error ?? 'Failed to generate snapshots.', 'error');
     }
+  };
+
+  const handleBulkObjectives = async () => {
+    if (!selectedSubject) return;
+    if (!bulkText.trim()) { showToast('Paste some objectives first.', 'error'); return; }
+    setBusy(true);
+    const res = await bulkSetObjectives({ subjectId: selectedSubject.id, text: bulkText, mode: bulkMode });
+    setBusy(false);
+    if (!res.ok) { showToast(res.error ?? 'Failed to apply.', 'error'); return; }
+    const un = res.unmatched ?? [];
+    showToast(
+      `Filled ${res.updated ?? 0} subtopic${res.updated === 1 ? '' : 's'}` + (un.length ? ` · ${un.length} code${un.length === 1 ? '' : 's'} not found` : ''),
+      un.length ? 'info' : 'success'
+    );
+    setBulkOpen(false);
+    setBulkText('');
+    await afterMutation();
   };
 
   // ---- template ----
@@ -206,6 +261,39 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
           </button>
         </div>
 
+        {/* REVIEW OVERVIEW - completeness at a glance before enabling teachers/students */}
+        <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-sm p-4">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 mb-3">
+            <div className="text-sm font-heading font-medium text-slate-900 dark:text-white">Completeness</div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300"><span className="w-2 h-2 rounded-full bg-emerald-500" /> {overview.overall.complete} complete</div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300"><span className="w-2 h-2 rounded-full bg-amber-500" /> {overview.overall.partial} need objectives</div>
+            <div className="flex items-center gap-1.5 text-xs text-slate-600 dark:text-slate-300"><span className="w-2 h-2 rounded-full bg-slate-300 dark:bg-slate-600" /> {overview.overall.empty} no outline</div>
+            <div className="text-xs text-slate-400 ml-auto">{overview.overall.total} subjects total</div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-2.5">
+            {overview.perProgram.map(([program, v]) => {
+              const pct = (n: number) => (v.total ? (n / v.total) * 100 : 0);
+              return (
+                <button
+                  key={program}
+                  onClick={() => { setProgramFilter(program); setStatusFilter('all'); }}
+                  className="text-left group"
+                  title={`Filter to ${program}`}
+                >
+                  <div className="flex items-center justify-between text-[11px] mb-1">
+                    <span className="font-medium text-slate-700 dark:text-slate-200 group-hover:text-[#5B47D6] truncate">{program}</span>
+                    <span className="text-slate-400 shrink-0 ml-2">{v.complete + v.partial}/{v.total}</span>
+                  </div>
+                  <div className="h-2 rounded-full overflow-hidden bg-slate-100 dark:bg-slate-800 flex">
+                    <div className="bg-emerald-500 h-full" style={{ width: `${pct(v.complete)}%` }} />
+                    <div className="bg-amber-500 h-full" style={{ width: `${pct(v.partial)}%` }} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] gap-5">
           {/* SUBJECT PICKER */}
           <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-2xl shadow-sm p-3 h-fit">
@@ -217,10 +305,17 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
               <option>All Programs</option>
               {programs.map((p) => <option key={p}>{p}</option>)}
             </select>
+            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)} className={`${inputCls} w-full mb-2`}>
+              <option value="all">All statuses</option>
+              <option value="complete">Complete</option>
+              <option value="partial">Needs objectives</option>
+              <option value="empty">No outline</option>
+            </select>
             <div className="max-h-[60vh] overflow-y-auto -mx-1 px-1 space-y-0.5">
               {filtered.length === 0 && <div className="text-sm text-slate-500 px-2 py-3">No subjects.</div>}
               {filtered.map((s) => {
                 const active = s.id === selectedId;
+                const st = subjectStatus(s);
                 return (
                   <button
                     key={s.id}
@@ -228,10 +323,14 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
                     className={`w-full text-left px-2.5 py-2 rounded-lg transition-colors ${active ? 'bg-[#5B47D6] text-white' : 'hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-200'}`}
                   >
                     <div className="text-sm font-medium flex items-center gap-1.5">
+                      <span className={`w-2 h-2 rounded-full shrink-0 ${active ? 'bg-white/80' : STATUS_META[st].dot}`} title={STATUS_META[st].label} />
                       <span className="truncate">{labelWithCode(s.name, s.code)}</span>
                     </div>
                     <div className={`text-[11px] ${active ? 'text-white/80' : 'text-slate-500'}`}>
-                      {s.program} {' · '} {s.hasOutline ? `${s.topicCount} topics, ${s.subtopicCount} subtopics` : 'No outline yet'}
+                      {s.program}
+                      {s.hasOutline
+                        ? ` · ${s.topicCount}t, ${s.subtopicCount}s · ${s.objectiveCount}/${s.subtopicCount} obj`
+                        : ' · No outline yet'}
                     </div>
                   </button>
                 );
@@ -287,8 +386,22 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
                         <input value={hdrCode} onChange={(e) => setHdrCode(e.target.value)} placeholder="9702" className={`${inputCls} w-24`} />
                       </div>
                       <button onClick={handleSaveHeader} disabled={busy} className="px-3 py-2 rounded-lg border border-[#E2E5EE] dark:border-slate-700 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-60">Save</button>
+                      <button onClick={() => { setBulkOpen(true); setBulkText(''); setBulkMode('replace'); }} disabled={busy} className="px-3 py-2 rounded-lg border border-[#E2E5EE] dark:border-slate-700 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-60 flex items-center gap-1.5" title="Paste learning objectives for many subtopics at once">
+                        <ClipboardPaste className="w-4 h-4" /> Bulk objectives
+                      </button>
                     </div>
                   </div>
+                  {(() => {
+                    const st = subjectStatus(selectedSubject);
+                    const filled = selectedSubject.objectiveCount, total = selectedSubject.subtopicCount;
+                    return (
+                      <div className={`mt-3 flex items-center gap-1.5 text-xs ${STATUS_META[st].text}`}>
+                        <span className={`w-2 h-2 rounded-full ${STATUS_META[st].dot}`} />
+                        {STATUS_META[st].label}
+                        {total > 0 && <span className="text-slate-400">· objectives on {filled}/{total} subtopics</span>}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Topics */}
@@ -407,6 +520,53 @@ export function SyllabusClient({ initialSubjects }: { initialSubjects: SyllabusS
           </div>
         </div>
       </div>
+
+      {/* BULK OBJECTIVES MODAL */}
+      {bulkOpen && selectedSubject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={() => !busy && setBulkOpen(false)}>
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#EBEDF3] dark:border-slate-800">
+              <div>
+                <div className="font-heading font-medium text-slate-900 dark:text-white flex items-center gap-2">
+                  <ClipboardPaste className="w-5 h-5 text-[#5B47D6]" /> Bulk objectives
+                </div>
+                <div className="text-xs text-slate-500 mt-0.5">{labelWithCode(selectedSubject.name, selectedSubject.code)} · {selectedSubject.program}</div>
+              </div>
+              <button onClick={() => setBulkOpen(false)} className="p-1.5 rounded-md text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="p-5 space-y-3">
+              <div className="text-sm text-slate-600 dark:text-slate-300">
+                One subtopic per line. Start each line with the subtopic code, then a colon, then the objectives separated by semicolons. Existing subtopics are matched by code - nothing new is created.
+              </div>
+              <pre className="text-[11px] bg-slate-50 dark:bg-slate-800 border border-[#EBEDF3] dark:border-slate-700 rounded-lg p-3 overflow-x-auto text-slate-600 dark:text-slate-300">{`1.1: Define proton, neutron and electron; State relative charge and mass
+1.2: Describe isotopes; Calculate relative atomic mass
+2.1: Explain ionic bonding`}</pre>
+              <textarea
+                value={bulkText}
+                onChange={(e) => setBulkText(e.target.value)}
+                rows={12}
+                placeholder="Paste your objectives here..."
+                className={`${inputCls} w-full font-mono text-xs`}
+                autoFocus
+              />
+              <div className="flex flex-wrap items-center gap-4">
+                <label className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+                  <input type="radio" checked={bulkMode === 'replace'} onChange={() => setBulkMode('replace')} /> Replace existing
+                </label>
+                <label className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-300">
+                  <input type="radio" checked={bulkMode === 'append'} onChange={() => setBulkMode('append')} /> Add to existing
+                </label>
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 px-5 py-4 border-t border-[#EBEDF3] dark:border-slate-800">
+              <button onClick={() => setBulkOpen(false)} disabled={busy} className="px-4 py-2 rounded-lg border border-[#E2E5EE] dark:border-slate-700 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-60">Cancel</button>
+              <button onClick={handleBulkObjectives} disabled={busy || !bulkText.trim()} className="px-4 py-2 rounded-lg bg-[#5B47D6] text-white text-sm font-medium disabled:opacity-60 flex items-center gap-1.5">
+                <Check className="w-4 h-4" /> Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PortalLayout>
   );
 }

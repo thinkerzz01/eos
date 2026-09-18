@@ -1,0 +1,847 @@
+{
+  "AS": [
+    {
+      "code": "1.1",
+      "name": "Data Representation",
+      "subtopics": [
+        {
+          "code": "1.1.1",
+          "name": "Data Representation",
+          "objectives": [
+            "Show understanding of binary magnitudes and the difference between binary prefixes and decimal prefixes",
+            "Show understanding of different number systems",
+            "Perform binary addition and subtraction",
+            "Describe practical applications where Binary Coded Decimal (BCD) and Hexadecimal are used",
+            "Show understanding of and be able to represent character data in its internal binary form, depending on the character set used",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1.2",
+      "name": "Multimedia",
+      "subtopics": [
+        {
+          "code": "1.2.1",
+          "name": "Graphics",
+          "objectives": [
+            "Show understanding of how data for a bitmapped image are encoded",
+            "Perform calculations to estimate the file size for a bitmap image",
+            "Show understanding of the effects of changing elements of a bitmap image on the image quality and file size",
+            "Show understanding of how data for a vector graphic are encoded",
+            "Justify the use of a bitmap image or a vector graphic for a given task"
+          ]
+        },
+        {
+          "code": "1.2.2",
+          "name": "Sound",
+          "objectives": [
+            "Show understanding of how sound is represented and encoded",
+            "Show understanding of the impact of changing the sampling rate and resolution"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "1.3",
+      "name": "Compression",
+      "subtopics": [
+        {
+          "code": "1.3.1",
+          "name": "Compression",
+          "objectives": [
+            "Show understanding of the need for and examples of the use of compression",
+            "Show understanding of lossy and lossless compression and justify the use of a method in a given situation",
+            "Show understanding of how a text file, bitmap image, vector graphic and sound file can be compressed",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "2 Communication"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2.1",
+      "name": "Networks including the internet",
+      "subtopics": [
+        {
+          "code": "2.1.1",
+          "name": "Networks including the internet",
+          "objectives": [
+            "Show understanding of the purpose and benefits of networking devices",
+            "Show understanding of the characteristics of a LAN (local area network) and a WAN (wide area network)",
+            "Explain the client-server and peer-to-peer models of networked computers",
+            "Show understanding of thin-client and thick-client and the differences between them",
+            "Show understanding of the bus, star, mesh and hybrid topologies",
+            "Show understanding of cloud computing",
+            "Show understanding of the differences between and implications of the use of wireless and wired networks",
+            "Describe the hardware that is used to support a LAN",
+            "Describe the role and function of a router in a network",
+            "Show understanding of Ethernet and how collisions are detected and avoided",
+            "Show understanding of bit streaming",
+            "Show understanding of the differences between the World Wide Web (WWW) and the internet",
+            "Describe the hardware that is used to support the internet",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3.1",
+      "name": "Computers and their components",
+      "subtopics": [
+        {
+          "code": "3.1.1",
+          "name": "Computers and their components",
+          "objectives": [
+            "Show understanding of the need for input, output, primary memory and secondary (including removable) storage",
+            "Show understanding of embedded systems",
+            "Describe the principal operations of hardware devices",
+            "Show understanding of the use of buffers",
+            "Explain the differences between Random Access Memory (RAM) and Read Only Memory (ROM)",
+            "Explain the differences between Static RAM (SRAM) and Dynamic RAM (DRAM)",
+            "Explain the difference between Programmable ROM (PROM), Erasable Programmable ROM (EPROM) and Electrically Erasable Programmable ROM (EEPROM)",
+            "Show an understanding of monitoring and control systems",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3.2",
+      "name": "Logic Gates and Logic Circuits",
+      "subtopics": [
+        {
+          "code": "3.2.1",
+          "name": "Logic Gates and Logic Circuits",
+          "objectives": [
+            "Use the following logic gate symbols:",
+            "NOT AND OR",
+            "NAND NOR XOR",
+            "Understand and define the functions of : NOT, AND, OR, NAND, NOR and XOR (EOR) gates",
+            "Construct the truth table for each of the logic gates above",
+            "Construct a logic circuit",
+            "Construct a truth table",
+            "Construct a logic expression",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "4 Processor Fundamentals"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4.1",
+      "name": "Central Processing Unit (CPU) Architecture",
+      "subtopics": [
+        {
+          "code": "4.1.1",
+          "name": "Central Processing Unit (CPU) Architecture",
+          "objectives": [
+            "Show understanding of the basic Von Neumann model for a computer system and the stored program concept",
+            "Show understanding of the purpose and role of registers, including the difference between general purpose and special purpose registers",
+            "Show understanding of the purpose and roles of the Arithmetic and Logic Unit (ALU), Control Unit (CU) and system clock, Immediate Access Store (IAS)",
+            "Show understanding of how data are transferred between various components of the computer system using the address bus, data bus and control bus",
+            "Show understanding of how factors contribute to the performance of the computer system",
+            "Understand how different ports provide connection to peripheral devices",
+            "Describe the stages of the Fetch-Execute (F-E) cycle",
+            "Show understanding of the purpose of interrupts",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4.2",
+      "name": "Assembly Language",
+      "subtopics": [
+        {
+          "code": "4.2.1",
+          "name": "Assembly Language",
+          "objectives": [
+            "Show understanding of the relationship between assembly language and machine code",
+            "Describe the different stages of the assembly process for a two-pass assembler",
+            "Trace a given simple assembly language program",
+            "Show understanding that a set of instructions are grouped",
+            "Show understanding of and be able to use different modes of addressing",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "The following table is an example of an instruction set:",
+            "Instruction",
+            "Opcode Operand",
+            "LDM #n Immediate addressing. Load the number n to ACC",
+            "LDD <address> Direct addressing. Load the contents of the location at the given address to ACC LDI <address> Indirect addressing. The address to be used is at the given address. Load the contents of this second address to ACC LDX <address> Indexed addressing. Form the address from <address> + the contents of the index register. Copy the contents of this calculated address to ACC LDR #n Immediate addressing. Load the number n to IX",
+            "MOV <register> Move the contents of the accumulator to the given register (IX)",
+            "STO <address> Store the contents of ACC at the given address",
+            "ADD <address> Add the contents of the given address to the ACC",
+            "ADD #n/Bn/&n Add the number n to the ACC",
+            "SUB <address> Subtract the contents of the given address from the ACC",
+            "SUB #n/Bn/&n Subtract the number n from the ACC",
+            "INC <register> Add 1 to the contents of the register (ACC or IX)",
+            "DEC <register> Subtract 1 from the contents of the register (ACC or IX)",
+            "JMP <address> Jump to the given address",
+            "CMP <address> Compare the contents of ACC with the contents of <address>",
+            "CMP #n Compare the contents of ACC with number n",
+            "CMI <address> Indirect addressing. The address to be used is at the given address. Compare the contents of ACC with the contents of this second address JPE <address> Following a compare instruction, jump to <address> if the compare was True",
+            "JPN <address> Following a compare instruction, jump to <address> if the compare was False IN Key in a character and store its ASCII value in ACC",
+            "OUT Output to the screen the character whose ASCII value is stored in ACC",
+            "END Return control to the operating system",
+            "All questions will assume there is only one general purpose register available (Accumulator) ACC denotes Accumulator IX denotes Index Register <address> can be an absolute or symbolic address # denotes a denary number, e.g. #123 B denotes a binary number, e.g. B01001010 & denotes a hexadecimal number, e.g. &4A",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4.3",
+      "name": "Bit manipulation",
+      "subtopics": [
+        {
+          "code": "4.3.1",
+          "name": "Bit manipulation",
+          "objectives": [
+            "Show understanding of and perform binary shifts",
+            "Show understanding of how bit manipulation can be used to monitor/control a device",
+            "Instruction Label Opcode Operand AND #n / Bn / &n Bitwise AND operation of the contents of ACC with the operand AND <address> Bitwise AND operation of the contents of ACC with the contents of <address> XOR #n / Bn / &n Bitwise XOR operation of the contents of ACC with the operand XOR <address> Bitwise XOR operation of the contents of ACC with the contents of <address> OR #n / Bn / &n Bitwise OR operation of the contents of ACC with the operand OR <address> Bitwise OR operation of the contents of ACC with the contents of <address> LSL #n Bits in ACC are shifted logically n places to the left. Zeros are introduced on the right hand end LSR #n Bits in ACC are shifted logically n places to the right. Zeros are introduced on the left hand end <label>: <opcode> <operand> Labels an instruction <label>: <data> Gives a symbolic address <label> to the memory location with contents <data> All questions will assume there is only one general purpose register available (Accumulator) ACC denotes Accumulator IX denotes Index Register <address> can be an absolute or symbolic address # denotes a denary number, e.g. #123 B denotes a binary number, e.g. B01001010 & denotes a hexadecimal number, e.g. &4A",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "5 System Software"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5.1",
+      "name": "Operating Systems",
+      "subtopics": [
+        {
+          "code": "5.1.1",
+          "name": "Operating Systems",
+          "objectives": [
+            "Explain why a computer system requires an Operating System (OS)",
+            "Explain the key management tasks carried out by the Operating System",
+            "Show understanding of the need for typical utility software provided with an Operating System",
+            "Show understanding of program libraries"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5.2",
+      "name": "Language Translators",
+      "subtopics": [
+        {
+          "code": "5.2.1",
+          "name": "Language Translators",
+          "objectives": [
+            "Show understanding of the need for:",
+            "• assembler software for the translation of an assembly language program • a compiler for the translation of a high-level language program • an interpreter for translation and execution of a high-level language program",
+            "Explain the benefits and drawbacks of using either a compiler or interpreter and justify the use of each",
+            "Show awareness that high-level language programs may be partially compiled and partially interpreted, such as Java (console mode)",
+            "Describe features found in a typical Integrated Development Environment (IDE)",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "6 Security, privacy and data integrity"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "6.1",
+      "name": "Data Security",
+      "subtopics": [
+        {
+          "code": "6.1.1",
+          "name": "Data Security",
+          "objectives": [
+            "Explain the difference between the terms security, privacy and integrity of data",
+            "Show appreciation of the need for both the security of data and the security of the computer system",
+            "Describe security measures designed to protect computer systems, ranging from the stand-alone PC to a network of computers",
+            "Show understanding of the threats to computer and data security posed by networks and the internet",
+            "Describe methods that can be used to restrict the risks posed by threats",
+            "Describe security methods designed to protect the security of data"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "6.2",
+      "name": "Data Integrity",
+      "subtopics": [
+        {
+          "code": "6.2.1",
+          "name": "Data Integrity",
+          "objectives": [
+            "Describe how data validation and data verification help protect the integrity of data",
+            "Describe and use methods of data validation",
+            "Describe and use methods of data verification during data entry and data transfer",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "7 Ethics and Ownership"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "7.1",
+      "name": "Ethics and Ownership",
+      "subtopics": [
+        {
+          "code": "7.1.1",
+          "name": "Ethics and Ownership",
+          "objectives": [
+            "Show understanding of the need for and purpose of ethics as a computing professional",
+            "Show understanding of the need to act ethically and the impact of acting ethically or unethically for a given situation",
+            "Show understanding of the need for copyright legislation",
+            "Show understanding of the different types of software licencing and justify the use of a licence for a given situation",
+            "Show understanding of Artificial Intelligence (AI)",
+            "8 Databases"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "8.1",
+      "name": "Database Concepts",
+      "subtopics": [
+        {
+          "code": "8.1.1",
+          "name": "Database Concepts",
+          "objectives": [
+            "Show understanding of the limitations of using a file- based approach for the storage and retrieval of data",
+            "Describe the features of a relational database that address the limitations of a file-based approach",
+            "Show understanding of and use the terminology associated with a relational database model",
+            "Use an entity-relationship (E-R) diagram to document a database design",
+            "Show understanding of the normalisation process",
+            "Explain why a given set of database tables are, or are not, in 3NF",
+            "Produce a normalised database design for a description of a database, a given set of data, or a given set of tables",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "8.2",
+      "name": "Database Management Systems (DBMS)",
+      "subtopics": [
+        {
+          "code": "8.2.1",
+          "name": "Database Management Systems (DBMS)",
+          "objectives": [
+            "Show understanding of the features provided by a Database Management System (DBMS) that address the issues of a file based approach",
+            "Show understanding of how software tools found within a DBMS are used in practice"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "8.3",
+      "name": "Data Definition Language (DDL) and Data Manipulation Language (DML)",
+      "subtopics": [
+        {
+          "code": "8.3.1",
+          "name": "Data Definition Language (DDL) and Data Manipulation Language (DML)",
+          "objectives": [
+            "Show understanding that the DBMS carries out all creation / modification of the database structure using its Data Definition Language (DDL)",
+            "Show understanding that the DBMS carries out all queries and maintenance of data using its DML",
+            "Show understanding that the industry standard for both DDL and DML is Structured Query Language (SQL)",
+            "Understand given SQL (DDL) statements and be able to write simple SQL (DDL) statements using a sub-set of statements",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "9.1",
+      "name": "Computational Thinking Skills",
+      "subtopics": [
+        {
+          "code": "9.1.1",
+          "name": "Computational Thinking Skills",
+          "objectives": [
+            "Show an understanding of abstraction",
+            "Describe and use decomposition"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "9.2",
+      "name": "Algorithms",
+      "subtopics": [
+        {
+          "code": "9.2.1",
+          "name": "Algorithms",
+          "objectives": [
+            "Show understanding that an algorithm is a solution to a problem expressed as a sequence of defined steps",
+            "Use suitable identifier names for the representation of data used by a problem and represent these using an identifier table",
+            "Write pseudocode that contains input, process and output",
+            "Write pseudocode using the three basic constructs of sequence, selection and iteration (repetition)",
+            "Document a simple algorithm using a structured English description, a flowchart or pseudocode",
+            "Write pseudocode from:",
+            "• a structured English description • a flowchart",
+            "Draw a flowchart from:",
+            "• a structured English description • pseudocode",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "10.1",
+      "name": "Data Types and Records",
+      "subtopics": [
+        {
+          "code": "10.1.1",
+          "name": "Data Types and Records",
+          "objectives": [
+            "Select and use appropriate data types for a problem solution",
+            "Show understanding of the purpose of a record structure to hold a set of data of different data types under one identifier"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "10.2",
+      "name": "Arrays",
+      "subtopics": [
+        {
+          "code": "10.2.1",
+          "name": "Arrays",
+          "objectives": [
+            "Use the technical terms associated with arrays",
+            "Select a suitable data structure (1D or 2D array) to use for a given task",
+            "Write pseudocode for 1D and 2D arrays",
+            "Write pseudocode to process array data"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "10.3",
+      "name": "Files",
+      "subtopics": [
+        {
+          "code": "10.3.1",
+          "name": "Files",
+          "objectives": [
+            "Show understanding of why files are needed",
+            "Write pseudocode to handle text files that consist of one or more lines",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "10.4",
+      "name": "Introduction to Abstract Data Types (ADT)",
+      "subtopics": [
+        {
+          "code": "10.4.1",
+          "name": "Introduction to Abstract Data Types (ADT)",
+          "objectives": [
+            "Show understanding that an ADT is a collection of data and a set of operations on those data",
+            "Show understanding that a stack, queue and linked list are examples of ADTs",
+            "Use a stack, queue and linked list to store data",
+            "Describe how a queue, stack and linked list can be implemented using arrays",
+            "11 Programming"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "11.1",
+      "name": "Programming Basics",
+      "subtopics": [
+        {
+          "code": "11.1.1",
+          "name": "Programming Basics",
+          "objectives": [
+            "Implement and write pseudocode from a given design presented as either a program flowchart or structured English",
+            "Write pseudocode statements for:",
+            "• the declaration and initialisation of constants • the declaration of variables • the assignment of values to variables • expressions involving any of the arithmetic or logical operators input from the keyboard and output to the console",
+            "Use built-in functions and library routines"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "11.2",
+      "name": "Constructs",
+      "subtopics": [
+        {
+          "code": "11.2.1",
+          "name": "Constructs",
+          "objectives": [
+            "Use pseudocode to write:",
+            "• an 'IF' statement including the 'ELSE' clause and nested IF statements • a 'CASE' structure • a 'count-controlled' loop: • a 'post-condition' loop • a 'pre-condition' loop",
+            "Justify why one loop structure may be better suited to solve a problem than the others",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "11.3",
+      "name": "Structured Programming",
+      "subtopics": [
+        {
+          "code": "11.3.1",
+          "name": "Structured Programming",
+          "objectives": [
+            "Define and use a procedure",
+            "Explain where in the construction of an algorithm it would be appropriate to use a procedure",
+            "Use parameters",
+            "Define and use a function",
+            "Explain where in the construction of an algorithm it is appropriate to use a function",
+            "Use the terminology associated with procedures and functions",
+            "Write efficient pseudocode",
+            "12 Software Development"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "12.1",
+      "name": "Program Development Life cycle",
+      "subtopics": [
+        {
+          "code": "12.1.1",
+          "name": "Program Development Life cycle",
+          "objectives": [
+            "Show understanding of the purpose of a development life cycle",
+            "Show understanding of the need for different development life cycles depending on the program being developed",
+            "Describe the principles, benefits and drawbacks of each type of life cycle",
+            "Show understanding of the analysis, design, coding, testing and maintenance stages in the program development life cycle"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "12.2",
+      "name": "Program Design",
+      "subtopics": [
+        {
+          "code": "12.2.1",
+          "name": "Program Design",
+          "objectives": [
+            "Use a structure chart to decompose a problem into sub-tasks and express the parameters passed between the various modules / procedures / functions which are part of the algorithm design",
+            "Show understanding of the purpose of state-transition diagrams to document an algorithm",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "12.3",
+      "name": "Program Testing and Maintenance",
+      "subtopics": [
+        {
+          "code": "12.3.1",
+          "name": "Program Testing and Maintenance",
+          "objectives": [
+            "Show understanding of ways of exposing and avoiding faults in programs",
+            "Locate and identify the different types of errors",
+            "Correct identified errors",
+            "Show understanding of the methods of testing available and select appropriate data for a given method",
+            "Show understanding of the need for a test strategy and test plan and their likely contents",
+            "Choose appropriate test data for a test plan",
+            "Show understanding of the need for continuing maintenance of a system and the differences between each type of maintenance",
+            "Analyse an existing program and make amendments to enhance functionality",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    }
+  ],
+  "A2": [
+    {
+      "code": "13.1",
+      "name": "User-defined data types",
+      "subtopics": [
+        {
+          "code": "13.1.1",
+          "name": "User-defined data types",
+          "objectives": [
+            "Show understanding of why user-defined types are necessary",
+            "Define and use non-composite types",
+            "Define and use composite data types",
+            "Choose and design an appropriate user-defined data type for a given problem"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "13.2",
+      "name": "File organisation and access",
+      "subtopics": [
+        {
+          "code": "13.2.1",
+          "name": "File organisation and access",
+          "objectives": [
+            "Show understanding of the methods of file organisation and select an appropriate method of file organisation and file access for a given problem",
+            "Show understanding of methods of file access",
+            "Show understanding of hashing algorithms",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "13.3",
+      "name": "Floating-point numbers, representation and manipulation",
+      "subtopics": [
+        {
+          "code": "13.3.1",
+          "name": "Floating-point numbers, representation and manipulation",
+          "objectives": [
+            "Describe the format of binary floating-point real numbers",
+            "Convert binary floating-point real numbers into denary and vice versa",
+            "Normalise floating-point numbers",
+            "Show understanding of the consequences of a binary representation only being an approximation to the real number it represents (in certain cases)",
+            "Show understanding that binary representations can give rise to rounding errors",
+            "14 Communication and internet technologies"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "14.1",
+      "name": "Protocols",
+      "subtopics": [
+        {
+          "code": "14.1.1",
+          "name": "Protocols",
+          "objectives": [
+            "Show understanding of why a protocol is essential for communication between computers",
+            "Show understanding of how protocol implementation can be viewed as a stack, where each layer has its own functionality",
+            "Show understanding of the TCP / IP protocol suite",
+            "Show understanding of protocols (HTTP, FTP, POP3, IMAP, SMTP, BitTorrent) and their purposes"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "14.2",
+      "name": "Circuit switching, packet switching",
+      "subtopics": [
+        {
+          "code": "14.2.1",
+          "name": "Circuit switching, packet switching",
+          "objectives": [
+            "Show understanding of circuit switching",
+            "Show understanding of packet switching",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "15 Hardware and Virtual Machines"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "15.1",
+      "name": "Processors, Parallel Processing and Virtual Machines",
+      "subtopics": [
+        {
+          "code": "15.1.1",
+          "name": "Processors, Parallel Processing and Virtual Machines",
+          "objectives": [
+            "Show understanding of Reduced Instruction Set Computers (RISC) and Complex Instruction Set Computers (CISC) processors",
+            "Show understanding of the importance / use of pipelining and registers in RISC processors",
+            "Show understanding of the four basic computer architectures",
+            "Show understanding of the characteristics of massively parallel computers",
+            "Show understanding of the concept of a virtual machine"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "15.2",
+      "name": "Boolean Algebra and Logic Circuits",
+      "subtopics": [
+        {
+          "code": "15.2.1",
+          "name": "Boolean Algebra and Logic Circuits",
+          "objectives": [
+            "Produce truth tables for logic circuits including half adders and full adders",
+            "Show understanding of a flip-flop (SR, JK)",
+            "Show understanding of Boolean algebra",
+            "Show understanding of Karnaugh maps (K-map)",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "16 System Software"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "16.1",
+      "name": "Purposes of an Operating System (OS)",
+      "subtopics": [
+        {
+          "code": "16.1.1",
+          "name": "Purposes of an Operating System (OS)",
+          "objectives": [
+            "Show understanding of how an OS can maximise the use of resources",
+            "Describe the ways in which the user interface hides the complexities of the hardware from the user",
+            "Show understanding of process management",
+            "Show understanding of virtual memory, paging and segmentation for memory management"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "16.2",
+      "name": "Translation Software",
+      "subtopics": [
+        {
+          "code": "16.2.1",
+          "name": "Translation Software",
+          "objectives": [
+            "Show understanding of how an interpreter can execute programs without producing a translated version",
+            "Show understanding of the various stages in the compilation of a program",
+            "Show understanding of how the grammar of a language can be expressed using syntax diagrams or Backus-Naur Form (BNF) notation",
+            "Show understanding of how Reverse Polish Notation (RPN) can be used to carry out the evaluation of expressions",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "17 Security"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "17.1",
+      "name": "Encryption, Encryption Protocols and Digital Certificates",
+      "subtopics": [
+        {
+          "code": "17.1.1",
+          "name": "Encryption, Encryption Protocols and Digital Certificates",
+          "objectives": [
+            "Show understanding of how encryption works",
+            "Show awareness of the Secure Socket Layer (SSL)/ Transport Layer Security (TLS)",
+            "Show understanding of digital certification",
+            "18 Artificial Intelligence (AI)"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "18.1",
+      "name": "Artificial Intelligence (AI)",
+      "subtopics": [
+        {
+          "code": "18.1.1",
+          "name": "Artificial Intelligence (AI)",
+          "objectives": [
+            "Show understanding of how graphs can be used to aid Artificial Intelligence (AI)",
+            "Show understanding of how artificial neural networks have helped with machine learning",
+            "Show understanding of Deep Learning, Machine Learning and Reinforcement Learning and the reasons for using these methods.",
+            "Show understanding of back propagation of errors and regression methods in machine learning",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "19 Computational thinking and Problem-solving"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "19.1",
+      "name": "Algorithms",
+      "subtopics": [
+        {
+          "code": "19.1.1",
+          "name": "Algorithms",
+          "objectives": [
+            "Show understanding of linear and binary searching methods",
+            "Show understanding of insertion sort and bubble sort methods",
+            "Show understanding of and use Abstract Data Types (ADT)",
+            "Show how it is possible for ADTs to be implemented from another ADT",
+            "Show understanding that different algorithms which perform the same task can be compared by using criteria (e.g. time taken to complete the task and memory used)"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "19.2",
+      "name": "Recursion",
+      "subtopics": [
+        {
+          "code": "19.2.1",
+          "name": "Recursion",
+          "objectives": [
+            "Show understanding of recursion",
+            "Show awareness of what a compiler has to do to translate recursive programming code",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "20 Further Programming"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "20.1",
+      "name": "Programming Paradigms",
+      "subtopics": [
+        {
+          "code": "20.1.1",
+          "name": "Programming Paradigms",
+          "objectives": [
+            "Understanding what is meant by a programming paradigm",
+            "Show understanding of the characteristics of a number of programming paradigms:",
+            "• Low-level",
+            "• Imperative (Procedural)",
+            "• Object Oriented",
+            "• Declarative"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "20.2",
+      "name": "File Processing and Exception Handling",
+      "subtopics": [
+        {
+          "code": "20.2.1",
+          "name": "File Processing and Exception Handling",
+          "objectives": [
+            "Write code to perform file-processing operations",
+            "Show understanding of an exception and the importance of exception handling",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029. Subject content",
+            "Teacher guidance",
+            "Equipment and facilities",
+            "Computer science is a practical subject and the Cambridge AS and A Level syllabus places emphasis on the use of procedural high-level programming languages. Centres must ensure that their equipment and facilities are adequate for candidates to be able to satisfy the requirements of the syllabus. The hardware facilities needed will depend on the number of candidates, but should be sufficient for all candidates to have enough time to practise their programming skills.",
+            "Hardware",
+            "Candidates need to have access to a system with direct-access file capability on backing store and hardcopy facilities.",
+            "Software",
+            "Candidates should have experience of using a high-level programming language, chosen by the centre, from the following list:",
+            "• Java (console mode) • Visual Basic (console mode) • Python (console mode).",
+            "Books",
+            "The British Computer Society (BCS) book list for schools and colleges are suitable for use as reference. Teachers will need to consult several books to cover the whole syllabus adequately. There is a suggested book list on our website.",
+            "Practical skills",
+            "Computing is a practical subject and a range of practical exercises should supplement the study of most parts of the syllabus.",
+            "It is important that centres encourage candidates, as early as possible in the course, to develop a systematic approach to practical problem-solving using appropriate resources.",
+            "Faculty feedback: 'Understanding how and why our climate is changing and providing the knowledge and skills to explore the challenges plays a key role in every student's education.'",
+            "Feedback from: Dr Amy Munro-Faure, Head of Education and Student Engagement of Cambridge Zero",
+            "Back to contents page",
+            "Cambridge International AS & A Level Computer Science 9618 syllabus for 2027, 2028 and 2029."
+          ]
+        }
+      ]
+    }
+  ]
+}
