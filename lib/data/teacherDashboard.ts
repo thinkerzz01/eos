@@ -49,7 +49,19 @@ export async function getTeacherDashboard(): Promise<TeacherDashboard | null> {
 
   const classesToday = rows.filter((r) => t(r) >= dayStart && t(r) <= dayEnd).length;
   const classesThisWeek = rows.filter((r) => t(r) >= now && t(r) <= weekEnd).length;
-  const studentsCount = new Set(rows.map((r) => r.student_id).filter(Boolean)).size;
+
+  // "My students" = the teacher's roster, which is students linked via an
+  // enrollment (student_subjects) OR a scheduled class (class_sessions) - same
+  // definition RLS uses. Counting only class_sessions showed 0 for a teacher who
+  // has assigned students but no classes booked yet.
+  const { data: enr } = await supabase
+    .from('student_subjects')
+    .select('student_id')
+    .is('deleted_at', null);
+  const studentIds = new Set<string>();
+  for (const r of rows) if (r.student_id) studentIds.add(r.student_id);
+  for (const r of ((enr as any[]) ?? [])) if (r.student_id) studentIds.add(r.student_id);
+  const studentsCount = studentIds.size;
 
   const upcoming = rows.find((r) => t(r) > now && r.status === 'scheduled');
   let nextClass: TeacherDashboard['nextClass'] = null;

@@ -11,6 +11,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getServerIdentity } from '@/lib/auth/serverRole';
 
 export interface MyItem {
+  id: string;
   code: string | null;
   name: string;
   covered: boolean;
@@ -65,7 +66,7 @@ export async function getSyllabusForStudent(studentId: string): Promise<MySubjec
     const headerIds = hs.map((h) => h.id);
     const { data: items } = await supabase
       .from('student_syllabus_item')
-      .select('student_syllabus_id, topic_code, topic_name, subtopic_code, subtopic_name, objectives, status, covered_on')
+      .select('id, student_syllabus_id, topic_code, topic_name, subtopic_code, subtopic_name, objectives, status, covered_on')
       .in('student_syllabus_id', headerIds)
       .order('sort', { ascending: true });
 
@@ -99,6 +100,7 @@ export async function getSyllabusForStudent(studentId: string): Promise<MySubjec
         const t = topics.get(key)!;
         const isCov = it.status === 'covered';
         t.items.push({
+          id: it.id,
           code: it.subtopic_code,
           name: it.subtopic_name,
           covered: isCov,
