@@ -1,9 +1,47 @@
 # Thinkerzz EOS - Syllabus Module (Complete Plan)
 
-Status: PLANNING (no code written yet)
+Status: PHASE 1 DONE (admin manager + snapshots) - content loading in progress
 Model: one-on-one tuition
-Scope decided: coverage tracking, admin-entered outlines, text only (no PDFs)
-Last updated: 2026-09-17
+Scope decided: coverage tracking, admin-entered outlines
+Last updated: 2026-09-18
+
+---
+
+## 0. Current status - what is covered vs what is left
+
+**Module (build):**
+- Phase 1 DONE: admin Syllabus Manager (`/syllabus`, admin+manager only), per-enrollment snapshots, completeness overview (Complete / Needs objectives / No outline status dots + filter), bulk-objectives paste tool, count-bug fix.
+- Deliberately still admin-only: teachers and students have NO access until the owner signs off on content.
+- Phase 2 (teacher coverage marking) and Phase 3 (student "My Syllabus" view): NOT built yet.
+
+**Content pipeline:** built PDF parsers for the different Cambridge layouts
+(`scripts/syllabus-data/parse-cambridge-*.py`) + generators
+(`gen-sql.py` for AS/A2, `gen-sql-olevel.py` for O Level -> loads into both O1 and O2).
+Objectives are extracted from the official Cambridge syllabus PDFs and loaded as SQL
+run by the owner in the Supabase SQL editor. Punctuation normalised to house style.
+
+**AS & A Level - 8 core subjects DONE (AS + A2, full objectives), loaded & live:**
+Physics 9702, Chemistry 9701, Biology 9700, Business 9609, Accounting 9706,
+Economics 9708, Computer Science 9618, Mathematics 9709, plus Further Mathematics 9231.
+(Maths AS/A2 component split is a stated default - owner to confirm.)
+
+**O Level - 10 core academic subjects DONE (loaded into O1 + O2, full objectives):**
+Mathematics 4024, Additional Mathematics 4037, Accounting 7707, Economics 2281,
+Commerce 7100, Business Studies 7115, Geography 2217, Sociology 2251,
+Environmental Management 5014, Computer Science 2210.
+O Level sciences (Physics 5054, Chemistry 5070, Biology 5090, Combined Science 5129)
+already had objectives from earlier seeding.
+
+**Left to do (needs a decision or is lower-value):**
+- History 2147 - options-based (Option A/B + depth studies); owner must pick which option + depth study before it can be loaded.
+- Statistics 4040 - awkward two-column table format, niche (~12 subtopics); do or skip?
+- Business 7081 - separate row from Business Studies 7115; confirm it is a real taught subject.
+- Languages / religious / arts (Islamic Studies 2068, Islamiyat 2058, Pakistan Studies 2059,
+  Urdu 3247, Arabic 3180, English First Language 1123, Literature 2010, Global Perspectives 2069,
+  Art & Design 6090, Fashion & Textiles 6130, Food & Nutrition 6065) - prose/skills formats that
+  do not map cleanly to tick-off objectives; recommendation is to skip machine-loading and enter by hand where useful.
+- AS/A2 beyond the 8 core (Geography, History, Sociology, Islamic Studies, languages, etc.) - not started.
+- A2-only, IGCSE, and all Edexcel programs - no outlines built at all.
 
 ---
 

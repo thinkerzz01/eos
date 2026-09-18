@@ -1,0 +1,420 @@
+{
+  "AS": [
+    {
+      "code": "1",
+      "name": "The basic economic problem",
+      "subtopics": [
+        {
+          "code": "1.1",
+          "name": "The nature of the economic problem",
+          "objectives": [
+            "Topic",
+            "1.1.1 finite resources and unlimited wants",
+            "1.1.2 economic and free goods"
+          ]
+        },
+        {
+          "code": "1.2",
+          "name": "The factors of production",
+          "objectives": [
+            "Topic",
+            "1.2.1 definitions of the factors of production and their rewards",
+            "1.2.2 mobility of the factors of production",
+            "1.2.3 quantity and quality of the factors of production"
+          ]
+        },
+        {
+          "code": "1.3",
+          "name": "Opportunity cost",
+          "objectives": [
+            "Topic",
+            "1.3.1 definition of opportunity cost",
+            "1.3.2 the influence of opportunity cost on decision making"
+          ]
+        },
+        {
+          "code": "1.4",
+          "name": "Production possibility curve (PPC) diagrams",
+          "objectives": [
+            "Topic",
+            "1.4.1 definition of PPC",
+            "1.4.2 points under, on and beyond a PPC",
+            "1.4.3 movements along a PPC 1.4.4 shifts in a PPC"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2",
+      "name": "The allocation of resources",
+      "subtopics": [
+        {
+          "code": "2.1",
+          "name": "Microeconomics and macroeconomics",
+          "objectives": [
+            "Topic",
+            "2.1.1 microeconomics 2.1.2 macroeconomics"
+          ]
+        },
+        {
+          "code": "2.2",
+          "name": "The role of markets in allocating resources",
+          "objectives": [
+            "Topic",
+            "2.2.1 the market system",
+            "2.2.2 key resources allocation decisions",
+            "2.2.3 introduction to the price mechanism"
+          ]
+        },
+        {
+          "code": "2.3",
+          "name": "Demand",
+          "objectives": [
+            "Topic",
+            "2.3.1 definition of demand",
+            "2.3.2 price, demand and quantity",
+            "2.3.3 individual and market demand",
+            "2.3.4 conditions of demand"
+          ]
+        },
+        {
+          "code": "2.4",
+          "name": "Supply",
+          "objectives": [
+            "Topic",
+            "2.4.1 definition of supply",
+            "2.4.2 price, supply and quantity",
+            "2.4.3 individual and market supply",
+            "2.4.4 conditions of supply"
+          ]
+        },
+        {
+          "code": "2.5",
+          "name": "Price determination",
+          "objectives": [
+            "Topic",
+            "2.5.1 market equilibrium",
+            "2.5.2 market disequilibrium"
+          ]
+        },
+        {
+          "code": "2.6",
+          "name": "Price changes",
+          "objectives": [
+            "Topic",
+            "2.6.1 causes of price changes",
+            "2.6.2 consequences of price changes"
+          ]
+        },
+        {
+          "code": "2.7",
+          "name": "Price elasticity of demand (PED)",
+          "objectives": [
+            "Topic",
+            "2.7.1 definition of PED 2.7.2 calculation of PED",
+            "2.7.3 determinants of PED",
+            "2.7.4 PED and total spending on a product/ revenue",
+            "2.7.5 significance of PED"
+          ]
+        },
+        {
+          "code": "2.8",
+          "name": "Price elasticity of supply (PES)",
+          "objectives": [
+            "Topic",
+            "2.8.1 definition of PES 2.8.2 calculation of PES",
+            "2.8.3 determinants of PES",
+            "2.8.4 significance of PES"
+          ]
+        },
+        {
+          "code": "2.9",
+          "name": "Market economic system",
+          "objectives": [
+            "Topic",
+            "2.9.1 definition of market economic system",
+            "2.9.2 advantages and disadvantages of the market economic system"
+          ]
+        },
+        {
+          "code": "2.10",
+          "name": "Market failure",
+          "objectives": [
+            "Topic",
+            "2.10.1 definition of market failure",
+            "2.10.2 causes of market failure",
+            "2.10.3 consequences of market failure"
+          ]
+        },
+        {
+          "code": "2.11",
+          "name": "Mixed economic system",
+          "objectives": [
+            "Topic",
+            "2.11.1 definition of the mixed economic system 2.11.2 government intervention to address market failure"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3",
+      "name": "Microeconomic decision makers",
+      "subtopics": [
+        {
+          "code": "3.1",
+          "name": "Money and banking",
+          "objectives": [
+            "Topic",
+            "3.1.1 money 3.1.2 banking"
+          ]
+        },
+        {
+          "code": "3.2",
+          "name": "Households",
+          "objectives": [
+            "Topic",
+            "3.2.1 the influences on spending, saving and borrowing"
+          ]
+        },
+        {
+          "code": "3.3",
+          "name": "Workers",
+          "objectives": [
+            "Topic",
+            "3.3.1 factors affecting an individual's choice of occupation 3.3.2 wage determination",
+            "3.3.3 reasons for differences in earnings",
+            "3.3.4 division of labour/specialisation"
+          ]
+        },
+        {
+          "code": "3.4",
+          "name": "Trade unions",
+          "objectives": [
+            "Topic",
+            "3.4.1 definition of a trade union 3.4.2 the role of trade unions in the economy",
+            "3.4.3 the advantages and disadvantages of trade union activity"
+          ]
+        },
+        {
+          "code": "3.5",
+          "name": "Firms",
+          "objectives": [
+            "Topic",
+            "3.5.1 classification of firms",
+            "3.5.2 small firms",
+            "3.5.3 causes and forms of the growth of firms",
+            "3.5.4 mergers",
+            "3.5.5 economies and diseconomies of scale"
+          ]
+        },
+        {
+          "code": "3.6",
+          "name": "Firms and production",
+          "objectives": [
+            "Topic",
+            "3.6.1 demand for factors of production",
+            "3.6.2 labour-intensive and capital-intensive production 3.6.3 production and productivity"
+          ]
+        },
+        {
+          "code": "3.7",
+          "name": "Firms' costs, revenue and objectives",
+          "objectives": [
+            "Topic",
+            "3.7.1 definition of costs of production",
+            "3.7.2 calculation of costs of production",
+            "3.7.3 definition of revenue",
+            "3.7.4 calculation of revenue",
+            "3.7.5 objectives of firms"
+          ]
+        },
+        {
+          "code": "3.8",
+          "name": "Market structure",
+          "objectives": [
+            "Topic",
+            "3.8.1 competitive markets",
+            "3.8.2 monopoly markets"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4",
+      "name": "Government and the macroeconomy",
+      "subtopics": [
+        {
+          "code": "4.1",
+          "name": "The role of government",
+          "objectives": [
+            "Topic",
+            "4.1.1 the role of government"
+          ]
+        },
+        {
+          "code": "4.2",
+          "name": "The macroeconomic aims of government",
+          "objectives": [
+            "Topic",
+            "4.2.1 the macroeconomic aims of government",
+            "4.2.2 possible conflicts between macroeconomic aims"
+          ]
+        },
+        {
+          "code": "4.3",
+          "name": "Fiscal policy",
+          "objectives": [
+            "Topic",
+            "4.3.1 definition of the government budget 4.3.2 reasons for government spending",
+            "4.3.3 reasons for taxation",
+            "4.3.4 classification of taxes",
+            "4.3.5 principles of taxation 4.3.6 impact of taxation",
+            "Topic",
+            "4.3.7 definition of fiscal policy 4.3.8 fiscal policy measures",
+            "4.3.9 effects of fiscal policy on government macroeconomic aims"
+          ]
+        },
+        {
+          "code": "4.4",
+          "name": "Monetary policy",
+          "objectives": [
+            "Topic",
+            "4.4.1 definition of money supply and monetary policy 4.4.2 monetary policy measures",
+            "4.4.3 effects of monetary policy on government macroeconomic aims"
+          ]
+        },
+        {
+          "code": "4.5",
+          "name": "Supply-side policy",
+          "objectives": [
+            "Topic",
+            "4.5.1 definition of supply-side policy 4.5.2 supply-side policy measures",
+            "4.5.3 effects of supply-side policy measures on government macroeconomic aims"
+          ]
+        },
+        {
+          "code": "4.6",
+          "name": "Economic growth",
+          "objectives": [
+            "Topic",
+            "4.6.1 definition of economic growth 4.6.2 measurement of economic growth",
+            "4.6.3 causes and consequences of recession",
+            "4.6.4 causes of economic growth",
+            "4.6.5 consequences of economic growth",
+            "4.6.6 policies to promote economic growth"
+          ]
+        },
+        {
+          "code": "4.7",
+          "name": "Employment and unemployment",
+          "objectives": [
+            "Topic",
+            "4.7.1 definition of employment, unemployment and full employment 4.7.2 changing patterns and level of employment",
+            "4.7.3 measurement of unemployment",
+            "4.7.4 causes/types of unemployment 4.7.5 consequences of unemployment",
+            "4.7.6 policies to reduce unemployment"
+          ]
+        },
+        {
+          "code": "4.8",
+          "name": "Inflation and deflation",
+          "objectives": [
+            "Topic",
+            "4.8.1 definition of inflation and deflation 4.8.2 measurement of inflation and deflation",
+            "4.8.3 causes of inflation and deflation",
+            "4.8.4 consequences of inflation and deflation",
+            "4.8.5 policies to control inflation and deflation"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5",
+      "name": "Economic development",
+      "subtopics": [
+        {
+          "code": "5.1",
+          "name": "Living standards",
+          "objectives": [
+            "Topic",
+            "5.1.1 indicators of living standards",
+            "5.1.2 comparing living standards and income distribution"
+          ]
+        },
+        {
+          "code": "5.2",
+          "name": "Poverty",
+          "objectives": [
+            "Topic",
+            "5.2.1 definition of absolute and relative poverty 5.2.2 the causes of poverty",
+            "5.2.3 policies to alleviate poverty and redistribute income"
+          ]
+        },
+        {
+          "code": "5.3",
+          "name": "Population",
+          "objectives": [
+            "Topic",
+            "5.3.1 the factors that affect population growth",
+            "5.3.2 reasons for different rates of population growth in different countries 5.3.3 the effects of changes in the size and structure of population on different countries"
+          ]
+        },
+        {
+          "code": "5.4",
+          "name": "Differences in economic development between countries",
+          "objectives": [
+            "Topic",
+            "5.4.1 differences in economic development between countries"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "6",
+      "name": "International trade and globalisation",
+      "subtopics": [
+        {
+          "code": "6.1",
+          "name": "International specialisation",
+          "objectives": [
+            "Topic",
+            "6.1.1 specialisation at a national level",
+            "6.1.2 advantages and disadvantages of specialisation at a national level"
+          ]
+        },
+        {
+          "code": "6.2",
+          "name": "Globalisation, free trade and protection",
+          "objectives": [
+            "Topic",
+            "6.2.1 definition of globalisation 6.2.2 role of multinational companies (MNCs)",
+            "6.2.3 the benefits of free trade",
+            "6.2.4 methods of protection 6.2.5 reasons for protection",
+            "6.2.6 consequences of protection"
+          ]
+        },
+        {
+          "code": "6.3",
+          "name": "Foreign exchange rates",
+          "objectives": [
+            "Topic",
+            "6.3.1 definition of foreign exchange rate 6.3.2 determination of foreign exchange rate in foreign exchange market",
+            "6.3.3 causes of foreign exchange rate fluctuations",
+            "6.3.4 consequences of foreign exchange rate fluctuations",
+            "6.3.5 floating and fixed foreign exchange rates"
+          ]
+        },
+        {
+          "code": "6.4",
+          "name": "Current account of balance of payments",
+          "objectives": [
+            "Topic",
+            "6.4.1 structure",
+            "6.4.2 causes of current account deficit and surplus 6.4.3 consequences of current account deficit and surplus 6.4.4 policies to achieve balance of payments stability"
+          ]
+        }
+      ]
+    }
+  ],
+  "A2": []
+}

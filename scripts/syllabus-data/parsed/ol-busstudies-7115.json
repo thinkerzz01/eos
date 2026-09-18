@@ -1,0 +1,254 @@
+{
+  "AS": [
+    {
+      "code": "1",
+      "name": "Understanding business activity",
+      "subtopics": [
+        {
+          "code": "1.1",
+          "name": "Business activity",
+          "objectives": [
+            "The purpose and nature of business activity:"
+          ]
+        },
+        {
+          "code": "1.2",
+          "name": "Classification of businesses",
+          "objectives": [
+            "Economic sectors in terms of primary, secondary and tertiary sectors:",
+            "Classify business enterprises between private sector and public sector in a mixed economy"
+          ]
+        },
+        {
+          "code": "1.3",
+          "name": "Enterprise, business growth and size",
+          "objectives": [
+            "Enterprise and entrepreneurship:",
+            "The methods and problems of measuring business size:",
+            "Why some businesses grow and others remain small:",
+            "Why some (new or established) businesses fail:"
+          ]
+        },
+        {
+          "code": "1.4",
+          "name": "Types of business organisation",
+          "objectives": [
+            "The main features of different forms of business organisation:"
+          ]
+        },
+        {
+          "code": "1.5",
+          "name": "Business objectives and stakeholder objectives",
+          "objectives": [
+            "Businesses can have several objectives and the importance of them can change:",
+            "The role of stakeholder groups involved in business activity:",
+            "Differences in the objectives of private sector and public sector enterprises"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2",
+      "name": "People in business",
+      "subtopics": [
+        {
+          "code": "2.1",
+          "name": "Motivating employees",
+          "objectives": [
+            "The importance of a well-motivated workforce:",
+            "Methods of motivation:"
+          ]
+        },
+        {
+          "code": "2.2",
+          "name": "Organisation and management",
+          "objectives": [
+            "Draw, interpret and understand simple organisational charts:",
+            "The role of management:",
+            "Leadership styles:",
+            "Trade unions:"
+          ]
+        },
+        {
+          "code": "2.3",
+          "name": "Recruitment, selection and training of employees",
+          "objectives": [
+            "Recruitment and selecting employees:",
+            "The importance of training and the methods of training:",
+            "Why reducing the size of the workforce might be necessary:",
+            "Legal controls over employment issues and their impact on employers and employees:"
+          ]
+        },
+        {
+          "code": "2.4",
+          "name": "Internal and external communication",
+          "objectives": [
+            "Why effective communication is important and the methods used to achieve it:",
+            "Demonstrate an awareness of communication barriers:"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3",
+      "name": "Marketing",
+      "subtopics": [
+        {
+          "code": "3.1",
+          "name": "Marketing, competition and the customer",
+          "objectives": [
+            "The role of marketing:",
+            "Market changes:",
+            "Concepts of niche marketing and mass marketing:",
+            "How and why market segmentation is undertaken:"
+          ]
+        },
+        {
+          "code": "3.2",
+          "name": "Market research",
+          "objectives": [
+            "The role of market research and methods used:",
+            "Presentation and use of market research results:"
+          ]
+        },
+        {
+          "code": "3.3",
+          "name": "Marketing mix",
+          "objectives": [
+            "Product:",
+            "Price:",
+            "Place - distribution channels:",
+            "Promotion:",
+            "Technology and the marketing mix:"
+          ]
+        },
+        {
+          "code": "3.4",
+          "name": "Marketing strategy",
+          "objectives": [
+            "Justify marketing strategies appropriate to a given situation:",
+            "The nature and impact of legal controls related to marketing:",
+            "The opportunities and problems of entering new foreign markets:"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4",
+      "name": "Operations management",
+      "subtopics": [
+        {
+          "code": "4.1",
+          "name": "Production of goods and services",
+          "objectives": [
+            "The meaning of production:",
+            "The main methods of production:",
+            "How technology has changed and is changing production methods, e.g. using computers in design and manufacturing"
+          ]
+        },
+        {
+          "code": "4.2",
+          "name": "Costs, scale of production and break-even analysis",
+          "objectives": [
+            "Identify and classify costs:",
+            "Economies and diseconomies of scale:",
+            "Break-even analysis:"
+          ]
+        },
+        {
+          "code": "4.3",
+          "name": "Achieving quality production",
+          "objectives": [
+            "Why quality is important and how quality production might be achieved:"
+          ]
+        },
+        {
+          "code": "4.4",
+          "name": "Location decisions",
+          "objectives": [
+            "The main factors influencing the location and relocation decisions of a business:"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5",
+      "name": "Financial information and decisions",
+      "subtopics": [
+        {
+          "code": "5.1",
+          "name": "Business finance: needs and sources",
+          "objectives": [
+            "The need for business finance:",
+            "The main sources of finance:"
+          ]
+        },
+        {
+          "code": "5.2",
+          "name": "Cash-flow forecasting and working capital",
+          "objectives": [
+            "The importance of cash and of cash-flow forecasting:",
+            "Working capital:"
+          ]
+        },
+        {
+          "code": "5.3",
+          "name": "Income statements",
+          "objectives": [
+            "What profit is and why it is important:",
+            "Income statements:"
+          ]
+        },
+        {
+          "code": "5.4",
+          "name": "Statement of financial position",
+          "objectives": [
+            "The main elements of a statement of financial position:",
+            "Interpret a simple statement of financial position and make deductions from it, e.g. how a business is financing its activities and what assets it owns, sale of inventories to raise finance (constructing statements of financial position will not be assessed)"
+          ]
+        },
+        {
+          "code": "5.5",
+          "name": "Analysis of accounts",
+          "objectives": [
+            "Profitability:",
+            "Liquidity:",
+            "How to interpret the financial performance of a business by calculating and analysing profitability ratios and liquidity ratios:",
+            "Why and how accounts are used:"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "6",
+      "name": "External influences on business activity",
+      "subtopics": [
+        {
+          "code": "6.1",
+          "name": "Economic issues",
+          "objectives": [
+            "Business cycle:",
+            "How government control over the economy affects business activity and how businesses may respond:"
+          ]
+        },
+        {
+          "code": "6.2",
+          "name": "Environmental and ethical issues",
+          "objectives": [
+            "Environmental concerns and ethical issues as both opportunities and constraints for businesses:"
+          ]
+        },
+        {
+          "code": "6.3",
+          "name": "Business and the international economy",
+          "objectives": [
+            "The importance of globalisation:",
+            "Reasons for the importance and growth of multinational companies (MNCs):",
+            "The impact of exchange rate changes:"
+          ]
+        }
+      ]
+    }
+  ],
+  "A2": []
+}

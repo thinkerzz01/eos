@@ -1,0 +1,489 @@
+{
+  "AS": [
+    {
+      "code": "1",
+      "name": "Rocks and minerals and their exploitation",
+      "subtopics": [
+        {
+          "code": "1.1",
+          "name": "Formation of rocks",
+          "objectives": [
+            "describe and interpret the rock cycle",
+            "state and explain the formation and characteristics of named igneous, sedimentary and metamorphic rocks"
+          ]
+        },
+        {
+          "code": "1.2",
+          "name": "Extraction of rocks and minerals from the Earth",
+          "objectives": [
+            "describe the following methods of extraction of rocks and minerals from the Earth: - surface mining - subsurface mining",
+            "discuss the factors that affect the decision to extract rocks and minerals"
+          ]
+        },
+        {
+          "code": "1.3",
+          "name": "Impact of rock and mineral extraction",
+          "objectives": [
+            "describe and explain the environmental, economic and social impacts of rock and mineral extraction"
+          ]
+        },
+        {
+          "code": "1.4",
+          "name": "Managing the impact of rock and mineral extraction",
+          "objectives": [
+            "describe and evaluate strategies for restoring landscapes damaged by rock and mineral extraction"
+          ]
+        },
+        {
+          "code": "1.5",
+          "name": "Sustainable use of rocks and minerals",
+          "objectives": [
+            "define sustainable resource and sustainable development",
+            "describe and evaluate strategies for the sustainable use of rocks and minerals Case study:",
+            "Study the development, impact and management of a mine including land restoration after the mine has closed."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2",
+      "name": "Energy and the environment",
+      "subtopics": [
+        {
+          "code": "2.1",
+          "name": "Fossil fuel formation",
+          "objectives": [
+            "describe the formation of the fossil fuels: coal, oil and gas"
+          ]
+        },
+        {
+          "code": "2.2",
+          "name": "Energy resources and the generation of electricity",
+          "objectives": [
+            "classify the following energy resources as non- renewable or renewable:",
+            "fossil fuels, nuclear power, biofuels, geothermal power, hydro-electric power, tidal power, wave power, solar power, wind power",
+            "describe how each of these energy resources is used to generate electricity",
+            "describe the environmental, economic and social advantages and disadvantages of each of these energy resources"
+          ]
+        },
+        {
+          "code": "2.3",
+          "name": "Energy demand",
+          "objectives": [
+            "describe and explain the factors affecting the demand for energy"
+          ]
+        },
+        {
+          "code": "2.4",
+          "name": "Conservation and management of energy resources",
+          "objectives": [
+            "describe and explain strategies for the efficient management of energy resources",
+            "research and development of new energy resources"
+          ]
+        },
+        {
+          "code": "2.5",
+          "name": "Impact of oil pollution",
+          "objectives": [
+            "describe the causes and impacts of oil pollution on marine and coastal ecosystems"
+          ]
+        },
+        {
+          "code": "2.6",
+          "name": "Management of oil pollution",
+          "objectives": [
+            "discuss strategies for reducing oil spills in marine and coastal ecosystems",
+            "discuss strategies for minimising the impacts of oil spills on the marine and coastal ecosystems Case study:",
+            "Study the impact and management of an oil pollution event."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3",
+      "name": "Agriculture and the environment",
+      "subtopics": [
+        {
+          "code": "3.1",
+          "name": "Soil composition",
+          "objectives": [
+            "describe and explain the composition of soils"
+          ]
+        },
+        {
+          "code": "3.2",
+          "name": "Soils for plant growth",
+          "objectives": [
+            "describe soils as a medium for plant growth",
+            "describe the differences between a sandy and clay soil"
+          ]
+        },
+        {
+          "code": "3.3",
+          "name": "Agriculture types",
+          "objectives": [
+            "describe the different types of agriculture"
+          ]
+        },
+        {
+          "code": "3.4",
+          "name": "Increasing agricultural yields",
+          "objectives": [
+            "describe techniques used to increase agricultural yields"
+          ]
+        },
+        {
+          "code": "3.5",
+          "name": "Impact of agriculture",
+          "objectives": [
+            "describe and explain the impact of agricultural practices on the environment and people"
+          ]
+        },
+        {
+          "code": "3.6",
+          "name": "Causes and impacts of soil erosion",
+          "objectives": [
+            "describe the causes of soil erosion",
+            "describe and explain the impacts of soil erosion"
+          ]
+        },
+        {
+          "code": "3.7",
+          "name": "Managing soil erosion",
+          "objectives": [
+            "describe and explain strategies to reduce soil erosion"
+          ]
+        },
+        {
+          "code": "3.8",
+          "name": "Sustainable agriculture",
+          "objectives": [
+            "describe and explain strategies for sustainable agriculture Case study:",
+            "Study an example where agriculture has had severe environmental consequences including soil erosion and strategies for the conservation of the soil."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4",
+      "name": "Water and its management",
+      "subtopics": [
+        {
+          "code": "4.1",
+          "name": "Global water distribution",
+          "objectives": [
+            "describe the distribution of the Earth's water"
+          ]
+        },
+        {
+          "code": "4.2",
+          "name": "The water cycle",
+          "objectives": [
+            "describe and interpret the water cycle"
+          ]
+        },
+        {
+          "code": "4.3",
+          "name": "Water supply",
+          "objectives": [
+            "describe the sources of fresh water used by people"
+          ]
+        },
+        {
+          "code": "4.4",
+          "name": "Water usage",
+          "objectives": [
+            "describe the different ways in which fresh water can be used"
+          ]
+        },
+        {
+          "code": "4.5",
+          "name": "Water quality and availability",
+          "objectives": [
+            "compare the availability of safe drinking water (potable water) in different parts of the world"
+          ]
+        },
+        {
+          "code": "4.6",
+          "name": "Multipurpose dam projects",
+          "objectives": [
+            "describe and evaluate multipurpose dam projects"
+          ]
+        },
+        {
+          "code": "4.7",
+          "name": "Water pollution and its sources",
+          "objectives": [
+            "describe the sources of water pollution"
+          ]
+        },
+        {
+          "code": "4.8",
+          "name": "Impact of water pollution",
+          "objectives": [
+            "describe and explain the impact of pollution of fresh water on people and on the environment"
+          ]
+        },
+        {
+          "code": "4.9",
+          "name": "Managing pollution of fresh water",
+          "objectives": [
+            "describe and explain strategies for improving water quality"
+          ]
+        },
+        {
+          "code": "4.10",
+          "name": "Managing water-related disease",
+          "objectives": [
+            "describe the life cycle of the malaria parasite",
+            "describe and evaluate strategies to control malaria",
+            "describe strategies to control cholera Case studies:",
+            "Study the impact of a named multipurpose dam scheme.",
+            "Study the causes, impact and management of pollution in a named body of water."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5",
+      "name": "Oceans and fisheries",
+      "subtopics": [
+        {
+          "code": "5.1",
+          "name": "Oceans as a resource",
+          "objectives": [
+            "outline the resource potential of the oceans"
+          ]
+        },
+        {
+          "code": "5.2",
+          "name": "World fisheries",
+          "objectives": [
+            "outline the distribution of major ocean currents",
+            "explain the distribution of major marine fish populations",
+            "describe the El Niño Southern Oscillation (ENSO) phenomenon and its effects on fisheries along the Pacific coast of South America"
+          ]
+        },
+        {
+          "code": "5.3",
+          "name": "Impact of exploitation of the oceans",
+          "objectives": [
+            "describe and explain the impact of exploitation of fisheries",
+            "describe how farming of marine species reduces the exploitation of fisheries"
+          ]
+        },
+        {
+          "code": "5.4",
+          "name": "Management of the harvesting of marine species",
+          "objectives": [
+            "describe, explain and evaluate strategies for management of the harvesting of marine species Case studies:",
+            "Study the resource potential, exploitation, impact and management of a marine fishery.",
+            "Study an example of farming of marine species, including the source of food, pollution from waste and impact on the natural habitat."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "6",
+      "name": "Managing natural hazards",
+      "subtopics": [
+        {
+          "code": "6.1",
+          "name": "Earthquakes and volcanoes",
+          "objectives": [
+            "describe the structure of the Earth",
+            "describe and explain the distribution and causes of earthquakes and volcanoes",
+            "understand magnitude and the Richter scale"
+          ]
+        },
+        {
+          "code": "6.2",
+          "name": "Tropical cyclones",
+          "objectives": [
+            "describe and explain the distribution and causes of tropical cyclones (storms, hurricanes and typhoons)"
+          ]
+        },
+        {
+          "code": "6.3",
+          "name": "Flooding",
+          "objectives": [
+            "describe and explain the causes of flooding"
+          ]
+        },
+        {
+          "code": "6.4",
+          "name": "Drought",
+          "objectives": [
+            "describe and explain the causes of drought"
+          ]
+        },
+        {
+          "code": "6.5",
+          "name": "The impacts of natural hazards",
+          "objectives": [
+            "describe and explain the impacts of natural hazards on people and the environment"
+          ]
+        },
+        {
+          "code": "6.6",
+          "name": "Managing the impacts of natural hazards",
+          "objectives": [
+            "describe and evaluate the strategies for managing the impacts of natural hazards before, during and after an event"
+          ]
+        },
+        {
+          "code": "6.7",
+          "name": "Opportunities presented by natural hazards",
+          "objectives": [
+            "describe and explain the opportunities presented by natural hazards to people Case studies:",
+            "Compare and contrast the strategies for managing the impacts of tectonic events between a named more economically developed country (MEDC) and a named less economically developed country (LEDC).",
+            "Study the strategies for managing the impacts of a tropical storm or flood or drought."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "7",
+      "name": "The atmosphere and human activities",
+      "subtopics": [
+        {
+          "code": "7.1",
+          "name": "The atmosphere",
+          "objectives": [
+            "describe the structure and composition of the atmosphere",
+            "describe the natural greenhouse effect"
+          ]
+        },
+        {
+          "code": "7.2",
+          "name": "Atmospheric pollution and its causes",
+          "objectives": [
+            "describe and explain the causes of atmospheric pollution, with reference to: - smog - acid rain - ozone layer depletion - enhanced greenhouse effect"
+          ]
+        },
+        {
+          "code": "7.3",
+          "name": "Impact of atmospheric pollution",
+          "objectives": [
+            "describe and explain the impact of atmospheric pollution"
+          ]
+        },
+        {
+          "code": "7.4",
+          "name": "Managing atmospheric pollution",
+          "objectives": [
+            "describe and explain the strategies used by individuals, governments and the international community to reduce the effects of atmospheric pollution Case study:",
+            "Study the causes, impact and management of a specific example of atmospheric pollution."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "8",
+      "name": "Human population",
+      "subtopics": [
+        {
+          "code": "8.1",
+          "name": "Human population distribution and density",
+          "objectives": [
+            "identify where people live in the world"
+          ]
+        },
+        {
+          "code": "8.2",
+          "name": "Changes in population size",
+          "objectives": [
+            "describe and explain the growth curve of populations",
+            "describe and explain the changes in human populations"
+          ]
+        },
+        {
+          "code": "8.3",
+          "name": "Population structure",
+          "objectives": [
+            "describe population structure in MEDCs and LEDCs"
+          ]
+        },
+        {
+          "code": "8.4",
+          "name": "Managing human population size",
+          "objectives": [
+            "evaluate strategies for managing human population size Case study:",
+            "Study the strategies a named country or region has used to manage population size."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "9",
+      "name": "Natural ecosystems and human activities",
+      "subtopics": [
+        {
+          "code": "9.1",
+          "name": "Ecosystems",
+          "objectives": [
+            "define the terms ecosystem, population, community, habitat and niche",
+            "describe the biotic (living) and abiotic (non- living) components of an ecosystem",
+            "describe biotic interactions",
+            "describe the process of photosynthesis",
+            "describe energy flow using food chains, food webs and trophic levels",
+            "describe and explain ecological pyramids based on numbers and energy",
+            "describe the process of respiration",
+            "describe the carbon cycle"
+          ]
+        },
+        {
+          "code": "9.2",
+          "name": "Ecosystems under threat",
+          "objectives": [
+            "describe and explain causes and impacts of habitat loss"
+          ]
+        },
+        {
+          "code": "9.3",
+          "name": "Deforestation",
+          "objectives": [
+            "describe and explain the causes and impacts of deforestation"
+          ]
+        },
+        {
+          "code": "9.4",
+          "name": "Managing forests",
+          "objectives": [
+            "describe and explain the need for the sustainable management of forests"
+          ]
+        },
+        {
+          "code": "9.5",
+          "name": "Measuring and managing biodiversity",
+          "objectives": [
+            "describe and evaluate methods for estimating biodiversity",
+            "apply sampling techniques to unfamiliar situations",
+            "evaluate national and international strategies for conserving the biodiversity and genetic resources of natural ecosystems Case studies:",
+            "Study the causes and impacts of deforestation in a named area.",
+            "Study the conservation of a named species.",
+            "Study a named biosphere reserve. Gathering of data",
+            "formulate aims and hypotheses",
+            "design questionnaires that can be oral or written to gain information from an individual or a group of individuals (consideration should be given to factors influencing the successful design of questionnaires, e.g. layout, format of questions, the appropriate wording of questions and the number of questions. The practical considerations of conducting a questionnaire, e.g. the sampling methods, pilot survey and location of survey should also be discussed)",
+            "design a simple experiment using suitable controls",
+            "understand and evaluate random and systematic sampling techniques. Mathematical requirements Calculators may be used in all parts of the examination.",
+            "add, subtract, multiply and divide",
+            "use averages, decimals, fractions, percentages, ratios and reciprocals",
+            "understand the terms mean and range",
+            "use standard notation, including both positive and negative indices",
+            "understand significant figures and use them appropriately",
+            "recognise and use direct and inverse proportion",
+            "draw tables, charts and graphs from given data",
+            "interpret charts and graphs",
+            "determine the gradient and intercept of a graph",
+            "select suitable scales and axes for graphs",
+            "make approximate evaluations of numerical expressions",
+            "understand the meaning of angle, curve, circle, radius, diameter, area, circumference, square, rectangle and diagonal",
+            "understand map scale and the use of the scale line."
+          ]
+        }
+      ]
+    }
+  ],
+  "A2": []
+}

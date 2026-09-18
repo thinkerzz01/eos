@@ -1,0 +1,239 @@
+{
+  "AS": [
+    {
+      "code": "1",
+      "name": "Functions",
+      "subtopics": [
+        {
+          "code": "1",
+          "name": "Functions",
+          "objectives": [
+            "Understand the terms: function, domain, range (image set), one-one function, many-one function, inverse function and composition of functions.",
+            "Find the domain and range of functions.",
+            "Recognise and use function notation.",
+            "Understand the relationship between y = f(x) and y = |f(x)|, where f(x) may be linear, quadratic, cubic or trigonometric.",
+            "Explain in words why a given function does not have an inverse.",
+            "Find the inverse of a one-one function.",
+            "Form and use composite functions.",
+            "Use sketch graphs to show the relationship between a function and its inverse."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2",
+      "name": "Quadratic functions",
+      "subtopics": [
+        {
+          "code": "2",
+          "name": "Quadratic functions",
+          "objectives": [
+            "Find the maximum or minimum value of the completing the square or by differentiation. Use the maximum or minimum value of f(x) to",
+            "sketch the graph of y = f(x) or determine the range for a given domain. Know the conditions for f(x) = 0 to have:",
+            "(i) two real roots (ii) two equal roots (iii) no real roots and the related conditions for a given line to: (i) intersect a given curve (ii) be a tangent to a given curve",
+            "Solve quadratic equations for real roots.",
+            "Find the solution set for quadratic inequalities either graphically or algebraically."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3",
+      "name": "Factors of polynomials",
+      "subtopics": [
+        {
+          "code": "3",
+          "name": "Factors of polynomials",
+          "objectives": [
+            "Know and use the remainder and factor theorems.",
+            "Find factors of polynomials.",
+            "Solve cubic equations."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4",
+      "name": "Equations, inequalities and graphs",
+      "subtopics": [
+        {
+          "code": "4",
+          "name": "Equations, inequalities and graphs",
+          "objectives": [
+            "Solve equations of the type • |ax + b| = cx + d • |ax + b| = |cx + d| • |ax2 + bx + c| = d • using algebraic or graphical methods.",
+            "Solve graphically or algebraically inequalities k|ax + b| > c (c ⩾ 0) of the type k|ax + b| ⩽ c (c > 0) • k|ax + b| ⩽ |cx + d| • • |ax + b| ⩽ cx + d where k > 0 |ax2 + bx + c| > d • |ax2 + bx + c| ⩽ d • •",
+            "Use substitution to form and solve a quadratic equation in order to solve a related equation.",
+            "Sketch the graphs of cubic polynomials and their moduli, when given as a product of three linear factors. f(x) ⩾ d",
+            "Solve graphically cubic inequalities of the form • f(x) ⩽ d f(x) > d • • f(x) < d • where f(x) is a product of three linear factors and d is a constant."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5",
+      "name": "Simultaneous equations",
+      "subtopics": [
+        {
+          "code": "5",
+          "name": "Simultaneous equations",
+          "objectives": [
+            "Solve simultaneous equations in two unknowns by elimination or substitution."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "6",
+      "name": "Logarithmic and exponential functions",
+      "subtopics": [
+        {
+          "code": "6",
+          "name": "Logarithmic and exponential functions",
+          "objectives": [
+            "Know and use simple properties and graphs of the logarithmic and exponential functions, including ln x and ex.",
+            "Know and use the laws of logarithms, including change of base of logarithms. Solve equations of the form ax = b."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "7",
+      "name": "Straight-line graphs",
+      "subtopics": [
+        {
+          "code": "7",
+          "name": "Straight-line graphs",
+          "objectives": [
+            "Use the equation of a straight line.",
+            "Know and use the condition for two lines to be parallel or perpendicular.",
+            "Solve problems involving midpoint and length of a line, including finding and using the equation of a perpendicular bisector.",
+            "Transform given relationships to and from straight-line form, including determining unknown constants by calculating the gradient or intercept of the transformed graph."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "8",
+      "name": "Coordinate geometry of the circle",
+      "subtopics": [
+        {
+          "code": "8",
+          "name": "Coordinate geometry of the circle",
+          "objectives": [
+            "Know and use the equation of a circle with radius r and centre (a, b).",
+            "Solve problems involving the intersection of a circle and a straight line.",
+            "Solve problems involving tangents to a circle.",
+            "Solve problems involving the intersection of two circles."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "9",
+      "name": "Circular measure",
+      "subtopics": [
+        {
+          "code": "9",
+          "name": "Circular measure",
+          "objectives": [
+            "Solve problems involving the arc length and sector area of a circle, including knowledge and use of radian measure."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "10",
+      "name": "Trigonometry",
+      "subtopics": [
+        {
+          "code": "10",
+          "name": "Trigonometry",
+          "objectives": [
+            "Know and use the six trigonometric functions of angles of any magnitude.",
+            "Understand and use the amplitude and period of a trigonometric function, including the relationship between graphs of related trigonometric functions.",
+            "Draw and use the graphs of y = a sin bx + c y = a cos bx + c y = a tan bx + c where a is a positive integer, b is a simple fraction or integer, and c is an integer.",
+            "Use the relationships: sin2 A + cos2 A = 1 • sec2 A = 1 + tan2 A • cosec2 A = 1 + cot2 A •",
+            "Solve, for a given domain, trigonometric equations involving the six trigonometric functions.",
+            "Prove trigonometric relationships involving the six trigonometric functions."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "11",
+      "name": "Permutations and combinations",
+      "subtopics": [
+        {
+          "code": "11",
+          "name": "Permutations and combinations",
+          "objectives": [
+            "Recognise the difference between permutations and combinations and know when each should be used.",
+            "Know and use the notation n! and the expressions for permutations and combinations of n items taken r at a time.",
+            "Solve problems on arrangement and selection using permutations or combinations."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "12",
+      "name": "Series",
+      "subtopics": [
+        {
+          "code": "12",
+          "name": "Series",
+          "objectives": [
+            "(a + b)n for positive integer n.",
+            "Use the general term OOan-rbr, 0 ⩽ r ⩽ n . J N n KK r L P",
+            "Recognise arithmetic and geometric progressions and understand the difference between them.",
+            "Use the formulas for the nth term and for the sum of the first n terms to solve problems involving arithmetic or geometric progressions.",
+            "Use the condition for the convergence of a geometric progression, and the formula for the sum to infinity of a convergent geometric progression."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "13",
+      "name": "Vectors in two dimensions",
+      "subtopics": [
+        {
+          "code": "13",
+          "name": "Vectors in two dimensions",
+          "objectives": [
+            "Understand and use vector notation.",
+            "Know and use position vectors and unit vectors.",
+            "Find the magnitude of a vector; add and subtract vectors and multiply vectors by scalars.",
+            "Compose and resolve velocities."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "14",
+      "name": "Calculus",
+      "subtopics": [
+        {
+          "code": "14",
+          "name": "Calculus",
+          "objectives": [
+            "Understand the idea of a derived function.",
+            "Use the notations f′(x), f″(x), d y, R V 2 J N d d y S d y W d KK OO = SS WW x 2 d x x d x d L P T X y d δx, δx → 0, x . d",
+            "Know and use the derivatives of the standard functions xn (for any rational n), sin x, cos x, tan x, ex, ln x.",
+            "Differentiate products and quotients of functions.",
+            "Use differentiation to find gradients, tangents and normals.",
+            "Use differentiation to find stationary points.",
+            "Apply differentiation to connected rates of change, small increments and approximations.",
+            "Apply differentiation to practical problems involving maxima and minima.",
+            "Use the first and second derivative tests to discriminate between maxima and minima.",
+            "Understand integration as the reverse process of differentiation.",
+            "Integrate sums of terms in powers of x, 1 and ax 1 including x . b +",
+            "Integrate functions of the form: (ax + b)n for any rational n • sin (ax + b) • cos (ax + b) • sec2 (ax + b) • eax+b •",
+            "Evaluate definite integrals and apply integration to the evaluation of plane areas.",
+            "Apply differentiation and integration to kinematics problems that involve displacement, velocity and acceleration of a particle moving in a straight line with variable or constant acceleration.",
+            "Make use of the relationships in 14.14 to draw and use the following graphs: • displacement-time • distance-time • velocity-time • speed-time • acceleration-time."
+          ]
+        }
+      ]
+    }
+  ],
+  "A2": []
+}

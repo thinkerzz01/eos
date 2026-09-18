@@ -1,0 +1,683 @@
+{
+  "AS": [
+    {
+      "code": "1",
+      "name": "Number",
+      "subtopics": [
+        {
+          "code": "1.1",
+          "name": "Types of number",
+          "objectives": [
+            "Identify and use:",
+            "natural numbers",
+            "integers (positive, zero and negative)",
+            "prime numbers",
+            "square numbers",
+            "cube numbers",
+            "common factors",
+            "common multiples",
+            "rational and irrational numbers",
+            "reciprocals."
+          ]
+        },
+        {
+          "code": "1.2",
+          "name": "Sets",
+          "objectives": [
+            "Understand and use set language, notation and Venn diagrams to describe sets and represent relationships between sets."
+          ]
+        },
+        {
+          "code": "1.3",
+          "name": "Powers and roots",
+          "objectives": [
+            "Calculate with the following:",
+            "squares",
+            "square roots",
+            "cubes",
+            "cube roots",
+            "other powers and roots of numbers."
+          ]
+        },
+        {
+          "code": "1.4",
+          "name": "Fractions, decimals and percentages",
+          "objectives": [
+            "1 Use the language and notation of the following in appropriate contexts:",
+            "proper fractions",
+            "improper fractions",
+            "mixed numbers",
+            "decimals",
+            "percentages. 2 Recognise equivalence and convert between these forms."
+          ]
+        },
+        {
+          "code": "1.5",
+          "name": "Ordering",
+          "objectives": [
+            "familiarity with the symbols =, ≠, >, < , ⩾ and ⩽. Order quantities by magnitude and demonstrate"
+          ]
+        },
+        {
+          "code": "1.6",
+          "name": "The four operations",
+          "objectives": [
+            "Use the four operations for calculations with integers, fractions and decimals, including correct ordering of operations and use of brackets."
+          ]
+        },
+        {
+          "code": "1.7",
+          "name": "Indices I",
+          "objectives": [
+            "1 Understand and use indices (positive, zero, negative and fractional).",
+            "2 Understand and use the rules of indices."
+          ]
+        },
+        {
+          "code": "1.8",
+          "name": "Standard form",
+          "objectives": [
+            "positive or negative integer and 1 ⩽ A < 10. 1 Use the standard form A × 10n where n is a",
+            "2 Convert numbers into and out of standard form.",
+            "3 Calculate with values in standard form."
+          ]
+        },
+        {
+          "code": "1.9",
+          "name": "Estimation",
+          "objectives": [
+            "1 Round values to a specified degree of accuracy.",
+            "2 Make estimates for calculations involving numbers, quantities and measurements.",
+            "3 Round answers to a reasonable degree of accuracy in the context of a given problem."
+          ]
+        },
+        {
+          "code": "1.10",
+          "name": "Limits of accuracy",
+          "objectives": [
+            "1 Give upper and lower bounds for data rounded to a specified accuracy.",
+            "2 Find upper and lower bounds of the results of calculations which have used data rounded to a specified accuracy."
+          ]
+        },
+        {
+          "code": "1.11",
+          "name": "Ratio and proportion",
+          "objectives": [
+            "Understand and use ratio and proportion to:",
+            "give ratios in their simplest form",
+            "divide a quantity in a given ratio",
+            "use proportional reasoning and ratios in context."
+          ]
+        },
+        {
+          "code": "1.12",
+          "name": "Rates",
+          "objectives": [
+            "1 Use common measures of rate.",
+            "2 Apply other measures of rate.",
+            "3 Solve problems involving average speed."
+          ]
+        },
+        {
+          "code": "1.13",
+          "name": "Percentages",
+          "objectives": [
+            "1 Calculate a given percentage of a quantity.",
+            "2 Express one quantity as a percentage of another.",
+            "3 Calculate percentage increase or decrease.",
+            "4 Calculate with simple and compound interest.",
+            "5 Calculate using reverse percentages."
+          ]
+        },
+        {
+          "code": "1.14",
+          "name": "Using a calculator",
+          "objectives": [
+            "1 Use a calculator efficiently.",
+            "2 Enter values appropriately on a calculator.",
+            "3 Interpret the calculator display appropriately."
+          ]
+        },
+        {
+          "code": "1.15",
+          "name": "Time",
+          "objectives": [
+            "1 Calculate with time: seconds (s), minutes (min), hours (h), days, weeks, months, years, including the relationship between units.",
+            "2 Calculate times in terms of the 24-hour and 12-hour clock.",
+            "3 Read clocks and timetables."
+          ]
+        },
+        {
+          "code": "1.16",
+          "name": "Money",
+          "objectives": [
+            "1 Calculate with money.",
+            "2 Convert from one currency to another."
+          ]
+        },
+        {
+          "code": "1.17",
+          "name": "Exponential growth and decay",
+          "objectives": [
+            "Use exponential growth and decay."
+          ]
+        },
+        {
+          "code": "1.18",
+          "name": "Surds",
+          "objectives": [
+            "1 Understand and use surds, including simplifying expressions.",
+            "2 Rationalise the denominator."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2",
+      "name": "Algebra and graphs",
+      "subtopics": [
+        {
+          "code": "2.1",
+          "name": "Introduction to algebra",
+          "objectives": [
+            "1 Know that letters can be used to represent generalised numbers.",
+            "2 Substitute numbers into expressions and formulas."
+          ]
+        },
+        {
+          "code": "2.2",
+          "name": "Algebraic manipulation",
+          "objectives": [
+            "1 Simplify expressions by collecting like terms.",
+            "2 Expand products of algebraic expressions.",
+            "3 Factorise by extracting common factors.",
+            "4 Factorise expressions of the form: ax + bx + kay + kby",
+            "a2x2 − b2y2",
+            "a2 + 2ab + b2",
+            "ax2 + bx + c",
+            "ax3 + bx2 + cx .",
+            "5 Complete the square for expressions in the form ax2 + bx + c ."
+          ]
+        },
+        {
+          "code": "2.3",
+          "name": "Algebraic fractions",
+          "objectives": [
+            "1 Manipulate algebraic fractions.",
+            "2 Factorise and simplify rational expressions."
+          ]
+        },
+        {
+          "code": "2.4",
+          "name": "Indices II",
+          "objectives": [
+            "1 Understand and use indices (positive, zero, negative and fractional).",
+            "2 Understand and use the rules of indices."
+          ]
+        },
+        {
+          "code": "2.5",
+          "name": "Equations",
+          "objectives": [
+            "1 Construct expressions, equations and formulas.",
+            "2 Solve linear equations in one unknown.",
+            "3 Solve fractional equations with numerical and linear algebraic denominators.",
+            "4 Solve simultaneous linear equations in two unknowns.",
+            "5 Solve quadratic equations by factorisation, completing the square and by use of the quadratic formula.",
+            "6 Change the subject of formulas."
+          ]
+        },
+        {
+          "code": "2.6",
+          "name": "Inequalities",
+          "objectives": [
+            "1 Represent and interpret inequalities, including on a number line.",
+            "2 Construct, solve and interpret linear inequalities.",
+            "3 Represent and interpret linear inequalities in two variables graphically.",
+            "4 List inequalities that define a given region."
+          ]
+        },
+        {
+          "code": "2.7",
+          "name": "Sequences",
+          "objectives": [
+            "1 Continue a given number sequence or pattern.",
+            "2 Recognise patterns in sequences, including the term-to-term rule, and relationships between different sequences. 3 Find and use the nth term of sequences."
+          ]
+        },
+        {
+          "code": "2.8",
+          "name": "Proportion",
+          "objectives": [
+            "Express direct and inverse proportion in algebraic terms and use this form of expression to find unknown quantities."
+          ]
+        },
+        {
+          "code": "2.9",
+          "name": "Graphs in practical situations",
+          "objectives": [
+            "1 Use and interpret graphs in practical situations including travel graphs and conversion graphs.",
+            "2 Draw graphs from given data.",
+            "3 Apply the idea of rate of change to simple kinematics involving distance-time and speed-time graphs, acceleration and deceleration.",
+            "4 Calculate distance travelled as area under a speed-time graph."
+          ]
+        },
+        {
+          "code": "2.10",
+          "name": "Graphs of functions",
+          "objectives": [
+            "1 Construct tables of values, and draw, recognise and interpret graphs for functions of the following forms: axn (includes sums of no more than three of",
+            "these) abx + c",
+            "1 1 , 1, 2, 3; a and c are where n = -2, -1, −, 0, 2 2 rational numbers; and b is a positive integer. 2 Solve associated equations graphically, including finding and interpreting roots by graphical methods. 3 Draw and interpret graphs representing exponential growth and decay problems. 4 Estimate gradients of curves by drawing tangents."
+          ]
+        },
+        {
+          "code": "2.11",
+          "name": "Sketching curves",
+          "objectives": [
+            "Recognise, sketch and interpret graphs of the following functions: (a) linear (b) quadratic (c) cubic (d) reciprocal (e) exponential."
+          ]
+        },
+        {
+          "code": "2.12",
+          "name": "Functions",
+          "objectives": [
+            "1 Understand functions, domain and range, and use function notation.",
+            "2 Understand and find inverse functions f -1(x).",
+            "3 Form composite functions as defined by gf(x) = g(f(x))."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3",
+      "name": "Coordinate geometry",
+      "subtopics": [
+        {
+          "code": "3.1",
+          "name": "Coordinates",
+          "objectives": [
+            "Use and interpret Cartesian coordinates in two dimensions."
+          ]
+        },
+        {
+          "code": "3.2",
+          "name": "Drawing linear graphs",
+          "objectives": [
+            "Draw straight-line graphs for linear equations."
+          ]
+        },
+        {
+          "code": "3.3",
+          "name": "Gradient of linear graphs",
+          "objectives": [
+            "1 Find the gradient of a straight line.",
+            "2 Calculate the gradient of a straight line from the coordinates of two points on it."
+          ]
+        },
+        {
+          "code": "3.4",
+          "name": "Length and midpoint",
+          "objectives": [
+            "1 Calculate the length of a line segment.",
+            "2 Find the coordinates of the midpoint of a line segment."
+          ]
+        },
+        {
+          "code": "3.5",
+          "name": "Equations of linear graphs",
+          "objectives": [
+            "Interpret and obtain the equation of a straight-line graph."
+          ]
+        },
+        {
+          "code": "3.6",
+          "name": "Parallel lines",
+          "objectives": [
+            "Find the gradient and equation of a straight line parallel to a given line."
+          ]
+        },
+        {
+          "code": "3.7",
+          "name": "Perpendicular lines",
+          "objectives": [
+            "Find the gradient and equation of a straight line perpendicular to a given line."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "4",
+      "name": "Geometry",
+      "subtopics": [
+        {
+          "code": "4.1",
+          "name": "Geometrical terms",
+          "objectives": [
+            "1 Use and interpret the following geometrical terms:",
+            "point",
+            "vertex",
+            "line",
+            "plane",
+            "parallel",
+            "perpendicular",
+            "perpendicular bisector",
+            "bearing",
+            "right angle",
+            "acute, obtuse and reflex angles",
+            "interior and exterior angles",
+            "similar",
+            "congruent",
+            "scale factor. 2 Use and interpret the vocabulary of:",
+            "triangles",
+            "special quadrilaterals",
+            "polygons",
+            "nets",
+            "solids.",
+            "3 Use and interpret the vocabulary of a circle."
+          ]
+        },
+        {
+          "code": "4.2",
+          "name": "Geometrical constructions",
+          "objectives": [
+            "1 Measure and draw lines and angles.",
+            "2 Construct a triangle, given the lengths of all sides, using a ruler and pair of compasses only.",
+            "3 Draw, use and interpret nets."
+          ]
+        },
+        {
+          "code": "4.3",
+          "name": "Scale drawings",
+          "objectives": [
+            "1 Draw and interpret scale drawings.",
+            "2 Use and interpret three-figure bearings."
+          ]
+        },
+        {
+          "code": "4.4",
+          "name": "Similarity",
+          "objectives": [
+            "1 Calculate lengths of similar shapes.",
+            "2 Use the relationships between lengths and areas of similar shapes and lengths, surface areas and volumes of similar solids.",
+            "3 Solve problems and give simple explanations involving similarity."
+          ]
+        },
+        {
+          "code": "4.5",
+          "name": "Symmetry",
+          "objectives": [
+            "1 Recognise line symmetry and order of rotational symmetry in two dimensions.",
+            "2 Recognise symmetry properties of prisms, cylinders, pyramids and cones."
+          ]
+        },
+        {
+          "code": "4.6",
+          "name": "Angles",
+          "objectives": [
+            "1 Calculate unknown angles and give simple explanations using the following geometrical properties:",
+            "sum of angles at a point = 360°",
+            "sum of angles at a point on a straight line = 180°",
+            "vertically opposite angles are equal",
+            "angle sum of a triangle = 180° and angle sum of a quadrilateral = 360°. 2 Calculate unknown angles and give geometric explanations for angles formed within parallel lines:",
+            "corresponding angles are equal",
+            "alternate angles are equal",
+            "co-interior angles sum to 180° (supplementary). 3 Know and use angle properties of regular and irregular polygons."
+          ]
+        },
+        {
+          "code": "4.7",
+          "name": "Circle theorems I",
+          "objectives": [
+            "Calculate unknown angles and give explanations using the following geometrical properties of circles:",
+            "angle in a semicircle = 90°",
+            "angle between tangent and radius = 90°",
+            "angle at the centre is twice the angle at the circumference",
+            "angles in the same segment are equal",
+            "opposite angles of a cyclic quadrilateral sum to 180° (supplementary)",
+            "alternate segment theorem."
+          ]
+        },
+        {
+          "code": "4.8",
+          "name": "Circle theorems II",
+          "objectives": [
+            "Use the following symmetry properties of circles:",
+            "equal chords are equidistant from the centre",
+            "the perpendicular bisector of a chord passes through the centre",
+            "tangents from an external point are equal in length."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "5",
+      "name": "Mensuration",
+      "subtopics": [
+        {
+          "code": "5.1",
+          "name": "Units of measure",
+          "objectives": [
+            "Use metric units of mass, length, area, volume and capacity in practical situations and convert quantities into larger or smaller units."
+          ]
+        },
+        {
+          "code": "5.2",
+          "name": "Area and perimeter",
+          "objectives": [
+            "Carry out calculations involving the perimeter and area of a rectangle, triangle, parallelogram and trapezium."
+          ]
+        },
+        {
+          "code": "5.3",
+          "name": "Circles, arcs and sectors",
+          "objectives": [
+            "1 Carry out calculations involving the circumference and area of a circle.",
+            "2 Carry out calculations involving arc length and sector area as fractions of the circumference and area of a circle."
+          ]
+        },
+        {
+          "code": "5.4",
+          "name": "Surface area and volume",
+          "objectives": [
+            "Carry out calculations and solve problems involving the surface area and volume of a:",
+            "cuboid",
+            "prism",
+            "cylinder",
+            "sphere",
+            "pyramid",
+            "cone."
+          ]
+        },
+        {
+          "code": "5.5",
+          "name": "Compound shapes and parts of shapes",
+          "objectives": [
+            "1 Carry out calculations and solve problems involving perimeters and areas of:",
+            "compound shapes",
+            "parts of shapes. 2 Carry out calculations and solve problems involving surface areas and volumes of:",
+            "compound solids",
+            "parts of solids."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "6",
+      "name": "Trigonometry",
+      "subtopics": [
+        {
+          "code": "6.1",
+          "name": "Pythagoras' theorem",
+          "objectives": [
+            "Know and use Pythagoras' theorem."
+          ]
+        },
+        {
+          "code": "6.2",
+          "name": "Right-angled triangles",
+          "objectives": [
+            "1 Know and use the sine, cosine and tangent ratios for acute angles in calculations involving sides and angles of a right-angled triangle.",
+            "2 Solve problems in two dimensions using Pythagoras' theorem and trigonometry.",
+            "3 Know that the perpendicular distance from a point to a line is the shortest distance to the line.",
+            "4 Carry out calculations involving angles of elevation and depression."
+          ]
+        },
+        {
+          "code": "6.3",
+          "name": "Non-right-angled triangles",
+          "objectives": [
+            "1 Use the sine and cosine rules in calculations involving lengths and angles for any triangle.",
+            "2 Use the formula 1 ab sin C . area of triangle = 2"
+          ]
+        },
+        {
+          "code": "6.4",
+          "name": "Pythagoras' theorem and trigonometry",
+          "objectives": [
+            "in 3D",
+            "Carry out calculations and solve problems in three dimensions using Pythagoras' theorem and trigonometry, including calculating the angle between a line and a plane."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "7",
+      "name": "Transformations and vectors",
+      "subtopics": [
+        {
+          "code": "7.1",
+          "name": "Transformations",
+          "objectives": [
+            "Recognise, describe and draw the following transformations: 1 Reflection of a shape in a straight line.",
+            "2 Rotation of a shape about a centre through multiples of 90°.",
+            "3 Enlargement of a shape from a centre by a scale factor. J N 4 Translation of a shape by a vector x KK OO. y L P"
+          ]
+        },
+        {
+          "code": "7.2",
+          "name": "Vectors in two dimensions",
+          "objectives": [
+            "1 Describe a translation using a vector represented J N by x KK OO, AB or a. y L P 2 Add and subtract vectors.",
+            "3 Multiply a vector by a scalar."
+          ]
+        },
+        {
+          "code": "7.3",
+          "name": "Magnitude of a vector",
+          "objectives": [
+            "J N Calculate the magnitude of a vector x KK OO as y L P 2 2 x y +"
+          ]
+        },
+        {
+          "code": "7.4",
+          "name": "Vector geometry",
+          "objectives": [
+            "1 Represent vectors by directed line segments.",
+            "2 Use position vectors.",
+            "3 Use the sum and difference of two or more vectors to express given vectors in terms of two coplanar vectors.",
+            "4 Use vectors to reason and to solve geometric problems."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "8",
+      "name": "Probability",
+      "subtopics": [
+        {
+          "code": "8.1",
+          "name": "Introduction to probability",
+          "objectives": [
+            "1 Understand and use the probability scale from 0 to 1.",
+            "2 Understand and use probability notation.",
+            "3 Calculate the probability of a single event.",
+            "4 Understand that the probability of an event not occurring = 1 - the probability of the event occurring."
+          ]
+        },
+        {
+          "code": "8.2",
+          "name": "Relative and expected frequencies",
+          "objectives": [
+            "1 Understand relative frequency as an estimate of probability.",
+            "2 Calculate expected frequencies."
+          ]
+        },
+        {
+          "code": "8.3",
+          "name": "Probability of combined events",
+          "objectives": [
+            "Calculate the probability of combined events using, where appropriate:",
+            "sample space diagrams",
+            "Venn diagrams",
+            "tree diagrams."
+          ]
+        }
+      ]
+    },
+    {
+      "code": "9",
+      "name": "Statistics",
+      "subtopics": [
+        {
+          "code": "9.1",
+          "name": "Classifying statistical data",
+          "objectives": [
+            "Classify and tabulate statistical data."
+          ]
+        },
+        {
+          "code": "9.2",
+          "name": "Interpreting statistical data",
+          "objectives": [
+            "1 Read, interpret and draw inferences from tables and statistical diagrams.",
+            "2 Compare sets of data using tables, graphs and statistical measures.",
+            "3 Appreciate restrictions on drawing conclusions from given data."
+          ]
+        },
+        {
+          "code": "9.3",
+          "name": "Averages and measures of spread",
+          "objectives": [
+            "1 Calculate the mean, median, mode and range for individual data and distinguish between the purposes for which these are used.",
+            "2 Calculate an estimate of the mean for grouped discrete or grouped continuous data.",
+            "3 Identify the modal class from a grouped frequency distribution."
+          ]
+        },
+        {
+          "code": "9.4",
+          "name": "Statistical charts and diagrams",
+          "objectives": [
+            "Draw and interpret: (a) bar charts (b) pie charts (c) pictograms (d) simple frequency distributions."
+          ]
+        },
+        {
+          "code": "9.5",
+          "name": "Scatter diagrams",
+          "objectives": [
+            "1 Draw and interpret scatter diagrams.",
+            "2 Understand what is meant by positive, negative and zero correlation.",
+            "3 Draw by eye, interpret and use a straight line of best fit."
+          ]
+        },
+        {
+          "code": "9.6",
+          "name": "Cumulative frequency diagrams",
+          "objectives": [
+            "1 Draw and interpret cumulative frequency tables and diagrams.",
+            "2 Estimate and interpret the median, percentiles, quartiles and interquartile range from cumulative frequency diagrams."
+          ]
+        },
+        {
+          "code": "9.7",
+          "name": "Histograms",
+          "objectives": [
+            "1 Draw and interpret histograms.",
+            "2 Calculate with frequency density."
+          ]
+        }
+      ]
+    }
+  ],
+  "A2": []
+}

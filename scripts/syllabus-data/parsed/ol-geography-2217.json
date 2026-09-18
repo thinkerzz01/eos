@@ -1,0 +1,222 @@
+{
+  "AS": [
+    {
+      "code": "1",
+      "name": "Population and settlement",
+      "subtopics": [
+        {
+          "code": "1.1",
+          "name": "Population dynamics",
+          "objectives": [
+            "Describe and give reasons for the rapid increase in the world's population Show an understanding of over-population and under-population Understand the main causes of a change in population size Give reasons for contrasting rates of natural population change Describe and evaluate population policies",
+            "Case Studies required for 1.1",
+            "A country which is over-populated",
+            "A country which is under-populated",
+            "A country with a high rate of natural population growth",
+            "A country with a low rate of population growth (or population decline)"
+          ]
+        },
+        {
+          "code": "1.2",
+          "name": "Migration",
+          "objectives": [
+            "Explain and give reasons for population migration",
+            "Demonstrate an understanding of the impacts of migration",
+            "Case Study required for 1.2",
+            "An international migration"
+          ]
+        },
+        {
+          "code": "1.3",
+          "name": "Population structure",
+          "objectives": [
+            "Identify and give reasons for and implications of different types of population structure",
+            "Case Study required for 1.3",
+            "A country with a high dependent population"
+          ]
+        },
+        {
+          "code": "1.4",
+          "name": "Population density and distribution",
+          "objectives": [
+            "Describe the factors influencing the density and distribution of population",
+            "Case Studies required for 1.4",
+            "A densely populated country or area (at any scale from local to regional)",
+            "A sparsely populated country or area (at any scale from local to regional)"
+          ]
+        },
+        {
+          "code": "1.5",
+          "name": "Settlements (rural and urban) and service provision",
+          "objectives": [
+            "Explain the patterns of settlement Describe and explain the factors which may influence the sites, growth and functions of settlements Give reasons for the hierarchy of settlements and services",
+            "Case Study required for 1.5",
+            "Settlement and service provision in an area"
+          ]
+        },
+        {
+          "code": "1.6",
+          "name": "Urban settlements",
+          "objectives": [
+            "Describe and give reasons for the characteristics of, and changes in, land use in urban areas",
+            "Explain the problems of urban areas, their causes and possible solutions",
+            "Case Study required for 1.6",
+            "An urban area or urban areas"
+          ]
+        },
+        {
+          "code": "1.7",
+          "name": "Urbanisation",
+          "objectives": [
+            "Identify and suggest reasons for rapid urban growth",
+            "Describe the impacts of urban growth on both rural and urban areas, along with possible solutions to reduce the negative impacts",
+            "Case Study required for 1.7",
+            "A rapidly growing urban area in a developing country and migration to it"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "2",
+      "name": "The natural environment",
+      "subtopics": [
+        {
+          "code": "2.1",
+          "name": "Earthquakes and volcanoes",
+          "objectives": [
+            "Describe the main types and features of volcanoes and earthquakes",
+            "Describe and explain the distribution of earthquakes and volcanoes",
+            "Describe the causes of earthquakes and volcanic eruptions and their effects on people and the environment Demonstrate an understanding that volcanoes present hazards and offer opportunities for people Explain what can be done to reduce the impacts of earthquakes and volcanoes",
+            "Case Studies required for 2.1",
+            "An earthquake.",
+            "A volcano."
+          ]
+        },
+        {
+          "code": "2.2",
+          "name": "Rivers",
+          "objectives": [
+            "Explain the main hydrological characteristics and processes which operate in rivers and drainage basins",
+            "Demonstrate an understanding of the work of a river in eroding, transporting and depositing Describe and explain the formation of the landforms associated with these processes",
+            "Demonstrate an understanding that rivers present hazards and offer opportunities for people",
+            "Explain what can be done to manage the impacts of river flooding",
+            "Case Study required for 2.2",
+            "The opportunities presented by a river or rivers, the associated hazards and their management"
+          ]
+        },
+        {
+          "code": "2.3",
+          "name": "Coasts",
+          "objectives": [
+            "Demonstrate an understanding of the work of the sea and wind in eroding, transporting and depositing Describe and explain the formation of the landforms associated with these processes",
+            "Describe coral reefs and mangrove swamps and the conditions required for their development Demonstrate an understanding that coasts present hazards and offer opportunities for people Explain what can be done to manage the impacts of coastal erosion",
+            "Case Study required for 2.3",
+            "The opportunities presented by an area or areas of coastline, the associated hazards and their management"
+          ]
+        },
+        {
+          "code": "2.4",
+          "name": "Weather",
+          "objectives": [
+            "Describe how weather data are collected",
+            "Make calculations using information from weather instruments Use and interpret graphs and other diagrams showing weather and climate data"
+          ]
+        },
+        {
+          "code": "2.5",
+          "name": "Climate and natural vegetation",
+          "objectives": [
+            "Describe and explain the characteristics of two climates:",
+            "equatorial",
+            "hot desert Describe and explain the characteristics of tropical rainforest and hot desert ecosystems Describe the causes and effects of deforestation of tropical rainforest Case Study required for 2.5",
+            "An area of tropical rainforest",
+            "An area of hot desert"
+          ]
+        }
+      ]
+    },
+    {
+      "code": "3",
+      "name": "Economic development",
+      "subtopics": [
+        {
+          "code": "3.1",
+          "name": "Development",
+          "objectives": [
+            "Use a variety of indicators to assess the level of development of a country",
+            "Identify and explain inequalities between and within countries Classify production into different sectors and give illustrations of each Describe and explain how the proportions employed in each sector vary according to the level of development Describe and explain the process of globalisation, and consider its impacts",
+            "Case Study required for 3.1",
+            "A transnational corporation and its global links"
+          ]
+        },
+        {
+          "code": "3.2",
+          "name": "Food production",
+          "objectives": [
+            "Describe and explain the main features of an agricultural system: inputs, processes and outputs",
+            "Recognise the causes and effects of food shortages and describe possible solutions to this problem",
+            "Case Studies required for 3.2",
+            "A farm or agricultural system",
+            "A country or region suffering from food shortages."
+          ]
+        },
+        {
+          "code": "3.3",
+          "name": "Industry",
+          "objectives": [
+            "Demonstrate an understanding of an industrial system: inputs, processes and outputs (products and waste) Describe and explain the factors influencing the distribution and location of factories and industrial zones",
+            "Case Study required for 3.3",
+            "An industrial zone or factory"
+          ]
+        },
+        {
+          "code": "3.4",
+          "name": "Tourism",
+          "objectives": [
+            "Describe and explain the growth of tourism in relation to the main attractions of the physical and human landscape Evaluate the benefits and disadvantages of tourism to receiving areas Demonstrate an understanding that careful management of tourism is required in order for it to be sustainable",
+            "Case Study required for 3.4",
+            "An area where tourism is important."
+          ]
+        },
+        {
+          "code": "3.5",
+          "name": "Energy",
+          "objectives": [
+            "Describe the importance of non-renewable fossil fuels, renewable energy supplies, nuclear power and fuelwood; globally and in different countries at different levels of development Evaluate the benefits and disadvantages of nuclear power and renewable energy sources",
+            "Case Study required for 3.5",
+            "Energy supply in a country or area"
+          ]
+        },
+        {
+          "code": "3.6",
+          "name": "Water",
+          "objectives": [
+            "Describe methods of water supply and the proportions of water used for agriculture, domestic and industrial purposes in countries at different levels of economic development Explain why there are water shortages in some areas and demonstrate that careful management is required to ensure future supplies",
+            "Case Study required for 3.6",
+            "Water supply in a country or area."
+          ]
+        },
+        {
+          "code": "3.7",
+          "name": "Environmental risks of economic development",
+          "objectives": [
+            "Describe how economic activities may pose threats to the natural environment and people, locally and globally Demonstrate the need for sustainable development and management Understand the importance of resource conservation",
+            "Case Study required for 3.7",
+            "An area where economic development is taking place and causing the environment to be at risk Using mathematical skills in geography",
+            "add, subtract, multiply and divide",
+            "understand map scale and the use of the scale line and representative fractions",
+            "understand the terms mean and range",
+            "use averages, decimals, fractions, percentages and ratios",
+            "use standard notation, including both positive and negative indices.",
+            "understand significant figures and use them appropriately",
+            "recognise positive and negative relationships shown by scatter graphs",
+            "draw and interpret graphs from given data for the types of graph listed in the syllabus",
+            "select suitable scales and axes for graphs",
+            "use a ruler and protractor. Calculators may be used in all examinations."
+          ]
+        }
+      ]
+    }
+  ],
+  "A2": []
+}
