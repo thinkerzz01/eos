@@ -1,47 +1,78 @@
 # Thinkerzz EOS - Syllabus Module (Complete Plan)
 
-Status: PHASE 1 DONE (admin manager + snapshots) - content loading in progress
+Status: PHASES 1-3 BUILT. Access LOCKED to admin + manager only (students and teachers parked) while content is finished.
 Model: one-on-one tuition
-Scope decided: coverage tracking, admin-entered outlines
-Last updated: 2026-09-18
+Scope decided: coverage tracking, admin-entered outlines, PDF-extracted objectives
+Last updated: 2026-09-19
 
 ---
 
-## 0. Current status - what is covered vs what is left
+## 0. RESUME HERE - full state so we can continue later
 
-**Module (build):**
-- Phase 1 DONE: admin Syllabus Manager (`/syllabus`, admin+manager only), per-enrollment snapshots, completeness overview (Complete / Needs objectives / No outline status dots + filter), bulk-objectives paste tool, count-bug fix.
-- Deliberately still admin-only: teachers and students have NO access until the owner signs off on content.
-- Phase 2 (teacher coverage marking) and Phase 3 (student "My Syllabus" view): NOT built yet.
+### 0.1 Access decision (current)
+The whole syllabus module is **admin + manager ONLY** for now. Students and teachers
+are deliberately parked until the owner finishes the content and signs off.
+- `/syllabus` builder: admin + manager (unchanged).
+- Student profile -> Academics -> "Syllabus Progress" (view + mark): gated to `isStaff`
+  (admin/manager) in `app/students/StudentsClient.tsx`.
+- Class-completion syllabus panel in `app/schedule/ScheduleClient.tsx`: gated to `canManage`.
+- Student "My Syllabus": `app/my-syllabus/page.tsx` redirects to `/`; sidebar link removed
+  from `components/layout/Sidebar.tsx`. The page/UI code is KEPT (parked), not deleted.
 
-**Content pipeline:** built PDF parsers for the different Cambridge layouts
-(`scripts/syllabus-data/parse-cambridge-*.py`) + generators
-(`gen-sql.py` for AS/A2, `gen-sql-olevel.py` for O Level -> loads into both O1 and O2).
-Objectives are extracted from the official Cambridge syllabus PDFs and loaded as SQL
-run by the owner in the Supabase SQL editor. Punctuation normalised to house style.
+**To re-enable later:** restore the `My Syllabus` sidebar item (allowedRoles ['student']),
+restore the fetch + `requireRole(['student'])` in `app/my-syllabus/page.tsx`, and widen the
+two `isStaff`/`canManage` gates above to include `teacher` if teachers should mark again.
 
-**AS & A Level - 8 core subjects DONE (AS + A2, full objectives), loaded & live:**
-Physics 9702, Chemistry 9701, Biology 9700, Business 9609, Accounting 9706,
-Economics 9708, Computer Science 9618, Mathematics 9709, plus Further Mathematics 9231.
-(Maths AS/A2 component split is a stated default - owner to confirm.)
+### 0.2 Build status (all three phases exist in code)
+- **Phase 1 DONE:** admin Syllabus Manager (`/syllabus`), completeness overview
+  (Complete / Needs objectives / No outline dots + status filter), bulk-objectives paste
+  tool (`bulkSetObjectives`), fixed the 1000-row subtopic undercount, per-enrollment snapshots.
+- **Phase 2 BUILT (parked from teachers):** coverage marking. `app/schedule/syllabusCoverage.ts`
+  (`getSessionSyllabus`, `setSubtopicCoverage`). Marking happens in the class-completion drawer
+  AND from the student profile (tap a subtopic; stamps date + marker; session_id optional).
+- **Phase 3 BUILT (parked from students):** read-only progress. `lib/data/studentSyllabus.ts`
+  (`getMySyllabus`, `getSyllabusForStudent`), shared cards `components/syllabus/SyllabusProgressCards.tsx`,
+  student page `app/my-syllabus/*`, staff panel `components/syllabus/StudentSyllabusProgress.tsx`.
 
-**O Level - 10 core academic subjects DONE (loaded into O1 + O2, full objectives):**
-Mathematics 4024, Additional Mathematics 4037, Accounting 7707, Economics 2281,
-Commerce 7100, Business Studies 7115, Geography 2217, Sociology 2251,
-Environmental Management 5014, Computer Science 2210.
-O Level sciences (Physics 5054, Chemistry 5070, Biology 5090, Combined Science 5129)
-already had objectives from earlier seeding.
+### 0.3 Content pipeline (how objectives get loaded)
+Official Cambridge PDFs -> Python parsers -> generated SQL that the owner runs in the
+Supabase SQL editor. All in `scripts/syllabus-data/`:
+- Parsers by PDF layout: `parse-cambridge-science.py` (Physics/Chem/Bio), `-bullet.py`
+  (Business/Accounting), `-items.py` (Economics AS/A2), `-twocol.py` (Computer Science 9618),
+  `-maths.py` (Mathematics 9709 / Further 9231 components), `-oltwocol.py` (most O Level:
+  statement/bullet/theme/3-level item layouts), `-olitems.py` (O Level Additional Maths).
+- Generators: `gen-sql.py` (AS -> AS row, A Level -> A2 row); `gen-sql-olevel.py`
+  (one outline -> BOTH O Level O1 and O2 rows). Both normalise dashes/quotes to house style.
+- Snapshots: `scripts/generate-snapshots.mjs` (dry-run; `--apply` to create). Also the
+  `/syllabus` "Generate student snapshots" button. `scripts/cleanup-phantom-subjects.mjs`
+  and `scripts/syllabus-data/as-a2-fixes.sql` did the subject hygiene.
 
-**Left to do (needs a decision or is lower-value):**
-- History 2147 - options-based (Option A/B + depth studies); owner must pick which option + depth study before it can be loaded.
-- Statistics 4040 - awkward two-column table format, niche (~12 subtopics); do or skip?
-- Business 7081 - separate row from Business Studies 7115; confirm it is a real taught subject.
-- Languages / religious / arts (Islamic Studies 2068, Islamiyat 2058, Pakistan Studies 2059,
+### 0.4 What is LOADED (live, with full objectives)
+- **AS & A Level (AS + A2):** Physics 9702, Chemistry 9701, Biology 9700, Business 9609,
+  Accounting 9706, Economics 9708, Computer Science 9618, Mathematics 9709, Further Maths 9231.
+  (Maths AS/A2 component split is a stated default in `parse-cambridge-maths.py` COMP_MAP - owner to confirm.)
+- **O Level (into O1 + O2):** Mathematics 4024, Additional Mathematics 4037, Accounting 7707,
+  Economics 2281, Commerce 7100, Business Studies 7115, Geography 2217, Sociology 2251,
+  Environmental Management 5014, Computer Science 2210. Sciences (Physics 5054, Chemistry 5070,
+  Biology 5090, Combined Science 5129) already had objectives from earlier seeding.
+
+### 0.5 What is LEFT
+- **O Level, needs a decision:** History 2147 (options-based - owner picks Option A/B + depth
+  study first); Statistics 4040 (odd table format, ~12 subtopics - do or skip?); Business 7081
+  (confirm it is a real taught subject vs a leftover row).
+- **O Level languages/religious/arts** (Islamic Studies 2068, Islamiyat 2058, Pakistan Studies 2059,
   Urdu 3247, Arabic 3180, English First Language 1123, Literature 2010, Global Perspectives 2069,
-  Art & Design 6090, Fashion & Textiles 6130, Food & Nutrition 6065) - prose/skills formats that
-  do not map cleanly to tick-off objectives; recommendation is to skip machine-loading and enter by hand where useful.
-- AS/A2 beyond the 8 core (Geography, History, Sociology, Islamic Studies, languages, etc.) - not started.
-- A2-only, IGCSE, and all Edexcel programs - no outlines built at all.
+  Art & Design 6090, Fashion & Textiles 6130, Food & Nutrition 6065) - prose/skills formats;
+  recommendation is to skip machine-loading and hand-enter where useful.
+- **AS/A2 beyond the core** (Geography, History, Sociology, languages, etc.) - not started.
+- **A2-only, IGCSE, all Edexcel** - no outlines at all.
+- **Maths AS/A2 component split** - confirm/adjust the default.
+
+### 0.6 Next natural steps when we resume
+1. Finish/confirm the remaining O Level subjects (History option, Statistics, Business 7081).
+2. Expand to more AS/A2 subjects and other programs as needed.
+3. When content is signed off, re-enable teacher marking and the student view (see 0.1).
+4. Optional: auto-generate snapshots on enrollment (a hook) so the script is never needed.
 
 ---
 

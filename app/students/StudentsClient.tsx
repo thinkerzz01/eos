@@ -2267,13 +2267,15 @@ export function StudentsClient({
                       )}
                     </div>
 
-                    {/* SYLLABUS PROGRESS (read-only; teacher marks it in class) */}
-                    <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
-                      <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider flex items-center gap-1.5">
-                        <ListChecks className="w-3.5 h-3.5" /> Syllabus Progress
-                      </h3>
-                      <StudentSyllabusProgress studentId={profileModalStudent.id} />
-                    </div>
+                    {/* SYLLABUS PROGRESS - admin/manager only for now (parked from teachers/students) */}
+                    {isStaff && (
+                      <div className="bg-white border border-[#EBEDF3] rounded-2xl p-5 space-y-4 shadow-sm">
+                        <h3 className="font-medium text-[#6B7185] text-xs uppercase tracking-wider flex items-center gap-1.5">
+                          <ListChecks className="w-3.5 h-3.5" /> Syllabus Progress
+                        </h3>
+                        <StudentSyllabusProgress studentId={profileModalStudent.id} />
+                      </div>
+                    )}
                   </div>
                 )}
 

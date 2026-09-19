@@ -1062,8 +1062,8 @@ export function ScheduleClient({
                 </div>
               </div>
 
-              {/* SYLLABUS COVERAGE - tick what was taught this class (Phase 2) */}
-              {selectedClassForCompletion.studentId && selectedClassForCompletion.subjectId && (
+              {/* SYLLABUS COVERAGE - admin/manager only for now (parked from teachers/students) */}
+              {canManage && selectedClassForCompletion.studentId && selectedClassForCompletion.subjectId && (
                 <div className="pt-4 border-t">
                   <SessionSyllabusPanel
                     studentId={selectedClassForCompletion.studentId}
