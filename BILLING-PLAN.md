@@ -1,6 +1,6 @@
 # Billing v2 - Plan and State
 
-Status: PHASE 1-3 BUILT (monthly vs upfront billing, auto-voucher engine, next-month forecast). SQL migration pending owner run. Phase 4 (session at demo/booking form) not started.
+Status: PHASE 1-4 BUILT (monthly vs upfront billing, auto-voucher engine, next-month forecast, session capture on Add-Lead + public booking + convert prefill). Two SQL migrations pending owner run.
 
 ## 0. RESUME HERE
 
@@ -19,10 +19,8 @@ Custom awkward dates (start 17th, exam 5th next month) are handled by explicit s
 - NOT STARTED: Phase 4 - session dropdown on the demo/booking + Add-Lead form and prefill into convert.
 
 ### 0.3 SQL to run (Supabase SQL Editor)
-File: `supabase/migrations/2026-09-19_billing_modes.sql`
-Adds to `students`: `billing_mode` (default 'monthly'), `billing_start_date`, `billing_end_date`.
-Adds to `leads`: `exam_session`.
-Idempotent (ADD COLUMN IF NOT EXISTS). Existing students default to monthly with blank dates - no behaviour change for them.
+1. `supabase/migrations/2026-09-19_billing_modes.sql` - adds to `students`: `billing_mode` (default 'monthly'), `billing_start_date`, `billing_end_date`; adds to `leads`: `exam_session`. Idempotent. Existing students default to monthly with blank dates - no behaviour change. [OWNER RAN THIS on 2026-09-19]
+2. `supabase/migrations/2026-09-19_booking_session.sql` - extends `create_public_booking` RPC to store the exam session picked on /book. Requires #1 first. Booking still works before this runs (action falls back gracefully); the session just is not stored until it is applied. [PENDING]
 
 ### 0.4 The billing engine
 - `lib/cron/billing.ts` -> `runBilling(admin)`: for each active MONTHLY student whose `next_due_date` is within `LEAD_DAYS` (5) and not past `billing_end_date`, cut the next voucher (amount = monthly_fee, due = next_due_date, grace = +3). Upfront students are skipped. Idempotent: skips if a voucher for that student+period already exists.
@@ -49,7 +47,7 @@ Idempotent (ADD COLUMN IF NOT EXISTS). Existing students default to monthly with
 - Long-term monthly with session June 2027: billed the 1st each month automatically, stops after billing_end_date.
 
 ## 0.8 What is left / decisions parked
-- Phase 4: session dropdown (Oct/Nov 2026, May/Jun 2027, Oct/Nov 2027, Custom) on the in-app Add-Lead modal + public booking/demo form; prefill convert modal session from `leads.exam_session`. `createLead` and `leads.exam_session` are ready; the UI + data-layer field on the Lead type are the remaining work.
+- Phase 4 DONE: session picker on Add-Lead modal + public /book form (shared `lib/sessions.ts`: Oct/Nov 2026, May/Jun 2027, Oct/Nov 2027, May/Jun 2028, Custom...), and convert modal prefills from `leads.exam_session`. Remaining SQL: run migration #2 above so the public form actually stores the session.
 - No proration: last stub month is billed as a full month (owner confirmed simplest).
 - Switch upfront -> monthly at block end: currently a manual edit of the student's billing_mode / dates. A one-click "renew as monthly" is a possible later add.
 - `generateMonthlyVouchers` (manual batch) is KEPT as a fallback; the per-student cron is now the primary path.
