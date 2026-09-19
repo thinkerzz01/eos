@@ -35,6 +35,9 @@ export interface SalaryRow {
   periodLabel: string;             // exact pay cycle, e.g. "06 Sep - 05 Oct 2026"
   salaryStartMonth: string | null; // raw 'YYYY-MM' override, or null (auto)
   enrolledMonth: string;           // 'YYYY-MM' the student started (auto first-paid month)
+  enrolledDate: string;            // 'YYYY-MM-DD' the student started (prefill for class start)
+  classStartDate: string | null;   // 'YYYY-MM-DD' exact class start (salary anchor)
+  classEndDate: string | null;     // 'YYYY-MM-DD' exact class end (salary stops after)
   monthlySalary: number;
   hasSalary: boolean;
   isMonth1: boolean;
@@ -105,16 +108,23 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   // 'all' includes every enrollment (no upper bound); a month view stops at month end.
   const monthEnd = isAll ? new Date(Date.UTC(9999, 0, 1)).toISOString() : new Date(Date.UTC(year, month + 1, 1)).toISOString();
 
-  // Enrollments that existed during (or before) the target month. FULL select
-  // falls back to BASE when the salary columns have not been migrated yet.
-  const FULL = 'id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
+  // Enrollments that existed during (or before) the target month. Select falls
+  // back gracefully when a migration has not been applied yet:
+  //   FULL (class dates) -> SALARY (salary cols only) -> BASE (no pay cols).
+  const FULL = 'id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,class_start_date,class_end_date,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
+  const SALARY = 'id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
   const BASE = 'id,teacher_id,student_id,subject_id,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
   let enr: any[] | null = null;
   {
     const res = await supabase.from('student_subjects').select(FULL).is('deleted_at', null).lt('created_at', monthEnd);
     if (res.error) {
-      const fb = await supabase.from('student_subjects').select(BASE).is('deleted_at', null).lt('created_at', monthEnd);
-      enr = (fb.data as any[]) ?? [];
+      const sal = await supabase.from('student_subjects').select(SALARY).is('deleted_at', null).lt('created_at', monthEnd);
+      if (sal.error) {
+        const fb = await supabase.from('student_subjects').select(BASE).is('deleted_at', null).lt('created_at', monthEnd);
+        enr = (fb.data as any[]) ?? [];
+      } else {
+        enr = (sal.data as any[]) ?? [];
+      }
     } else {
       enr = (res.data as any[]) ?? [];
     }
@@ -149,31 +159,52 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     if (student.enrolled_at && String(student.enrolled_at) > monthEnd.slice(0, 10)) continue; // not enrolled yet
 
     const monthlySalary = Number(e.monthly_salary ?? 0);
+    const enrolledDate = (student.enrolled_at ? String(student.enrolled_at) : String(e.created_at || '')).slice(0, 10);
     // Auto first-paid month = the student's enrolment month (when they first paid
     // us), falling back to the enrolment row's creation month. Admin can override.
-    const enrolledMonth = (student.enrolled_at ? String(student.enrolled_at) : String(e.created_at || '')).slice(0, 7);
-    const startMonth = (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month))
-      ? e.salary_start_month
-      : enrolledMonth;
+    const enrolledMonth = enrolledDate.slice(0, 7);
+    const classStartDate = (e.class_start_date && /^\d{4}-\d{2}-\d{2}$/.test(e.class_start_date)) ? String(e.class_start_date) : null;
+    const classEndDate = (e.class_end_date && /^\d{4}-\d{2}-\d{2}$/.test(e.class_end_date)) ? String(e.class_end_date) : null;
+    // Salary starts at the exact class start date (its month is the commission
+    // month); fall back to the legacy month override, then the enrolment month.
+    const startMonth = classStartDate
+      ? classStartDate.slice(0, 7)
+      : (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month))
+        ? e.salary_start_month
+        : enrolledMonth;
+    // Salary stops after the class end date's month (blank = open-ended).
+    const endMonth = classEndDate ? classEndDate.slice(0, 7) : null;
 
     let isMonth1 = false;
     let commission = 0;
     let teacherPay = 0;
     let rowPeriodLabel: string;
+    // Anchor the pay-cycle label to the exact class start day when we have it.
+    const cycleAnchor = classStartDate ?? student.enrolled_at;
     if (isAll) {
-      // Lifetime: salary for every month from start to the current month, with the
-      // 25% commission charged once (the first month).
-      const monthsActive = monthsInclusive(startMonth, selectedYYYYMM);
+      // Lifetime: salary for every month from start to the current month (capped at
+      // the class end month), with the 25% commission charged once (first month).
+      const capMonth = endMonth && endMonth < selectedYYYYMM ? endMonth : selectedYYYYMM;
+      const monthsActive = monthsInclusive(startMonth, capMonth);
       const oneComm = computeSalaryMath({ monthlySalary, isMonth1: true }).commission;
       commission = monthsActive >= 1 ? oneComm : 0;
       teacherPay = Math.max(0, monthlySalary * monthsActive - commission);
       rowPeriodLabel = monthsActive > 0 ? `All · ${monthsActive} mo` : 'Not started';
     } else {
-      isMonth1 = startMonth === selectedYYYYMM;
-      const math = computeSalaryMath({ monthlySalary, isMonth1 });
-      commission = math.commission;
-      teacherPay = math.teacherPay;
-      rowPeriodLabel = billingPeriodLabel(period, student.enrolled_at);
+      // Only pay inside the active window [startMonth, endMonth].
+      const started = selectedYYYYMM >= startMonth;
+      const ended = endMonth != null && selectedYYYYMM > endMonth;
+      if (!started || ended) {
+        commission = 0;
+        teacherPay = 0;
+        rowPeriodLabel = ended ? 'Ended' : 'Not started';
+      } else {
+        isMonth1 = startMonth === selectedYYYYMM;
+        const math = computeSalaryMath({ monthlySalary, isMonth1 });
+        commission = math.commission;
+        teacherPay = math.teacherPay;
+        rowPeriodLabel = billingPeriodLabel(period, cycleAnchor);
+      }
     }
 
     rows.push({
@@ -188,6 +219,9 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
       periodLabel: rowPeriodLabel,
       salaryStartMonth: (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month)) ? e.salary_start_month : null,
       enrolledMonth,
+      enrolledDate,
+      classStartDate,
+      classEndDate,
       monthlySalary,
       hasSalary: monthlySalary > 0,
       isMonth1,

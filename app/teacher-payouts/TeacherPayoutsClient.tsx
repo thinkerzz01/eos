@@ -76,14 +76,16 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
   // SET / EDIT SALARY MODAL
   const [salaryRow, setSalaryRow] = useState<SalaryRow | null>(null);
   const [salInput, setSalInput] = useState('');
-  const [salStart, setSalStart] = useState('');
+  const [salStartDate, setSalStartDate] = useState('');
+  const [salEndDate, setSalEndDate] = useState('');
   const [salSaving, setSalSaving] = useState(false);
   const [salError, setSalError] = useState<string | null>(null);
   const openSalary = (r: SalaryRow) => {
     setSalaryRow(r);
     setSalInput(r.monthlySalary > 0 ? String(r.monthlySalary) : '');
-    // Auto-fill the first-paid month from the student's start month; admin may change it.
-    setSalStart(r.salaryStartMonth ?? r.enrolledMonth);
+    // Prefill the class start from the saved date, else the student's start date.
+    setSalStartDate(r.classStartDate ?? r.enrolledDate ?? '');
+    setSalEndDate(r.classEndDate ?? '');
     setSalError(null);
   };
   const saveSalary = async () => {
@@ -91,13 +93,13 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
     setSalError(null);
     const amt = parseFloat(salInput);
     if (Number.isNaN(amt) || amt < 0) { setSalError('Enter a valid monthly salary.'); return; }
+    if (salEndDate && salStartDate && salEndDate < salStartDate) { setSalError('The class end date cannot be before the start date.'); return; }
     setSalSaving(true);
     const res = await setEnrollmentSalary({
       enrollmentId: salaryRow.enrollmentId,
       monthlySalary: amt,
-      // Keep it dynamic (null) when left at the auto start month; store an explicit
-      // override only when the admin picks a different first-paid month.
-      salaryStartMonth: salStart && salStart !== salaryRow.enrolledMonth ? salStart : null,
+      classStartDate: salStartDate || null,
+      classEndDate: salEndDate || null,
     });
     setSalSaving(false);
     if (res.ok) { setSalaryRow(null); router.refresh(); showToast('Salary saved.', 'success'); }
@@ -408,11 +410,17 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                 <label className="block text-slate-700 dark:text-slate-300 mb-1">Monthly salary (PKR)</label>
                 <input type="number" value={salInput} onChange={(e) => setSalInput(e.target.value)} placeholder="e.g. 15000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-base text-slate-900 dark:text-slate-100" />
               </div>
-              <div>
-                <label className="block text-slate-700 dark:text-slate-300 mb-1">First paid month</label>
-                <input type="month" value={salStart} onChange={(e) => setSalStart(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
-                <p className="text-[11px] text-slate-500 mt-1">Auto-filled from the student&apos;s start month. The 25% commission applies only in this first month; from next month the teacher gets the full salary. Change it only if the first paid month differs.</p>
+              <div className="grid grid-cols-2 gap-2.5">
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Class start date</label>
+                  <input type="date" value={salStartDate} onChange={(e) => setSalStartDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+                </div>
+                <div>
+                  <label className="block text-slate-700 dark:text-slate-300 mb-1">Class end date <span className="text-slate-400 font-normal">(optional)</span></label>
+                  <input type="date" value={salEndDate} onChange={(e) => setSalEndDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+                </div>
               </div>
+              <p className="text-[11px] text-slate-500">Auto-filled from the student&apos;s start date. The 25% commission applies only in the month of the start date; from the next month the teacher gets the full salary. Salary stops after the end date - leave it blank for an ongoing class.</p>
               {salError && <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">{salError}</div>}
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t">

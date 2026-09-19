@@ -68,19 +68,25 @@ export async function recordTeacherPayout(input: {
   return { ok: true };
 }
 
-// Set an enrollment's salary inputs (monthly salary and the first paid month
-// for the 25% commission). Admin only. One student_subjects row = one
-// teacher+subject salary.
+// Set an enrollment's salary inputs: monthly salary + the exact class start/end
+// dates. The 25% commission falls in the month of the start date; salary stops
+// after the end date (blank = open-ended). Admin only. One student_subjects row =
+// one teacher+subject salary.
 export async function setEnrollmentSalary(input: {
   enrollmentId: string;
   monthlySalary: number;
-  salaryStartMonth?: string | null; // 'YYYY-MM' | null (null = use enrolment month)
+  classStartDate?: string | null; // 'YYYY-MM-DD' | null (null = use enrolment date)
+  classEndDate?: string | null;   // 'YYYY-MM-DD' | null (null = open-ended)
 }): Promise<PayoutResult> {
   if (!input.enrollmentId) return { ok: false, error: 'Enrollment is required.' };
   if (!(input.monthlySalary >= 0)) return { ok: false, error: 'Enter a valid monthly salary.' };
-  const startMonth = input.salaryStartMonth?.trim() || null;
-  if (startMonth && !/^\d{4}-\d{2}$/.test(startMonth)) {
-    return { ok: false, error: 'First month must be in YYYY-MM format.' };
+  const startDate = input.classStartDate?.trim() || null;
+  const endDate = input.classEndDate?.trim() || null;
+  const isYmd = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s);
+  if (startDate && !isYmd(startDate)) return { ok: false, error: 'Enter a valid class start date.' };
+  if (endDate && !isYmd(endDate)) return { ok: false, error: 'Enter a valid class end date.' };
+  if (startDate && endDate && endDate < startDate) {
+    return { ok: false, error: 'The class end date cannot be before the start date.' };
   }
 
   const supabase = createClient();
@@ -99,7 +105,11 @@ export async function setEnrollmentSalary(input: {
     .from('student_subjects')
     .update({
       monthly_salary: input.monthlySalary,
-      salary_start_month: startMonth,
+      class_start_date: startDate,
+      class_end_date: endDate,
+      // Keep the legacy month column in sync with the start date (the commission
+      // month), so any reader that has not moved to the exact dates stays correct.
+      salary_start_month: startDate ? startDate.slice(0, 7) : null,
     })
     .eq('id', input.enrollmentId);
   if (error) return { ok: false, error: friendlyDbError(error) };
