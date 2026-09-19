@@ -8,6 +8,7 @@ import 'server-only';
 import { TEMPLATES, buildVars, renderTemplate, type NotificationType } from '@/lib/notifications/templates';
 import { sendViaResend } from '@/lib/notifications/resend';
 import { renderEmailHtml } from '@/lib/notifications/emailLayout';
+import { isEmailEnabled } from '@/lib/notifications/policy';
 import type { createAdminClient } from '@/lib/supabase/admin';
 
 type Admin = ReturnType<typeof createAdminClient>;
@@ -18,6 +19,7 @@ const MAX_RETRIES = 5;
 export interface SendResult {
   sent: number;
   failed: number;
+  suppressed?: number;
   remainingBudget: number;
   note?: string;
 }
@@ -50,10 +52,24 @@ export async function runSend(admin: Admin): Promise<SendResult> {
 
   let sent = 0;
   let failed = 0;
+  let suppressed = 0;
 
   for (const n of queue ?? []) {
     if (budget <= 0) break;
     const row = n as any;
+
+    // Global comms switch: drain (soft-delete) anything queued whose type is no
+    // longer allowed, so old fee/payment/report items never send and stop
+    // recurring. Does not count against the daily budget.
+    if (!isEmailEnabled(row.type)) {
+      await admin
+        .from('notifications')
+        .update({ deleted_at: new Date().toISOString(), payload: { ...(row.payload ?? {}), suppressed: 'comms policy' } })
+        .eq('id', row.id);
+      suppressed++;
+      continue;
+    }
+
     const tpl = TEMPLATES[row.type as NotificationType];
     const payload = row.payload ?? {};
     const to = payload.email as string | undefined;
@@ -112,5 +128,5 @@ export async function runSend(admin: Admin): Promise<SendResult> {
     }
   }
 
-  return { sent, failed, remainingBudget: budget };
+  return { sent, failed, suppressed, remainingBudget: budget };
 }

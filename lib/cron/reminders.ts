@@ -28,6 +28,7 @@ export interface ReminderResult {
   queued: number;
   duplicate: number;
   errored: number;
+  suppressed: number;
 }
 
 export async function runReminders(admin: Admin): Promise<ReminderResult> {
@@ -39,9 +40,11 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
   let queued = 0;
   let duplicate = 0;
   let errored = 0;
+  let suppressed = 0;
   const tally = (r: string) => {
     if (r === 'queued') queued++;
     else if (r === 'duplicate') duplicate++;
+    else if (r === 'suppressed') suppressed++;
     else errored++;
   };
 
@@ -218,5 +221,5 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
     );
   }
 
-  return { queued, duplicate, errored };
+  return { queued, duplicate, errored, suppressed };
 }

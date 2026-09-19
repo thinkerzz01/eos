@@ -151,6 +151,7 @@ export async function submitPublicBooking(input: {
     title: 'New demo booking',
     body: `${studentName} · ${input.subject?.trim() ?? ''} (${input.program})`,
     link: '/demos',
+    category: 'demo',
   });
 
   // Send the family a branded confirmation email (best-effort: a mail failure must

@@ -8,15 +8,21 @@
 // try/catch and we also swallow internally.
 import 'server-only';
 import { createAdminClient } from '@/lib/supabase/admin';
+import { isInAppEnabled } from './policy';
 
 export interface InAppNotice {
   title: string;
   body?: string;
   link?: string;
+  // Comms-policy tag: only enabled categories are delivered (see policy.ts). An
+  // untagged notice is treated as disabled.
+  category?: string;
 }
 
 /** Insert one notice for each given user id. Best-effort. */
 export async function notifyUserIds(orgId: string, userIds: string[], notice: InAppNotice): Promise<void> {
+  // Global comms switch: only enabled in-app categories are delivered.
+  if (!isInAppEnabled(notice.category)) return;
   const ids = Array.from(new Set(userIds.filter(Boolean)));
   if (!orgId || ids.length === 0) return;
   try {

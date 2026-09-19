@@ -5,6 +5,7 @@
 // `idx_uniq_notifications_key`.
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { NotificationType } from './templates';
+import { isEmailEnabled } from './policy';
 
 export interface EnqueueInput {
   orgId: string;
@@ -15,12 +16,15 @@ export interface EnqueueInput {
   channels?: string[];
 }
 
-export type EnqueueResult = 'queued' | 'duplicate' | 'error';
+export type EnqueueResult = 'queued' | 'duplicate' | 'error' | 'suppressed';
 
 export async function enqueueNotification(
   admin: SupabaseClient,
   input: EnqueueInput
 ): Promise<EnqueueResult> {
+  // Global comms switch: only enabled types are queued at all (see policy.ts).
+  if (!isEmailEnabled(input.type)) return 'suppressed';
+
   const { error } = await admin.from('notifications').insert({
     org_id: input.orgId,
     type: input.type,

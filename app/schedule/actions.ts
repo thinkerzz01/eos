@@ -207,6 +207,7 @@ export async function createClassSession(input: {
       title: 'New class scheduled',
       body: `${subjectName} on ${input.date}, ${t12(startIso)} - ${t12(endIso)}`,
       link: '/schedule',
+      category: 'class',
     });
   } catch {}
 
@@ -357,6 +358,7 @@ export async function bulkScheduleClasses(input: {
         title: 'New classes scheduled',
         body: `${created} class${created === 1 ? '' : 'es'} added to your timetable`,
         link: '/schedule',
+        category: 'class',
       });
     } catch {}
   }
@@ -594,6 +596,7 @@ export async function rescheduleClass(input: {
     title: 'Class rescheduled',
     body: `${subjectName} is now ${classTimePKT}`,
     link: '/schedule',
+    category: 'class',
   });
 
   revalidatePath('/schedule');
