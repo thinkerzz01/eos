@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { Lead } from '@/lib/mockAdmissionsData';
+import { EXAM_SESSIONS, CUSTOM_SESSION } from '@/lib/sessions';
 import { ALL_PROGRAMS } from '@/lib/syllabiSeed';
 import { createLead, convertLead, updateLead, softDeleteLead, markLeadNotConverted, listLeadCommunications, logLeadCommunication, bulkDeleteLeads, bulkSetLeadStage, type LeadCommunication } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
@@ -109,10 +110,12 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
     program: 'O Level',
     grade: 'Grade 10',
     subjects: 'Mathematics',
+    examSession: '',
     source: 'Walk-in',
     temperature: 'Hot' as 'Hot' | 'Warm' | 'Cold',
     notes: '',
   });
+  const [addSessionCustom, setAddSessionCustom] = useState(false);
 
   const router = useRouter();
 
@@ -133,6 +136,18 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   const [convertEndDate, setConvertEndDate] = useState(''); // billing end (session end)
   const [convertBillingMode, setConvertBillingMode] = useState<'monthly' | 'upfront'>('monthly');
   const [convertMethod, setConvertMethod] = useState('Bank Transfer');
+
+  // Opening the convert modal: start clean and prefill the exam session from the
+  // lead if it was captured at booking, so staff don't retype it.
+  useEffect(() => {
+    if (!convertModalLead) return;
+    setConvertSession(convertModalLead.examSession ?? '');
+    setConvertFee('');
+    setConvertPaidDate('');
+    setConvertEndDate('');
+    setConvertBillingMode('monthly');
+    setConvertMethod('Bank Transfer');
+  }, [convertModalLead]);
   const [converting, setConverting] = useState(false);
   const [addingLead, setAddingLead] = useState(false);
 
@@ -201,6 +216,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       parentEmail: newLeadData.parentEmail,
       program: newLeadData.program,
       subjects: newLeadData.subjects,
+      examSession: newLeadData.examSession,
       source: newLeadData.source,
       temperature: newLeadData.temperature,
     });
@@ -208,6 +224,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
     if (res.ok) {
       setShowAddLeadModal(false);
+      setAddSessionCustom(false);
       setNewLeadData({
         parentName: '',
         parentPhone: '',
@@ -216,6 +233,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
         program: 'O Level',
         grade: 'Grade 10',
         subjects: 'Mathematics',
+        examSession: '',
         source: 'Walk-in',
         temperature: 'Hot',
         notes: '',
@@ -1014,6 +1032,25 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   <div>
                     <label className="font-medium text-slate-700 block mb-1">Subject(s)</label>
                     <input type="text" value={newLeadData.subjects} onChange={(e) => setNewLeadData({ ...newLeadData, subjects: e.target.value })} placeholder="e.g. Physics, Maths" className="w-full bg-slate-50 border rounded-xl p-2 font-medium" />
+                  </div>
+                  <div>
+                    <label className="font-medium text-slate-700 block mb-1">Exam Session <span className="text-slate-400 font-normal">(optional)</span></label>
+                    {addSessionCustom ? (
+                      <input type="text" autoFocus value={newLeadData.examSession} onChange={(e) => setNewLeadData({ ...newLeadData, examSession: e.target.value })} placeholder="e.g. May/June 2027" className="w-full bg-slate-50 border rounded-xl p-2 font-medium" />
+                    ) : (
+                      <select
+                        value={newLeadData.examSession}
+                        onChange={(e) => {
+                          if (e.target.value === CUSTOM_SESSION) { setAddSessionCustom(true); setNewLeadData({ ...newLeadData, examSession: '' }); }
+                          else setNewLeadData({ ...newLeadData, examSession: e.target.value });
+                        }}
+                        className="w-full bg-slate-50 border rounded-xl p-2 font-medium"
+                      >
+                        <option value="">Not sure yet</option>
+                        {EXAM_SESSIONS.map((s) => (<option key={s} value={s}>{s}</option>))}
+                        <option value={CUSTOM_SESSION}>{CUSTOM_SESSION}</option>
+                      </select>
+                    )}
                   </div>
                   <div>
                     <label className="font-medium text-slate-700 block mb-1">How did they find us?</label>

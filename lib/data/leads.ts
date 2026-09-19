@@ -11,6 +11,7 @@ interface LeadRow {
   email: string | null;
   program: string | null;
   subjects: string | null;
+  exam_session: string | null;
   source: 'google' | 'facebook' | 'instagram' | 'whatsapp' | 'referral' | 'walk_in';
   status: 'new' | 'contacted' | 'demo_booked' | 'demo_won' | 'won' | 'lost';
   temperature: 'hot' | 'warm' | 'cold';
@@ -48,6 +49,7 @@ function mapRow(r: LeadRow): Lead {
     program: r.program ?? '',
     grade: r.program ?? '',
     subjects: r.subjects ? r.subjects.split(',').map((s) => s.trim()).filter(Boolean) : [],
+    examSession: r.exam_session ?? '',
     stage: STAGE_UI[r.status] ?? 'New',
     temperature: (r.temperature.charAt(0).toUpperCase() + r.temperature.slice(1)) as Lead['temperature'],
     source: SOURCE_UI[r.source] ?? 'Walk-in',
@@ -66,7 +68,7 @@ export async function getLeads(): Promise<Lead[]> {
 
   const { data, error } = await supabase
     .from('leads')
-    .select('id,code,name,parent_name,phone,email,program,subjects,source,status,temperature,next_follow_up,lost_reason,created_at')
+    .select('id,code,name,parent_name,phone,email,program,subjects,exam_session,source,status,temperature,next_follow_up,lost_reason,created_at')
     .is('deleted_at', null)
     .order('created_at', { ascending: false });
 

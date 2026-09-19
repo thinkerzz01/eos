@@ -10,6 +10,7 @@ export interface Lead {
   program: string;
   grade: string;
   subjects: string[];
+  examSession?: string; // exam sitting captured at booking (prefills convert)
   stage: 'New' | 'Contacted' | 'Demo Set' | 'Demo Done' | 'Demo Won' | 'Won' | 'Lost';
   temperature: 'Hot' | 'Warm' | 'Cold';
   source: 'Google' | 'Instagram' | 'Public Booking' | 'WhatsApp' | 'Walk-in' | 'Facebook' | 'Referral';
