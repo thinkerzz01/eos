@@ -14,6 +14,14 @@ function one<T>(rel: T | T[] | null | undefined): T | null {
   return Array.isArray(rel) ? rel[0] ?? null : rel ?? null;
 }
 
+// "01 Sep 2026" from a YYYY-MM-DD date (UTC, no drift).
+function dmyLabel(ymd: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
+  if (!m) return ymd;
+  const d = new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
 // Inclusive count of months from 'YYYY-MM' a to b (0 if a is after b).
 function monthsInclusive(a: string, b: string): number {
   const am = /^(\d{4})-(\d{2})$/.exec(a);
@@ -189,7 +197,15 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
       const oneComm = computeSalaryMath({ monthlySalary, isMonth1: true }).commission;
       commission = monthsActive >= 1 ? oneComm : 0;
       teacherPay = Math.max(0, monthlySalary * monthsActive - commission);
-      rowPeriodLabel = monthsActive > 0 ? `All · ${monthsActive} mo` : 'Not started';
+      // Show the real class span (start -> end/ongoing) with the month count, so
+      // "All months" is not a dateless "All · N mo".
+      if (monthsActive > 0) {
+        const startYmd = classStartDate ?? `${startMonth}-01`;
+        const span = classEndDate ? `${dmyLabel(startYmd)} - ${dmyLabel(classEndDate)}` : `From ${dmyLabel(startYmd)}`;
+        rowPeriodLabel = `${span} · ${monthsActive} mo`;
+      } else {
+        rowPeriodLabel = 'Not started';
+      }
     } else {
       // Only pay inside the active window [startMonth, endMonth].
       const started = selectedYYYYMM >= startMonth;

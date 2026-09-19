@@ -169,6 +169,12 @@ export function Sidebar({ role, counts = {} }: SidebarProps) {
           allowedRoles: ['admin'],
         },
         {
+          label: 'Revenue & Profit',
+          href: '/finance',
+          icon: TrendingUp,
+          allowedRoles: ['admin'],
+        },
+        {
           label: 'My Fee Vouchers',
           href: '/fees',
           icon: Receipt,
