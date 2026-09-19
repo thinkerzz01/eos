@@ -63,7 +63,7 @@ const STAGE: Record<string, AdminLead['stage']> = { new: 'new', contacted: 'cont
 
 function one<T>(r: T | T[] | null | undefined): T | null { return Array.isArray(r) ? r[0] ?? null : r ?? null; }
 const pktDate = (iso: string) => new Date(iso).toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
-const pktTime = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hour12: false });
+const pktTime = (iso: string) => new Date(iso).toLocaleTimeString('en-GB', { timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hour12: true });
 
 function statusOf(startISO: string, endISO: string, db: string): AdminClass['status'] {
   if (db === 'completed') return 'completed';
