@@ -20,7 +20,7 @@ Custom awkward dates (start 17th, exam 5th next month) are handled by explicit s
 
 ### 0.3 SQL to run (Supabase SQL Editor)
 1. `supabase/migrations/2026-09-19_billing_modes.sql` - adds to `students`: `billing_mode` (default 'monthly'), `billing_start_date`, `billing_end_date`; adds to `leads`: `exam_session`. Idempotent. Existing students default to monthly with blank dates - no behaviour change. [OWNER RAN THIS on 2026-09-19]
-2. `supabase/migrations/2026-09-19_booking_session.sql` - extends `create_public_booking` RPC to store the exam session picked on /book. Requires #1 first. Booking still works before this runs (action falls back gracefully); the session just is not stored until it is applied. [PENDING]
+2. `supabase/migrations/2026-09-19_booking_session.sql` - extends `create_public_booking` RPC to store the exam session picked on /book. Requires #1 first. [OWNER RAN THIS on 2026-09-19]
 
 ### 0.4 The billing engine
 - `lib/cron/billing.ts` -> `runBilling(admin)`: for each active MONTHLY student whose `next_due_date` is within `LEAD_DAYS` (5) and not past `billing_end_date`, cut the next voucher (amount = monthly_fee, due = next_due_date, grace = +3). Upfront students are skipped. Idempotent: skips if a voucher for that student+period already exists.
