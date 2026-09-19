@@ -106,6 +106,7 @@ export async function createClassSession(input: {
   startTime: string; // HH:MM
   endTime: string; // HH:MM
   meetingLink?: string; // optional custom link (e.g. Zoom); blank = auto Google Meet
+  invite?: 'both' | 'student' | 'teacher'; // who to add to the calendar (default both)
 }): Promise<ActionResult> {
   if (!input.studentId) return { ok: false, error: 'Select a student.' };
   if (!input.subjectId) return { ok: false, error: 'Select a subject.' };
@@ -164,7 +165,13 @@ export async function createClassSession(input: {
     reader.from('subjects').select('name').eq('id', input.subjectId).eq('org_id', orgId).maybeSingle(),
   ]);
   const subjectName = (subject as any)?.name ?? 'Class';
-  const attendees = [(student as any)?.email, (teacher as any)?.email].filter(Boolean) as string[];
+  // Who gets the calendar invite (default both). Lets the admin add the class to
+  // only the student's or only the teacher's calendar when needed.
+  const who = input.invite ?? 'both';
+  const attendees = [
+    who !== 'teacher' ? (student as any)?.email : null,
+    who !== 'student' ? (teacher as any)?.email : null,
+  ].filter(Boolean) as string[];
   const invite = buildClassInvite({
     subject: subjectName,
     teacherName: (teacher as any)?.name,
@@ -191,6 +198,15 @@ export async function createClassSession(input: {
     }
     calendarWarning = `Class saved, but the calendar invite could not be sent: ${calendarReasonText(meet.reason)}. Add the meeting link manually or fix the issue and reschedule.`;
   }
+
+  // Tell the student a new class landed on their timetable (best-effort).
+  try {
+    await notifyStudentById(orgId, input.studentId, {
+      title: 'New class scheduled',
+      body: `${subjectName} on ${input.date}, ${input.startTime}-${input.endTime}`,
+      link: '/schedule',
+    });
+  } catch {}
 
   revalidatePath('/schedule');
   revalidatePath('/');
@@ -325,6 +341,17 @@ export async function bulkScheduleClasses(input: {
         else return { ok: false, created, conflicts, error: friendlyDbError(error) };
       }
     }
+  }
+
+  // One in-app notice to the student summarising the new classes (best-effort).
+  if (created > 0) {
+    try {
+      await notifyStudentById(orgId, input.studentId, {
+        title: 'New classes scheduled',
+        body: `${created} class${created === 1 ? '' : 'es'} added to your timetable`,
+        link: '/schedule',
+      });
+    } catch {}
   }
 
   revalidatePath('/schedule');

@@ -13,6 +13,7 @@ import { subjectLabel, labelWithCode } from '@/lib/syllabiSeed';
 import { bulkScheduleClasses, completeClassWithAttendance, createClassSession, updateClassSession, deleteClassSession, rescheduleClass, saveClassNote, bulkDeleteClasses, listStudentEnrollments } from './actions';
 import { SessionSyllabusPanel } from '@/components/syllabus/SessionSyllabusPanel';
 import { downloadCsv } from '@/lib/export/csv';
+import { buildGoogleCalUrl } from '@/lib/notifications/calendarLink';
 import { ClassCalendar } from './ClassCalendar';
 import {
   Calendar,
@@ -37,6 +38,7 @@ import {
   Check,
   Pencil,
   Trash2,
+  CalendarPlus,
 } from 'lucide-react';
 
 export function ScheduleClient({
@@ -117,6 +119,8 @@ export function ScheduleClient({
   // Meeting link: default is auto Google Meet; switch to a custom link (e.g. Zoom).
   const [scUseCustomLink, setScUseCustomLink] = useState(false);
   const [scMeetingLink, setScMeetingLink] = useState('');
+  // Who to add to the calendar (send the invite to): both, student only, teacher only.
+  const [scInvite, setScInvite] = useState<'both' | 'student' | 'teacher'>('both');
 
   // A student's enrolled subjects+teachers (from admission). Loaded when a student
   // is picked in either scheduling modal so the subject/teacher pre-fill instead
@@ -190,7 +194,7 @@ export function ScheduleClient({
   const resetSingle = () => {
     setScStudentId(''); setScSubjectId(''); setScTeacherId('');
     setScType('Class'); setScDate(todayStr); setScStart(''); setScEnd('');
-    setScError(null); setScUseCustomLink(false); setScMeetingLink('');
+    setScError(null); setScUseCustomLink(false); setScMeetingLink(''); setScInvite('both');
   };
 
   const handleAddSingleClass = async () => {
@@ -204,6 +208,7 @@ export function ScheduleClient({
       studentId: scStudentId, subjectId: scSubjectId, teacherId: scTeacherId,
       type: scType, date: scDate, startTime: scStart, endTime: scEnd,
       meetingLink: scUseCustomLink ? scMeetingLink.trim() : undefined,
+      invite: scInvite,
     });
     setScSaving(false);
     if (res.ok) {
@@ -647,6 +652,9 @@ export function ScheduleClient({
             {cls.status !== 'Completed' && cls.status !== 'Cancelled' && (
               <button onClick={() => openReschedule(cls)} className="px-2.5 py-1.5 bg-amber-50 text-amber-700 font-medium text-xs rounded-xl border border-amber-200 hover:bg-amber-100 transition-colors cursor-pointer">Reschedule</button>
             )}
+            {classCalUrl(cls) && (
+              <a href={classCalUrl(cls)!} target="_blank" rel="noreferrer" title="Add to Google Calendar" aria-label="Add to Google Calendar" className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-[#5B47D6] transition-colors"><CalendarPlus className="w-4 h-4" /></a>
+            )}
             {canManage && (
               <>
                 <button onClick={() => openEdit(cls)} title="Edit class" aria-label="Edit class" className="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-[#5B47D6] transition-colors"><Pencil className="w-4 h-4" /></button>
@@ -660,6 +668,23 @@ export function ScheduleClient({
       </td>
     </tr>
   );
+
+  // "Add to Google Calendar" link for a class - opens a pre-filled Google Calendar
+  // event (adds to whoever is signed in). A manual complement to the auto-invite.
+  const classCalUrl = (cls: ScheduledClass): string | null => {
+    if (!cls.startAtISO || !cls.endAtISO) return null;
+    return buildGoogleCalUrl({
+      text: `Thinkerzz ${cls.subject || 'Class'}${cls.studentName ? ` - ${cls.studentName}` : ''}`,
+      startISO: cls.startAtISO,
+      endISO: cls.endAtISO,
+      details: [
+        cls.teacherName ? `Teacher: ${cls.teacherName}` : '',
+        cls.studentName ? `Student: ${cls.studentName}` : '',
+        cls.meetingLink ? `Join: ${cls.meetingLink}` : '',
+      ].filter(Boolean).join('\n'),
+      location: cls.meetingLink || undefined,
+    });
+  };
 
   // One class card for the mobile list. `child` renders the collapsed member of
   // an expanded series (date-led, indented).
@@ -689,6 +714,9 @@ export function ScheduleClient({
           </button>
           {cls.status !== 'Completed' && cls.status !== 'Cancelled' && (
             <button onClick={() => openReschedule(cls)} className="px-3 py-2 bg-amber-50 text-amber-700 font-medium text-xs rounded-xl border border-amber-200">Reschedule</button>
+          )}
+          {classCalUrl(cls) && (
+            <a href={classCalUrl(cls)!} target="_blank" rel="noreferrer" aria-label="Add to Google Calendar" title="Add to Google Calendar" className="p-2 rounded-lg border border-slate-200 text-slate-600 hover:text-[#5B47D6]"><CalendarPlus className="w-4 h-4" /></a>
           )}
           {canManage && (
             <>
@@ -1207,6 +1235,23 @@ export function ScheduleClient({
                     />
                   )}
                   <p className="mt-1 text-[11px] text-slate-400 font-medium normal-case">{scUseCustomLink ? 'Paste the teacher’s own class link (Zoom, etc.). The student and teacher still get the calendar invite.' : 'A Google Meet link is created automatically and shared in the invite.'}</p>
+                </div>
+
+                <div>
+                  <label className="block font-medium text-xs text-slate-700 dark:text-slate-300 mb-1">Add to calendar</label>
+                  <div className="flex gap-2">
+                    {([['both', 'Student & teacher'], ['student', 'Student only'], ['teacher', 'Teacher only']] as const).map(([val, lbl]) => (
+                      <button
+                        key={val}
+                        type="button"
+                        onClick={() => setScInvite(val)}
+                        className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium border transition-colors ${scInvite === val ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800'}`}
+                      >
+                        {lbl}
+                      </button>
+                    ))}
+                  </div>
+                  <p className="mt-1 text-[11px] text-slate-400 font-medium normal-case">Who gets the Google Calendar invite for this class.</p>
                 </div>
 
                 {scError && (
