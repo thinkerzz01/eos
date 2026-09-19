@@ -5,6 +5,7 @@ import { submitPublicBooking } from './actions';
 import { BookingSuccess } from './BookingSuccess';
 import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 import { ALL_PROGRAMS, subjectsForProgram, labelForProgram } from '@/lib/syllabiSeed';
+import { EXAM_SESSIONS, CUSTOM_SESSION } from '@/lib/sessions';
 import {
   CheckCircle2, ArrowRight, AlertCircle, CalendarDays, BookOpen, Clock,
   User, GraduationCap, Phone, Mail, Search, MessageCircle, Video, ShieldCheck, Star,
@@ -43,6 +44,8 @@ export default function PublicBookingPage() {
   const [parentEmail, setParentEmail] = useState('');
   const [program, setProgram] = useState<string>(ALL_PROGRAMS[0]);
   const [subject, setSubject] = useState('');
+  const [examSession, setExamSession] = useState('');
+  const [sessionCustom, setSessionCustom] = useState(false);
   const [source, setSource] = useState('');
   const [school, setSchool] = useState('');
   const [city, setCity] = useState('');
@@ -75,7 +78,7 @@ export default function PublicBookingPage() {
 
     setSubmitting(true);
     try {
-      const res = await submitPublicBooking({ studentName, parentName, parentPhone, parentEmail, program, subject, source, school, city, area, date, time, turnstileToken });
+      const res = await submitPublicBooking({ studentName, parentName, parentPhone, parentEmail, program, subject, examSession, source, school, city, area, date, time, turnstileToken });
       if (!res.ok) { setError(res.error || 'Something went wrong. Please try again.'); return; }
       setBookingRef(res.ref || 'THM-BOOKING');
       setIsSubmitted(true);
@@ -201,6 +204,29 @@ export default function PublicBookingPage() {
                         {subjectsForProgram(program).map((s) => (<option key={s} value={s}>{labelForProgram(s, program)}</option>))}
                       </select></div>
                     <p className="mt-1 text-[11px] text-slate-400 font-medium">Only subjects offered for your selected program are shown.</p>
+                  </div>
+
+                  <div className="mt-4">
+                    <label className={lbl}>Target Exam Session</label>
+                    <div className="relative"><GraduationCap className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                      {sessionCustom ? (
+                        <input type="text" value={examSession} onChange={(e) => setExamSession(e.target.value)} placeholder="e.g. May/June 2027" className={field} />
+                      ) : (
+                        <select
+                          value={examSession}
+                          onChange={(e) => {
+                            if (e.target.value === CUSTOM_SESSION) { setSessionCustom(true); setExamSession(''); }
+                            else setExamSession(e.target.value);
+                          }}
+                          className={field}
+                        >
+                          <option value="">Not sure yet</option>
+                          {EXAM_SESSIONS.map((s) => (<option key={s} value={s}>{s}</option>))}
+                          <option value={CUSTOM_SESSION}>{CUSTOM_SESSION}</option>
+                        </select>
+                      )}
+                    </div>
+                    <p className="mt-1 text-[11px] text-slate-400 font-medium">Which exam sitting are you preparing for? Optional - you can decide later.</p>
                   </div>
 
                   {/* SUNDAY NOTICE - Sunday stays selectable; we just flag limited availability */}
