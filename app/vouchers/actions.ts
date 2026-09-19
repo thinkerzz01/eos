@@ -13,6 +13,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { enqueueNotification } from '@/lib/notifications/enqueue';
 import { revalidatePath } from 'next/cache';
 import { friendlyDbError } from '@/lib/friendlyError';
+import { addMonthsYMD } from '@/lib/date/ymd';
 
 const METHOD_DB: Record<string, string> = {
   'Bank Transfer': 'bank_transfer',
@@ -89,7 +90,7 @@ export async function recordPayment(input: {
 
   const { data: voucher } = await supabase
     .from('vouchers')
-    .select('id,amount,student_id,status,students(name,parent_name,email,gender)')
+    .select('id,amount,student_id,status,due_date,students(name,parent_name,email,gender,billing_mode,next_due_date,billing_end_date)')
     .eq('id', input.voucherId)
     .is('deleted_at', null)
     .maybeSingle();
@@ -142,7 +143,22 @@ export async function recordPayment(input: {
 
   if (fullyPaid && (voucher as any).status !== 'paid') {
     await supabase.from('vouchers').update({ status: 'paid' }).eq('id', input.voucherId);
-    await supabase.from('students').update({ fee_status: 'paid' }).eq('id', (voucher as any).student_id);
+
+    // Advance a monthly student's cycle when they pay the CURRENT cycle's voucher
+    // (its due date matches their next_due_date). This rolls next_due_date forward
+    // one calendar month so the billing cron cuts the following month automatically.
+    const stuRow = Array.isArray((voucher as any).students) ? (voucher as any).students[0] : (voucher as any).students;
+    const studentPatch: Record<string, any> = { fee_status: 'paid' };
+    const dueDate = (voucher as any).due_date as string | null;
+    if (
+      stuRow?.billing_mode === 'monthly' &&
+      dueDate &&
+      stuRow.next_due_date &&
+      dueDate === stuRow.next_due_date
+    ) {
+      studentPatch.next_due_date = addMonthsYMD(dueDate, 1);
+    }
+    await supabase.from('students').update(studentPatch).eq('id', (voucher as any).student_id);
   }
 
   revalidateFinance();

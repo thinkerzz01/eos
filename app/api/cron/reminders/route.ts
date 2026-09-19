@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronBearerHeader, cronSecret } from '@/lib/security';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { runReminders } from '@/lib/cron/reminders';
+import { runBilling } from '@/lib/cron/billing';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
@@ -17,9 +18,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  const admin = createAdminClient();
   try {
-    const result = await runReminders(createAdminClient());
-    return NextResponse.json({ ok: true, ...result });
+    // Cut this cycle's monthly vouchers first, then enqueue reminders.
+    const billing = await runBilling(admin);
+    const result = await runReminders(admin);
+    return NextResponse.json({ ok: true, billing, ...result });
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e?.message ?? 'reminders failed' }, { status: 500 });
   }

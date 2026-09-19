@@ -8,6 +8,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { verifyCronBearerHeader, cronSecret } from '@/lib/security';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { runReminders } from '@/lib/cron/reminders';
+import { runBilling } from '@/lib/cron/billing';
 import { runSend } from '@/lib/cron/send';
 
 export const dynamic = 'force-dynamic';
@@ -20,6 +21,14 @@ export async function GET(req: NextRequest) {
 
   const admin = createAdminClient();
   const out: any = { ok: true };
+
+  // Phase 0: generate this cycle's monthly vouchers per student (isolated).
+  try {
+    out.billing = await runBilling(admin);
+  } catch (e: any) {
+    out.ok = false;
+    out.billing = { error: e?.message ?? 'billing failed' };
+  }
 
   // Phase 1: enqueue reminders (isolated).
   try {

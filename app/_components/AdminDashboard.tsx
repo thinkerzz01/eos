@@ -325,6 +325,19 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
             <div className="rounded-xl bg-[#f8f9fc] p-3"><div className="text-[12px] text-[#6b7391]">Outstanding</div><div className="mt-0.5 text-[18px] font-medium text-[#d9820a]">Rs {Math.round(data.fees.outstanding / 1000)}k</div></div>
           </div>
           <div className="mt-3 flex items-center gap-2 text-[12.5px]"><span className="text-[#6b7391]">Collection</span><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#eef0f6]"><motion.i initial={{ width: 0 }} animate={{ width: `${data.fees.collectionPct}%` }} transition={{ duration: 0.8 }} className="block h-full rounded-full bg-[#11a256]" /></div><b className="tabular-nums">{data.fees.collectionPct}%</b></div>
+
+          {/* Next-month recurring forecast (billed, not collected) */}
+          <div className="mt-3 rounded-xl border border-[#e7e2fb] bg-[#f6f4ff] p-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[12px] text-[#6b7391]">Recurring next month{data.forecast.monthLabel ? ` · ${data.forecast.monthLabel}` : ''}</span>
+              <span className="text-[11px] text-[#8a86a3]">{data.forecast.activeMonthly} monthly</span>
+            </div>
+            <div className="mt-0.5 text-[18px] font-medium text-[#5b47d6]">Rs {Math.round(data.forecast.recurringNextMonth / 1000)}k</div>
+            {data.forecast.endingCount > 0 && (
+              <div className="mt-1 text-[11.5px] text-[#d9820a]">{data.forecast.endingCount} plan{data.forecast.endingCount > 1 ? 's' : ''} end next month (-Rs {Math.round(data.forecast.endingNextMonth / 1000)}k)</div>
+            )}
+            <div className="mt-1 text-[11px] text-[#8a86a3]">Billed, not collected. Upfront blocks excluded.</div>
+          </div>
         </Card>}
       </div>
     </div>

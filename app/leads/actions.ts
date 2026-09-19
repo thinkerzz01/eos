@@ -5,23 +5,9 @@
 import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { friendlyDbError } from '@/lib/friendlyError';
+import { addDaysYMD, addMonthsYMD, monthLabelYMD } from '@/lib/date/ymd';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE', 'Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
-
-const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
-// Add N days to a YYYY-MM-DD date (date-only, no timezone shift).
-function addDaysYMD(ymd: string, n: number): string {
-  const [y, m, d] = ymd.split('-').map(Number);
-  const dt = new Date(Date.UTC(y, m - 1, d));
-  dt.setUTCDate(dt.getUTCDate() + n);
-  return dt.toISOString().slice(0, 10);
-}
-// "September 2026" from a YYYY-MM-DD date (voucher period label).
-function monthLabelYMD(ymd: string): string {
-  const [y, m] = ymd.split('-').map(Number);
-  return `${MONTHS[m - 1]} ${y}`;
-}
 
 export interface ActionResult {
   ok: boolean;
@@ -107,6 +93,7 @@ export async function createLead(input: {
   parentEmail?: string;
   program: string;
   subjects?: string;
+  examSession?: string;
   source?: string;
   temperature?: 'Hot' | 'Warm' | 'Cold';
 }): Promise<ActionResult> {
@@ -132,6 +119,7 @@ export async function createLead(input: {
     // leads.program is CAIE-only (nullable) - store only if valid, else leave null.
     program: ENROLLABLE_PROGRAMS.includes(input.program) ? input.program : null,
     subjects: input.subjects?.trim() || null,
+    exam_session: input.examSession?.trim() || null,
     source: SOURCE_MAP[input.source ?? ''] ?? 'walk_in',
     status: 'new',
     temperature: (input.temperature ?? 'Warm').toLowerCase(),
@@ -144,20 +132,37 @@ export async function createLead(input: {
 }
 
 /**
- * Convert a lead into an active student: create the student, then mark the lead
- * Won and link converted_student_id. Requires the fee fields the students table
- * needs (exam session, monthly fee, next due date).
+ * Convert a lead into an active student and start their billing plan.
+ *
+ * Two billing modes:
+ *   - 'monthly': `amount` is the monthly fee. The first month is recorded PAID at
+ *     the start date; the next voucher is due one calendar month later and the
+ *     billing cron rolls it forward each month until `endDate` (the session end).
+ *   - 'upfront': `amount` is the TOTAL price for the whole block (crash course /
+ *     prepaid). One PAID voucher covers start -> end; NO monthly vouchers and NO
+ *     fee reminders are generated during the block. `endDate` is required.
  */
 export async function convertLead(input: {
   leadId: string;
   examSession: string;
-  monthlyFee: number;
-  firstFeePaidDate: string; // the day the student paid the first month's fee
+  billingMode?: 'monthly' | 'upfront';
+  amount: number; // monthly fee (monthly) OR total block price (upfront)
+  startDate: string; // YYYY-MM-DD - first fee paid / block start
+  endDate?: string; // YYYY-MM-DD - billing end (session end); required for upfront
   paymentMethod?: string; // 'Bank Transfer' | 'JazzCash'
 }): Promise<ActionResult> {
+  const mode = input.billingMode === 'upfront' ? 'upfront' : 'monthly';
   if (!input.examSession?.trim()) return { ok: false, error: 'Exam session is required.' };
-  if (!(input.monthlyFee > 0)) return { ok: false, error: 'A valid monthly fee is required.' };
-  if (!input.firstFeePaidDate) return { ok: false, error: 'First fee paid date is required.' };
+  if (!(input.amount > 0)) {
+    return { ok: false, error: mode === 'upfront' ? 'A valid total amount is required.' : 'A valid monthly fee is required.' };
+  }
+  if (!input.startDate) return { ok: false, error: 'Start date is required.' };
+  if (mode === 'upfront' && !input.endDate) {
+    return { ok: false, error: 'An end date is required for an upfront / crash-course plan.' };
+  }
+  if (input.endDate && input.endDate < input.startDate) {
+    return { ok: false, error: 'The end date cannot be before the start date.' };
+  }
 
   const { supabase, user, orgId } = await ctx();
   if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
@@ -177,8 +182,12 @@ export async function convertLead(input: {
     };
   }
 
-  // The first month is paid at conversion, so the next fee is due 30 days later.
-  const nextDue = addDaysYMD(input.firstFeePaidDate, 30);
+  const endDate = input.endDate || null;
+  // monthly: next fee is due one calendar month after the start (day-of-month kept).
+  // upfront: park next_due_date past the block end so the cron never bills it.
+  const nextDue = mode === 'upfront'
+    ? addDaysYMD(endDate as string, 1)
+    : addMonthsYMD(input.startDate, 1);
 
   const { data: newStudent, error: studentErr } = await supabase
     .from('students')
@@ -190,7 +199,11 @@ export async function convertLead(input: {
       email: (lead as any).email,
       program: (lead as any).program,
       exam_session: input.examSession.trim(),
-      monthly_fee: input.monthlyFee,
+      // upfront students carry no monthly fee; monthly students carry theirs.
+      monthly_fee: mode === 'upfront' ? 0 : input.amount,
+      billing_mode: mode,
+      billing_start_date: input.startDate,
+      billing_end_date: endDate,
       next_due_date: nextDue,
       first_class_date: null,
       status: 'active',
@@ -214,34 +227,37 @@ export async function convertLead(input: {
   }
   const studentId = (newStudent as any).id;
 
-  // Record the first month as PAID: a paid voucher + a matching payment, so the
-  // student's total-paid reflects the fee and the 30-day cycle starts. Best-effort
+  // Record the first payment as PAID: a paid voucher + a matching payment. For
+  // monthly this is the first month; for upfront it is the whole block. Best-effort
   // (finance tables are admin-only at the DB) - a manager convert still creates the
   // student; the paid voucher is just skipped with a warning.
+  const firstPeriod = mode === 'upfront'
+    ? `Upfront ${monthLabelYMD(input.startDate)} - ${monthLabelYMD(endDate as string)}`
+    : monthLabelYMD(input.startDate);
   let warning: string | undefined;
   const { data: voucher, error: vErr } = await supabase
     .from('vouchers')
     .insert({
       org_id: orgId,
       student_id: studentId,
-      period: monthLabelYMD(input.firstFeePaidDate),
-      amount: input.monthlyFee,
-      due_date: input.firstFeePaidDate,
-      grace_deadline: addDaysYMD(input.firstFeePaidDate, 3),
+      period: firstPeriod,
+      amount: input.amount,
+      due_date: input.startDate,
+      grace_deadline: addDaysYMD(input.startDate, 3),
       status: 'paid',
     })
     .select('id')
     .single();
 
   if (vErr || !voucher) {
-    warning = 'Student created, but the first paid month could not be recorded (finance is admin-only). Add the first voucher from the Vouchers screen.';
+    warning = 'Student created, but the first paid voucher could not be recorded (finance is admin-only). Add the first voucher from the Vouchers screen.';
   } else {
     const { error: payErr } = await supabase.from('payments').insert({
       org_id: orgId,
       voucher_id: (voucher as any).id,
-      amount: input.monthlyFee,
+      amount: input.amount,
       method: input.paymentMethod === 'JazzCash' ? 'jazzcash' : 'bank_transfer',
-      reference: 'First month fee at enrollment',
+      reference: mode === 'upfront' ? 'Upfront / crash-course fee at enrollment' : 'First month fee at enrollment',
       reconciled_by: user.id,
     });
     if (payErr) {

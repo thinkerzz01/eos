@@ -129,7 +129,9 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   // CONVERT MODAL - student fee fields (students table requires these)
   const [convertFee, setConvertFee] = useState('');
   const [convertSession, setConvertSession] = useState('');
-  const [convertPaidDate, setConvertPaidDate] = useState(''); // date first month was paid
+  const [convertPaidDate, setConvertPaidDate] = useState(''); // start date / date first fee was paid
+  const [convertEndDate, setConvertEndDate] = useState(''); // billing end (session end)
+  const [convertBillingMode, setConvertBillingMode] = useState<'monthly' | 'upfront'>('monthly');
   const [convertMethod, setConvertMethod] = useState('Bank Transfer');
   const [converting, setConverting] = useState(false);
   const [addingLead, setAddingLead] = useState(false);
@@ -297,17 +299,22 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
 
   const handleConvertLeadToStudent = async () => {
     if (!convertModalLead) return;
+    const isUpfront = convertBillingMode === 'upfront';
     const feeNum = parseFloat(convertFee);
     if (!convertSession.trim()) { showToast('Please enter the exam session.', 'error'); return; }
-    if (isNaN(feeNum) || feeNum <= 0) { showToast('Please enter a valid monthly fee.', 'error'); return; }
-    if (!convertPaidDate) { showToast('Please select the date the first fee was paid.', 'error'); return; }
+    if (isNaN(feeNum) || feeNum <= 0) { showToast(isUpfront ? 'Please enter a valid total amount.' : 'Please enter a valid monthly fee.', 'error'); return; }
+    if (!convertPaidDate) { showToast('Please select the start date (when the first fee was paid).', 'error'); return; }
+    if (isUpfront && !convertEndDate) { showToast('Please select the end date for the upfront / crash-course plan.', 'error'); return; }
+    if (convertEndDate && convertEndDate < convertPaidDate) { showToast('The end date cannot be before the start date.', 'error'); return; }
 
     setConverting(true);
     const res = await convertLead({
       leadId: convertModalLead.id,
       examSession: convertSession,
-      monthlyFee: feeNum,
-      firstFeePaidDate: convertPaidDate,
+      billingMode: convertBillingMode,
+      amount: feeNum,
+      startDate: convertPaidDate,
+      endDate: convertEndDate || undefined,
       paymentMethod: convertMethod,
     });
     setConverting(false);
@@ -318,11 +325,15 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       setConvertFee('');
       setConvertSession('');
       setConvertPaidDate('');
+      setConvertEndDate('');
+      setConvertBillingMode('monthly');
       setConvertMethod('Bank Transfer');
       router.refresh();
       showToast(res.warning
         ? `${name} was enrolled. Note: ${res.warning}`
-        : `${name} was enrolled - first month recorded as paid, next fee due in 30 days.`, 'success');
+        : isUpfront
+          ? `${name} was enrolled - upfront block recorded as paid. No monthly fees until the end date.`
+          : `${name} was enrolled - first month recorded as paid, next fee due one month later.`, 'success');
     } else {
       showToast(res.error ?? 'Failed to convert lead.', 'error');
     }
@@ -896,6 +907,29 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   </p>
                 </div>
 
+                {/* Billing mode: monthly cycle vs one upfront (crash-course) block */}
+                <div>
+                  <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Billing Plan</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConvertBillingMode('monthly')}
+                      className={`p-2.5 rounded-lg border text-left transition-all ${convertBillingMode === 'monthly' ? 'bg-emerald-50 border-emerald-400 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                    >
+                      <div className="font-medium">Monthly</div>
+                      <div className="text-[11px] leading-tight mt-0.5 opacity-80">One voucher per month, auto-generated each cycle.</div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConvertBillingMode('upfront')}
+                      className={`p-2.5 rounded-lg border text-left transition-all ${convertBillingMode === 'upfront' ? 'bg-emerald-50 border-emerald-400 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}
+                    >
+                      <div className="font-medium">Upfront (crash course)</div>
+                      <div className="text-[11px] leading-tight mt-0.5 opacity-80">One paid block, no monthly fees until it ends.</div>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Enrollment fee fields (required by the students table) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                   <div>
@@ -903,12 +937,18 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     <input type="text" value={convertSession} onChange={(e) => setConvertSession(e.target.value)} placeholder="e.g. May/June 2027" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
                   </div>
                   <div>
-                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Monthly Fee (PKR)</label>
-                    <input type="number" value={convertFee} onChange={(e) => setConvertFee(e.target.value)} placeholder="e.g. 20000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-mono font-medium text-slate-900 dark:text-slate-100" />
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">{convertBillingMode === 'upfront' ? 'Total Amount (PKR)' : 'Monthly Fee (PKR)'}</label>
+                    <input type="number" value={convertFee} onChange={(e) => setConvertFee(e.target.value)} placeholder={convertBillingMode === 'upfront' ? 'e.g. 45000' : 'e.g. 20000'} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-mono font-medium text-slate-900 dark:text-slate-100" />
                   </div>
                   <div>
-                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Date First Fee Paid</label>
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Start Date (first fee paid)</label>
                     <input type="date" value={convertPaidDate} onChange={(e) => setConvertPaidDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">
+                      Billing End Date {convertBillingMode === 'upfront' ? '(required)' : '(optional)'}
+                    </label>
+                    <input type="date" value={convertEndDate} onChange={(e) => setConvertEndDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
                   </div>
                   <div>
                     <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Payment Method</label>
@@ -920,7 +960,11 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 </div>
 
                 <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-medium">
-                  Converting records the <strong>first month as paid</strong>. The next fee will be due <strong>30 days after</strong> the paid date, and a paid voucher is created automatically.
+                  {convertBillingMode === 'upfront' ? (
+                    <>Converting records <strong>one upfront block as paid</strong>. No monthly vouchers or fee reminders are sent until the billing end date.</>
+                  ) : (
+                    <>Converting records the <strong>first month as paid</strong>. The next voucher is cut automatically about a week before it is due, one month after the start date{convertEndDate ? ', until the billing end date' : ''}.</>
+                  )}
                 </div>
               </div>
 

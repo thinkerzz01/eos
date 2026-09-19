@@ -2,6 +2,7 @@
 // a class window (so the date navigator + makeup detection work client-side),
 // leads, teacher load, attention items, fees, and filter options from live data.
 import { createClient } from '@/lib/supabase/server';
+import { addDaysYMD, addMonthsYMD, firstOfMonthYMD, monthLabelYMD } from '@/lib/date/ymd';
 
 export interface AdminClass {
   id: string;
@@ -43,6 +44,15 @@ export interface SystemHealth {
   classesMissingLink: number;      // upcoming scheduled classes with no Meet link
   demosMissingLink: number;        // assigned demos with no Meet link
 }
+// Next-month recurring income forecast. This is BILLED, not collected: it is what
+// the monthly cycle will invoice next month, not what will land in the bank.
+export interface BillingForecast {
+  monthLabel: string;       // e.g. "October 2026" - the month being forecast
+  recurringNextMonth: number; // sum of monthly fees for students still billing next month
+  activeMonthly: number;    // count of active monthly students in that figure
+  endingNextMonth: number;  // monthly fees of students whose plan ends next month (churn)
+  endingCount: number;      // how many students end next month
+}
 export interface AdminData {
   demo: boolean;
   todayISO: string;
@@ -51,6 +61,7 @@ export interface AdminData {
   teachers: AdminTeacherLoad[];
   attention: AdminAttention[];
   fees: { overdue: number; outstanding: number; collectionPct: number };
+  forecast: BillingForecast;
   kpis: { classesToday: number; demosToAssign: number; newLeadsToday: number; atRisk: number; overdueAmount: number; activeStudents: number };
   options: { programs: string[]; teachers: string[]; subjects: string[]; sources: string[] };
   health: SystemHealth;
@@ -79,9 +90,14 @@ const EMPTY_HEALTH: SystemHealth = {
   emailConfigured: false, calendarConfigured: false, classesMissingLink: 0, demosMissingLink: 0,
 };
 
+const EMPTY_FORECAST: BillingForecast = {
+  monthLabel: '', recurringNextMonth: 0, activeMonthly: 0, endingNextMonth: 0, endingCount: 0,
+};
+
 export const EMPTY_ADMIN_DATA: AdminData = {
   demo: false, todayISO: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }),
   classes: [], leads: [], teachers: [], attention: [], fees: { overdue: 0, outstanding: 0, collectionPct: 0 },
+  forecast: EMPTY_FORECAST,
   kpis: { classesToday: 0, demosToAssign: 0, newLeadsToday: 0, atRisk: 0, overdueAmount: 0, activeStudents: 0 },
   options: { programs: PROGRAMS, teachers: [], subjects: [], sources: SOURCES },
   health: EMPTY_HEALTH,
@@ -114,7 +130,7 @@ export async function getAdminDashboard(): Promise<AdminData> {
     supabase.from('demos').select('id', { count: 'exact', head: true }).eq('status', 'needs_teacher').is('deleted_at', null),
     supabase.from('vouchers').select('id,amount,status,grace_deadline,students(name)').neq('status', 'paid').is('deleted_at', null),
     supabase.from('payments').select('amount').gte('created_at', monthStart).is('deleted_at', null),
-    supabase.from('students').select('id,name,fee_status').eq('status', 'active').is('deleted_at', null),
+    supabase.from('students').select('id,name,fee_status,billing_mode,monthly_fee,billing_end_date').eq('status', 'active').is('deleted_at', null),
     // --- System health ---
     supabase.from('notifications').select('status,created_at').in('status', ['queued', 'failed']).is('deleted_at', null),
     supabase.from('notifications').select('id', { count: 'exact', head: true }).eq('status', 'sent').gte('updated_at', dayAgo).is('deleted_at', null),
@@ -158,6 +174,27 @@ export async function getAdminDashboard(): Promise<AdminData> {
   // at-risk = active students whose fee is stopped or in grace
   const atRiskStudents = (studentsRes.data as any[] ?? []).filter((s) => s.fee_status === 'stopped' || s.fee_status === 'in_grace');
 
+  // Next-month recurring forecast (billed, not collected). Monthly students whose
+  // plan has not ended before next month contribute their fee; those whose plan
+  // ends DURING next month are counted as churn so the figure is honest.
+  const nextMonthFirst = firstOfMonthYMD(addMonthsYMD(todayISO, 1));
+  const nextMonthLast = addDaysYMD(firstOfMonthYMD(addMonthsYMD(todayISO, 2)), -1);
+  let recurringNextMonth = 0, activeMonthly = 0, endingNextMonth = 0, endingCount = 0;
+  for (const s of (studentsRes.data as any[] ?? [])) {
+    if (s.billing_mode !== 'monthly') continue;      // upfront blocks are one-off, not recurring
+    const fee = Number(s.monthly_fee ?? 0);
+    if (!(fee > 0)) continue;
+    const end = s.billing_end_date as string | null;
+    if (end && end < nextMonthFirst) continue;       // plan already finished before next month
+    recurringNextMonth += fee;
+    activeMonthly += 1;
+    if (end && end >= nextMonthFirst && end <= nextMonthLast) { endingNextMonth += fee; endingCount += 1; }
+  }
+  const forecast: BillingForecast = {
+    monthLabel: monthLabelYMD(nextMonthFirst),
+    recurringNextMonth, activeMonthly, endingNextMonth, endingCount,
+  };
+
   // unmarked = past-window classes still not completed/cancelled
   const unmarked = classes.filter((c) => c.status === 'missed').length;
   const demosToAssign = demosRes.count ?? 0;
@@ -191,7 +228,7 @@ export async function getAdminDashboard(): Promise<AdminData> {
   };
 
   return {
-    demo: false, todayISO, classes, leads, teachers, attention, health,
+    demo: false, todayISO, classes, leads, teachers, attention, health, forecast,
     fees: { overdue: overdueAmount, outstanding, collectionPct },
     kpis: {
       classesToday: classes.filter((c) => c.dateISO === todayISO).length,
