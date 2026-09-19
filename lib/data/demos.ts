@@ -29,7 +29,7 @@ function fmtPkt(iso: string | null | undefined): string {
   return d.toLocaleString('en-GB', {
     weekday: 'short', day: 'numeric', month: 'short',
     hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Karachi',
-  });
+  }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase());
 }
 
 function mapRow(r: any): DemoSession {

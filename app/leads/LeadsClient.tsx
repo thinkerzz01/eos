@@ -96,7 +96,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   const commTimeAgo = (iso: string): string => {
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
-    return d.toLocaleString('en-GB', { timeZone: 'Asia/Karachi', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true });
+    return d.toLocaleString('en-GB', { timeZone: 'Asia/Karachi', day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase());
   };
 
   // ADD NEW LEAD MODAL

@@ -42,8 +42,8 @@ export function AnnouncementsClient({ initialAnnouncements }: { initialAnnouncem
     const d = new Date(iso);
     if (Number.isNaN(d.getTime())) return '';
     return d.toLocaleString('en-GB', {
-      timeZone: 'Asia/Karachi', day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true,
-    });
+      timeZone: 'Asia/Karachi', day: '2-digit', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true,
+    }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase());
   };
 
   const handleDeleteAnnouncement = async (id: string) => {

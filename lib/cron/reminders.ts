@@ -144,7 +144,7 @@ export async function runReminders(admin: Admin): Promise<ReminderResult> {
           email: s?.email ?? '',
           gender: s?.gender ?? '',
           class_subject: subj?.name ?? 'class',
-          class_time: new Date(startAt).toLocaleString('en-GB', { timeZone: 'Asia/Karachi', weekday: 'short', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true }),
+          class_time: new Date(startAt).toLocaleString('en-GB', { timeZone: 'Asia/Karachi', weekday: 'short', day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase()),
           meeting_link: (c as any).meeting_link ?? '',
           calendar_url: buildGoogleCalUrl({
             text: `Thinkerzz ${subj?.name ?? ''} Class`,

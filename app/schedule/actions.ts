@@ -201,9 +201,11 @@ export async function createClassSession(input: {
 
   // Tell the student a new class landed on their timetable (best-effort).
   try {
+    const t12 = (iso: string) =>
+      new Date(iso).toLocaleTimeString('en-GB', { timeZone: 'Asia/Karachi', hour: 'numeric', minute: '2-digit', hour12: true }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase());
     await notifyStudentById(orgId, input.studentId, {
       title: 'New class scheduled',
-      body: `${subjectName} on ${input.date}, ${input.startTime}-${input.endTime}`,
+      body: `${subjectName} on ${input.date}, ${t12(startIso)} - ${t12(endIso)}`,
       link: '/schedule',
     });
   } catch {}
@@ -228,6 +230,7 @@ export async function bulkScheduleClasses(input: {
   type: 'Class' | 'Makeup' | 'Test';
   // Each row is a subject+teacher with a list of days; EACH day has its own time.
   rows: { subjectId: string; teacherId: string; days: { weekday: number; startTime: string; endTime: string }[]; meetingLink?: string }[];
+  invite?: 'both' | 'student' | 'teacher'; // who to add to the calendar (default both)
 }): Promise<{ ok: boolean; created: number; conflicts: number; error?: string; calendarWarning?: string }> {
   if (!input.studentId) return { ok: false, created: 0, conflicts: 0, error: 'Select a student.' };
   if (!input.startDate) return { ok: false, created: 0, conflicts: 0, error: 'Pick a start date.' };
@@ -281,7 +284,11 @@ export async function bulkScheduleClasses(input: {
       reader.from('subjects').select('name').eq('id', r.subjectId).eq('org_id', orgId).maybeSingle(),
     ]);
     const subjectName = (subject as any)?.name ?? 'Class';
-    const attendees = [studentEmail, (teacher as any)?.email].filter(Boolean) as string[];
+    const who = input.invite ?? 'both';
+    const attendees = [
+      who !== 'teacher' ? studentEmail : null,
+      who !== 'student' ? (teacher as any)?.email : null,
+    ].filter(Boolean) as string[];
     const invite = buildClassInvite({ subject: subjectName, teacherName: (teacher as any)?.name, studentName });
     const customLink = r.meetingLink?.trim();
 
@@ -537,8 +544,8 @@ export async function rescheduleClass(input: {
   ]);
   const subjectName = (subject as any)?.name ?? 'Class';
   const classTimePKT = new Date(startIso).toLocaleString('en-GB', {
-    timeZone: 'Asia/Karachi', weekday: 'long', day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit', hour12: true,
-  });
+    timeZone: 'Asia/Karachi', weekday: 'long', day: '2-digit', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true,
+  }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase());
 
   // Move the Google Calendar event (best-effort).
   let calendarWarning: string | undefined;

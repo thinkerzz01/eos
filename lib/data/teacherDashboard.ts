@@ -71,8 +71,8 @@ export async function getTeacherDashboard(): Promise<TeacherDashboard | null> {
     nextClass = {
       label: `${sub?.name ?? 'Class'}${st?.name ? ` · ${st.name}` : ''}`,
       time: new Date(upcoming.start_at).toLocaleString('en-GB', {
-        timeZone: 'Asia/Karachi', weekday: 'short', hour: '2-digit', minute: '2-digit', hour12: true,
-      }),
+        timeZone: 'Asia/Karachi', weekday: 'short', hour: 'numeric', minute: '2-digit', hour12: true,
+      }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase()),
     };
   }
 

@@ -78,7 +78,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
 
   const todaysClasses: TodayClass[] = (classesRes.data ?? []).map((c: any) => ({
     id: c.id,
-    time: new Date(c.start_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Karachi' }),
+    time: new Date(c.start_at).toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Karachi' }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase()),
     subject: one(c.subjects)?.name ?? '',
     student: one(c.students)?.name ?? '',
   }));

@@ -297,7 +297,7 @@ export async function getStudents(): Promise<Student[]> {
     new Date(iso).toLocaleString('en-GB', {
       weekday: 'short', day: 'numeric', month: 'short',
       hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Karachi',
-    });
+    }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase());
   for (const r of sessions) {
     const name = embedName(r.subjects);
     addSubject(r.student_id, name, embedCode(r.subjects));

@@ -101,6 +101,7 @@ export function ScheduleClient({
   const [wizWeeks, setWizWeeks] = useState(4);
   const [wizDurCustom, setWizDurCustom] = useState(false); // "Custom" duration picker
   const [wizEndDate, setWizEndDate] = useState(''); // custom end date (calendar)
+  const [wizInvite, setWizInvite] = useState<'both' | 'student' | 'teacher'>('both'); // who to add to calendar
   const [wizRows, setWizRows] = useState<WizRow[]>([emptyRow()]);
   const [overlapWarning, setOverlapWarning] = useState<string | null>(null);
   const [scheduling, setScheduling] = useState(false);
@@ -540,7 +541,7 @@ export function ScheduleClient({
   const addRow = () => setWizRows((rows) => [...rows, emptyRow()]);
   const removeRow = (i: number) => setWizRows((rows) => (rows.length > 1 ? rows.filter((_, idx) => idx !== i) : rows));
   const resetWizard = () => {
-    setWizStudentId(''); setWizType('Class'); setWizStartDate(todayStr); setWizWeeks(4); setWizDurCustom(false); setWizEndDate(''); setWizRows([emptyRow()]); setOverlapWarning(null);
+    setWizStudentId(''); setWizType('Class'); setWizStartDate(todayStr); setWizWeeks(4); setWizDurCustom(false); setWizEndDate(''); setWizInvite('both'); setWizRows([emptyRow()]); setOverlapWarning(null);
   };
 
   // Bulk-generate the student's timetable. Teacher time conflicts are skipped by
@@ -563,6 +564,7 @@ export function ScheduleClient({
       startDate: wizStartDate,
       type: wizType,
       rows,
+      invite: wizInvite,
       ...(wizDurCustom ? { endDate: wizEndDate } : { weeks: wizWeeks }),
     });
     setScheduling(false);
@@ -1617,6 +1619,24 @@ export function ScheduleClient({
                     )}
                   </div>
                 </div>
+              </div>
+
+              {/* WHO GETS THE CALENDAR INVITE */}
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 font-medium block mb-1">Add to calendar</label>
+                <div className="flex gap-2">
+                  {([['both', 'Student & teacher'], ['student', 'Student only'], ['teacher', 'Teacher only']] as const).map(([val, lbl]) => (
+                    <button
+                      key={val}
+                      type="button"
+                      onClick={() => setWizInvite(val)}
+                      className={`flex-1 px-3 py-2 rounded-xl text-xs font-medium border transition-colors ${wizInvite === val ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 dark:bg-slate-950 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-800'}`}
+                    >
+                      {lbl}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-[11px] text-[#6B7185] mt-1 font-medium normal-case">Who gets the Google Calendar invite for every class generated.</p>
               </div>
 
               {(subjects.length === 0 || teachers.length === 0) && (

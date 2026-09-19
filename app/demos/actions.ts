@@ -152,7 +152,7 @@ export async function assignTeacher(input: {
           weekday: 'long', day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Karachi',
         });
         const fmtT = (d: Date) =>
-          d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'Asia/Karachi' });
+          d.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true, timeZone: 'Asia/Karachi' }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase());
         const googleCalUrl = buildGoogleCalUrl({
           text: invite.summary,
           startISO: start.toISOString(),

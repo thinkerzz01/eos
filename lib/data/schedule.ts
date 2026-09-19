@@ -22,8 +22,8 @@ function one<T>(rel: T | T[] | null | undefined): T | null {
 // Store UTC, display PKT (Asia/Karachi).
 function fmtTime(iso: string): string {
   return new Date(iso).toLocaleTimeString('en-GB', {
-    timeZone: 'Asia/Karachi', hour: '2-digit', minute: '2-digit', hour12: true,
-  });
+    timeZone: 'Asia/Karachi', hour: 'numeric', minute: '2-digit', hour12: true,
+  }).replace(/\b([ap]m)\b/gi, (m) => m.toUpperCase());
 }
 function fmtDate(iso: string): string {
   return new Date(iso).toLocaleDateString('en-GB', {
