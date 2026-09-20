@@ -265,7 +265,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
     { l: 'Active students', v: cActive, sub: 'enrolled', icon: <Users className="h-[18px] w-[18px]" />, ic: 'bg-[#e6f7ee] text-[#11a256]', to: '/students', spark: data.enrollHistory.map((e) => e.count), sparkC: C.green },
     { l: 'New leads', v: cLeads, sub: rangeLabel, icon: <Target className="h-[18px] w-[18px]" />, ic: 'bg-[#eaf1ff] text-[#2f6df6]', to: '/leads', spark: leadsByDay, sparkC: C.blue },
     { l: 'Classes', v: cClasses, sub: selDate === data.todayISO ? 'today' : fmtDay(selDate), icon: <Calendar className="h-[18px] w-[18px]" />, ic: 'bg-[#efedfe] text-[#5b47d6]', to: '/schedule' },
-    { l: 'Needs action', v: cAction, sub: urgentCount > 0 ? `${urgentCount} urgent` : 'all clear', hot: urgentCount > 0, icon: <Zap className="h-[18px] w-[18px]" />, ic: 'bg-[#fdf3e2] text-[#d9820a]' },
+    { l: 'Needs action', v: cAction, sub: urgentCount > 0 ? `${urgentCount} urgent` : attention.length > 0 ? 'none urgent' : 'all clear', hot: urgentCount > 0, icon: <Zap className="h-[18px] w-[18px]" />, ic: 'bg-[#fdf3e2] text-[#d9820a]' },
   ];
   if (!isManager) {
     kpis.push(
