@@ -220,8 +220,12 @@ export function DemosClient({
     setFeeAmount('');
     setFeeStart(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }));
     setFeeEnd('');
-    setFeeSession('');
-    setFeeSessionCustom(false);
+    // Prefill the exam session captured at booking; if it is not one of the
+    // standard options, open the custom field with it filled in.
+    const es = d.examSession?.trim() ?? '';
+    const known = es !== '' && (EXAM_SESSIONS as readonly string[]).includes(es);
+    setFeeSession(es);
+    setFeeSessionCustom(es !== '' && !known);
     setFeeMethod('Bank Transfer');
     setFeeError(null);
   };

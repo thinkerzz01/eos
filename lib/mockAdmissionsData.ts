@@ -49,6 +49,7 @@ export interface DemoSession {
   school?: string;
   city?: string;
   area?: string;
+  examSession?: string; // captured at booking; prefills the enrol / convert modal
 }
 
 

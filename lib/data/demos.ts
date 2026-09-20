@@ -67,6 +67,7 @@ function mapRow(r: any): DemoSession {
     school: lead?.school ?? '',
     city: lead?.city ?? '',
     area: lead?.area ?? '',
+    examSession: lead?.exam_session ?? '',
   };
 }
 
@@ -78,7 +79,7 @@ export async function getDemos(): Promise<DemoSession[]> {
   const user = session?.user;
   if (!user) return [];
 
-  const base = 'id,demo_no,lead_id,teacher_id,scheduled_at,meeting_link,status,outcome,reason,leads(name,parent_name,phone,email,program,subjects,source,school,city,area),subjects(name),teachers(name)';
+  const base = 'id,demo_no,lead_id,teacher_id,scheduled_at,meeting_link,status,outcome,reason,leads(name,parent_name,phone,email,program,subjects,source,school,city,area,exam_session),subjects(name),teachers(name)';
   let data: any = null;
   let error: any = null;
   ({ data, error } = await supabase
