@@ -349,12 +349,8 @@ export function BookingSuccess(props: BookingSuccessProps) {
             </a>
           </div>
         )}
-
-        {/* FOOTER */}
-        <div className="mt-8 text-center">
-          <div className="font-heading font-medium text-[#5B47D6]">Thinkerzz</div>
-          <div className="text-xs text-slate-400 font-medium">Question. Think. Achieve.</div>
-        </div>
+        {/* No brand footer here - the page shell already renders one, which was
+            showing the Thinkerzz wordmark twice at the end of the booking. */}
       </div>
     </div>
   );
