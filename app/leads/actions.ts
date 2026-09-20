@@ -13,6 +13,7 @@ export interface ActionResult {
   ok: boolean;
   error?: string;
   warning?: string;
+  studentId?: string;
 }
 
 async function ctx() {
@@ -278,7 +279,8 @@ export async function convertLead(input: {
   revalidatePath('/vouchers');
   revalidatePath('/payments');
   revalidatePath('/');
-  return { ok: true, warning };
+  revalidatePath('/demos');
+  return { ok: true, warning, studentId };
 }
 
 /** Soft-delete a lead (admin action). RLS enforces admin/manager write. */

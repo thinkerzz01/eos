@@ -10,6 +10,8 @@ import type { SubjectOption } from '@/lib/data/subjects';
 import { ALL_PROGRAMS, LEAD_SOURCES, labelWithCode } from '@/lib/syllabiSeed';
 import { createClient } from '@/lib/supabase/client';
 import { assignTeacher, recordOutcome, deleteDemo, createDemo, updateDemo, bulkDeleteDemos } from './actions';
+import { convertLead } from '@/app/leads/actions';
+import { EXAM_SESSIONS, CUSTOM_SESSION } from '@/lib/sessions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -196,16 +198,73 @@ export function DemosClient({
   const [outcomeModalDemo, setOutcomeModalDemo] = useState<DemoSession | null>(null);
   const [selectedOutcome, setSelectedOutcome] = useState<'Won' | 'Lost' | 'No-show' | 'Pending'>('Won');
   const [outcomeFeedback, setOutcomeFeedback] = useState<string>('');
-  const [outcomeConductedBy, setOutcomeConductedBy] = useState<'internal' | 'external'>('external');
   const [outcomeExternalName, setOutcomeExternalName] = useState<string>('');
   const [enrollLink, setEnrollLink] = useState<string | null>(null);
 
-  // Open Log Outcome, defaulting "conducted by" to internal when a system teacher
-  // is already assigned, otherwise external (the background / not-yet-hired case).
+  // SET FEE & ENROLL MODAL (opens on a won demo; takes the fee up front and
+  // creates the student with a billing plan + first voucher via convertLead).
+  const [feeDemo, setFeeDemo] = useState<DemoSession | null>(null);
+  const [feeMode, setFeeMode] = useState<'monthly' | 'upfront'>('monthly');
+  const [feeAmount, setFeeAmount] = useState('');
+  const [feeStart, setFeeStart] = useState('');
+  const [feeEnd, setFeeEnd] = useState('');
+  const [feeSession, setFeeSession] = useState('');
+  const [feeSessionCustom, setFeeSessionCustom] = useState(false);
+  const [feeMethod, setFeeMethod] = useState('Bank Transfer');
+  const [feeSaving, setFeeSaving] = useState(false);
+  const [feeError, setFeeError] = useState<string | null>(null);
+
+  const openFeeEnroll = (d: DemoSession) => {
+    setFeeDemo(d);
+    setFeeMode('monthly');
+    setFeeAmount('');
+    setFeeStart(new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }));
+    setFeeEnd('');
+    setFeeSession('');
+    setFeeSessionCustom(false);
+    setFeeMethod('Bank Transfer');
+    setFeeError(null);
+  };
+
+  const saveFeeEnroll = async () => {
+    if (!feeDemo?.leadId) return;
+    setFeeError(null);
+    const isUpfront = feeMode === 'upfront';
+    const amt = parseFloat(feeAmount);
+    if (!feeSession.trim()) { setFeeError('Enter the exam session.'); return; }
+    if (Number.isNaN(amt) || amt <= 0) { setFeeError(isUpfront ? 'Enter a valid total amount.' : 'Enter a valid monthly fee.'); return; }
+    if (!feeStart) { setFeeError('Pick the start date.'); return; }
+    if (isUpfront && !feeEnd) { setFeeError('Pick the end date for an upfront / crash-course plan.'); return; }
+    if (feeEnd && feeEnd < feeStart) { setFeeError('The end date cannot be before the start date.'); return; }
+    setFeeSaving(true);
+    const res = await convertLead({
+      leadId: feeDemo.leadId,
+      examSession: feeSession,
+      billingMode: feeMode,
+      amount: amt,
+      startDate: feeStart,
+      endDate: feeEnd || undefined,
+      paymentMethod: feeMethod,
+    });
+    setFeeSaving(false);
+    if (res.ok) {
+      setFeeDemo(null);
+      router.refresh();
+      if (res.warning) showToast(res.warning, 'error');
+      // Student now exists -> offer the onboarding link (admin or family fills the
+      // rest). Same onboarding link whether copied here or shared later.
+      if (res.studentId) setEnrollLink(`${window.location.origin}/onboarding/${res.studentId}`);
+      else showToast('Student enrolled.', 'success');
+    } else {
+      setFeeError(res.error ?? 'Failed to enroll the student.');
+    }
+  };
+
+  // Open Log Outcome. Conducted-by is derived at save time from whether a system
+  // teacher was assigned; only the external tutor's name needs prefilling.
   const openOutcome = (d: DemoSession) => {
     setSelectedOutcome(d.outcome && d.outcome !== 'Pending' ? d.outcome : 'Won');
     setOutcomeFeedback(d.feedback ?? '');
-    setOutcomeConductedBy(d.conductedBy ?? (d.teacherId ? 'internal' : 'external'));
     setOutcomeExternalName(d.externalTeacherName ?? '');
     setOutcomeModalDemo(d);
   };
@@ -285,25 +344,29 @@ export function DemosClient({
     if (!outcomeModalDemo) return;
     setSavingOutcome(true);
 
+    // Conducted-by is derived: a system teacher was assigned -> internal (we know
+    // who); otherwise external, with the typed-in name.
+    const conductedBy: 'internal' | 'external' = outcomeModalDemo.teacherId ? 'internal' : 'external';
     const res = await recordOutcome({
       demoId: outcomeModalDemo.id,
       outcome: selectedOutcome,
       reason: outcomeFeedback,
-      conductedBy: outcomeConductedBy,
-      externalTeacherName: outcomeConductedBy === 'external' ? outcomeExternalName.trim() : undefined,
+      conductedBy,
+      externalTeacherName: conductedBy === 'external' ? outcomeExternalName.trim() : undefined,
     });
     setSavingOutcome(false);
 
     if (res.ok) {
-      const leadId = outcomeModalDemo.leadId;
       const won = selectedOutcome === 'Won';
+      const wonDemo = outcomeModalDemo;
       setOutcomeModalDemo(null);
       setOutcomeFeedback('');
       router.refresh();
-      // On a win, surface the enrollment-form link for the admin to send instead of
-      // a separate "convert" step (the student self-completes their record).
-      if (won && leadId) {
-        setEnrollLink(`${window.location.origin}/enroll/${leadId}`);
+      // On a win we take the fee up front: open "Set fee & enroll" (creates the
+      // student with a billing plan + first voucher). The onboarding link comes
+      // after, once the student exists.
+      if (won && wonDemo.leadId) {
+        openFeeEnroll(wonDemo);
       } else {
         showToast(`Demo outcome saved: ${selectedOutcome}.`, 'success');
       }
@@ -386,16 +449,16 @@ export function DemosClient({
     <PortalLayout title="" subtitle="" allowedRoles={['admin', 'manager']}>
       <div className="space-y-5 text-[#171A2B] dark:text-slate-100 max-w-full overflow-x-hidden pb-12">
 
-        {/* WON -> ENROLLMENT LINK MODAL */}
+        {/* ENROLLED -> ONBOARDING LINK MODAL */}
         {enrollLink && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
             <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4">
               <div className="flex items-center gap-2 text-emerald-600 font-heading font-medium text-lg">
                 <CheckCircle2 className="w-5 h-5" />
-                <span>Student Won - Send Enrollment Form</span>
+                <span>Enrolled - Send Onboarding Form (optional)</span>
               </div>
               <p className="text-xs text-[#6B7185] dark:text-slate-400 font-medium leading-relaxed">
-                Share this link with the parent on WhatsApp. When they submit it, the student record is created automatically - no separate convert step needed.
+                The student is enrolled with their fee and billing set. Share this onboarding link so the parent (or you) can fill the remaining details - school, subjects, guardian. It is the same link whether you fill it now or send it later.
               </p>
               <div className="p-3 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl font-mono text-xs break-all text-slate-800 dark:text-slate-200">
                 {enrollLink}
@@ -902,21 +965,26 @@ export function DemosClient({
                   </select>
                 </div>
 
+                {/* Conducted by: when a system teacher was assigned we already know
+                    who ran it - just show the name. Only ask for a name when the
+                    demo had no system teacher (an outside / not-yet-hired tutor). */}
                 <div>
                   <label className="text-slate-700 block mb-1">Conducted By</label>
-                  <div className="flex gap-2">
-                    <button type="button" onClick={() => setOutcomeConductedBy('internal')} className={`flex-1 px-3 py-2 rounded-xl border font-medium transition-colors ${outcomeConductedBy === 'internal' ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>Internal teacher</button>
-                    <button type="button" onClick={() => setOutcomeConductedBy('external')} className={`flex-1 px-3 py-2 rounded-xl border font-medium transition-colors ${outcomeConductedBy === 'external' ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 text-slate-600 border-slate-200'}`}>External teacher</button>
-                  </div>
-                  <p className="mt-1 text-[11px] text-slate-400 font-medium normal-case">{outcomeConductedBy === 'external' ? 'Conducted by an outside / not-yet-hired teacher. Nothing is emailed - the outcome is just saved. You can add the teacher to the system later.' : 'Conducted by a teacher already in your system.'}</p>
-                  {outcomeConductedBy === 'external' && (
-                    <input
-                      type="text"
-                      value={outcomeExternalName}
-                      onChange={(e) => setOutcomeExternalName(e.target.value)}
-                      placeholder="External tutor's name (e.g. Sir Bilal)"
-                      className="mt-2 w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900"
-                    />
+                  {outcomeModalDemo.teacherId ? (
+                    <div className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900 font-medium">
+                      {outcomeModalDemo.teacherName || 'Assigned teacher'}
+                    </div>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        value={outcomeExternalName}
+                        onChange={(e) => setOutcomeExternalName(e.target.value)}
+                        placeholder="External tutor's name (e.g. Sir Bilal)"
+                        className="w-full bg-slate-50 border rounded-xl p-2.5 text-slate-900"
+                      />
+                      <p className="mt-1 text-[11px] text-slate-400 font-medium normal-case">No system teacher was assigned, so this demo was run by an outside / not-yet-hired tutor. Nothing is emailed - the outcome is just saved.</p>
+                    </>
                   )}
                 </div>
 
@@ -946,6 +1014,92 @@ export function DemosClient({
                     {savingOutcome ? 'Saving...' : 'Save Demo Outcome'}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* SET FEE & ENROLL MODAL (on a won demo) */}
+        {feeDemo && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in">
+            <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+              <div className="flex justify-between items-center border-b pb-3">
+                <div>
+                  <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Set fee &amp; enroll</h3>
+                  <p className="text-xs text-[#6B7185]">Take the fee, then {feeDemo.studentName} becomes an active student with their first voucher.</p>
+                </div>
+                <button onClick={() => setFeeDemo(null)}><X className="w-4 h-4 text-slate-400" /></button>
+              </div>
+
+              <div className="space-y-3 text-xs font-medium">
+                <div>
+                  <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Billing Plan</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button type="button" onClick={() => setFeeMode('monthly')} className={`p-2.5 rounded-lg border text-left transition-all ${feeMode === 'monthly' ? 'bg-emerald-50 border-emerald-400 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}>
+                      <div className="font-medium">Monthly</div>
+                      <div className="text-[11px] leading-tight mt-0.5 opacity-80">One voucher per month, auto-generated.</div>
+                    </button>
+                    <button type="button" onClick={() => setFeeMode('upfront')} className={`p-2.5 rounded-lg border text-left transition-all ${feeMode === 'upfront' ? 'bg-emerald-50 border-emerald-400 text-emerald-900' : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'}`}>
+                      <div className="font-medium">Upfront (crash course)</div>
+                      <div className="text-[11px] leading-tight mt-0.5 opacity-80">One paid block, no monthly fees until it ends.</div>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div>
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Exam Session</label>
+                    {feeSessionCustom ? (
+                      <input type="text" autoFocus value={feeSession} onChange={(e) => setFeeSession(e.target.value)} placeholder="e.g. May/June 2027" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
+                    ) : (
+                      <select
+                        value={feeSession}
+                        onChange={(e) => {
+                          if (e.target.value === CUSTOM_SESSION) { setFeeSessionCustom(true); setFeeSession(''); }
+                          else setFeeSession(e.target.value);
+                        }}
+                        className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100"
+                      >
+                        <option value="">Select...</option>
+                        {EXAM_SESSIONS.map((s) => (<option key={s} value={s}>{s}</option>))}
+                        <option value={CUSTOM_SESSION}>{CUSTOM_SESSION}</option>
+                      </select>
+                    )}
+                  </div>
+                  <div>
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">{feeMode === 'upfront' ? 'Total Amount (PKR)' : 'Monthly Fee (PKR)'}</label>
+                    <input type="number" value={feeAmount} onChange={(e) => setFeeAmount(e.target.value)} placeholder={feeMode === 'upfront' ? 'e.g. 45000' : 'e.g. 20000'} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-mono font-medium text-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Start Date (first fee paid)</label>
+                    <input type="date" value={feeStart} onChange={(e) => setFeeStart(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Billing End Date {feeMode === 'upfront' ? '(required)' : '(optional)'}</label>
+                    <input type="date" value={feeEnd} onChange={(e) => setFeeEnd(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
+                  </div>
+                  <div>
+                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Payment Method</label>
+                    <select value={feeMethod} onChange={(e) => setFeeMethod(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100">
+                      <option value="Bank Transfer">Bank Transfer</option>
+                      <option value="JazzCash">JazzCash</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="p-2.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-medium">
+                  {feeMode === 'upfront'
+                    ? 'Records one upfront block as paid. No monthly vouchers or fee reminders until the end date.'
+                    : 'Records the first month as paid. The next voucher is cut automatically one month later.'}
+                </div>
+                {feeError && <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">{feeError}</div>}
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t">
+                <button onClick={() => setFeeDemo(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+                <button onClick={saveFeeEnroll} disabled={feeSaving} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">
+                  {feeSaving ? 'Enrolling...' : 'Set fee & enroll'}
+                </button>
               </div>
             </div>
           </div>
