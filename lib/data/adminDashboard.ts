@@ -53,6 +53,9 @@ export interface BillingForecast {
   endingNextMonth: number;  // monthly fees of students whose plan ends next month (churn)
   endingCount: number;      // how many students end next month
 }
+// 6-month trend points (oldest -> newest) for the revenue + enrollment charts.
+export interface RevenuePoint { label: string; billed: number; collected: number }
+export interface EnrollPoint { label: string; count: number }
 export interface AdminData {
   demo: boolean;
   todayISO: string;
@@ -60,8 +63,10 @@ export interface AdminData {
   leads: AdminLead[];
   teachers: AdminTeacherLoad[];
   attention: AdminAttention[];
-  fees: { overdue: number; outstanding: number; collectionPct: number };
+  fees: { overdue: number; outstanding: number; collected: number; collectionPct: number };
   forecast: BillingForecast;
+  revenueHistory: RevenuePoint[]; // last 6 months, actual billed vs collected
+  enrollHistory: EnrollPoint[];   // last 6 months, new students per month
   kpis: { classesToday: number; demosToAssign: number; newLeadsToday: number; atRisk: number; overdueAmount: number; activeStudents: number };
   options: { programs: string[]; teachers: string[]; subjects: string[]; sources: string[] };
   health: SystemHealth;
@@ -96,12 +101,26 @@ const EMPTY_FORECAST: BillingForecast = {
 
 export const EMPTY_ADMIN_DATA: AdminData = {
   demo: false, todayISO: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }),
-  classes: [], leads: [], teachers: [], attention: [], fees: { overdue: 0, outstanding: 0, collectionPct: 0 },
+  classes: [], leads: [], teachers: [], attention: [], fees: { overdue: 0, outstanding: 0, collected: 0, collectionPct: 0 },
   forecast: EMPTY_FORECAST,
+  revenueHistory: [], enrollHistory: [],
   kpis: { classesToday: 0, demosToAssign: 0, newLeadsToday: 0, atRisk: 0, overdueAmount: 0, activeStudents: 0 },
   options: { programs: PROGRAMS, teachers: [], subjects: [], sources: SOURCES },
   health: EMPTY_HEALTH,
 };
+
+// Build the last `n` month buckets (oldest -> newest) as { key: 'YYYY-MM', label: 'Sep' }.
+const MON_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function monthBuckets(todayISO: string, n: number): { key: string; label: string }[] {
+  const [yy, mm] = todayISO.slice(0, 7).split('-').map(Number); // mm is 1-12
+  const out: { key: string; label: string }[] = [];
+  for (let i = n - 1; i >= 0; i--) {
+    let m = mm - 1 - i, y = yy;
+    while (m < 0) { m += 12; y -= 1; }
+    out.push({ key: `${y}-${String(m + 1).padStart(2, '0')}`, label: MON_SHORT[m] });
+  }
+  return out;
+}
 
 export async function getAdminDashboard(): Promise<AdminData> {
   const supabase = createClient();
@@ -118,8 +137,13 @@ export async function getAdminDashboard(): Promise<AdminData> {
   const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)).toISOString();
 
   const dayAgo = new Date(now.getTime() - 24 * 3600 * 1000).toISOString();
+  // 6-month history window (for revenue + enrollment trend charts). Start at the
+  // first day of the oldest bucket, in PKT (+05:00), so month grouping is exact.
+  const buckets = monthBuckets(todayISO, 6);
+  const histStart = new Date(`${buckets[0].key}-01T00:00:00+05:00`).toISOString();
   const [clsRes, leadsRes, teachersRes, subjRes, ssRes, demosRes, vouchersRes, paymentsRes, studentsRes,
-    notifsRes, sent24hRes, lastSendRes, clsMissingRes, demoMissingRes] = await Promise.all([
+    notifsRes, sent24hRes, lastSendRes, clsMissingRes, demoMissingRes,
+    vouchersHistRes, paymentsHistRes, studentsHistRes] = await Promise.all([
     supabase.from('class_sessions')
       .select('id,start_at,end_at,status,type,meeting_link,student_id,subject_id,students(name,program),subjects(name),teachers(name)')
       .gte('start_at', winStart).lte('start_at', winEnd).is('deleted_at', null).order('start_at', { ascending: true }),
@@ -137,6 +161,10 @@ export async function getAdminDashboard(): Promise<AdminData> {
     supabase.from('notifications').select('updated_at').eq('status', 'sent').is('deleted_at', null).order('updated_at', { ascending: false }).limit(1),
     supabase.from('class_sessions').select('id', { count: 'exact', head: true }).eq('status', 'scheduled').gte('start_at', now.toISOString()).is('meeting_link', null).is('deleted_at', null),
     supabase.from('demos').select('id', { count: 'exact', head: true }).eq('status', 'scheduled').not('teacher_id', 'is', null).is('meeting_link', null).is('deleted_at', null),
+    // --- 6-month history (revenue + enrollment trends) ---
+    supabase.from('vouchers').select('amount,created_at').gte('created_at', histStart).is('deleted_at', null),
+    supabase.from('payments').select('amount,created_at').gte('created_at', histStart).is('deleted_at', null),
+    supabase.from('students').select('created_at').gte('created_at', histStart).is('deleted_at', null),
   ]);
 
   // classes
@@ -195,6 +223,16 @@ export async function getAdminDashboard(): Promise<AdminData> {
     recurringNextMonth, activeMonthly, endingNextMonth, endingCount,
   };
 
+  // 6-month trends: bucket billed (voucher amount), collected (payments) and new
+  // students by their PKT calendar month. Amounts stay in rupees; the chart scales.
+  const ymOf = (iso: string) => pktDate(iso).slice(0, 7);
+  const billedBy = new Map<string, number>(), collectedBy = new Map<string, number>(), enrollBy = new Map<string, number>();
+  for (const v of (vouchersHistRes.data as any[] ?? [])) { const k = ymOf(v.created_at); billedBy.set(k, (billedBy.get(k) ?? 0) + Number(v.amount ?? 0)); }
+  for (const p of (paymentsHistRes.data as any[] ?? [])) { const k = ymOf(p.created_at); collectedBy.set(k, (collectedBy.get(k) ?? 0) + Number(p.amount ?? 0)); }
+  for (const s of (studentsHistRes.data as any[] ?? [])) { const k = ymOf(s.created_at); enrollBy.set(k, (enrollBy.get(k) ?? 0) + 1); }
+  const revenueHistory: RevenuePoint[] = buckets.map((b) => ({ label: b.label, billed: Math.round(billedBy.get(b.key) ?? 0), collected: Math.round(collectedBy.get(b.key) ?? 0) }));
+  const enrollHistory: EnrollPoint[] = buckets.map((b) => ({ label: b.label, count: enrollBy.get(b.key) ?? 0 }));
+
   // unmarked = past-window classes still not completed/cancelled
   const unmarked = classes.filter((c) => c.status === 'missed').length;
   const demosToAssign = demosRes.count ?? 0;
@@ -229,7 +267,8 @@ export async function getAdminDashboard(): Promise<AdminData> {
 
   return {
     demo: false, todayISO, classes, leads, teachers, attention, health, forecast,
-    fees: { overdue: overdueAmount, outstanding, collectionPct },
+    revenueHistory, enrollHistory,
+    fees: { overdue: overdueAmount, outstanding, collected, collectionPct },
     kpis: {
       classesToday: classes.filter((c) => c.dateISO === todayISO).length,
       demosToAssign,
