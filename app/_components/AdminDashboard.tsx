@@ -39,13 +39,6 @@ function useCountUp(value: number, run = true) {
   return n;
 }
 
-const greeting = () => { const h = new Date().getHours(); return h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : h < 21 ? 'Good evening' : 'Good night'; };
-const todayLine = () => {
-  const d = new Date();
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const mon = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  return `${days[d.getDay()]}, ${d.getDate()} ${mon[d.getMonth()]}`;
-};
 const fmtDay = (iso: string) => new Date(iso + 'T12:00:00Z').toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', month: 'short', timeZone: 'UTC' });
 const shiftDay = (iso: string, n: number) => { const d = new Date(iso + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 const rsK = (n: number) => `Rs ${Math.round(n / 1000)}k`;
@@ -198,7 +191,6 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
   const cLeads = useCountUp(leads.length, mounted);
   const cClasses = useCountUp(dayClasses.length, mounted);
   const cAction = useCountUp(attention.length, mounted);
-  const cCollected = useCountUp(Math.round(data.fees.collected / 1000), mounted);
   const cOverdue = useCountUp(Math.round(data.fees.overdue / 1000), mounted);
 
   // ---- Chart option/series (memoised; recompute when filters/data change) ----
@@ -229,16 +221,26 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
   };
   const enrollSeries = [{ name: 'New students', data: data.enrollHistory.map((e) => e.count) }];
 
+  const funnelSteps = [
+    { label: 'Leads', n: funnel.L }, { label: 'Contacted', n: funnel.C },
+    { label: 'Demos', n: funnel.D }, { label: 'Won', n: funnel.W },
+  ];
+  const convPct = (a: number, b: number) => (a > 0 ? Math.round((b / a) * 100) : 0);
+  const funnelHops = [
+    { to: 'contacted', pct: convPct(funnel.L, funnel.C) },
+    { to: 'demo', pct: convPct(funnel.C, funnel.D) },
+    { to: 'won', pct: convPct(funnel.D, funnel.W) },
+  ];
   const funnelOpts: any = {
-    chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit', foreColor: C.muted, animations: { enabled: true, speed: 450 } },
+    chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit', foreColor: C.muted, animations: { enabled: true, speed: 500 }, dropShadow: { enabled: false } },
     colors: [C.purple, C.purpleSoft, C.blue, C.green],
-    plotOptions: { bar: { horizontal: true, borderRadius: 5, barHeight: '56%', distributed: true } },
-    dataLabels: { enabled: true, style: { colors: ['#fff'], fontWeight: 500, fontSize: '12px' } },
-    grid: { borderColor: C.grid, strokeDashArray: 3 },
-    xaxis: { categories: ['Leads', 'Contacted', 'Demos', 'Won'], axisBorder: { show: false }, axisTicks: { show: false } },
-    legend: { show: false }, tooltip: { theme: 'light' },
+    plotOptions: { bar: { horizontal: true, distributed: true, barHeight: '74%', borderRadius: 4, isFunnel: true } },
+    dataLabels: { enabled: true, formatter: (val: number, opt: any) => `${opt.w.globals.labels[opt.dataPointIndex]}  ${val}`, style: { colors: ['#fff'], fontWeight: 500, fontSize: '12.5px' }, dropShadow: { enabled: false } },
+    grid: { show: false }, xaxis: { categories: funnelSteps.map((s) => s.label) },
+    yaxis: { labels: { show: false } }, legend: { show: false },
+    tooltip: { enabled: true, theme: 'light', y: { formatter: (v: number) => `${v} lead${v === 1 ? '' : 's'}` } },
   };
-  const funnelSeries = [{ name: 'Leads', data: [funnel.L, funnel.C, funnel.D, funnel.W] }];
+  const funnelSeries = [{ name: 'Count', data: funnelSteps.map((s) => s.n) }];
 
   // Teacher load: capacity utilisation, busiest first (already sorted in the data layer).
   const teacherAvg = teachers.length ? Math.round(teachers.reduce((s, t) => s + (t.capacity ? Math.min(100, (t.load / t.capacity) * 100) : 0), 0) / teachers.length) : 0;
@@ -263,23 +265,12 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
   ];
   if (!isManager) {
     kpis.push(
-      { l: 'Collected', v: `Rs ${cCollected}k`, sub: `${data.fees.collectionPct}% of billed`, bullet: data.fees.collectionPct, bulletC: C.green, icon: <Wallet className="h-[18px] w-[18px]" />, ic: 'bg-[#efedfe] text-[#5b47d6]', to: '/finance' },
       { l: 'Overdue fees', v: `Rs ${cOverdue}k`, sub: 'grace expired', hot: data.fees.overdue > 0, icon: <AlertTriangle className="h-[18px] w-[18px]" />, ic: 'bg-[#fdecef] text-[#e0435a]', to: '/vouchers' },
     );
   }
 
   return (
     <div style={{ fontFamily: 'var(--font-dmsans, var(--font-inter), system-ui)' }} className="space-y-4 text-[15px] text-[#0f1729]">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h2 className="m-0 text-[24px] font-medium tracking-tight">{greeting()}, {isManager ? 'Manager' : 'Admin'}</h2>
-          <div className="mt-0.5 text-[14px] text-[#6b7391]">{todayLine()} · here is what needs you today.</div>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-[#d7f0e1] bg-[#effaf3] px-3 py-1.5 text-[12px] font-medium text-[#0f8a44]">
-          <span className="h-2 w-2 animate-pulse rounded-full bg-[#11a256]" />System live
-        </span>
-      </div>
-
       {(data.kpis.demosToAssign > 0 || data.fees.overdue > 0) && (
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
           className="relative flex flex-wrap items-center gap-3.5 overflow-hidden rounded-2xl border border-[#f4cdd4] bg-white px-4 py-3.5">
@@ -308,7 +299,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
       </div>
 
       {/* KPI tiles */}
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-5">
         {kpis.map((k, i) => (
           <Card key={k.l} i={i} className={cls(k.to && 'cursor-pointer', k.hot && '!border-[#f3cdd4]')}>
             <motion.div whileHover={k.to ? { y: -3 } : undefined} transition={{ duration: 0.2 }} onClick={() => k.to && router.push(k.to)}>
@@ -329,23 +320,9 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
         ))}
       </div>
 
-      {/* charts row: revenue (real 6-mo) + enrollment trend */}
-      {!isManager && (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          <Card i={1} className="lg:col-span-8">
-            <SecH title={<><TrendingUp className="h-5 w-5 text-[#5b47d6]" />Revenue and collections</>} right={<span className="text-[13px] text-[#6b7391]">{fMonth ? `${fMonth.replace('*', '')} is forecast` : 'last 6 months'}</span>} />
-            <div className="min-h-[262px]">{mounted && <ReactApexChart options={revOpts} series={revSeries} type="line" height={262} />}</div>
-          </Card>
-          <Card i={2} className="lg:col-span-4">
-            <SecH title={<><Users className="h-5 w-5 text-[#11a256]" />New enrollments</>} right={<span className="text-[13px] text-[#6b7391]">6 mo</span>} />
-            <div className="min-h-[262px]">{mounted && <ReactApexChart options={enrollOpts} series={enrollSeries} type="area" height={262} />}</div>
-          </Card>
-        </div>
-      )}
-
-      {/* hero: classes (day navigator) + action center */}
+      {/* hero: classes (day navigator) + action center - most important, on top */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <Card i={3} className="lg:col-span-7">
+        <Card i={1} className="lg:col-span-7">
           <SecH title={<><Calendar className="h-5 w-5 text-[#5b47d6]" />Classes</>} right={
             <div className="flex items-center gap-2">
               <button onClick={() => setSelDate(shiftDay(selDate, -1))} className="flex h-8 w-8 items-center justify-center rounded-lg border border-[#e0e3ee] text-[#6b7391] hover:bg-[#f6f7fb]"><ChevronLeft className="h-4 w-4" /></button>
@@ -379,7 +356,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
         </Card>
 
         {/* Action center: everything across the system that needs a decision */}
-        <Card i={4} className="lg:col-span-5">
+        <Card i={2} className="lg:col-span-5">
           <SecH title={<><Zap className="h-5 w-5 text-[#d9820a]" />Action center</>} right={<div className="flex items-center gap-2"><Seg value={attnUrgent} onChange={setAttnUrgent} opts={[{ k: 'all', label: 'All' }, { k: 'urgent', label: 'Urgent' }]} />{attention.length > 0 && <span className="rounded-full bg-[#fdecef] px-2 py-0.5 text-[12px] font-medium text-[#e0435a]">{attention.length}</span>}</div>} />
           {attention.length === 0 && <div className="py-8 text-center text-[13px] text-[#98a0bd]">Nothing needs action right now. All clear.</div>}
           {attention.map((a) => {
@@ -396,16 +373,9 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
         </Card>
       </div>
 
-      {/* bento: funnel + teacher load + fees/forecast */}
+      {/* teachers + lead funnel */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-        <Card i={5} className={isManager ? 'lg:col-span-6' : 'lg:col-span-4'}>
-          <SecH title={<><Target className="h-5 w-5 text-[#5b47d6]" />Lead funnel</>} right={<span className="text-[13px] font-medium text-[#11a256]">{funnel.convPct}% convert</span>} />
-          {funnel.L === 0 ? <div className="py-10 text-center text-[13px] text-[#98a0bd]">No leads for these filters.</div>
-            : <div className="min-h-[196px]">{mounted && <ReactApexChart options={funnelOpts} series={funnelSeries} type="bar" height={196} />}</div>}
-          <div className="mt-1 text-center text-[12px] text-[#6b7391]">{leads.length} leads {rangeLabel}</div>
-        </Card>
-
-        <Card i={6} className={isManager ? 'lg:col-span-6' : 'lg:col-span-4'}>
+        <Card i={3} className="lg:col-span-6">
           <SecH title={<><Users className="h-5 w-5 text-[#2f6df6]" />Teacher load</>} right={<Seg value={availOnly} onChange={setAvailOnly} opts={[{ k: 'all', label: 'All' }, { k: 'available', label: 'Free' }]} />} />
           {teachers.length === 0 ? <div className="py-10 text-center text-[13px] text-[#98a0bd]">No teachers to show.</div>
             : <>
@@ -439,27 +409,61 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
             </>}
         </Card>
 
-        {!isManager && <Card i={7} className="lg:col-span-4">
-          <SecH title={<><Wallet className="h-5 w-5 text-[#11a256]" />Fees</>} right={<span className="text-[13px] text-[#6b7391]">Month</span>} />
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="rounded-xl bg-[#f8f9fc] p-3"><div className="text-[12px] text-[#6b7391]">Overdue</div><div className="mt-0.5 text-[18px] font-medium text-[#e0435a]">{rsK(data.fees.overdue)}</div></div>
-            <div className="rounded-xl bg-[#f8f9fc] p-3"><div className="text-[12px] text-[#6b7391]">Outstanding</div><div className="mt-0.5 text-[18px] font-medium text-[#d9820a]">{rsK(data.fees.outstanding)}</div></div>
-          </div>
-          <div className="mt-3 flex items-center gap-2 text-[12.5px]"><span className="text-[#6b7391]">Collection</span><div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#eef0f6]"><motion.i initial={{ width: 0 }} animate={{ width: `${data.fees.collectionPct}%` }} transition={{ duration: 0.8 }} className="block h-full rounded-full bg-[#11a256]" /></div><b className="tabular-nums">{data.fees.collectionPct}%</b></div>
-
-          <div className="mt-3 rounded-xl border border-[#e7e2fb] bg-[#f6f4ff] p-3">
-            <div className="flex items-center justify-between">
-              <span className="text-[12px] text-[#6b7391]">Recurring next month{data.forecast.monthLabel ? ` · ${data.forecast.monthLabel}` : ''}</span>
-              <span className="text-[11px] text-[#8a86a3]">{data.forecast.activeMonthly} monthly</span>
-            </div>
-            <div className="mt-0.5 text-[18px] font-medium text-[#5b47d6]">{rsK(data.forecast.recurringNextMonth)}</div>
-            {data.forecast.endingCount > 0 && (
-              <div className="mt-1 text-[11.5px] text-[#d9820a]">{data.forecast.endingCount} plan{data.forecast.endingCount > 1 ? 's' : ''} end next month (-{rsK(data.forecast.endingNextMonth)})</div>
-            )}
-            <div className="mt-1 text-[11px] text-[#8a86a3]">Billed, not collected. Upfront blocks excluded.</div>
-          </div>
-        </Card>}
+        <Card i={4} className="lg:col-span-6">
+          <SecH title={<><Target className="h-5 w-5 text-[#5b47d6]" />Lead funnel</>} right={<span className="text-[13px] font-medium text-[#11a256]">{funnel.convPct}% convert</span>} />
+          {funnel.L === 0 ? <div className="py-10 text-center text-[13px] text-[#98a0bd]">No leads for these filters.</div>
+            : <>
+              <div className="min-h-[188px]">{mounted && <ReactApexChart options={funnelOpts} series={funnelSeries} type="bar" height={188} />}</div>
+              <div className="mt-2 grid grid-cols-3 gap-1.5 text-center">
+                {funnelHops.map((h) => (
+                  <div key={h.to} className="rounded-lg bg-[#f8f9fc] py-1.5">
+                    <div className="text-[13px] font-medium text-[#0f1729]">{h.pct}%</div>
+                    <div className="text-[11px] text-[#8a86a3]">to {h.to}</div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-2 text-center text-[12px] text-[#6b7391]">{leads.length} leads {rangeLabel} · {funnel.convPct}% overall</div>
+            </>}
+        </Card>
       </div>
+
+      {/* finance and analytics - kept at the end */}
+      {!isManager && (
+        <>
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
+            <Card i={5} className="lg:col-span-8">
+              <SecH title={<><TrendingUp className="h-5 w-5 text-[#5b47d6]" />Revenue and collections</>} right={<span className="text-[13px] text-[#6b7391]">{fMonth ? `${fMonth.replace('*', '')} is forecast` : 'last 6 months'}</span>} />
+              <div className="min-h-[262px]">{mounted && <ReactApexChart options={revOpts} series={revSeries} type="line" height={262} />}</div>
+            </Card>
+            <Card i={6} className="lg:col-span-4">
+              <SecH title={<><Users className="h-5 w-5 text-[#11a256]" />New enrollments</>} right={<span className="text-[13px] text-[#6b7391]">6 mo</span>} />
+              <div className="min-h-[262px]">{mounted && <ReactApexChart options={enrollOpts} series={enrollSeries} type="area" height={262} />}</div>
+            </Card>
+          </div>
+
+          <Card i={7}>
+            <SecH title={<><Wallet className="h-5 w-5 text-[#11a256]" />Fees</>} right={<span className="text-[13px] text-[#6b7391]">This month</span>} />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="rounded-xl bg-[#f8f9fc] p-3"><div className="text-[12px] text-[#6b7391]">Overdue</div><div className="mt-0.5 text-[20px] font-medium text-[#e0435a]">{rsK(data.fees.overdue)}</div><div className="mt-0.5 text-[11px] text-[#8a86a3]">grace expired</div></div>
+              <div className="rounded-xl bg-[#f8f9fc] p-3"><div className="text-[12px] text-[#6b7391]">Outstanding</div><div className="mt-0.5 text-[20px] font-medium text-[#d9820a]">{rsK(data.fees.outstanding)}</div><div className="mt-0.5 text-[11px] text-[#8a86a3]">unpaid vouchers</div></div>
+              <div className="rounded-xl bg-[#f8f9fc] p-3">
+                <div className="text-[12px] text-[#6b7391]">Collection</div>
+                <div className="mt-0.5 flex items-center gap-2"><b className="text-[20px] font-medium tabular-nums text-[#11a256]">{data.fees.collectionPct}%</b>
+                  <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[#eef0f6]"><motion.i initial={{ width: 0 }} animate={{ width: `${data.fees.collectionPct}%` }} transition={{ duration: 0.8 }} className="block h-full rounded-full bg-[#11a256]" /></div>
+                </div>
+                <div className="mt-1 text-[11px] text-[#8a86a3]">of billed collected</div>
+              </div>
+              <div className="rounded-xl border border-[#e7e2fb] bg-[#f6f4ff] p-3">
+                <div className="flex items-center justify-between"><span className="text-[12px] text-[#6b7391]">Recurring next month</span><span className="text-[11px] text-[#8a86a3]">{data.forecast.activeMonthly} monthly</span></div>
+                <div className="mt-0.5 text-[20px] font-medium text-[#5b47d6]">{rsK(data.forecast.recurringNextMonth)}</div>
+                {data.forecast.endingCount > 0
+                  ? <div className="mt-0.5 text-[11px] text-[#d9820a]">{data.forecast.endingCount} plan{data.forecast.endingCount > 1 ? 's' : ''} end next month (-{rsK(data.forecast.endingNextMonth)})</div>
+                  : <div className="mt-0.5 text-[11px] text-[#8a86a3]">billed, upfront excluded</div>}
+              </div>
+            </div>
+          </Card>
+        </>
+      )}
     </div>
   );
 }
