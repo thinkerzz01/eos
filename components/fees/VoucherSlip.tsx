@@ -209,11 +209,14 @@ export function VoucherSlip(props: VoucherSlipProps) {
   const hasWallet = !!(paymentInfo && paymentInfo.wallet);
   const hasPayment = hasBank || hasWallet;
 
+  // The voucher number is an internal reference - never mention it to students,
+  // not even inside the prefilled receipt WhatsApp / email text.
+  const refNo = showVoucherId ? voucherNo : '';
   const receiptWa = `https://wa.me/${ACADEMY_WA}?text=${encodeURIComponent(
-    `Hi Thinkerzz, I have paid my fee voucher${voucherNo ? ` (${voucherNo})` : ''} for ${studentName}. Sharing the payment receipt.`
+    `Hi Thinkerzz, I have paid my fee voucher${refNo ? ` (${refNo})` : ''} for ${studentName}. Sharing the payment receipt.`
   )}`;
   const receiptMail = `mailto:${ACADEMY_EMAIL}?subject=${encodeURIComponent(
-    `Fee Payment Receipt${voucherNo ? ` - ${voucherNo}` : ''}`
+    `Fee Payment Receipt${refNo ? ` - ${refNo}` : ''}`
   )}&body=${encodeURIComponent(
     `Hi Thinkerzz,\n\nPlease find my payment receipt attached for ${studentName}.\n\nThank you.`
   )}`;
