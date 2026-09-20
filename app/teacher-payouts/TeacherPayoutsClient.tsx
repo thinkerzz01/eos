@@ -6,10 +6,11 @@ import { formatPKR } from '@/lib/format';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { useToast } from '@/components/ui/Toast';
-import { recordTeacherPayout, setEnrollmentSalary } from './actions';
+import { recordTeacherPayout, setEnrollmentSalary, updateTeacherPayout, deleteTeacherPayouts, refundTeacherPayout } from './actions';
 import type { SalarySheet, SalaryRow, TeacherRollup } from '@/lib/data/teacherSalaries';
-import { Lock as LockIcon, X, Search, MessageSquare, Wallet, DollarSign } from 'lucide-react';
+import { Lock as LockIcon, X, Search, MessageSquare, Wallet, DollarSign, Pencil, Trash2, RotateCcw } from 'lucide-react';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
+import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Badge } from '@/components/ui/Badge';
 
 // wa.me digits (0300... -> 92300...)
@@ -56,6 +57,7 @@ const fmtDate = (ymd?: string) => {
 export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalarySheet; selectedPeriod: string }) {
   const { role } = useRole();
   const { showToast } = useToast();
+  const { confirm } = useConfirm();
   const router = useRouter();
   const fmt = (n: number) => formatPKR(n);
   const PERIOD = selectedPeriod === 'all' ? 'All months' : periodLabelOf(selectedPeriod);
@@ -78,6 +80,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
   const [salInput, setSalInput] = useState('');
   const [salStartDate, setSalStartDate] = useState('');
   const [salEndDate, setSalEndDate] = useState('');
+  const [salApplyComm, setSalApplyComm] = useState(true);
   const [salSaving, setSalSaving] = useState(false);
   const [salError, setSalError] = useState<string | null>(null);
   const openSalary = (r: SalaryRow) => {
@@ -86,6 +89,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
     // Prefill the class start from the saved date, else the student's start date.
     setSalStartDate(r.classStartDate ?? r.enrolledDate ?? '');
     setSalEndDate(r.classEndDate ?? '');
+    setSalApplyComm(r.applyCommission !== false);
     setSalError(null);
   };
   const saveSalary = async () => {
@@ -100,10 +104,77 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
       monthlySalary: amt,
       classStartDate: salStartDate || null,
       classEndDate: salEndDate || null,
+      applyCommission: salApplyComm,
     });
     setSalSaving(false);
     if (res.ok) { setSalaryRow(null); router.refresh(); showToast('Salary saved.', 'success'); }
     else setSalError(res.error ?? 'Failed to save the salary.');
+  };
+
+  // EDIT PAYOUT MODAL (edit the teacher's recorded payout for this month)
+  const [editRollup, setEditRollup] = useState<TeacherRollup | null>(null);
+  const [editAmount, setEditAmount] = useState('');
+  const [editMethod, setEditMethod] = useState('Bank Transfer');
+  const [editRef, setEditRef] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editSaving, setEditSaving] = useState(false);
+  const openEdit = (t: TeacherRollup) => {
+    if (isAll) { showToast('Pick a specific month to edit a payout.', 'error'); return; }
+    if (!t.payoutId) { showToast('No payout to edit yet.', 'error'); return; }
+    setEditRollup(t);
+    setEditAmount(t.paid > 0 ? String(t.paid) : '');
+    setEditMethod(t.paymentMethod === 'JazzCash' ? 'JazzCash' : 'Bank Transfer');
+    setEditRef('');
+    setEditDate(t.payoutDate || todayPKT());
+  };
+  const submitEdit = async () => {
+    if (!editRollup?.payoutId) return;
+    const amt = parseFloat(editAmount);
+    if (isNaN(amt) || amt === 0) { showToast('Enter a non-zero amount.', 'error'); return; }
+    setEditSaving(true);
+    const res = await updateTeacherPayout({ payoutId: editRollup.payoutId, amount: amt, method: editMethod, reference: editRef, paidAt: editDate || undefined });
+    setEditSaving(false);
+    if (res.ok) { showToast('Payout updated.', 'success'); setEditRollup(null); router.refresh(); }
+    else showToast(res.error ?? 'Could not update the payout.', 'error');
+  };
+  const deletePayouts = async (t: TeacherRollup) => {
+    if (isAll) { showToast('Pick a specific month to delete a payout.', 'error'); return; }
+    if (!t.payoutId) { showToast('No payout to delete.', 'error'); return; }
+    const ok = await confirm({
+      title: `Delete payout${t.payoutCount > 1 ? 's' : ''} for ${t.teacherName}?`,
+      message: `This removes ${t.payoutCount > 1 ? `all ${t.payoutCount} payout records` : 'the payout record'} for ${PERIOD} and marks the teacher unpaid again.`,
+      confirmLabel: 'Delete', danger: true,
+    });
+    if (!ok) return;
+    const res = await deleteTeacherPayouts({ teacherId: t.teacherId, period: PERIOD });
+    if (res.ok) { showToast('Payout deleted.', 'success'); router.refresh(); }
+    else showToast(res.error ?? 'Could not delete the payout.', 'error');
+  };
+
+  // REFUND MODAL (money coming back from a teacher)
+  const [refundRollup, setRefundRollup] = useState<TeacherRollup | null>(null);
+  const [refundAmount, setRefundAmount] = useState('');
+  const [refundMethod, setRefundMethod] = useState('Bank Transfer');
+  const [refundRef, setRefundRef] = useState('');
+  const [refundDate, setRefundDate] = useState('');
+  const [refunding, setRefunding] = useState(false);
+  const openRefund = (t: TeacherRollup) => {
+    if (isAll) { showToast('Pick a specific month to record a refund.', 'error'); return; }
+    setRefundRollup(t);
+    setRefundAmount('');
+    setRefundMethod('Bank Transfer');
+    setRefundRef('');
+    setRefundDate(todayPKT());
+  };
+  const submitRefund = async () => {
+    if (!refundRollup) return;
+    const amt = parseFloat(refundAmount);
+    if (isNaN(amt) || amt <= 0) { showToast('Enter a valid refund amount.', 'error'); return; }
+    setRefunding(true);
+    const res = await refundTeacherPayout({ teacherId: refundRollup.teacherId, amount: amt, method: refundMethod, reference: refundRef, period: PERIOD, paidAt: refundDate || undefined });
+    setRefunding(false);
+    if (res.ok) { showToast(`Refund recorded for ${refundRollup.teacherName}.`, 'success'); setRefundRollup(null); router.refresh(); }
+    else showToast(res.error ?? 'Could not record the refund.', 'error');
   };
 
   // PAY TEACHER MODAL
@@ -234,7 +305,8 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                   <tr key={r.enrollmentId} className="hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
                     <td className="py-3 px-3">
                       <div className="font-medium text-slate-900 dark:text-slate-100">{r.teacherName}</div>
-                      {r.isMonth1 && <span className="inline-block mt-0.5 text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">Month 1 · 25%</span>}
+                      {r.commission > 0 && <span className="inline-block mt-0.5 text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">Month 1 · 25%</span>}
+                      {r.hasSalary && r.isMonth1 && !r.applyCommission && <span className="inline-block mt-0.5 text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">No commission</span>}
                     </td>
                     <td className="py-3 px-3">
                       <div className="font-medium text-slate-900 dark:text-slate-100">{r.studentName}</div>
@@ -284,7 +356,8 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                   </div>
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                     <span className="text-slate-700 dark:text-slate-200">{r.periodLabel}</span>
-                    {r.isMonth1 && <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">Month 1 · 25%</span>}
+                    {r.commission > 0 && <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded px-1.5 py-0.5">Month 1 · 25%</span>}
+                    {r.hasSalary && r.isMonth1 && !r.applyCommission && <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 border border-slate-200 rounded px-1.5 py-0.5">No commission</span>}
                     <span className="text-[#6B7185]">Salary: {r.hasSalary ? pkr(r.monthlySalary) : '-'}</span>
                     {r.commission > 0 && <span className="text-amber-600 font-mono">Comm: {pkr(r.commission)}</span>}
                   </div>
@@ -345,7 +418,10 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                         <RowActionsMenu
                           actions={[
                             { label: tr.status === 'Paid' ? 'Pay Again' : 'Record Payout', icon: <Wallet className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openPay(tr) },
+                            { label: 'Edit Payout', icon: <Pencil className="w-3.5 h-3.5" />, disabled: !tr.payoutId, onClick: () => openEdit(tr) },
+                            { label: 'Refund from Teacher', icon: <RotateCcw className="w-3.5 h-3.5" />, tone: 'warning', disabled: !tr.payoutId, onClick: () => openRefund(tr) },
                             { label: 'Send Receipt', icon: <MessageSquare className="w-3.5 h-3.5" />, tone: 'success', disabled: !tr.teacherPhone, onClick: () => sendReceiptWa(tr) },
+                            { label: 'Delete Payout', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', disabled: !tr.payoutId, onClick: () => deletePayouts(tr) },
                           ]}
                         />
                       </div>
@@ -383,7 +459,10 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                     <RowActionsMenu
                       actions={[
                         { label: tr.status === 'Paid' ? 'Pay Again' : 'Record Payout', icon: <Wallet className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openPay(tr) },
+                        { label: 'Edit Payout', icon: <Pencil className="w-3.5 h-3.5" />, disabled: !tr.payoutId, onClick: () => openEdit(tr) },
+                        { label: 'Refund from Teacher', icon: <RotateCcw className="w-3.5 h-3.5" />, tone: 'warning', disabled: !tr.payoutId, onClick: () => openRefund(tr) },
                         { label: 'Send Receipt', icon: <MessageSquare className="w-3.5 h-3.5" />, tone: 'success', disabled: !tr.teacherPhone, onClick: () => sendReceiptWa(tr) },
+                        { label: 'Delete Payout', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', disabled: !tr.payoutId, onClick: () => deletePayouts(tr) },
                       ]}
                     />
                   </div>
@@ -420,7 +499,14 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                   <input type="date" value={salEndDate} onChange={(e) => setSalEndDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
                 </div>
               </div>
-              <p className="text-[11px] text-slate-500">Auto-filled from the student&apos;s start date. The 25% commission applies only in the month of the start date; from the next month the teacher gets the full salary. Salary stops after the end date - leave it blank for an ongoing class.</p>
+              <label className="flex items-start gap-2.5 rounded-xl border border-[#EBEDF3] dark:border-slate-700 bg-slate-50 dark:bg-slate-950 p-3 cursor-pointer">
+                <input type="checkbox" checked={salApplyComm} onChange={(e) => setSalApplyComm(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#5B47D6] cursor-pointer" />
+                <span>
+                  <span className="block text-slate-800 dark:text-slate-200 font-medium">Apply 25% first-month commission</span>
+                  <span className="block text-[11px] text-slate-500 font-normal mt-0.5">On: the academy keeps 25% in the class-start month; the teacher gets the full salary after. Off: the teacher gets the full salary from month one.</span>
+                </span>
+              </label>
+              <p className="text-[11px] text-slate-500">Class start date sets which month is &quot;month 1&quot;. Salary stops after the end date - leave it blank for an ongoing class.</p>
               {salError && <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium px-3 py-2 rounded-xl">{salError}</div>}
             </div>
             <div className="flex justify-end gap-2 pt-2 border-t">
@@ -469,6 +555,87 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
             <div className="flex justify-end gap-2 pt-3 border-t">
               <button onClick={() => setPayTeacher(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
               <button onClick={submitPay} disabled={paying} className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{paying ? 'Recording...' : 'Record Payout'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT PAYOUT MODAL */}
+      {editRollup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setEditRollup(null)}>
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Edit payout · {editRollup.teacherName}</h3>
+              <button onClick={() => setEditRollup(null)}><X className="w-4 h-4 text-slate-400" /></button>
+            </div>
+            {editRollup.payoutCount > 1 && (
+              <div className="bg-amber-50 border border-amber-200 text-amber-700 text-[11px] font-medium px-3 py-2 rounded-xl">This teacher has {editRollup.payoutCount} payout records in {PERIOD}. Editing updates the latest one.</div>
+            )}
+            <div className="space-y-3 text-xs font-medium">
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1">Amount (PKR)</label>
+                <input type="number" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-slate-900 dark:text-slate-100" />
+              </div>
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1">Payout Date</label>
+                <input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+              </div>
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1">Method</label>
+                <select value={editMethod} onChange={(e) => setEditMethod(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="JazzCash">JazzCash</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1">Reference (optional)</label>
+                <input type="text" value={editRef} onChange={(e) => setEditRef(e.target.value)} placeholder="e.g. transaction id" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-3 border-t">
+              <button onClick={() => setEditRollup(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+              <button onClick={submitEdit} disabled={editSaving} className="px-4 py-2 bg-[#5B47D6] hover:bg-[#4F3DC7] text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{editSaving ? 'Saving...' : 'Save changes'}</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REFUND MODAL */}
+      {refundRollup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setRefundRollup(null)}>
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto shadow-2xl space-y-4" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">Refund from {refundRollup.teacherName}</h3>
+              <button onClick={() => setRefundRollup(null)}><X className="w-4 h-4 text-slate-400" /></button>
+            </div>
+            <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl text-[13px] font-medium grid grid-cols-2 gap-y-1">
+              <span className="text-slate-500">Net paid ({PERIOD})</span><span className="text-right font-mono text-emerald-600">{pkr(refundRollup.paid)}</span>
+            </div>
+            <div className="space-y-3 text-xs font-medium">
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1">Refund Amount (PKR)</label>
+                <input type="number" value={refundAmount} onChange={(e) => setRefundAmount(e.target.value)} placeholder="e.g. 5000" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 font-mono font-medium text-slate-900 dark:text-slate-100" />
+                <p className="text-[11px] text-slate-500 mt-1">Money coming back from the teacher. This reduces their net paid for the month.</p>
+              </div>
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1">Refund Date</label>
+                <input type="date" value={refundDate} onChange={(e) => setRefundDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+              </div>
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1">Method</label>
+                <select value={refundMethod} onChange={(e) => setRefundMethod(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100">
+                  <option value="Bank Transfer">Bank Transfer</option>
+                  <option value="JazzCash">JazzCash</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-slate-700 dark:text-slate-300 block mb-1">Reason / Reference (optional)</label>
+                <input type="text" value={refundRef} onChange={(e) => setRefundRef(e.target.value)} placeholder="e.g. overpaid September" className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-3 border-t">
+              <button onClick={() => setRefundRollup(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+              <button onClick={submitRefund} disabled={refunding} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{refunding ? 'Recording...' : 'Record Refund'}</button>
             </div>
           </div>
         </div>

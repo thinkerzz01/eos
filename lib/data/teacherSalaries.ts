@@ -49,6 +49,7 @@ export interface SalaryRow {
   monthlySalary: number;
   hasSalary: boolean;
   isMonth1: boolean;
+  applyCommission: boolean;         // false = never deduct the 25% first-month cut
   commission: number;
   teacherPay: number;
   studentFee: number;
@@ -65,6 +66,8 @@ export interface TeacherRollup {
   status: 'Pending' | 'Partial' | 'Paid';
   payoutDate?: string;
   paymentMethod: string;
+  payoutId?: string;      // latest payout row (for edit/delete of this period)
+  payoutCount: number;    // how many payout rows exist in this period
 }
 
 export interface SalarySheet {
@@ -119,31 +122,28 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   // Enrollments that existed during (or before) the target month. Select falls
   // back gracefully when a migration has not been applied yet:
   //   FULL (class dates) -> SALARY (salary cols only) -> BASE (no pay cols).
-  const FULL = 'id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,class_start_date,class_end_date,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
-  const SALARY = 'id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
-  const BASE = 'id,teacher_id,student_id,subject_id,created_at,students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
-  let enr: any[] | null = null;
-  {
-    const res = await supabase.from('student_subjects').select(FULL).is('deleted_at', null).lt('created_at', monthEnd);
-    if (res.error) {
-      const sal = await supabase.from('student_subjects').select(SALARY).is('deleted_at', null).lt('created_at', monthEnd);
-      if (sal.error) {
-        const fb = await supabase.from('student_subjects').select(BASE).is('deleted_at', null).lt('created_at', monthEnd);
-        enr = (fb.data as any[]) ?? [];
-      } else {
-        enr = (sal.data as any[]) ?? [];
-      }
-    } else {
-      enr = (res.data as any[]) ?? [];
-    }
+  // Select tiers, most complete first, so the sheet degrades gracefully when a
+  // migration has not run yet: COMM (apply_commission) -> FULL (class dates) ->
+  // SALARY (salary cols) -> BASE (no pay cols).
+  const STU = 'students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone)';
+  const COMM = `id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,class_start_date,class_end_date,apply_commission,created_at,${STU}`;
+  const FULL = `id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,class_start_date,class_end_date,created_at,${STU}`;
+  const SALARY = `id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,created_at,${STU}`;
+  const BASE = `id,teacher_id,student_id,subject_id,created_at,${STU}`;
+  let enr: any[] = [];
+  for (const sel of [COMM, FULL, SALARY, BASE]) {
+    const res = await supabase.from('student_subjects').select(sel).is('deleted_at', null).lt('created_at', monthEnd);
+    if (!res.error) { enr = (res.data as any[]) ?? []; break; }
   }
 
-  // Already-paid this month per teacher (latest row wins for the display date).
-  const paidByTeacher = new Map<string, { amount: number; at: string; method: string }>();
+  // Already-paid this month per teacher (latest row wins for the display date +
+  // the id used to edit/delete). Refunds are stored as negative-amount rows, so
+  // the summed amount is the NET paid.
+  const paidByTeacher = new Map<string, { amount: number; at: string; method: string; id: string; count: number }>();
   {
     let pq = supabase
       .from('teacher_payouts')
-      .select('teacher_id,amount,paid_at,method')
+      .select('id,teacher_id,amount,paid_at,method')
       .is('deleted_at', null)
       .order('paid_at', { ascending: true });
     if (!isAll) pq = pq.eq('period', period); // 'all' sums every period's payouts
@@ -154,6 +154,8 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
         amount: (prev?.amount ?? 0) + Number(p.amount || 0),
         at: p.paid_at,
         method: p.method === 'jazzcash' ? 'JazzCash' : 'Bank Transfer',
+        id: p.id, // latest (rows ordered ascending by paid_at)
+        count: (prev?.count ?? 0) + 1,
       });
     }
   }
@@ -167,6 +169,8 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     if (student.enrolled_at && String(student.enrolled_at) > monthEnd.slice(0, 10)) continue; // not enrolled yet
 
     const monthlySalary = Number(e.monthly_salary ?? 0);
+    // Default true when the column is missing (pre-migration) or not set.
+    const applyCommission = e.apply_commission !== false;
     const enrolledDate = (student.enrolled_at ? String(student.enrolled_at) : String(e.created_at || '')).slice(0, 10);
     // Auto first-paid month = the student's enrolment month (when they first paid
     // us), falling back to the enrolment row's creation month. Admin can override.
@@ -195,7 +199,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
       const capMonth = endMonth && endMonth < selectedYYYYMM ? endMonth : selectedYYYYMM;
       const monthsActive = monthsInclusive(startMonth, capMonth);
       const oneComm = computeSalaryMath({ monthlySalary, isMonth1: true }).commission;
-      commission = monthsActive >= 1 ? oneComm : 0;
+      commission = monthsActive >= 1 && applyCommission ? oneComm : 0;
       teacherPay = Math.max(0, monthlySalary * monthsActive - commission);
       // Show the real class span (start -> end/ongoing) with the month count, so
       // "All months" is not a dateless "All · N mo".
@@ -216,7 +220,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
         rowPeriodLabel = ended ? 'Ended' : 'Not started';
       } else {
         isMonth1 = startMonth === selectedYYYYMM;
-        const math = computeSalaryMath({ monthlySalary, isMonth1 });
+        const math = computeSalaryMath({ monthlySalary, isMonth1: isMonth1 && applyCommission });
         commission = math.commission;
         teacherPay = math.teacherPay;
         rowPeriodLabel = billingPeriodLabel(period, cycleAnchor);
@@ -241,6 +245,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
       monthlySalary,
       hasSalary: monthlySalary > 0,
       isMonth1,
+      applyCommission,
       commission,
       teacherPay,
       studentFee: Number(student.monthly_fee ?? 0),
@@ -270,6 +275,8 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
         status: 'Pending',
         payoutDate: paid ? String(paid.at).slice(0, 10) : undefined,
         paymentMethod: paid?.method ?? '',
+        payoutId: paid?.id,
+        payoutCount: paid?.count ?? 0,
       };
       byTeacher.set(r.teacherId, t);
     }
