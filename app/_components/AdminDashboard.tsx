@@ -71,7 +71,6 @@ const SecH = ({ title, right }: { title: React.ReactNode; right?: React.ReactNod
 // -- System-health heartbeat (catches silent cron / calendar / email failures) --
 type HealthTone = 'green' | 'amber' | 'red';
 const TONE_BG: Record<HealthTone, string> = { green: 'bg-[#e6f7ee] text-[#0f8a44]', amber: 'bg-[#fdf3e2] text-[#b06a06]', red: 'bg-[#fdecef] text-[#c8384f]' };
-const DOT: Record<HealthTone, string> = { green: 'bg-[#11a256]', amber: 'bg-[#d9820a]', red: 'bg-[#e0435a]' };
 
 function HealthPill({ tone, icon, label, detail }: { tone: HealthTone; icon: React.ReactNode; label: string; detail: string }) {
   return (
@@ -110,7 +109,6 @@ function HealthStrip({ health }: { health: SystemHealth }) {
       <div className="mb-2 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 text-[15px] font-medium text-[#0f1729]"><Activity className="h-[18px] w-[18px] text-[#5b47d6]" />System health</div>
         <span className="flex items-center gap-1.5 text-[12px] font-medium text-[#6b7391]">
-          <span className={cls('h-2 w-2 rounded-full', DOT[worst])} />
           {worst === 'green' ? 'All systems operational' : worst === 'amber' ? 'Needs attention' : 'Action required'}
         </span>
       </div>
