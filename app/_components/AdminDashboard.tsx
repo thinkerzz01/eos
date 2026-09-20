@@ -240,15 +240,9 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
   };
   const funnelSeries = [{ name: 'Leads', data: [funnel.L, funnel.C, funnel.D, funnel.W] }];
 
-  const teacherTop = teachers.slice(0, 5);
-  const teacherPcts = teacherTop.map((t) => (t.capacity ? Math.min(100, Math.round((t.load / t.capacity) * 100)) : 0));
-  const teacherAvg = teacherPcts.length ? Math.round(teacherPcts.reduce((a, b) => a + b, 0) / teacherPcts.length) : 0;
-  const teacherOpts: any = {
-    chart: { type: 'radialBar', fontFamily: 'inherit', foreColor: C.muted },
-    colors: [C.purple, C.green, C.blue, C.amber, C.purpleSoft],
-    labels: teacherTop.map((t) => t.name.split(' ')[0]),
-    plotOptions: { radialBar: { hollow: { size: '34%' }, track: { background: C.grid }, dataLabels: { name: { fontSize: '11px' }, value: { fontSize: '13px', formatter: (v: number) => `${Math.round(v)}%` }, total: { show: true, label: 'Avg load', formatter: () => `${teacherAvg}%` } } } },
-  };
+  // Teacher load: capacity utilisation, busiest first (already sorted in the data layer).
+  const teacherAvg = teachers.length ? Math.round(teachers.reduce((s, t) => s + (t.capacity ? Math.min(100, (t.load / t.capacity) * 100) : 0), 0) / teachers.length) : 0;
+  const teacherOverloaded = teachers.filter((t) => t.capacity && t.load / t.capacity >= 0.9).length;
 
   const reset = () => { setRange('This week'); setProgram('All programs'); setTeacher('All teachers'); setSubject('All subjects'); setSource('All sources'); setSelDate(data.todayISO); };
   const exportCsv = () => {
@@ -413,8 +407,36 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
 
         <Card i={6} className={isManager ? 'lg:col-span-6' : 'lg:col-span-4'}>
           <SecH title={<><Users className="h-5 w-5 text-[#2f6df6]" />Teacher load</>} right={<Seg value={availOnly} onChange={setAvailOnly} opts={[{ k: 'all', label: 'All' }, { k: 'available', label: 'Free' }]} />} />
-          {teacherTop.length === 0 ? <div className="py-10 text-center text-[13px] text-[#98a0bd]">No teachers to show.</div>
-            : <div className="min-h-[196px]">{mounted && <ReactApexChart options={teacherOpts} series={teacherPcts} type="radialBar" height={210} />}</div>}
+          {teachers.length === 0 ? <div className="py-10 text-center text-[13px] text-[#98a0bd]">No teachers to show.</div>
+            : <>
+              <div className="mb-3 flex items-center gap-4 rounded-xl bg-[#f8f9fc] px-3 py-2 text-[12.5px]">
+                <span className="text-[#6b7391]">Avg load <b className="text-[#0f1729]">{teacherAvg}%</b></span>
+                <span className="text-[#6b7391]">{teachers.length} teacher{teachers.length > 1 ? 's' : ''}</span>
+                {teacherOverloaded > 0 && <span className="ml-auto rounded-full bg-[#fdecef] px-2 py-0.5 font-medium text-[#e0435a]">{teacherOverloaded} at capacity</span>}
+              </div>
+              <div className="max-h-[240px] space-y-2 overflow-y-auto pr-1">
+                {teachers.map((t) => {
+                  const pct = t.capacity ? Math.min(100, Math.round((t.load / t.capacity) * 100)) : 0;
+                  const free = Math.max(0, t.capacity - t.load);
+                  const bar = pct >= 90 ? '#e0435a' : pct >= 75 ? '#d9820a' : '#11a256';
+                  return (
+                    <div key={t.id} className="flex items-center gap-3 rounded-xl border border-[#eef0f6] p-2.5">
+                      <span className="flex h-9 w-9 flex-none items-center justify-center rounded-[10px] bg-[#efedfe] text-[11px] font-medium text-[#5b47d6]">{t.name.split(' ').map((x) => x[0]).join('').slice(0, 2).toUpperCase()}</span>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate text-[13.5px] font-medium">{t.name}</span>
+                          <span className="flex-none text-[12px] tabular-nums text-[#6b7391]">{t.load}/{t.capacity} · {pct}%</span>
+                        </div>
+                        <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-[#eef0f6]">
+                          <motion.i initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.7, ease: 'easeOut' }} className="block h-full rounded-full" style={{ background: bar }} />
+                        </div>
+                      </div>
+                      <span className={cls('flex-none rounded-full px-2 py-0.5 text-[11.5px] font-medium', free === 0 ? 'bg-[#fdecef] text-[#e0435a]' : 'bg-[#e6f7ee] text-[#0f8a44]')}>{free === 0 ? 'Full' : `${free} free`}</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </>}
         </Card>
 
         {!isManager && <Card i={7} className="lg:col-span-4">
