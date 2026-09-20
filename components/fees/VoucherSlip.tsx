@@ -86,7 +86,7 @@ function statusChip(status: string): string {
 
 const PRINT_CSS = `
 @media print {
-  @page { size: A4; margin: 10mm; }
+  @page { size: A4; margin: 8mm; }
   html, body { background: #ffffff !important; }
   body * { visibility: hidden !important; }
   #voucher-slip-print, #voucher-slip-print * {
@@ -97,20 +97,29 @@ const PRINT_CSS = `
     position: absolute; left: 0; top: 0; width: 100%;
     max-width: 100% !important; max-height: none !important; overflow: visible !important;
     box-shadow: none !important; border: none !important; border-radius: 0 !important;
+    /* Scale the whole slip down a touch so it always lands on ONE page, even with
+       the heavier print fonts / real logo. Chrome honours zoom in print. */
+    zoom: 0.86;
   }
-  /* Compact the layout so the whole voucher comfortably fits one A4 page
-     (allowing headroom for the heavier print fonts and the real logo). */
+  /* Compact the layout so the whole voucher fits one A4 page. */
   #voucher-slip-print .voucher-body { padding: 0 !important; }
-  #voucher-slip-print .voucher-body > * + * { margin-top: 11px !important; }
-  #voucher-slip-print h1 { font-size: 22px !important; line-height: 1.15 !important; }
-  #voucher-slip-print .voucher-summary { padding: 12px 16px !important; }
-  #voucher-slip-print .voucher-summary .font-heading { font-size: 30px !important; }
-  #voucher-slip-print .voucher-info-grid { row-gap: 10px !important; }
-  #voucher-slip-print .mb-4 { margin-bottom: 8px !important; }
-  #voucher-slip-print .mb-3 { margin-bottom: 6px !important; }
-  #voucher-slip-print .border-slate-200.bg-white { padding: 12px !important; }
+  #voucher-slip-print .voucher-body > * + * { margin-top: 8px !important; }
+  #voucher-slip-print h1, #voucher-slip-print h2 { line-height: 1.15 !important; }
+  #voucher-slip-print .voucher-summary { padding: 10px 14px !important; gap: 12px !important; }
+  #voucher-slip-print .voucher-summary .font-heading { font-size: 28px !important; }
+  #voucher-slip-print .voucher-info-grid { row-gap: 8px !important; column-gap: 20px !important; }
+  #voucher-slip-print .mb-4 { margin-bottom: 6px !important; }
+  #voucher-slip-print .mb-3 { margin-bottom: 5px !important; }
+  #voucher-slip-print .border-slate-200.bg-white { padding: 10px !important; }
   #voucher-slip-print section { padding-top: 0 !important; }
-  #voucher-slip-print .voucher-afterpay { padding: 10px 16px !important; }
+  #voucher-slip-print .voucher-afterpay { padding: 8px 14px !important; gap: 10px !important; }
+  /* Never split a block across the page break. */
+  #voucher-slip-print section,
+  #voucher-slip-print .voucher-summary,
+  #voucher-slip-print .voucher-afterpay,
+  #voucher-slip-print .border-slate-200.bg-white {
+    break-inside: avoid !important; page-break-inside: avoid !important;
+  }
 }`;
 
 export function VoucherSlip(props: VoucherSlipProps) {
