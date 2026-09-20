@@ -293,10 +293,10 @@ export default function PublicBookingPage() {
                         <input type="text" required value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} placeholder="+92 300 0000000" className={field} /></div>
                     </div>
                     <div>
-                      <label className={lbl}>Email <span className="text-rose-500">*</span></label>
+                      <label className={lbl}>Student Email <span className="text-rose-500">*</span></label>
                       <div className="relative"><Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                        <input type="email" required value={parentEmail} onChange={(e) => setParentEmail(e.target.value)} placeholder="e.g. parent@gmail.com" className={field} /></div>
-                      <p className="text-[11px] text-slate-400 mt-1">Your demo class invite is sent here.</p>
+                        <input type="email" required value={parentEmail} onChange={(e) => setParentEmail(e.target.value)} placeholder="e.g. student@gmail.com" className={field} /></div>
+                      <p className="text-[11px] text-slate-400 mt-1">The demo class invite and portal login are set up on this email.</p>
                     </div>
                     <div>
                       <label className={lbl}>How Did You Find Us? <span className="text-rose-500">*</span></label>

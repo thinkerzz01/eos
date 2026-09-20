@@ -1,11 +1,16 @@
 'use client';
 
 // Premium multi-step student onboarding. The academy sends /onboarding/<studentId>
-// after a won demo; the student completes their record over 3 steps. The link is
-// keyed to a random UUID, so a tampered URL simply fails to match and shows an
-// "invalid / expired" state; a finished form shows "already completed".
+// after enrolling a won demo; the student completes their record over 3 steps. The
+// link is keyed to a random UUID, so a tampered URL simply fails to match and shows
+// an "invalid / expired" state; a finished form shows "already completed".
+//
+// The program is fixed from the booking (shown, never re-picked), and everything we
+// already captured at booking (name, parent, phone, email, school, city, subjects)
+// is pre-filled. There is NO fee field here - the fee is set by staff at enrollment.
 import React, { useEffect, useMemo, useState } from 'react';
 import { getOnboardingContext, submitOnboarding } from './actions';
+import { subjectsForProgram } from '@/lib/syllabiSeed';
 import { TurnstileWidget } from '@/components/security/TurnstileWidget';
 import {
   CheckCircle2, ArrowRight, ArrowLeft, AlertCircle, User, Users,
@@ -13,12 +18,7 @@ import {
 } from 'lucide-react';
 
 const HELP_WA = (process.env.NEXT_PUBLIC_ACADEMY_WHATSAPP || '923000000000').replace(/\D/g, '');
-
-const GRADES = [
-  'O Level (O1)', 'O Level (O2)', 'A Level (A1)', 'A Level (A2)', 'IGCSE',
-  'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)',
-];
-const TIMES_OF_DAY = ['Morning', 'Afternoon', 'Evening', 'Night'];
+const DEFAULT_TIME = 'Already discussed on WhatsApp';
 
 const STEPS = [
   { n: 1, title: 'Student Details', desc: 'Basic Information About The Student', icon: User },
@@ -41,25 +41,21 @@ export default function OnboardingPage({ params }: { params: { studentId: string
 
   // Step 1 - student
   const [fullName, setFullName] = useState('');
-  const [dob, setDob] = useState('');
   const [gender, setGender] = useState('');
   const [studentEmail, setStudentEmail] = useState('');
   const [studentMobile, setStudentMobile] = useState('');
-  const [grade, setGrade] = useState('');
   const [school, setSchool] = useState('');
-  // Step 2 - parent + contact
+  // Step 2 - parent + contact (one merged phone/WhatsApp number)
   const [parentName, setParentName] = useState('');
   const [parentPhone, setParentPhone] = useState('');
-  const [parentWhatsapp, setParentWhatsapp] = useState('');
   const [parentEmail, setParentEmail] = useState('');
-  const [parentOccupation, setParentOccupation] = useState('');
   const [city, setCity] = useState('');
   const [address, setAddress] = useState('');
   // Step 3 - preferences + consent
-  const [subjects, setSubjects] = useState('');
+  const [selSubjects, setSelSubjects] = useState<string[]>([]);
+  const [otherSubjects, setOtherSubjects] = useState('');
   const [previousResult, setPreviousResult] = useState('');
-  const [timeOfDay, setTimeOfDay] = useState('Evening');
-  const [preferredTime, setPreferredTime] = useState('');
+  const [preferredTime, setPreferredTime] = useState(DEFAULT_TIME);
   const [notes, setNotes] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState('');
@@ -76,19 +72,24 @@ export default function OnboardingPage({ params }: { params: { studentId: string
         setFullName(ctx.name ?? '');
         setProgram(ctx.program ?? '');
         setExamSession(ctx.examSession ?? '');
+        setStudentEmail(ctx.email ?? ''); // booking email is the student's
         setParentName(ctx.parentName ?? '');
-        setParentWhatsapp(ctx.phone ?? '');
-        setParentEmail(ctx.email ?? '');
-        // Also carried from the demo booking so the family doesn't retype them.
+        setParentPhone(ctx.phone ?? ''); // one number - phone / WhatsApp
         if (ctx.city) setCity(ctx.city);
         if (ctx.school) setSchool(ctx.school);
-        if (ctx.subjects) setSubjects(ctx.subjects);
+        if (ctx.subjects) {
+          setSelSubjects(ctx.subjects.split(/[,;]/).map((s) => s.trim()).filter(Boolean));
+        }
         setAlreadyDone(!!ctx.alreadyDone);
       }
       setLoading(false);
     });
     return () => { active = false; };
   }, [params.studentId]);
+
+  const subjectOptions = useMemo(() => subjectsForProgram(program || 'A Level'), [program]);
+  const toggleSubject = (s: string) =>
+    setSelSubjects((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]));
 
   const progress = useMemo(() => Math.round((step / STEPS.length) * 100), [step]);
 
@@ -104,8 +105,8 @@ export default function OnboardingPage({ params }: { params: { studentId: string
         return;
       }
     }
-    if (step === 2 && !parentWhatsapp.trim()) {
-      setError('Please enter the Parent WhatsApp number so we can reach you.');
+    if (step === 2 && !parentPhone.trim()) {
+      setError('Please enter the Parent phone / WhatsApp number so we can reach you.');
       return;
     }
     setStep((s) => Math.min(STEPS.length, s + 1));
@@ -114,22 +115,22 @@ export default function OnboardingPage({ params }: { params: { studentId: string
 
   const handleSubmit = async () => {
     setError('');
-    if (!parentWhatsapp.trim()) { setStep(2); setError('Parent WhatsApp number is required.'); return; }
+    if (!parentPhone.trim()) { setStep(2); setError('Parent phone / WhatsApp number is required.'); return; }
     if (!agreed) { setError('Please accept the privacy policy and code of conduct to continue.'); return; }
+    const subjects = [...selSubjects, ...otherSubjects.split(/[,;]/).map((s) => s.trim()).filter(Boolean)].join(', ');
     setSubmitting(true);
     try {
       const res = await submitOnboarding({
         studentId: params.studentId,
-        whatsapp: parentWhatsapp, // parent WhatsApp = the primary contact
-        email: parentEmail,
+        whatsapp: parentPhone, // the one parent number = the primary contact
+        email: studentEmail,   // keep students.email as the student's own email
         city,
         address,
         gender,
-        dob,
         data: {
-          fullName, studentEmail, studentMobile, grade, school,
-          parentName, parentPhone, parentOccupation,
-          subjects, previousResult, timeOfDay, preferredTime, notes,
+          fullName, studentEmail, studentMobile, school,
+          parentName, parentPhone, parentEmail,
+          subjects, previousResult, preferredTime, notes,
           agreedToPolicy: 'yes',
         },
         turnstileToken,
@@ -146,7 +147,6 @@ export default function OnboardingPage({ params }: { params: { studentId: string
   const field = 'w-full bg-white border border-slate-200 rounded-xl pl-10 pr-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#5B47D6] focus:ring-2 focus:ring-[#5B47D6]/15 transition';
   const plain = 'w-full bg-white border border-slate-200 rounded-xl px-3.5 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#5B47D6] focus:ring-2 focus:ring-[#5B47D6]/15 transition';
   const label = 'block text-xs font-medium text-slate-700 mb-1.5';
-
 
   if (loading) return <Shell><p className="text-center text-sm text-slate-500 py-20">Loading...</p></Shell>;
 
@@ -232,7 +232,13 @@ export default function OnboardingPage({ params }: { params: { studentId: string
             })}
           </div>
 
-          <div className="mt-4 flex items-start gap-2 rounded-2xl bg-slate-50 border border-slate-100 p-3">
+          {/* Program is fixed from the booking - shown, not re-picked. */}
+          <div className="mt-4 rounded-2xl bg-[#5B47D6]/5 border border-[#5B47D6]/15 p-3 text-xs font-medium text-slate-600">
+            <div className="flex items-center gap-1.5 text-[#5B47D6]"><GraduationCap className="w-4 h-4" /> Program</div>
+            <div className="mt-1 text-slate-800">{program || '-'}{examSession ? <span className="text-slate-500"> · {examSession}</span> : null}</div>
+          </div>
+
+          <div className="mt-3 flex items-start gap-2 rounded-2xl bg-slate-50 border border-slate-100 p-3">
             <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
             <div className="text-xs text-slate-500 font-medium">
               <span className="font-medium text-slate-700">Your Data Is Secure.</span> We use industry-standard security to protect your information.
@@ -252,10 +258,6 @@ export default function OnboardingPage({ params }: { params: { studentId: string
                     <input value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="e.g. Hamza Ali Khan" className={field} /></div>
                 </div>
                 <div>
-                  <label className={label}>Date Of Birth</label>
-                  <input type="date" value={dob} onChange={(e) => setDob(e.target.value)} className={plain} />
-                </div>
-                <div>
                   <label className={label}>Gender</label>
                   <select value={gender} onChange={(e) => setGender(e.target.value)} className={plain}>
                     <option value="">Select Gender</option><option value="male">Male</option><option value="female">Female</option><option value="other">Other</option>
@@ -268,13 +270,6 @@ export default function OnboardingPage({ params }: { params: { studentId: string
                 <div>
                   <label className={label}>Student Mobile Number <span className="text-rose-500">*</span></label>
                   <input inputMode="tel" value={studentMobile} onChange={(e) => setStudentMobile(e.target.value)} placeholder="+92 300 0000000" className={plain} />
-                </div>
-                <div>
-                  <label className={label}>Current Grade / Class</label>
-                  <select value={grade} onChange={(e) => setGrade(e.target.value)} className={plain}>
-                    <option value="">Select Current Grade Or Class</option>
-                    {GRADES.map((g) => (<option key={g} value={g}>{g}</option>))}
-                  </select>
                 </div>
                 <div className="sm:col-span-2">
                   <label className={label}>Current School / Institution</label>
@@ -294,21 +289,13 @@ export default function OnboardingPage({ params }: { params: { studentId: string
                   <input value={parentName} onChange={(e) => setParentName(e.target.value)} placeholder="e.g. Mr. Shahzaib Khan" className={plain} />
                 </div>
                 <div>
-                  <label className={label}>Parent Phone Number</label>
-                  <input value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} placeholder="+92 300 0000000" className={plain} />
-                </div>
-                <div>
-                  <label className={label}>Parent WhatsApp Number <span className="text-rose-500">*</span></label>
+                  <label className={label}>Parent Phone / WhatsApp <span className="text-rose-500">*</span></label>
                   <div className="relative"><MessageCircle className="w-4 h-4 text-emerald-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                    <input value={parentWhatsapp} onChange={(e) => setParentWhatsapp(e.target.value)} placeholder="+92 300 0000000" className={field} /></div>
+                    <input value={parentPhone} onChange={(e) => setParentPhone(e.target.value)} placeholder="+92 300 0000000" className={field} /></div>
                 </div>
                 <div>
                   <label className={label}>Parent Email (Optional)</label>
                   <input type="email" value={parentEmail} onChange={(e) => setParentEmail(e.target.value)} placeholder="e.g. parent@example.com" className={plain} />
-                </div>
-                <div>
-                  <label className={label}>Parent Occupation (Optional)</label>
-                  <input value={parentOccupation} onChange={(e) => setParentOccupation(e.target.value)} placeholder="e.g. Businessman" className={plain} />
                 </div>
                 <div>
                   <label className={label}>City</label>
@@ -324,29 +311,38 @@ export default function OnboardingPage({ params }: { params: { studentId: string
 
           {step === 3 && (
             <>
-              <StepHead icon={<CalendarClock className="w-5 h-5" />} title="Preferences & Consent" sub="Tell Us What You Want To Study And When You Prefer Classes." />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="sm:col-span-2">
+              <StepHead icon={<CalendarClock className="w-5 h-5" />} title="Preferences & Consent" sub="Pick Your Subjects And Preferred Timing." />
+              <div className="space-y-4">
+                <div>
                   <label className={label}>Subjects You Want To Study</label>
-                  <input value={subjects} onChange={(e) => setSubjects(e.target.value)} placeholder="e.g. Physics, Chemistry, Mathematics" className={plain} />
+                  <div className="flex flex-wrap gap-2">
+                    {subjectOptions.map((s) => {
+                      const on = selSubjects.includes(s);
+                      return (
+                        <button key={s} type="button" onClick={() => toggleSubject(s)}
+                          className={`px-3 py-1.5 rounded-xl border text-xs font-medium transition ${on ? 'bg-[#5B47D6] text-white border-[#5B47D6]' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}`}>
+                          {s}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <input value={otherSubjects} onChange={(e) => setOtherSubjects(e.target.value)} placeholder="Other subjects (comma separated)" className={`${plain} mt-2`} />
                 </div>
-                <div>
-                  <label className={label}>Previous Result / Percentage (Optional)</label>
-                  <input value={previousResult} onChange={(e) => setPreviousResult(e.target.value)} placeholder="e.g. 82% or A grade" className={plain} />
-                </div>
-                <div>
-                  <label className={label}>Preferred Time Of Day</label>
-                  <select value={timeOfDay} onChange={(e) => setTimeOfDay(e.target.value)} className={plain}>
-                    {TIMES_OF_DAY.map((t) => (<option key={t} value={t}>{t}</option>))}
-                  </select>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className={label}>What Time Suits You Best For Class?</label>
-                  <input value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} placeholder="e.g. Around 5:00 PM, or after 7:00 PM" className={plain} />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className={label}>Anything Else We Should Know? (Optional)</label>
-                  <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any special requirements, medical notes, or preferences" className={plain} />
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className={label}>Previous Result / Percentage (Optional)</label>
+                    <input value={previousResult} onChange={(e) => setPreviousResult(e.target.value)} placeholder="e.g. 82% or A grade" className={plain} />
+                  </div>
+                  <div>
+                    <label className={label}>Preferred Class Time</label>
+                    <input value={preferredTime} onChange={(e) => setPreferredTime(e.target.value)} placeholder={DEFAULT_TIME} className={plain} />
+                    <p className="mt-1 text-[11px] text-slate-400 font-medium">Classes run after 3 PM. Leave as-is if the timing is already agreed on WhatsApp.</p>
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className={label}>Anything Else We Should Know? (Optional)</label>
+                    <textarea rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any special requirements, medical notes, or preferences" className={plain} />
+                  </div>
                 </div>
               </div>
 
