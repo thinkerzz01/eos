@@ -11,7 +11,7 @@ export interface Lead {
   grade: string;
   subjects: string[];
   examSession?: string; // exam sitting captured at booking (prefills convert)
-  stage: 'New' | 'Contacted' | 'Demo Set' | 'Demo Done' | 'Demo Won' | 'Won' | 'Lost';
+  stage: 'New' | 'Contacted' | 'Demo Booked' | 'Demo Passed' | 'Enrolled' | 'Lost';
   temperature: 'Hot' | 'Warm' | 'Cold';
   source: 'Google' | 'Instagram' | 'Public Booking' | 'WhatsApp' | 'Walk-in' | 'Facebook' | 'Referral';
   createdDate: string;

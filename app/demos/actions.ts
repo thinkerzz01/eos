@@ -406,7 +406,7 @@ export async function createDemo(input: {
       program,
       subjects: subjectName,
       source,
-      // A demo is being booked, so the lead starts at "Demo Set" (not "New").
+      // A demo is being booked, so the lead starts at "Demo Booked" (not "New").
       status: 'demo_booked',
       temperature: 'hot',
     })

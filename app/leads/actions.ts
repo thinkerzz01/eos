@@ -319,10 +319,9 @@ export async function softDeleteLead(leadId: string): Promise<ActionResult> {
 const STAGE_DB: Record<string, string> = {
   New: 'new',
   Contacted: 'contacted',
-  'Demo Set': 'demo_booked',
-  'Demo Done': 'demo_booked',
-  'Demo Won': 'demo_won',
-  Won: 'won',
+  'Demo Booked': 'demo_booked',
+  'Demo Passed': 'demo_won',
+  Enrolled: 'won',
   Lost: 'lost',
 };
 const TEMP_DB: Record<string, string> = { Hot: 'hot', Warm: 'warm', Cold: 'cold' };

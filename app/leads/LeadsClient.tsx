@@ -156,9 +156,9 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       all: leadsList.length,
       new: leadsList.filter((l) => l.stage === 'New').length,
       contacted: leadsList.filter((l) => l.stage === 'Contacted').length,
-      demoSet: leadsList.filter((l) => l.stage === 'Demo Set').length,
-      demoWon: leadsList.filter((l) => l.stage === 'Demo Won').length,
-      won: leadsList.filter((l) => l.stage === 'Won').length,
+      demoSet: leadsList.filter((l) => l.stage === 'Demo Booked').length,
+      demoWon: leadsList.filter((l) => l.stage === 'Demo Passed').length,
+      won: leadsList.filter((l) => l.stage === 'Enrolled').length,
       lost: leadsList.filter((l) => l.stage === 'Lost').length,
     };
   }, [leadsList]);
@@ -167,10 +167,9 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
     return leadsList.filter((l) => {
       if (activeStageTab === 'New' && l.stage !== 'New') return false;
       if (activeStageTab === 'Contacted' && l.stage !== 'Contacted') return false;
-      if (activeStageTab === 'Demo Set' && l.stage !== 'Demo Set') return false;
-      if (activeStageTab === 'Demo Done' && l.stage !== 'Demo Done') return false;
-      if (activeStageTab === 'Demo Won' && l.stage !== 'Demo Won') return false;
-      if (activeStageTab === 'Won' && l.stage !== 'Won') return false;
+      if (activeStageTab === 'Demo Booked' && l.stage !== 'Demo Booked') return false;
+      if (activeStageTab === 'Demo Passed' && l.stage !== 'Demo Passed') return false;
+      if (activeStageTab === 'Enrolled' && l.stage !== 'Enrolled') return false;
       if (activeStageTab === 'Lost' && l.stage !== 'Lost') return false;
 
       if (selectedProgram !== 'All Programs' && l.program !== selectedProgram) return false;
@@ -414,9 +413,9 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                 { name: 'All Leads', count: stageCounts.all },
                 { name: 'New', count: stageCounts.new },
                 { name: 'Contacted', count: stageCounts.contacted },
-                { name: 'Demo Set', count: stageCounts.demoSet },
-                { name: 'Demo Won', count: stageCounts.demoWon },
-                { name: 'Won', count: stageCounts.won },
+                { name: 'Demo Booked', count: stageCounts.demoSet },
+                { name: 'Demo Passed', count: stageCounts.demoWon },
+                { name: 'Enrolled', count: stageCounts.won },
                 { name: 'Lost', count: stageCounts.lost },
               ].map((tab) => (
                 <button
@@ -424,7 +423,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   onClick={() => setActiveStageTab(tab.name)}
                   className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
                     activeStageTab === tab.name
-                      ? tab.name === 'Won'
+                      ? tab.name === 'Enrolled'
                         ? 'bg-emerald-600 text-white shadow-sm'
                         : tab.name === 'Lost'
                         ? 'bg-slate-700 text-white shadow-sm'
@@ -519,9 +518,9 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               <option value="">Set stage…</option>
               <option value="New">New</option>
               <option value="Contacted">Contacted</option>
-              <option value="Demo Set">Demo Set</option>
-              <option value="Demo Won">Demo Won</option>
-              <option value="Won">Won</option>
+              <option value="Demo Booked">Demo Booked</option>
+              <option value="Demo Passed">Demo Passed</option>
+              <option value="Enrolled">Enrolled</option>
               <option value="Lost">Lost</option>
             </select>
 
@@ -629,7 +628,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                         </td>
 
                         <td className="py-3.5 px-3">
-                          <Badge tone={l.stage === 'Won' ? 'success' : l.stage === 'Demo Won' ? 'warning' : l.stage === 'Lost' ? 'neutral' : 'brand'}>
+                          <Badge tone={l.stage === 'Enrolled' ? 'success' : l.stage === 'Demo Passed' ? 'warning' : l.stage === 'Lost' ? 'neutral' : 'brand'}>
                             {l.stage}
                           </Badge>
                         </td>
@@ -640,7 +639,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                               <MessageSquare className="w-3.5 h-3.5" />
                             </a>
 
-                            {l.stage !== 'Won' && l.stage !== 'Lost' && (
+                            {l.stage !== 'Enrolled' && l.stage !== 'Lost' && (
                               <button
                                 onClick={() => setConvertModalLead(l)}
                                 title="Convert Lead to Active Student"
@@ -653,7 +652,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                             <RowActionsMenu
                               actions={[
                                 { label: 'Edit Lead', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => setSelectedLeadDrawer(l) },
-                                { label: 'Mark Not Converted', icon: <AlertTriangle className="w-3.5 h-3.5" />, tone: 'warning', hidden: l.stage === 'Won' || l.stage === 'Lost', onClick: () => openNotConverted(l) },
+                                { label: 'Mark Not Converted', icon: <AlertTriangle className="w-3.5 h-3.5" />, tone: 'warning', hidden: l.stage === 'Enrolled' || l.stage === 'Lost', onClick: () => openNotConverted(l) },
                                 { label: 'Delete Lead', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', hidden: role !== 'admin', onClick: () => handleDeleteLead(l.id, l.studentName) },
                               ]}
                             />
@@ -682,7 +681,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                         <div className="text-xs text-[#6B7185] font-mono truncate">{l.leadId}</div>
                       </div>
                       <div className="shrink-0">
-                        <Badge tone={l.stage === 'Won' ? 'success' : l.stage === 'Demo Won' ? 'warning' : l.stage === 'Lost' ? 'neutral' : 'brand'}>{l.stage}</Badge>
+                        <Badge tone={l.stage === 'Enrolled' ? 'success' : l.stage === 'Demo Passed' ? 'warning' : l.stage === 'Lost' ? 'neutral' : 'brand'}>{l.stage}</Badge>
                       </div>
                     </div>
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
@@ -697,7 +696,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       <a href={`https://wa.me/${l.parentPhone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noreferrer" title="WhatsApp Lead" className="w-9 h-9 rounded-xl bg-[#E7F9EE] text-[#12A150] flex items-center justify-center border border-[#BDE8CC]">
                         <MessageSquare className="w-4 h-4" />
                       </a>
-                      {l.stage !== 'Won' && l.stage !== 'Lost' && (
+                      {l.stage !== 'Enrolled' && l.stage !== 'Lost' && (
                         <button
                           onClick={() => setConvertModalLead(l)}
                           title="Convert Lead to Active Student"
@@ -709,7 +708,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       <RowActionsMenu
                         actions={[
                           { label: 'Edit Lead', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => setSelectedLeadDrawer(l) },
-                          { label: 'Mark Not Converted', icon: <AlertTriangle className="w-3.5 h-3.5" />, tone: 'warning', hidden: l.stage === 'Won' || l.stage === 'Lost', onClick: () => openNotConverted(l) },
+                          { label: 'Mark Not Converted', icon: <AlertTriangle className="w-3.5 h-3.5" />, tone: 'warning', hidden: l.stage === 'Enrolled' || l.stage === 'Lost', onClick: () => openNotConverted(l) },
                           { label: 'Delete Lead', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', hidden: role !== 'admin', onClick: () => handleDeleteLead(l.id, l.studentName) },
                         ]}
                       />
@@ -778,7 +777,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                       }}
                       className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100"
                     >
-                      {['New', 'Contacted', 'Demo Set', 'Demo Won', 'Won', 'Lost'].map((s) => (
+                      {['New', 'Contacted', 'Demo Booked', 'Demo Passed', 'Enrolled', 'Lost'].map((s) => (
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
@@ -803,7 +802,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
               )}
 
               {/* CONVERT BUTTON BANNER */}
-              {selectedLeadDrawer.stage !== 'Won' && selectedLeadDrawer.stage !== 'Lost' && (
+              {selectedLeadDrawer.stage !== 'Enrolled' && selectedLeadDrawer.stage !== 'Lost' && (
                 <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-2xl space-y-2">
                   <div className="flex justify-between items-center font-medium text-xs text-emerald-900">
                     <span>Ready to Enroll Student?</span>

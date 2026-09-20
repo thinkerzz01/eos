@@ -23,9 +23,9 @@ interface LeadRow {
 const STAGE_UI: Record<LeadRow['status'], Lead['stage']> = {
   new: 'New',
   contacted: 'Contacted',
-  demo_booked: 'Demo Set',
-  demo_won: 'Demo Won',
-  won: 'Won',
+  demo_booked: 'Demo Booked',
+  demo_won: 'Demo Passed',
+  won: 'Enrolled',
   lost: 'Lost',
 };
 
