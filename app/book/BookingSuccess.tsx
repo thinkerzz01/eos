@@ -29,11 +29,9 @@ export interface BookingSuccessProps {
   onBookAnother: () => void;
 }
 
-const GREETING = (name: string) => (name?.trim() ? name.trim() : 'there');
-
 export function BookingSuccess(props: BookingSuccessProps) {
   const {
-    bookingRef, studentName, parentName, parentPhone, subject, program,
+    bookingRef, studentName, parentPhone, subject, program,
     prettyDate, timeLabel, dateISO, time24, durationMinutes = 30, helpWa,
     homeUrl = '/', onBookAnother,
   } = props;
@@ -171,12 +169,6 @@ export function BookingSuccess(props: BookingSuccessProps) {
             >
               Demo Booked! <span aria-hidden="true">🎉</span>
             </h1>
-            <p className="mt-2 text-sm sm:text-base text-slate-600 font-medium">
-              Thank you, <strong className="text-slate-900">{GREETING(parentName)}</strong>!
-            </p>
-            <p className="text-sm sm:text-base text-slate-600 font-medium">
-              Your free demo{studentName ? <> for <strong className="text-slate-900">{studentName}</strong></> : null} is confirmed.
-            </p>
           </div>
 
           <span className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-medium px-3 py-1.5">
