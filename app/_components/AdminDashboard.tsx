@@ -194,10 +194,19 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
   const cOverdue = useCountUp(Math.round(data.fees.overdue / 1000), mounted);
 
   // ---- Chart option/series (memoised; recompute when filters/data change) ----
-  const fMonth = data.forecast.monthLabel ? `${data.forecast.monthLabel.slice(0, 3)}*` : null;
-  const revLabels = [...data.revenueHistory.map((r) => r.label), ...(fMonth ? [fMonth] : [])];
-  const revBilled = [...data.revenueHistory.map((r) => Math.round(r.billed / 1000)), ...(fMonth ? [Math.round(data.forecast.recurringNextMonth / 1000)] : [])];
-  const revCollected = [...data.revenueHistory.map((r) => Math.round(r.collected / 1000)), ...(fMonth ? [null as any] : [])];
+  // Forward forecast slice, driven by the horizon slider. Also extends the revenue
+  // chart below, so dragging the slider lengthens the forecast tail on that chart.
+  const fc = data.forecastMonths ?? [];
+  const fcMax = fc.length;
+  const fcN = Math.min(Math.max(1, horizon), fcMax || 1);
+  const fcShown = fc.slice(0, fcN);
+
+  // Revenue chart = last 6 months (actual billed vs collected) + the forecast tail:
+  // projected fees as "billed", collected left blank (unknown for the future).
+  // Forecast months are marked with "*".
+  const revLabels = [...data.revenueHistory.map((r) => r.label), ...fcShown.map((m) => `${m.monthLabel.slice(0, 3)}*`)];
+  const revBilled = [...data.revenueHistory.map((r) => Math.round(r.billed / 1000)), ...fcShown.map((m) => Math.round(m.fees / 1000))];
+  const revCollected = [...data.revenueHistory.map((r) => Math.round(r.collected / 1000)), ...fcShown.map(() => null as any)];
   const revOpts: any = {
     chart: { type: 'line', toolbar: { show: false }, fontFamily: 'inherit', foreColor: C.muted, animations: { enabled: true, speed: 500 } },
     colors: [C.purple, C.green], stroke: { width: [0, 3], curve: 'smooth' },
@@ -222,10 +231,6 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
   const enrollSeries = [{ name: 'New students', data: data.enrollHistory.map((e) => e.count) }];
 
   // --- Forward forecast (next N months): fees, salaries, revenue = fees - salaries.
-  const fc = data.forecastMonths ?? [];
-  const fcMax = fc.length;
-  const fcN = Math.min(Math.max(1, horizon), fcMax || 1);
-  const fcShown = fc.slice(0, fcN);
   const fcFees = fcShown.reduce((s, m) => s + m.fees, 0);
   const fcRevenue = fcShown.reduce((s, m) => s + m.revenue, 0);
   const fcSalaries = fcShown.reduce((s, m) => s + m.salaries, 0);
@@ -457,7 +462,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
         <>
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
             <Card i={5} className="lg:col-span-8">
-              <SecH title={<><TrendingUp className="h-5 w-5 text-[#5b47d6]" />Revenue and collections</>} right={<span className="text-[13px] text-[#6b7391]">{fMonth ? `${fMonth.replace('*', '')} is forecast` : 'last 6 months'}</span>} />
+              <SecH title={<><TrendingUp className="h-5 w-5 text-[#5b47d6]" />Revenue and collections</>} right={<span className="text-[13px] text-[#6b7391]">{fcShown.length ? `last 6 mo + ${fcN} forecast` : 'last 6 months'}</span>} />
               <div className="min-h-[262px]">{mounted && <ReactApexChart options={revOpts} series={revSeries} type="line" height={262} />}</div>
             </Card>
             <Card i={6} className="lg:col-span-4">
