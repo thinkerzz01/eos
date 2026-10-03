@@ -384,10 +384,18 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
   let feesBilled = 0;
   let feesReceived = 0;
   {
-    let vq = supabase.from('vouchers').select('id,amount,status').is('deleted_at', null);
+    let vq = supabase.from('vouchers').select('id,amount,status,due_date').is('deleted_at', null);
     if (!isAll) vq = vq.eq('period', period);
     const { data: vs } = await vq;
-    const vouchers = (vs as any[]) ?? [];
+    // A voucher is "billed/outstanding" only once it has actually come DUE as of
+    // today (or is already paid). Vouchers cut a few days ahead by the billing
+    // cron are upcoming fees, not outstanding ones, so they stay out of these
+    // cards until their due date.
+    const vouchers = ((vs as any[]) ?? []).filter((v) => {
+      if (v.status === 'paid') return true;
+      const due = String(v.due_date || '').slice(0, 10);
+      return !!due && due <= today;
+    });
     feesBilled = vouchers.reduce((s, v) => s + Number(v.amount || 0), 0);
     const vids = vouchers.map((v) => v.id);
     const paidByVoucher = new Map<string, number>();

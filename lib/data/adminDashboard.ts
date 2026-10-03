@@ -159,7 +159,7 @@ export async function getAdminDashboard(): Promise<AdminData> {
     supabase.from('subjects').select('name').is('deleted_at', null),
     supabase.from('student_subjects').select('teacher_id').is('deleted_at', null),
     supabase.from('demos').select('id', { count: 'exact', head: true }).eq('status', 'needs_teacher').is('deleted_at', null),
-    supabase.from('vouchers').select('id,amount,status,grace_deadline,students(name)').neq('status', 'paid').is('deleted_at', null),
+    supabase.from('vouchers').select('id,amount,status,due_date,grace_deadline,students(name)').neq('status', 'paid').is('deleted_at', null),
     supabase.from('payments').select('amount').gte('created_at', monthStart).is('deleted_at', null),
     supabase.from('students').select('id,name,fee_status,billing_mode,monthly_fee,billing_end_date').eq('status', 'active').is('deleted_at', null),
     // --- System health ---
@@ -202,7 +202,11 @@ export async function getAdminDashboard(): Promise<AdminData> {
   const vouchers = (vouchersRes.data as any[] ?? []);
   const overdueVouchers = vouchers.filter((v) => v.grace_deadline && pktDate(new Date(v.grace_deadline).toISOString?.() ?? v.grace_deadline) < todayISO);
   const overdueAmount = overdueVouchers.reduce((s, v) => s + Number(v.amount ?? 0), 0);
-  const outstanding = vouchers.reduce((s, v) => s + Number(v.amount ?? 0), 0);
+  // Outstanding = vouchers that have actually come DUE as of today (not the ones
+  // the billing cron cut a few days early). Upcoming fees live in the forecast.
+  const outstanding = vouchers
+    .filter((v) => v.due_date && String(v.due_date).slice(0, 10) <= todayISO)
+    .reduce((s, v) => s + Number(v.amount ?? 0), 0);
   const collected = (paymentsRes.data as any[] ?? []).reduce((s, p) => s + Number(p.amount ?? 0), 0);
   const collectionPct = collected + outstanding > 0 ? Math.round((collected / (collected + outstanding)) * 100) : 0;
 
