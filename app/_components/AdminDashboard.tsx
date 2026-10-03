@@ -238,17 +238,21 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
     ? (fcShown.length === 1 ? fcShown[0].monthLabel : `${fcShown[0].monthLabel} – ${fcShown[fcShown.length - 1].monthLabel}`)
     : '';
   const fcOpts: any = {
-    chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit', foreColor: C.muted, animations: { enabled: true, speed: 400 }, stacked: false },
-    colors: [C.purple, C.green], plotOptions: { bar: { columnWidth: fcN <= 2 ? '32%' : '56%', borderRadius: 5 } },
+    chart: { type: 'line', toolbar: { show: false }, fontFamily: 'inherit', foreColor: C.muted, animations: { enabled: true, speed: 400 }, stacked: false },
+    colors: [C.purple, C.amber, C.green],
+    plotOptions: { bar: { columnWidth: fcN <= 2 ? '40%' : '70%', borderRadius: 4 } },
+    stroke: { width: [0, 0, 3], curve: 'smooth' }, fill: { opacity: [0.9, 0.9, 1] },
+    markers: { size: [0, 0, 4], hover: { size: 6 } },
     dataLabels: { enabled: false }, grid: { borderColor: C.grid, strokeDashArray: 3 },
     xaxis: { categories: fcShown.map((m) => m.monthLabel.slice(0, 3)), axisBorder: { show: false }, axisTicks: { show: false } },
     yaxis: { labels: { formatter: (v: number) => `Rs ${Math.round(v)}k` } },
     legend: { show: true, position: 'top', horizontalAlign: 'right', fontSize: '12px', markers: { radius: 6 } },
-    tooltip: { theme: 'light', y: { formatter: (v: number) => `Rs ${Math.round(v)}k` } },
+    tooltip: { theme: 'light', y: { formatter: (v: number) => (v == null ? '-' : `Rs ${Math.round(v)}k`) } },
   };
   const fcSeries = [
-    { name: 'Fees', data: fcShown.map((m) => Math.round(m.fees / 1000)) },
-    { name: 'Revenue', data: fcShown.map((m) => Math.round(m.revenue / 1000)) },
+    { name: 'Fees', type: 'column', data: fcShown.map((m) => Math.round(m.fees / 1000)) },
+    { name: 'Salaries', type: 'column', data: fcShown.map((m) => Math.round(m.salaries / 1000)) },
+    { name: 'Revenue', type: 'line', data: fcShown.map((m) => Math.round(m.revenue / 1000)) },
   ];
 
   const funnelSteps = [
@@ -530,7 +534,7 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
                     <div className="mt-0.5 text-[11px] text-[#8a86a3]">fees − salaries</div>
                   </div>
                 </div>
-                <div className="mt-2 min-h-[240px]">{mounted && <ReactApexChart options={fcOpts} series={fcSeries} type="bar" height={240} />}</div>
+                <div className="mt-2 min-h-[240px]">{mounted && <ReactApexChart options={fcOpts} series={fcSeries} type="line" height={240} />}</div>
                 <p className="mt-1 text-[11px] text-[#8a86a3]">Billed, not collected. Monthly plans only (upfront excluded); revenue is fees minus teacher salaries (expenses not forecast).</p>
               </>
             )}
