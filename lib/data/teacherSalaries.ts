@@ -65,6 +65,15 @@ function cyclesDue(start: string | null, end: string | null, today: string): num
   return k;
 }
 
+// Earlier of two YMD dates; null means "no limit". Used so a student's billing
+// end (fixed commitment, or a "leaving" date) caps teacher salary even when the
+// enrollment has no explicit class_end_date, or a later one.
+function earlierEnd(a: string | null, b: string | null): string | null {
+  if (!a) return b;
+  if (!b) return a;
+  return a < b ? a : b;
+}
+
 // Pay for n cycles: full salary per cycle, minus the one-off 25% commission if the
 // first cycle is included and commission applies.
 function payFor(salary: number, applyCommission: boolean, nCycles: number): number {
@@ -187,7 +196,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
 
   // Enrollments (non-deleted), with student + teacher. Skip deleted students and
   // removed teachers so nothing dangles.
-  const STU = 'students(name,program,monthly_fee,status,enrolled_at,deleted_at),subjects(name),teachers(name,phone,deleted_at)';
+  const STU = 'students(name,program,monthly_fee,status,enrolled_at,deleted_at,billing_end_date),subjects(name),teachers(name,phone,deleted_at)';
   const COMM = `id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,class_start_date,class_end_date,apply_commission,created_at,${STU}`;
   const FULL = `id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,class_start_date,class_end_date,created_at,${STU}`;
   const SALARY = `id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,created_at,${STU}`;
@@ -241,7 +250,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     const start = classStartDate
       ?? (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month) ? `${e.salary_start_month}-01` : null)
       ?? (enrolledDate || null);
-    const end = classEndDate; // exclusive stop; null = ongoing
+    const end = earlierEnd(classEndDate, student.billing_end_date ? String(student.billing_end_date).slice(0, 10) : null); // exclusive stop; null = ongoing
 
     // Period accrual = cumulative(close) - cumulative(open).
     const payClose = payFor(monthlySalary, applyCommission, cyclesStarted(start, end, asOfClose));
@@ -322,7 +331,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     const start = classStartDate
       ?? (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month) ? `${e.salary_start_month}-01` : null)
       ?? (enrolledDate || null);
-    const end = classEndDate;
+    const end = earlierEnd(classEndDate, student.billing_end_date ? String(student.billing_end_date).slice(0, 10) : null);
 
     const tId = e.teacher_id as string;
     let t = byTeacher.get(tId);

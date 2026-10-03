@@ -9,7 +9,7 @@ import { useToast } from '@/components/ui/Toast';
 import { useConfirm } from '@/components/ui/ConfirmDialog';
 import { Student, EnrolledSubject } from '@/lib/mockStudentsData';
 import { ALL_PROGRAMS, EXAM_SESSIONS, labelWithCode } from '@/lib/syllabiSeed';
-import { bulkCreateStudents, updateStudent, softDeleteStudent, markStudentPassout, bulkDeleteStudents, bulkSetFeeStatus, bulkSetStatus, bulkSetProgram, assignStudentSubjects, grantStudentPortalAccess } from './actions';
+import { bulkCreateStudents, updateStudent, softDeleteStudent, markStudentPassout, endStudentBilling, bulkDeleteStudents, bulkSetFeeStatus, bulkSetStatus, bulkSetProgram, assignStudentSubjects, grantStudentPortalAccess } from './actions';
 import { listStudentEnrollments } from '../schedule/actions';
 import { ResetPasswordControl } from '@/components/account/ResetPasswordControl';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
@@ -76,6 +76,7 @@ import {
   CheckCircle,
   HelpCircle,
   ListChecks,
+  CalendarX2,
 } from 'lucide-react';
 import { StudentSyllabusProgress } from '@/components/syllabus/StudentSyllabusProgress';
 
@@ -392,6 +393,26 @@ export function StudentsClient({
       return;
     }
     router.refresh();
+  };
+
+  // END / STUDENT LEAVING - stop fees + teacher salary from a chosen date (one action).
+  const [endBillingStudent, setEndBillingStudent] = useState<Student | null>(null);
+  const [endBillingDate, setEndBillingDate] = useState('');
+  const [endingBilling, setEndingBilling] = useState(false);
+  const openEndBilling = (s: Student) => {
+    setEndBillingStudent(s);
+    // Default to the start of their next unbilled cycle, so the current month is
+    // billed in full and nothing after is.
+    setEndBillingDate(s.nextDueDate || new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }));
+  };
+  const submitEndBilling = async () => {
+    if (!endBillingStudent) return;
+    if (!endBillingDate) { showToast('Pick the date billing should stop.', 'error'); return; }
+    setEndingBilling(true);
+    const res = await endStudentBilling({ id: endBillingStudent.id, endDate: endBillingDate });
+    setEndingBilling(false);
+    if (res.ok) { showToast(`${endBillingStudent.name}: billing ends ${endBillingDate}. Fees and teacher salary stop from that date.`, 'success'); setEndBillingStudent(null); router.refresh(); }
+    else showToast(res.error ?? 'Could not end the student billing.', 'error');
   };
 
   // DOWNLOAD SAMPLE CSV TEMPLATE
@@ -1437,6 +1458,7 @@ export function StudentsClient({
                                 { label: 'Admission Form', icon: <GraduationCap className="w-3.5 h-3.5" />, tone: 'success', hidden: !isStaff, onClick: () => copyOnboardingLink(s.id) },
                                 { label: hasPortalAccess.has(s.id) ? 'Resend portal access' : 'Send portal access', icon: <Send className="w-3.5 h-3.5" />, tone: hasPortalAccess.has(s.id) ? undefined : 'success', hidden: !isStaff, onClick: () => handleSendAccess(s) },
                                 { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, hidden: !isStaff, onClick: () => setResetStudent(s) },
+                                { label: 'End / Student Leaving', icon: <CalendarX2 className="w-3.5 h-3.5" />, tone: 'warning', hidden: !(isStaff && s.status !== 'alumni'), onClick: () => openEndBilling(s) },
                                 { label: 'Pass Out', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: !(isStaff && s.status !== 'alumni'), onClick: () => handlePassoutStudent(s) },
                                 { label: 'Delete Student', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', hidden: !isStaff, onClick: () => handleDeleteStudent(s.id) },
                               ]}
@@ -1536,6 +1558,7 @@ export function StudentsClient({
                           { label: 'Admission Form', icon: <GraduationCap className="w-3.5 h-3.5" />, tone: 'success', hidden: !isStaff, onClick: () => copyOnboardingLink(s.id) },
                           { label: hasPortalAccess.has(s.id) ? 'Resend portal access' : 'Send portal access', icon: <Send className="w-3.5 h-3.5" />, tone: hasPortalAccess.has(s.id) ? undefined : 'success', hidden: !isStaff, onClick: () => handleSendAccess(s) },
                           { label: 'Reset Password', icon: <KeyRound className="w-3.5 h-3.5" />, hidden: !isStaff, onClick: () => setResetStudent(s) },
+                          { label: 'End / Student Leaving', icon: <CalendarX2 className="w-3.5 h-3.5" />, tone: 'warning', hidden: !(isStaff && s.status !== 'alumni'), onClick: () => openEndBilling(s) },
                           { label: 'Pass Out', icon: <Archive className="w-3.5 h-3.5" />, tone: 'warning', hidden: !(isStaff && s.status !== 'alumni'), onClick: () => handlePassoutStudent(s) },
                           { label: 'Delete Student', icon: <Trash2 className="w-3.5 h-3.5" />, tone: 'danger', hidden: !isStaff, onClick: () => handleDeleteStudent(s.id) },
                         ]}
@@ -2381,6 +2404,31 @@ export function StudentsClient({
       />
       {resetStudent && (
         <ResetPasswordControl id={resetStudent.id} kind="student" autoOpen onClose={() => setResetStudent(null)} />
+      )}
+
+      {/* END / STUDENT LEAVING MODAL */}
+      {endBillingStudent && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-md" onClick={() => setEndBillingStudent(null)}>
+          <div className="bg-white dark:bg-slate-900 border border-[#EBEDF3] dark:border-slate-800 rounded-3xl p-6 max-w-sm w-full shadow-2xl space-y-4 text-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center border-b pb-3">
+              <h3 className="font-heading font-medium text-slate-900 dark:text-white text-base">End billing · {endBillingStudent.name}</h3>
+              <button onClick={() => setEndBillingStudent(null)}><X className="w-4 h-4 text-slate-400" /></button>
+            </div>
+            <div className="space-y-3 text-xs font-medium">
+              <div>
+                <label className="block text-slate-700 dark:text-slate-300 mb-1">Stop billing from</label>
+                <input type="date" value={endBillingDate} onChange={(e) => setEndBillingDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-xl p-2.5 text-slate-900 dark:text-slate-100" />
+              </div>
+              <p className="text-[11px] text-slate-500 leading-relaxed">
+                No fee voucher or teacher salary is charged on or after this date. The current running month is still billed in full (no part-month refunds). Defaults to the next due date, so this month bills and nothing after does. Reversible from Edit Profile.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t">
+              <button onClick={() => setEndBillingStudent(null)} className="px-4 py-2 border rounded-xl font-medium text-xs">Cancel</button>
+              <button onClick={submitEndBilling} disabled={endingBilling} className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-medium text-xs shadow-md disabled:opacity-50">{endingBilling ? 'Saving...' : 'End billing'}</button>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ASSIGN TEACHER & SUBJECTS MODAL */}

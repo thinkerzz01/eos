@@ -54,8 +54,10 @@ export async function runBilling(admin: Admin): Promise<BillingResult> {
     const nextDue = (s as any).next_due_date as string | null;
     if (!nextDue) { skipped++; continue; }
     const end = (s as any).billing_end_date as string | null;
-    // Past the session end -> billing is finished for this student.
-    if (end && nextDue > end) { skipped++; continue; }
+    // billing_end_date is EXCLUSIVE (same rule as teacher-salary class_end_date):
+    // a cycle whose due date is on/after the end is NOT billed. So a "Fixed N
+    // months" student (end = start + N months) is billed for exactly N cycles.
+    if (end && nextDue >= end) { skipped++; continue; }
 
     const period = monthLabelYMD(nextDue);
 

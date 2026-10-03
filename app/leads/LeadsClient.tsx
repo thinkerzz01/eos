@@ -135,6 +135,9 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
   const [convertPaidDate, setConvertPaidDate] = useState(''); // start date / date first fee was paid
   const [convertEndDate, setConvertEndDate] = useState(''); // billing end (session end)
   const [convertBillingMode, setConvertBillingMode] = useState<'monthly' | 'upfront'>('monthly');
+  // Monthly commitment: ongoing (default) or a fixed number of months.
+  const [convertCommitment, setConvertCommitment] = useState<'ongoing' | 'fixed'>('ongoing');
+  const [convertMonths, setConvertMonths] = useState('1');
   const [convertMethod, setConvertMethod] = useState('Bank Transfer');
 
   // Opening the convert modal: start clean and prefill the exam session from the
@@ -323,6 +326,9 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
     if (!convertPaidDate) { showToast('Please select the start date (when the first fee was paid).', 'error'); return; }
     if (isUpfront && !convertEndDate) { showToast('Please select the end date for the upfront / crash-course plan.', 'error'); return; }
     if (convertEndDate && convertEndDate < convertPaidDate) { showToast('The end date cannot be before the start date.', 'error'); return; }
+    const isFixed = !isUpfront && convertCommitment === 'fixed';
+    const months = isFixed ? parseInt(convertMonths, 10) : 0;
+    if (isFixed && (Number.isNaN(months) || months < 1)) { showToast('Enter how many months (1 or more).', 'error'); return; }
 
     setConverting(true);
     const res = await convertLead({
@@ -332,6 +338,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       amount: feeNum,
       startDate: convertPaidDate,
       endDate: convertEndDate || undefined,
+      commitmentMonths: isFixed ? months : null,
       paymentMethod: convertMethod,
     });
     setConverting(false);
@@ -344,6 +351,8 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
       setConvertPaidDate('');
       setConvertEndDate('');
       setConvertBillingMode('monthly');
+      setConvertCommitment('ongoing');
+      setConvertMonths('1');
       setConvertMethod('Bank Transfer');
       router.refresh();
       showToast(res.warning
@@ -961,12 +970,26 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                     <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Start Date (first fee paid)</label>
                     <input type="date" value={convertPaidDate} onChange={(e) => setConvertPaidDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
                   </div>
-                  <div>
-                    <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">
-                      Billing End Date {convertBillingMode === 'upfront' ? '(required)' : '(optional)'}
-                    </label>
-                    <input type="date" value={convertEndDate} onChange={(e) => setConvertEndDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
-                  </div>
+                  {convertBillingMode === 'upfront' ? (
+                    <div>
+                      <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Billing End Date (required)</label>
+                      <input type="date" value={convertEndDate} onChange={(e) => setConvertEndDate(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100" />
+                    </div>
+                  ) : (
+                    <div>
+                      <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Commitment</label>
+                      <div className="flex gap-2">
+                        <select value={convertCommitment} onChange={(e) => setConvertCommitment(e.target.value as 'ongoing' | 'fixed')} className="flex-1 bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100">
+                          <option value="ongoing">Ongoing</option>
+                          <option value="fixed">Fixed months</option>
+                        </select>
+                        {convertCommitment === 'fixed' && (
+                          <input type="number" min={1} value={convertMonths} onChange={(e) => setConvertMonths(e.target.value)} className="w-20 bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-mono font-medium text-slate-900 dark:text-slate-100" />
+                        )}
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-1">{convertCommitment === 'fixed' ? `Billed for ${convertMonths || '?'} month${convertMonths === '1' ? '' : 's'}, then stops automatically (fees and teacher salary).` : 'Billed every month until you end the student.'}</p>
+                    </div>
+                  )}
                   <div>
                     <label className="font-medium text-slate-700 dark:text-slate-300 block mb-1">Payment Method</label>
                     <select value={convertMethod} onChange={(e) => setConvertMethod(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-950 border rounded-lg p-2 font-medium text-slate-900 dark:text-slate-100">
@@ -980,7 +1003,7 @@ export function LeadsClient({ initialLeads }: { initialLeads: Lead[] }) {
                   {convertBillingMode === 'upfront' ? (
                     <>Converting records <strong>one upfront block as paid</strong>. No monthly vouchers or fee reminders are sent until the billing end date.</>
                   ) : (
-                    <>Converting records the <strong>first month as paid</strong>. The next voucher is cut automatically about a week before it is due, one month after the start date{convertEndDate ? ', until the billing end date' : ''}.</>
+                    <>Converting records the <strong>first month as paid</strong>. The next voucher is cut automatically about a week before it is due{convertCommitment === 'fixed' ? `, for ${convertMonths || '?'} month${convertMonths === '1' ? '' : 's'} total then it stops` : ', every month until you end the student'}.</>
                   )}
                 </div>
               </div>

@@ -150,6 +150,7 @@ export async function convertLead(input: {
   amount: number; // monthly fee (monthly) OR total block price (upfront)
   startDate: string; // YYYY-MM-DD - first fee paid / block start
   endDate?: string; // YYYY-MM-DD - billing end (session end); required for upfront
+  commitmentMonths?: number | null; // monthly only: fixed term of N months (null/0 = ongoing)
   paymentMethod?: string; // 'Bank Transfer' | 'JazzCash'
 }): Promise<ActionResult> {
   const mode = input.billingMode === 'upfront' ? 'upfront' : 'monthly';
@@ -183,7 +184,15 @@ export async function convertLead(input: {
     };
   }
 
-  const endDate = input.endDate || null;
+  // Monthly commitment: "Fixed N months" sets an EXCLUSIVE billing end at
+  // start + N months, so exactly N cycles are billed (the cron skips a cycle whose
+  // due date is on/after the end). No commitment = ongoing (no end).
+  const commit = mode === 'monthly' && input.commitmentMonths && input.commitmentMonths > 0
+    ? Math.floor(input.commitmentMonths)
+    : 0;
+  const endDate = commit > 0
+    ? addMonthsYMD(input.startDate, commit)
+    : (input.endDate || null);
   // monthly: next fee is due one calendar month after the start (day-of-month kept).
   // upfront: park next_due_date past the block end so the cron never bills it.
   const nextDue = mode === 'upfront'

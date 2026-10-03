@@ -100,3 +100,20 @@ for his cycle but he was paid the full salary).
 **Deferred:** none.
 **Gaps surfaced (needs a human decision):** Salman — turn OFF his 25% commission
 (then settled) or treat the 4,250 as a real overpayment to recover.
+
+---
+
+## [2026-10-03] Phase 5 — Fixed-term commitment + "Student leaving" (one-month cases)
+
+**Built:** Handle students who stay a fixed number of months (incl. one month) and clean early-exit.
+- Convert/Enroll modal (monthly): new **Commitment** control — Ongoing (default) or Fixed N months. Fixed N sets an EXCLUSIVE billing end = start + N months, so exactly N cycles bill.
+- Billing cron end rule made EXCLUSIVE (`nextDue >= end` skips), matching teacher-salary class_end. Removes the one-month off-by-one.
+- Teacher salary now caps at the EARLIER of class_end_date and the student's billing_end_date, so a commitment/leaving date stops salary automatically (no per-enrollment edit).
+- New **End / Student Leaving** action + modal on the Students list: sets billing_end_date (exclusive) from a chosen date (defaults to next_due_date); stops fees AND teacher salary together; marks student stopped if the date has passed. Reversible.
+- "committed months" stays a note; the enforced stop is billing_end_date. Known short-term = monthly + N (not upfront), per owner.
+**Files touched:** lib/cron/billing.ts, lib/data/teacherSalaries.ts, app/leads/actions.ts (convertLead commitmentMonths), app/leads/LeadsClient.tsx, app/students/actions.ts (endStudentBilling), app/students/StudentsClient.tsx.
+**Tables / migrations:** none (uses existing billing_end_date / class_end_date columns).
+**RLS:** unchanged; finance/student writes admin-scoped as before.
+**Verified:** typecheck + production build clean. No regression for current data (no monthly student has a billing end set; earlierEnd returns the same class end).
+**Deferred:** none.
+**Gaps surfaced:** none.

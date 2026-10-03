@@ -444,6 +444,36 @@ export async function markStudentPassout(id: string): Promise<ActionResult> {
   return { ok: true };
 }
 
+/**
+ * End a student's enrollment from a chosen date. Sets billing_end_date (EXCLUSIVE:
+ * no fee voucher and no teacher-salary cycle on/after that date), so fees and
+ * teacher pay stop together in one action. The current running cycle is still
+ * billed in full (no proration). If the end date has already arrived the student
+ * is marked stopped; a future end date leaves them active so the remaining cycles
+ * still bill, and they simply have no cycles after the end. Reversible by clearing
+ * billing_end_date / re-activating. RLS enforces admin/manager.
+ */
+export async function endStudentBilling(input: { id: string; endDate: string }): Promise<ActionResult> {
+  if (!input.id) return { ok: false, error: 'Missing student id.' };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.endDate || '')) return { ok: false, error: 'Pick a valid end date.' };
+
+  const supabase = createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session?.user) return { ok: false, error: 'You are not signed in.' };
+
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+  const patch: Record<string, any> = { billing_end_date: input.endDate };
+  if (input.endDate <= today) patch.status = 'stopped';
+
+  const { error } = await supabase.from('students').update(patch).eq('id', input.id);
+  if (error) return { ok: false, error: friendlyDbError(error) };
+
+  revalidatePath('/students');
+  revalidatePath('/teacher-payouts');
+  revalidatePath('/');
+  return { ok: true };
+}
+
 /** Soft-delete several students at once. RLS enforces admin/manager. */
 // Deleting a student should also remove the LEAD it converted from (and that
 // lead's demos), so the record disappears from Marketing / Leads / Demos too -
