@@ -654,8 +654,8 @@ export function VouchersClient({
                       </td>
 
                       <td className="py-3.5 px-3">
-                        <Badge tone={v.status === 'Paid' ? 'success' : v.status === 'In Grace' ? 'brand' : v.status === 'Stopped' ? 'neutral' : 'danger'}>
-                          {v.status}
+                        <Badge tone={isUpcoming(v) ? 'neutral' : v.status === 'Paid' ? 'success' : v.status === 'In Grace' ? 'brand' : v.status === 'Stopped' ? 'neutral' : 'danger'}>
+                          {isUpcoming(v) ? 'Upcoming' : v.status}
                         </Badge>
                         {v.needsAdminDecision && (
                           <span className="block text-xs font-medium text-rose-600 mt-1">
@@ -714,8 +714,8 @@ export function VouchersClient({
                       <div className="text-xs text-[#6B7185] font-mono truncate">{v.voucherNo}</div>
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
-                      <Badge tone={v.status === 'Paid' ? 'success' : v.status === 'In Grace' ? 'brand' : v.status === 'Stopped' ? 'neutral' : 'danger'}>
-                        {v.status}
+                      <Badge tone={isUpcoming(v) ? 'neutral' : v.status === 'Paid' ? 'success' : v.status === 'In Grace' ? 'brand' : v.status === 'Stopped' ? 'neutral' : 'danger'}>
+                        {isUpcoming(v) ? 'Upcoming' : v.status}
                       </Badge>
                       {v.needsAdminDecision && (
                         <span className="text-xs font-medium text-rose-600">Needs Admin Decision</span>
