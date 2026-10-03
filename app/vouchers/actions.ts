@@ -341,6 +341,22 @@ export async function createVoucher(input: {
   const { supabase, user, orgId } = await ctx();
   if (!user || !orgId) return { ok: false, error: 'You are not signed in.' };
 
+  const period = input.period?.trim() || input.dueDate.slice(0, 7);
+
+  // One voucher per student per period - matches the billing cron and "Generate
+  // This Month". The DB unique index (uq_vouchers_student_period) is the hard
+  // backstop; this check just returns a friendlier message before hitting it.
+  const { data: dupe } = await supabase
+    .from('vouchers')
+    .select('id')
+    .eq('student_id', input.studentId)
+    .eq('period', period)
+    .is('deleted_at', null)
+    .limit(1);
+  if (dupe && dupe.length > 0) {
+    return { ok: false, error: `This student already has a voucher for ${period}.` };
+  }
+
   const grace = new Date(input.dueDate);
   grace.setDate(grace.getDate() + 3); // locked: 3-day grace
 
@@ -348,7 +364,7 @@ export async function createVoucher(input: {
   const { error } = await supabase.from('vouchers').insert({
     org_id: orgId,
     student_id: input.studentId,
-    period: input.period?.trim() || input.dueDate.slice(0, 7),
+    period,
     amount: input.amount,
     due_date: input.dueDate,
     grace_deadline: grace.toISOString().slice(0, 10),
