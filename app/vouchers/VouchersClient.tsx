@@ -181,10 +181,19 @@ export function VouchersClient({
   // ADMIN FEE DECISION MODAL
   const [decisionVoucher, setDecisionVoucher] = useState<FeeVoucher | null>(null);
 
+  // A voucher is "Upcoming" while it is unpaid and its due date has not arrived
+  // yet (the billing cron cuts vouchers a few days early). It stays out of the
+  // Due / All active views and counts until its due date, but is reachable on the
+  // Upcoming tab so an early payment can still be recorded.
+  const todayPKT = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+  const isUpcoming = (v: FeeVoucher) => v.status === 'Due' && !!v.dueDate && v.dueDate > todayPKT;
+
   const filteredVouchers = useMemo(() => {
     return vouchersList.filter((v) => {
+      if (selectedStatusTab === 'All Vouchers' && isUpcoming(v)) return false;
       if (selectedStatusTab === 'Paid' && v.status !== 'Paid') return false;
-      if (selectedStatusTab === 'Due' && v.status !== 'Due') return false;
+      if (selectedStatusTab === 'Due' && (v.status !== 'Due' || isUpcoming(v))) return false;
+      if (selectedStatusTab === 'Upcoming' && !isUpcoming(v)) return false;
       if (selectedStatusTab === 'In Grace' && v.status !== 'In Grace') return false;
       if (selectedStatusTab === 'Stopped' && v.status !== 'Stopped') return false;
       if (selectedStatusTab === 'Needs Admin Decision' && !v.needsAdminDecision) return false;
@@ -481,9 +490,10 @@ export function VouchersClient({
           <div className="flex items-center justify-between gap-3 flex-wrap border-b border-[#EBEDF3] dark:border-slate-800 pb-3">
             <div className="flex items-center gap-1 bg-[#F6F7FB] dark:bg-slate-800 p-1 rounded-xl flex-wrap">
               {[
-                { name: 'All Vouchers', count: vouchersList.length },
+                { name: 'All Vouchers', count: vouchersList.filter((v) => !isUpcoming(v)).length },
                 { name: 'Paid', count: vouchersList.filter((v) => v.status === 'Paid').length },
-                { name: 'Due', count: vouchersList.filter((v) => v.status === 'Due').length },
+                { name: 'Due', count: vouchersList.filter((v) => v.status === 'Due' && !isUpcoming(v)).length },
+                { name: 'Upcoming', count: vouchersList.filter((v) => isUpcoming(v)).length },
                 { name: 'In Grace', count: vouchersList.filter((v) => v.status === 'In Grace').length },
                 { name: 'Stopped', count: vouchersList.filter((v) => v.status === 'Stopped').length },
                 { name: 'Needs Admin Decision', count: vouchersList.filter((v) => v.needsAdminDecision).length },
