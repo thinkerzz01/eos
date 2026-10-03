@@ -8,7 +8,6 @@ import Link from 'next/link';
 import { PortalLayout } from '@/components/layout/PortalLayout';
 import { useRole } from '@/components/ui/RoleContext';
 import { Student } from '@/lib/mockStudentsData';
-import type { DashboardMetrics } from '@/lib/data/dashboard';
 import type { TeacherDashboard } from '@/lib/data/teacherDashboard';
 import type { ScheduledClass } from '@/lib/mockAcademicsData';
 import { DashboardAlerts } from './_components/DashboardAlerts';
@@ -54,14 +53,12 @@ const ClassCalendar = dynamic(
 
 export function DashboardClient({
   initialStudents,
-  metrics,
   teacherStats,
   adminData,
   studentClasses = [],
   teacherClasses = [],
 }: {
   initialStudents: Student[];
-  metrics?: DashboardMetrics;
   teacherStats?: TeacherDashboard | null;
   adminData: AdminData;
   studentClasses?: ScheduledClass[];
