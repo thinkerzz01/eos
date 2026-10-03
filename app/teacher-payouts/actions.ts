@@ -8,6 +8,16 @@ import { friendlyDbError } from '@/lib/friendlyError';
 
 const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
+// Month label ("October 2026") for a payout, taken from the actual pay date
+// (YYYY-MM-DD) or today in PKT. Kept only as a human-readable note.
+function monthLabelFromPayDate(paidAt?: string): string {
+  const ymd = paidAt && /^\d{4}-\d{2}-\d{2}$/.test(paidAt)
+    ? paidAt
+    : new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+  const [y, m] = ymd.split('-').map(Number);
+  return `${MONTHS[m - 1]} ${y}`;
+}
+
 export interface PayoutResult {
   ok: boolean;
   error?: string;
@@ -42,14 +52,14 @@ export async function recordTeacherPayout(input: {
   if (!profile?.org_id) return { ok: false, error: 'No organisation profile found.' };
   if (profile.role !== 'admin') return { ok: false, error: 'Only an admin can pay teachers.' };
 
-  // UTC to match the reader (lib/data/teacherPayouts + the page), so a recorded
-  // payout lands under the same month label the admin is viewing.
-  const now = new Date();
-  const period = input.period?.trim() || `${MONTHS[now.getUTCMonth()]} ${now.getUTCFullYear()}`;
-
   // Stamp the chosen payout date at noon PKT so the calendar day never rolls
   // over when read back; default to the current timestamp.
   const paidAtIso = input.paidAt ? new Date(`${input.paidAt}T12:00:00+05:00`).toISOString() : undefined;
+
+  // The period label is derived from the ACTUAL pay date, not the month being
+  // viewed. Reconciliation matches by paid_at date (see teacherSalaries.ts), so
+  // this label is just a human note that always agrees with when money moved.
+  const period = monthLabelFromPayDate(input.paidAt);
 
   const { error } = await supabase.from('teacher_payouts').insert({
     org_id: profile.org_id,
@@ -164,12 +174,16 @@ export async function updateTeacherPayout(input: {
   return { ok: true };
 }
 
-// Admin: soft-delete ALL payouts for a teacher in a period (reverts to unpaid).
+// Admin: soft-delete a teacher's payouts for a month, matched by the ACTUAL
+// pay date (paid_at), so it lines up with how the sheet groups them. `periodYYYYMM`
+// is 'YYYY-MM'. Reverts that month's payouts to unpaid.
 export async function deleteTeacherPayouts(input: {
   teacherId: string;
-  period: string;
+  periodYYYYMM: string;
 }): Promise<PayoutResult> {
-  if (!input.teacherId || !input.period) return { ok: false, error: 'Teacher and period are required.' };
+  if (!input.teacherId || !/^\d{4}-\d{2}$/.test(input.periodYYYYMM || '')) {
+    return { ok: false, error: 'Teacher and a specific month are required.' };
+  }
 
   const supabase = createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -177,11 +191,19 @@ export async function deleteTeacherPayouts(input: {
   const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', user.id).is('deleted_at', null).maybeSingle();
   if (profile?.role !== 'admin') return { ok: false, error: 'Only an admin can delete payouts.' };
 
+  // Match payouts whose paid_at falls in the selected PKT month.
+  const [y, m] = input.periodYYYYMM.split('-').map(Number); // m is 1-12
+  const ny = m === 12 ? y + 1 : y;
+  const nm = m === 12 ? 1 : m + 1;
+  const monthStart = new Date(`${input.periodYYYYMM}-01T00:00:00+05:00`).toISOString();
+  const nextStart = new Date(`${ny}-${String(nm).padStart(2, '0')}-01T00:00:00+05:00`).toISOString();
+
   const { error } = await supabase
     .from('teacher_payouts')
     .update({ deleted_at: new Date().toISOString() })
     .eq('teacher_id', input.teacherId)
-    .eq('period', input.period)
+    .gte('paid_at', monthStart)
+    .lt('paid_at', nextStart)
     .is('deleted_at', null);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
@@ -213,8 +235,7 @@ export async function refundTeacherPayout(input: {
   if (!profile?.org_id) return { ok: false, error: 'No organisation profile found.' };
   if (profile.role !== 'admin') return { ok: false, error: 'Only an admin can record a refund.' };
 
-  const now = new Date();
-  const period = input.period?.trim() || `${MONTHS[now.getUTCMonth()]} ${now.getUTCFullYear()}`;
+  const period = monthLabelFromPayDate(input.paidAt);
   const paidAtIso = input.paidAt ? new Date(`${input.paidAt}T12:00:00+05:00`).toISOString() : undefined;
   const ref = input.reference?.trim();
 

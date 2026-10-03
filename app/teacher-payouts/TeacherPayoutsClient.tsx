@@ -146,7 +146,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
       confirmLabel: 'Delete', danger: true,
     });
     if (!ok) return;
-    const res = await deleteTeacherPayouts({ teacherId: t.teacherId, period: PERIOD });
+    const res = await deleteTeacherPayouts({ teacherId: t.teacherId, periodYYYYMM: selectedPeriod });
     if (res.ok) { showToast('Payout deleted.', 'success'); router.refresh(); }
     else showToast(res.error ?? 'Could not delete the payout.', 'error');
   };
@@ -246,7 +246,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
           <div>
             <h1 className="font-heading font-medium text-2xl text-slate-900 dark:text-white">Teacher Salaries &amp; Revenue</h1>
             <p className="text-[13px] text-[#6B7185] dark:text-slate-400 font-medium mt-0.5">
-              Payroll for {PERIOD}. Each teacher earns a fixed monthly salary per student/subject (25% first-month commission). The cards show real cash: fees collected vs salaries paid this month.
+              Payroll for {PERIOD}. Salary accrues one month per teaching cycle (anchored to the class start day; 25% first-month commission), due 7 days after each cycle starts. Balance is cumulative: every payment clears what is owed to date, so any filter reconciles.
             </p>
           </div>
           <div className={boxCls}>
@@ -262,7 +262,7 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
           {[
             { label: 'Fees Received', value: fmt(t.feesReceived), sub: `Collected in ${PERIOD}`, color: 'text-emerald-600' },
             { label: 'Fees Outstanding', value: fmt(t.feesOutstanding), sub: `of ${fmt(t.feesBilled)} billed`, color: 'text-amber-600' },
-            { label: 'Salaries Paid', value: fmt(t.salariesPaid), sub: t.salaryOutstanding > 0 ? `${fmt(t.salaryOutstanding)} still owed` : 'All teachers paid', color: 'text-purple-600' },
+            { label: 'Salaries Paid', value: fmt(t.salariesPaid), sub: t.salaryOutstanding > 0 ? `${fmt(t.salaryOutstanding)} owed${t.salaryOverdue > 0 ? ` · ${fmt(t.salaryOverdue)} overdue` : ''}` : 'All teachers paid', color: 'text-purple-600' },
             { label: 'Net This Month', value: fmt(t.netThisMonth), sub: 'Received − salaries paid', color: t.netThisMonth >= 0 ? 'text-emerald-600' : 'text-rose-600' },
           ].map((c) => (
             <div key={c.label} className="bg-white dark:bg-slate-900 border border-[#EBEDF3] rounded-[18px] p-4 shadow-sm space-y-1">
@@ -408,7 +408,10 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                         <span className="text-slate-400">Not paid</span>
                       )}
                     </td>
-                    <td className="py-3 px-3 text-right font-mono text-rose-600">{pkr(tr.balance)}</td>
+                    <td className="py-3 px-3 text-right font-mono">
+                      {tr.balance > 0 ? <span className="text-rose-600">{pkr(tr.balance)}</span> : tr.overpaid > 0 ? <span className="text-emerald-600">Overpaid {pkr(tr.overpaid)}</span> : <span className="text-slate-400">-</span>}
+                      {tr.overdue > 0 && <span className="block text-[10px] text-amber-600">overdue {pkr(tr.overdue)}</span>}
+                    </td>
                     <td className="py-3 px-3"><Badge tone={tr.status === 'Paid' ? 'success' : tr.status === 'Partial' ? 'warning' : 'neutral'}>{tr.status}</Badge></td>
                     <td className="py-3 px-3">
                       <div className="flex items-center justify-center gap-1.5">
@@ -449,7 +452,9 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                     <span className="text-slate-700 dark:text-slate-200 font-mono">Earned: {pkr(tr.earned)}</span>
                     <span className="text-emerald-600 font-mono">Paid: {pkr(tr.paid)}</span>
-                    {tr.balance > 0 && <span className="text-rose-600 font-mono">Balance: {pkr(tr.balance)}</span>}
+                    {tr.balance > 0 && <span className="text-rose-600 font-mono">Owed: {pkr(tr.balance)}</span>}
+                    {tr.overdue > 0 && <span className="text-amber-600 font-mono">Overdue: {pkr(tr.overdue)}</span>}
+                    {tr.overpaid > 0 && <span className="text-emerald-600 font-mono">Overpaid: {pkr(tr.overpaid)}</span>}
                     {tr.payoutDate && <span className="text-[#6B7185]">{fmtDate(tr.payoutDate)}{tr.paymentMethod ? ` · ${tr.paymentMethod}` : ''}</span>}
                   </div>
                   <div className="flex flex-wrap items-center gap-2 pt-1">
@@ -526,9 +531,12 @@ export function TeacherPayoutsClient({ sheet, selectedPeriod }: { sheet: SalaryS
               <button onClick={() => setPayTeacher(null)}><X className="w-4 h-4 text-slate-400" /></button>
             </div>
             <div className="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl text-[13px] font-medium grid grid-cols-2 gap-y-1">
+              <span className="text-slate-500">Brought forward</span><span className="text-right font-mono">{pkr(payTeacher.opening)}</span>
               <span className="text-slate-500">Earned ({PERIOD})</span><span className="text-right font-mono">{pkr(payTeacher.earned)}</span>
-              <span className="text-slate-500">Already paid</span><span className="text-right font-mono text-emerald-600">{pkr(payTeacher.paid)}</span>
-              <span className="text-slate-500">Balance</span><span className="text-right font-mono text-rose-600">{pkr(payTeacher.balance)}</span>
+              <span className="text-slate-500">Paid ({PERIOD})</span><span className="text-right font-mono text-emerald-600">{pkr(payTeacher.paid)}</span>
+              <span className="text-slate-700 font-semibold border-t border-slate-200 dark:border-slate-700 pt-1 mt-0.5">Balance owed (to date)</span><span className="text-right font-mono text-rose-600 font-semibold border-t border-slate-200 dark:border-slate-700 pt-1 mt-0.5">{pkr(payTeacher.balance)}</span>
+              {payTeacher.overdue > 0 && (<><span className="text-amber-600">of which overdue</span><span className="text-right font-mono text-amber-600">{pkr(payTeacher.overdue)}</span></>)}
+              {payTeacher.overpaid > 0 && (<><span className="text-emerald-600">Overpaid</span><span className="text-right font-mono text-emerald-600">{pkr(payTeacher.overpaid)}</span></>)}
             </div>
             <div className="space-y-3 text-xs font-medium">
               <div>
