@@ -3,6 +3,11 @@
 // leads, teacher load, attention items, fees, and filter options from live data.
 import { createClient } from '@/lib/supabase/server';
 import { addDaysYMD, addMonthsYMD, firstOfMonthYMD, monthLabelYMD } from '@/lib/date/ymd';
+import { getForecast, type ForecastMonth } from '@/lib/data/forecast';
+
+// How many months of forward forecast to compute. The dashboard slider lets the
+// admin view any sub-range (1 .. this) without another request.
+const FORECAST_MONTHS = 6;
 
 export interface AdminClass {
   id: string;
@@ -65,6 +70,7 @@ export interface AdminData {
   attention: AdminAttention[];
   fees: { overdue: number; outstanding: number; collected: number; collectionPct: number };
   forecast: BillingForecast;
+  forecastMonths: ForecastMonth[]; // next N months, projected fees/salaries/revenue
   revenueHistory: RevenuePoint[]; // last 6 months, actual billed vs collected
   enrollHistory: EnrollPoint[];   // last 6 months, new students per month
   kpis: { classesToday: number; demosToAssign: number; newLeadsToday: number; atRisk: number; overdueAmount: number; activeStudents: number };
@@ -103,6 +109,7 @@ export const EMPTY_ADMIN_DATA: AdminData = {
   demo: false, todayISO: new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' }),
   classes: [], leads: [], teachers: [], attention: [], fees: { overdue: 0, outstanding: 0, collected: 0, collectionPct: 0 },
   forecast: EMPTY_FORECAST,
+  forecastMonths: [],
   revenueHistory: [], enrollHistory: [],
   kpis: { classesToday: 0, demosToAssign: 0, newLeadsToday: 0, atRisk: 0, overdueAmount: 0, activeStudents: 0 },
   options: { programs: PROGRAMS, teachers: [], subjects: [], sources: SOURCES },
@@ -223,6 +230,11 @@ export async function getAdminDashboard(): Promise<AdminData> {
     recurringNextMonth, activeMonthly, endingNextMonth, endingCount,
   };
 
+  // Forward forecast: next N months of projected fees, salaries and revenue
+  // (reuses the same RLS-scoped client). Never blocks the dashboard on an error.
+  let forecastMonths: ForecastMonth[] = [];
+  try { forecastMonths = await getForecast(supabase, todayISO, FORECAST_MONTHS); } catch { forecastMonths = []; }
+
   // 6-month trends: bucket billed (voucher amount), collected (payments) and new
   // students by their PKT calendar month. Amounts stay in rupees; the chart scales.
   const ymOf = (iso: string) => pktDate(iso).slice(0, 7);
@@ -267,6 +279,7 @@ export async function getAdminDashboard(): Promise<AdminData> {
 
   return {
     demo: false, todayISO, classes, leads, teachers, attention, health, forecast,
+    forecastMonths,
     revenueHistory, enrollHistory,
     fees: { overdue: overdueAmount, outstanding, collected, collectionPct },
     kpis: {

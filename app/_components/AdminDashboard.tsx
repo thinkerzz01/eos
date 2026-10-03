@@ -144,6 +144,8 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
   const [availOnly, setAvailOnly] = useState('all');
   const [selDate, setSelDate] = useState(data.todayISO);
   const [mounted, setMounted] = useState(false);
+  // How many upcoming months the forecast card shows (1 .. forecastMonths.length).
+  const [horizon, setHorizon] = useState(3);
   useEffect(() => setMounted(true), []);
 
   const rangeDays = range === 'Today' ? 0 : range === 'This week' ? 7 : range === 'This month' ? 31 : 120;
@@ -218,6 +220,31 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
     tooltip: { theme: 'light' }, markers: { size: 0, hover: { size: 5 } },
   };
   const enrollSeries = [{ name: 'New students', data: data.enrollHistory.map((e) => e.count) }];
+
+  // --- Forward forecast (next N months): fees, salaries, revenue = fees - salaries.
+  const fc = data.forecastMonths ?? [];
+  const fcMax = fc.length;
+  const fcN = Math.min(Math.max(1, horizon), fcMax || 1);
+  const fcShown = fc.slice(0, fcN);
+  const fcFees = fcShown.reduce((s, m) => s + m.fees, 0);
+  const fcRevenue = fcShown.reduce((s, m) => s + m.revenue, 0);
+  const fcSalaries = fcShown.reduce((s, m) => s + m.salaries, 0);
+  const fcRangeLabel = fcShown.length
+    ? (fcShown.length === 1 ? fcShown[0].monthLabel : `${fcShown[0].monthLabel} – ${fcShown[fcShown.length - 1].monthLabel}`)
+    : '';
+  const fcOpts: any = {
+    chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'inherit', foreColor: C.muted, animations: { enabled: true, speed: 400 }, stacked: false },
+    colors: [C.purple, C.green], plotOptions: { bar: { columnWidth: fcN <= 2 ? '32%' : '56%', borderRadius: 5 } },
+    dataLabels: { enabled: false }, grid: { borderColor: C.grid, strokeDashArray: 3 },
+    xaxis: { categories: fcShown.map((m) => m.monthLabel.slice(0, 3)), axisBorder: { show: false }, axisTicks: { show: false } },
+    yaxis: { labels: { formatter: (v: number) => `Rs ${Math.round(v)}k` } },
+    legend: { show: true, position: 'top', horizontalAlign: 'right', fontSize: '12px', markers: { radius: 6 } },
+    tooltip: { theme: 'light', y: { formatter: (v: number) => `Rs ${Math.round(v)}k` } },
+  };
+  const fcSeries = [
+    { name: 'Fees', data: fcShown.map((m) => Math.round(m.fees / 1000)) },
+    { name: 'Revenue', data: fcShown.map((m) => Math.round(m.revenue / 1000)) },
+  ];
 
   const funnelSteps = [
     { label: 'Leads', n: funnel.L }, { label: 'Contacted', n: funnel.C },
@@ -459,6 +486,49 @@ export function AdminDashboard({ data, role = 'admin' }: { data: AdminData; role
                   : <div className="mt-0.5 text-[11px] text-[#8a86a3]">billed, upfront excluded</div>}
               </div>
             </div>
+          </Card>
+
+          <Card i={8}>
+            <SecH
+              title={<><TrendingUp className="h-5 w-5 text-[#5b47d6]" />Forecast</>}
+              right={<span className="text-[13px] text-[#6b7391]">{fcRangeLabel || 'no active plans'}</span>}
+            />
+            {fcMax === 0 ? (
+              <div className="py-8 text-center text-[13px] text-[#8a86a3]">No upcoming fees to forecast yet.</div>
+            ) : (
+              <>
+                {/* Horizon slider: 1 .. available months */}
+                <div className="mb-3 flex items-center gap-3">
+                  <span className="whitespace-nowrap text-[12px] text-[#6b7391]">Next</span>
+                  <input
+                    type="range" min={1} max={fcMax} step={1} value={fcN}
+                    onChange={(e) => setHorizon(Number(e.target.value))}
+                    className="h-1.5 flex-1 cursor-pointer accent-[#5b47d6]"
+                    aria-label="Forecast horizon in months"
+                  />
+                  <span className="whitespace-nowrap text-[12px] font-medium text-[#0f1729]">{fcN} month{fcN > 1 ? 's' : ''}</span>
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  <div className="rounded-xl border border-[#e7e2fb] bg-[#f6f4ff] p-3">
+                    <div className="text-[12px] text-[#6b7391]">Projected fees</div>
+                    <div className="mt-0.5 text-[20px] font-medium text-[#5b47d6]">{rsK(fcFees)}</div>
+                    <div className="mt-0.5 text-[11px] text-[#8a86a3]">billed over {fcN} mo</div>
+                  </div>
+                  <div className="rounded-xl bg-[#f8f9fc] p-3">
+                    <div className="text-[12px] text-[#6b7391]">Teacher salaries</div>
+                    <div className="mt-0.5 text-[20px] font-medium text-[#d9820a]">{rsK(fcSalaries)}</div>
+                    <div className="mt-0.5 text-[11px] text-[#8a86a3]">projected cost</div>
+                  </div>
+                  <div className="rounded-xl bg-[#f8f9fc] p-3">
+                    <div className="text-[12px] text-[#6b7391]">Projected revenue</div>
+                    <div className="mt-0.5 text-[20px] font-medium text-[#11a256]">{rsK(fcRevenue)}</div>
+                    <div className="mt-0.5 text-[11px] text-[#8a86a3]">fees − salaries</div>
+                  </div>
+                </div>
+                <div className="mt-2 min-h-[240px]">{mounted && <ReactApexChart options={fcOpts} series={fcSeries} type="bar" height={240} />}</div>
+                <p className="mt-1 text-[11px] text-[#8a86a3]">Billed, not collected. Monthly plans only (upfront excluded); revenue is fees minus teacher salaries (expenses not forecast).</p>
+              </>
+            )}
           </Card>
         </>
       )}
