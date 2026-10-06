@@ -117,3 +117,23 @@ for his cycle but he was paid the full salary).
 **Verified:** typecheck + production build clean. No regression for current data (no monthly student has a billing end set; earlierEnd returns the same class end).
 **Deferred:** none.
 **Gaps surfaced:** none.
+
+## [2026-10-06] Phase 5 — Vouchers: "Copy Message" action
+
+**Built:** Added a "Copy Message" item to the voucher row-actions menu (desktop + mobile) that copies the same WhatsApp fee text used by "Send to Student" to the clipboard, with a success toast and a window.prompt fallback when the Clipboard API is blocked. "Send to Student" already opens wa.me with the prefilled message; this gives a paste-anywhere copy for cases where wa.me does not prefill (desktop WhatsApp, etc).
+**Files touched:** app/vouchers/VouchersClient.tsx
+**Tables / migrations:** none (client-only).
+**RLS:** unchanged.
+**Verified:** typecheck clean (tsc 0). Message uses {{student_name}} data only, no hardcoded pronoun; manual copy/paste, not an automated send, so comms policy unaffected.
+**Deferred:** none.
+**Gaps surfaced:** none.
+
+## [2026-10-06] Phase 5 — Vouchers: owner-approved WhatsApp fee message + Copy Message
+
+**Built:** Rewrote the voucher WhatsApp/copy message to the owner-approved wording (Assalam o Alaikum + student name, "gentle fee reminder for <Level - Subject>", Billing period start-end, Fee amount, Amount due, Due date, receipt note, "JazakAllah, Team Thinkerzz"). Paid vouchers render a thank-you variant instead of a reminder. Added "Copy Message" row action (desktop + mobile) alongside the existing "Send to Student" (wa.me). Billing-period label reuses the existing billingPeriodLabel helper; "Level & Subject" = student program + comma-joined enrolled subject names.
+**Files touched:** app/vouchers/VouchersClient.tsx, lib/data/vouchers.ts, lib/mockFinanceData.ts
+**Tables / migrations:** none. getVouchers now embeds students.enrolled_at and student_subjects(subjects(name)) (RLS-scoped, deleted_at filtered in JS).
+**RLS:** unchanged (finance admin-only; nested reads go through the same authorized voucher query).
+**Acceptance criteria checked:** no hardcoded pronoun (none used); plain hyphens only; manual copy/paste send (comms policy unaffected); typecheck 0; production build 0.
+**Deferred:** "How to pay" bank/wallet block removed per owner's final wording (was in the previous message). Can be re-added on request.
+**Gaps surfaced:** none.

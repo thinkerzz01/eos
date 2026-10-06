@@ -17,6 +17,16 @@ function one<T>(rel: T | T[] | null | undefined): T | null {
 
 function mapRow(r: any): FeeVoucher {
   const student = one<any>(r.students);
+  // Distinct, non-deleted subject names for this student (for the message's "Level & Subject").
+  const subjectRows: any[] = Array.isArray(student?.student_subjects) ? student.student_subjects : [];
+  const subjects = Array.from(
+    new Set(
+      subjectRows
+        .filter((ss) => !ss.deleted_at)
+        .map((ss) => one<any>(ss.subjects)?.name)
+        .filter(Boolean)
+    )
+  ).join(', ');
   const payments: any[] = Array.isArray(r.payments) ? r.payments : [];
   // Exclude soft-deleted payments so a deleted receipt drops off the paid total.
   const paidAmount = payments.filter((p) => !p.deleted_at).reduce((sum, p) => sum + Number(p.amount || 0), 0);
@@ -43,6 +53,9 @@ function mapRow(r: any): FeeVoucher {
     runningBalance: totalAmount - paidAmount,
     status: STATUS_UI[r.status as string] ?? 'Due',
     needsAdminDecision,
+    period: r.period ?? '',
+    enrolledAt: student?.enrolled_at ?? null,
+    subjects,
   };
 }
 
@@ -56,7 +69,7 @@ export async function getVouchers(): Promise<FeeVoucher[]> {
 
   const { data, error } = await supabase
     .from('vouchers')
-    .select('id,code,student_id,voucher_no,period,amount,due_date,grace_deadline,status,students(name,parent_name,phone,program),payments(amount,deleted_at)')
+    .select('id,code,student_id,voucher_no,period,amount,due_date,grace_deadline,status,students(name,parent_name,phone,program,enrolled_at,student_subjects(deleted_at,subjects(name))),payments(amount,deleted_at)')
     .is('deleted_at', null)
     .order('due_date', { ascending: false });
 

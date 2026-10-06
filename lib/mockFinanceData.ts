@@ -15,6 +15,9 @@ export interface FeeVoucher {
   runningBalance: number;
   status: 'Paid' | 'Due' | 'In Grace' | 'Stopped';
   needsAdminDecision?: boolean; // true if grace period expired without payment
+  period?: string;      // voucher period (e.g. "2026-09" or "September 2026") - for the billing-cycle label
+  enrolledAt?: string | null; // student's enrolment day - anchors the cycle start/end
+  subjects?: string;    // enrolled subject names, comma-joined (e.g. "Physics, Chemistry")
 }
 
 export interface PaymentTransaction {

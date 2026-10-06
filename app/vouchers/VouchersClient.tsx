@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useRole } from '@/components/ui/RoleContext';
 import { FeeVoucher, PaymentTransaction } from '@/lib/mockFinanceData';
 import type { PaymentInfo } from '@/lib/config/paymentInfo';
+import { billingPeriodLabel } from '@/lib/billingPeriod';
 import { recordPayment, issueRefund, adminFeeDecision, createVoucher, updateVoucher, generateMonthlyVouchers, bulkDeleteVouchers } from './actions';
 import { RowActionsMenu } from '@/components/ui/RowActionsMenu';
 import { VoucherSlip } from '@/components/fees/VoucherSlip';
@@ -37,6 +38,7 @@ import {
   Eye,
   Edit3,
   Trash2,
+  Copy,
 } from 'lucide-react';
 
 // Add N days to a YYYY-MM-DD date, returned as YYYY-MM-DD (PKT calendar).
@@ -63,27 +65,46 @@ function waDigits(phone: string): string {
   return d;
 }
 
-// Build the WhatsApp fee-voucher message (voucher details + how to pay).
-function voucherWhatsappText(v: FeeVoucher, pay?: PaymentInfo | null): string {
-  const lines = [
-    `*Thinkerzz - Fee Voucher*`,
-    ``,
-    `Voucher: ${v.voucherNo}`,
-    `Student: ${v.studentName}`,
-    `Program: ${v.program}`,
-    `Amount: PKR ${v.totalAmount.toLocaleString()}`,
-    v.runningBalance > 0 ? `Balance due: PKR ${v.runningBalance.toLocaleString()}` : `Status: Paid`,
-    `Due date: ${v.dueDate}`,
-  ];
-  if (pay && (pay.bankTitle || pay.bankAccountNo || pay.bankIban || pay.wallet)) {
-    lines.push(``, `*How to pay*`);
-    if (pay.bankTitle) lines.push(`Bank Title: ${pay.bankTitle}`);
-    if (pay.bankAccountNo) lines.push(`Account No: ${pay.bankAccountNo}`);
-    if (pay.bankIban) lines.push(`IBAN: ${pay.bankIban}`);
-    if (pay.wallet) lines.push(`Mobile Wallet: ${pay.wallet}`);
-    lines.push(``, `Please share the payment receipt after paying. Thank you!`);
+// Format a 'YYYY-MM-DD' date as "06 Oct 2026" in PKT.
+function fmtDMY(ymd?: string | null): string {
+  if (!ymd) return '';
+  const d = new Date(`${ymd}T00:00:00+05:00`);
+  if (Number.isNaN(d.getTime())) return String(ymd);
+  return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', timeZone: 'Asia/Karachi' });
+}
+
+// Build the WhatsApp fee-reminder message (locked wording, owner-approved 2026-10-06).
+function voucherWhatsappText(v: FeeVoucher): string {
+  const levelSubject = [v.program, v.subjects].filter(Boolean).join(' - ');
+  const periodLabel = billingPeriodLabel(v.period, v.enrolledAt, v.dueDate);
+  // Paid vouchers get a thank-you note instead of a "please pay" reminder.
+  if (v.runningBalance <= 0) {
+    return [
+      `Assalam o Alaikum ${v.studentName}`,
+      ``,
+      `Your fee${levelSubject ? ` for ${levelSubject}` : ''} has been received. JazakAllah.`,
+      ``,
+      `Fee Period: ${periodLabel}`,
+      `Fee amount: PKR ${v.totalAmount.toLocaleString()}`,
+      ``,
+      `Regards,`,
+      `Team Thinkerzz`,
+    ].join('\n');
   }
-  return lines.join('\n');
+  return [
+    `Assalam o Alaikum ${v.studentName}`,
+    ``,
+    `This is a gentle fee reminder${levelSubject ? ` for ${levelSubject}` : ''}.`,
+    ``,
+    `Fee Period: ${periodLabel}`,
+    `Fee amount: PKR ${v.totalAmount.toLocaleString()}`,
+    `Due date: ${fmtDMY(v.dueDate)}`,
+    ``,
+    `Please clear the fee by the due date and share the payment receipt here. If you have already paid, kindly ignore this message.`,
+    ``,
+    `JazakAllah,`,
+    `Team Thinkerzz`,
+  ].join('\n');
 }
 
 export function VouchersClient({
@@ -165,7 +186,17 @@ export function VouchersClient({
     else setEdError(res.error ?? 'Failed to update the voucher.');
   };
   const sendVoucherWa = (v: FeeVoucher) => {
-    window.open(`https://wa.me/${waDigits(v.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(v, paymentInfo))}`, '_blank');
+    window.open(`https://wa.me/${waDigits(v.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(v))}`, '_blank');
+  };
+  const copyVoucherMessage = async (v: FeeVoucher) => {
+    const text = voucherWhatsappText(v);
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast('Fee message copied. Paste it into WhatsApp.', 'success');
+    } catch {
+      // Clipboard API can be blocked (insecure context / permissions) - fall back to a manual-copy prompt.
+      window.prompt('Copy the fee message below:', text);
+    }
   };
 
   // MODAL STATES
@@ -687,6 +718,7 @@ export function VouchersClient({
                               { label: 'Mark as Paid', icon: <CheckCircle2 className="w-3.5 h-3.5" />, tone: 'success', hidden: v.status === 'Paid' || v.runningBalance <= 0, onClick: () => handleMarkPaid(v) },
                               { label: 'Review Voucher', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setPreviewVoucher(v) },
                               { label: 'Send to Student', icon: <MessageSquare className="w-3.5 h-3.5" />, tone: 'success', onClick: () => sendVoucherWa(v) },
+                              { label: 'Copy Message', icon: <Copy className="w-3.5 h-3.5" />, onClick: () => copyVoucherMessage(v) },
                               { label: 'Modify Voucher', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditVoucher(v) },
                               { label: 'Refund', icon: <ArrowDownRight className="w-3.5 h-3.5" />, tone: 'danger', hidden: !(v.paidAmount > 0), onClick: () => setRefundVoucher(v) },
                               { label: 'Fee Decision', icon: <ShieldCheck className="w-3.5 h-3.5" />, tone: 'warning', hidden: v.needsAdminDecision, onClick: () => setDecisionVoucher(v) },
@@ -755,6 +787,7 @@ export function VouchersClient({
                         { label: 'Mark as Paid', icon: <CheckCircle2 className="w-3.5 h-3.5" />, tone: 'success', hidden: v.status === 'Paid' || v.runningBalance <= 0, onClick: () => handleMarkPaid(v) },
                         { label: 'Review Voucher', icon: <Eye className="w-3.5 h-3.5" />, onClick: () => setPreviewVoucher(v) },
                         { label: 'Send to Student', icon: <MessageSquare className="w-3.5 h-3.5" />, tone: 'success', onClick: () => sendVoucherWa(v) },
+                        { label: 'Copy Message', icon: <Copy className="w-3.5 h-3.5" />, onClick: () => copyVoucherMessage(v) },
                         { label: 'Modify Voucher', icon: <Edit3 className="w-3.5 h-3.5" />, tone: 'primary', onClick: () => openEditVoucher(v) },
                         { label: 'Refund', icon: <ArrowDownRight className="w-3.5 h-3.5" />, tone: 'danger', hidden: !(v.paidAmount > 0), onClick: () => setRefundVoucher(v) },
                         { label: 'Fee Decision', icon: <ShieldCheck className="w-3.5 h-3.5" />, tone: 'warning', hidden: v.needsAdminDecision, onClick: () => setDecisionVoucher(v) },
@@ -865,7 +898,7 @@ export function VouchersClient({
             paymentInfo={paymentInfo}
             showVoucherId
             onClose={() => setPreviewVoucher(null)}
-            sendToStudentHref={`https://wa.me/${waDigits(previewVoucher.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(previewVoucher, paymentInfo))}`}
+            sendToStudentHref={`https://wa.me/${waDigits(previewVoucher.parentPhone)}?text=${encodeURIComponent(voucherWhatsappText(previewVoucher))}`}
           />
         )}
 
