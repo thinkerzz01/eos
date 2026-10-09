@@ -137,3 +137,13 @@ for his cycle but he was paid the full salary).
 **Acceptance criteria checked:** no hardcoded pronoun (none used); plain hyphens only; manual copy/paste send (comms policy unaffected); typecheck 0; production build 0.
 **Deferred:** "How to pay" bank/wallet block removed per owner's final wording (was in the previous message). Can be re-added on request.
 **Gaps surfaced:** none.
+
+## [2026-10-09] Phase 5 — Delete a student now cleans up their vouchers (sync)
+
+**Built:** Deleting a student now cascades to their fee vouchers + payments (soft-delete), so a removed student's fees drop out of the Fee Vouchers list, the dashboard Outstanding/Overdue, and everywhere finance reads filter deleted_at IS NULL - no more manual voucher deletion. Added read-side defense so a deleted student's vouchers are hidden even if the finance cascade could not write (e.g. a Manager-initiated delete) or for pre-existing orphans: getVouchers and the dashboard fee query now drop rows whose student is soft-deleted. Verified billing cron + generateMonthlyVouchers + forecast already exclude deleted/non-active students (they never created vouchers for deleted/passed-out students; the orphaned EXISTING vouchers were the real symptom).
+**Files touched:** app/students/actions.ts (cascadeDeleteForStudents + revalidate /vouchers,/payments), lib/data/vouchers.ts, lib/data/adminDashboard.ts
+**Tables / migrations:** supabase/migrations/2026-10-09_cleanup_orphan_vouchers.sql - soft-deletes vouchers+payments of already soft-deleted students (fixes current orphans / stale Outstanding). OWNER MUST RUN in Supabase SQL editor.
+**RLS:** unchanged. Cascade runs under the caller's session (admin can write finance; Manager is denied -> best-effort no-op, read filter still hides). Cleanup migration runs as admin in SQL editor.
+**Acceptance criteria checked:** soft-delete only (recoverable); all reads filter deleted_at; typecheck 0; build 0.
+**Deferred / needs owner decision:** PASSOUT (markStudentPassout -> Alumni) already stops FUTURE billing but intentionally leaves existing unpaid vouchers as receivables (did not auto-wipe money owed). Owner to confirm whether passout should also cancel not-yet-due (Upcoming) unpaid vouchers. "Student leaving" (endStudentBilling) remains the clean exit that stops fees + teacher pay together.
+**Gaps surfaced:** passout unpaid-voucher policy (above).

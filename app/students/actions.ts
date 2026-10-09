@@ -502,6 +502,21 @@ async function cascadeDeleteForStudents(
       await supabase.from('demos').update({ deleted_at: now }).in('lead_id', leadIds);
       await supabase.from('leads').update({ deleted_at: now }).in('id', leadIds);
     }
+    // 3) Soft-delete this student's fee vouchers AND the payments against them, so a
+    //    removed student's money drops out of the voucher list, Outstanding and the
+    //    dashboard in one action (every finance read filters deleted_at IS NULL).
+    //    RLS-scoped + best-effort: if the caller is a Manager (denied on finance)
+    //    this no-ops, and getVouchers' student-deleted read filter still hides them.
+    const { data: vrows } = await supabase
+      .from('vouchers')
+      .select('id')
+      .in('student_id', studentIds)
+      .is('deleted_at', null);
+    const voucherIds = ((vrows as any[]) ?? []).map((v) => v.id).filter(Boolean);
+    if (voucherIds.length > 0) {
+      await supabase.from('payments').update({ deleted_at: now }).in('voucher_id', voucherIds);
+      await supabase.from('vouchers').update({ deleted_at: now }).in('id', voucherIds);
+    }
   } catch {
     /* cascade is best-effort - the student is already removed */
   }
@@ -510,7 +525,7 @@ async function cascadeDeleteForStudents(
 // Refresh every tab that reads students / leads / demos so a delete syncs across
 // the whole app (dashboard, marketing, leads, demos, reports, schedule).
 function revalidateAcademyData(): void {
-  for (const p of ['/students', '/', '/marketing', '/leads', '/demos', '/reports', '/schedule']) {
+  for (const p of ['/students', '/', '/marketing', '/leads', '/demos', '/reports', '/schedule', '/vouchers', '/payments']) {
     revalidatePath(p);
   }
 }

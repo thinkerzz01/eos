@@ -159,7 +159,7 @@ export async function getAdminDashboard(): Promise<AdminData> {
     supabase.from('subjects').select('name').is('deleted_at', null),
     supabase.from('student_subjects').select('teacher_id').is('deleted_at', null),
     supabase.from('demos').select('id', { count: 'exact', head: true }).eq('status', 'needs_teacher').is('deleted_at', null),
-    supabase.from('vouchers').select('id,amount,status,due_date,grace_deadline,students(name)').neq('status', 'paid').is('deleted_at', null),
+    supabase.from('vouchers').select('id,amount,status,due_date,grace_deadline,students(name,deleted_at)').neq('status', 'paid').is('deleted_at', null),
     supabase.from('payments').select('amount').gte('created_at', monthStart).is('deleted_at', null),
     supabase.from('students').select('id,name,fee_status,billing_mode,monthly_fee,billing_end_date').eq('status', 'active').is('deleted_at', null),
     // --- System health ---
@@ -198,8 +198,10 @@ export async function getAdminDashboard(): Promise<AdminData> {
     id: t.id, name: t.name, capacity: t.capacity ?? 20, load: loadBy.get(t.id) ?? 0, subjects: [],
   })).sort((a, b) => b.load / (b.capacity || 1) - a.load / (a.capacity || 1));
 
-  // fees
-  const vouchers = (vouchersRes.data as any[] ?? []);
+  // fees - drop vouchers whose student was soft-deleted so a removed student's
+  // fees never count toward Outstanding/Overdue (defense in depth: the delete
+  // cascade also soft-deletes these vouchers, but this covers any orphan).
+  const vouchers = (vouchersRes.data as any[] ?? []).filter((v) => { const s = one<any>(v.students); return s && !s.deleted_at; });
   const overdueVouchers = vouchers.filter((v) => v.grace_deadline && pktDate(new Date(v.grace_deadline).toISOString?.() ?? v.grace_deadline) < todayISO);
   const overdueAmount = overdueVouchers.reduce((s, v) => s + Number(v.amount ?? 0), 0);
   // Outstanding = vouchers that have actually come DUE as of today (not the ones

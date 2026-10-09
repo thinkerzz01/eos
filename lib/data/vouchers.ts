@@ -69,10 +69,15 @@ export async function getVouchers(): Promise<FeeVoucher[]> {
 
   const { data, error } = await supabase
     .from('vouchers')
-    .select('id,code,student_id,voucher_no,period,amount,due_date,grace_deadline,status,students(name,parent_name,phone,program,enrolled_at,student_subjects(deleted_at,subjects(name))),payments(amount,deleted_at)')
+    .select('id,code,student_id,voucher_no,period,amount,due_date,grace_deadline,status,students(name,parent_name,phone,program,enrolled_at,deleted_at,student_subjects(deleted_at,subjects(name))),payments(amount,deleted_at)')
     .is('deleted_at', null)
     .order('due_date', { ascending: false });
 
   if (error || !data) return [];
-  return (data as any[]).map(mapRow);
+  // Hide vouchers whose student has been soft-deleted (or hard-removed): a deleted
+  // student's fees must not linger in the list or Outstanding. Alumni/stopped
+  // students stay visible - their vouchers are real history, only DELETED is hidden.
+  return (data as any[])
+    .filter((r) => { const s = one<any>(r.students); return s && !s.deleted_at; })
+    .map(mapRow);
 }
