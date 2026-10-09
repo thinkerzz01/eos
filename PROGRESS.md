@@ -162,3 +162,13 @@ for his cycle but he was paid the full salary).
 **Acceptance criteria checked:** soft-delete only; reminder cron already filters students.deleted_at (now classes are cancelled so stopped students drop out too); typecheck 0; build 0.
 **Deferred:** reminder cron still keys off class_sessions/vouchers existence (correct) - no status filter needed now that stops cancel the underlying rows. Re-activating an individual via profile editor does not clear billing_end_date (only bulk Active does); flagged.
 **Gaps surfaced:** none outstanding.
+
+## [2026-10-09] Phase 6 — Orphan cleanup also cancels lingering Google Calendar invites
+
+**Built:** Resolved the stop-cascade limitation (SQL cannot cancel already-sent Google invites). cleanupOrphanSchedule now also sweeps any ALREADY-cancelled (soft-deleted) class_session that still carries a calendar_event_id - the exact state the sync migration left stopped-students'/left-teachers' classes in - cancels the Google event (sendUpdates=all drops it off the family's/teacher's calendar) and clears the id. Paged at 200/run so a backlog cannot time out. Going-forward cancel helpers (cancelScheduleForStudents, cancelFutureClassesForStudents, cancelScheduleForTeachers, clearSessions) now also null calendar_event_id after cancelling, so invites are handled exactly once. Returns an added `invites` count. Trigger: existing Bearer-protected GET /api/cron/cleanup-orphans (run once; safe to re-run).
+**Files touched:** lib/scheduling/cascade.ts
+**Tables / migrations:** none.
+**RLS:** unchanged (service-role maintenance endpoint, Bearer-token protected).
+**Acceptance criteria checked:** idempotent (clears calendar_event_id so re-runs find nothing); best-effort try/catch; typecheck 0; build 0.
+**Deferred:** cleanup-orphans is a manual/occasional endpoint (not on the 10-15 min cron). Owner runs it once to clear existing invites; could be added to the recurring tick later if desired.
+**Gaps surfaced:** none.

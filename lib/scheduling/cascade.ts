@@ -48,7 +48,7 @@ export async function cancelScheduleForStudents(studentIds: string[]): Promise<v
     await cancelEvents(admin, sessions as any[]);
     await admin
       .from('class_sessions')
-      .update({ status: 'cancelled', deleted_at: now })
+      .update({ status: 'cancelled', deleted_at: now, calendar_event_id: null })
       .in('student_id', ids)
       .is('deleted_at', null);
   } catch {
@@ -86,7 +86,7 @@ export async function cancelFutureClassesForStudents(studentIds: string[], cutof
     await cancelEvents(admin, sessions as any[]);
     await admin
       .from('class_sessions')
-      .update({ status: 'cancelled', deleted_at: now })
+      .update({ status: 'cancelled', deleted_at: now, calendar_event_id: null })
       .in('student_id', ids)
       .gte('start_at', cutoffISO)
       .is('deleted_at', null);
@@ -160,19 +160,23 @@ export { pktDayStartISO };
 /**
  * ONE-TIME / RECURRING CLEANUP. Finds people who were already soft-deleted BEFORE
  * the cascade existed (their class sessions/demos are still live with a Google
- * Calendar event) and cancels those events + clears the schedule. Safe to run
- * repeatedly: once everything is cancelled it finds nothing. Returns counts.
+ * Calendar event) and cancels those events + clears the schedule. Also sweeps any
+ * ALREADY-cancelled class session that still carries a live calendar_event_id -
+ * e.g. classes cancelled in SQL for a stopped student / left teacher, where the DB
+ * row was cleared but the Google invite was never removed. Safe to run repeatedly:
+ * once everything is cancelled + cleared it finds nothing. Returns counts.
  */
-export async function cleanupOrphanSchedule(): Promise<{ sessions: number; demos: number }> {
+export async function cleanupOrphanSchedule(): Promise<{ sessions: number; demos: number; invites: number }> {
   let admin: Admin;
   try {
     admin = createAdminClient();
   } catch {
-    return { sessions: 0, demos: 0 };
+    return { sessions: 0, demos: 0, invites: 0 };
   }
   const now = new Date().toISOString();
   let sessions = 0;
   let demos = 0;
+  let invites = 0;
 
   const clearSessions = async (rel: 'students' | 'teachers', col: 'student_id' | 'teacher_id') => {
     const { data } = await admin
@@ -185,7 +189,7 @@ export async function cleanupOrphanSchedule(): Promise<{ sessions: number; demos
     await cancelEvents(admin, rows);
     const ids = rows.map((r) => r.id).filter(Boolean);
     if (ids.length) {
-      await admin.from('class_sessions').update({ status: 'cancelled', deleted_at: now }).in('id', ids);
+      await admin.from('class_sessions').update({ status: 'cancelled', deleted_at: now, calendar_event_id: null }).in('id', ids);
       sessions += ids.length;
     }
   };
@@ -237,7 +241,32 @@ export async function cleanupOrphanSchedule(): Promise<{ sessions: number; demos
     /* best-effort */
   }
 
-  return { sessions, demos };
+  // Already-cancelled class sessions (soft-deleted) that still carry a live Google
+  // Calendar event - e.g. classes cancelled in SQL for a stopped student or a left
+  // teacher, where the row was removed but the invite was never cancelled. Cancel
+  // the event and clear the id so Google stops inviting and we never re-process it.
+  // Paged so a large backlog does not time out the single cron call.
+  try {
+    while (true) {
+      const { data } = await admin
+        .from('class_sessions')
+        .select('id,calendar_event_id')
+        .not('deleted_at', 'is', null)
+        .not('calendar_event_id', 'is', null)
+        .limit(200);
+      const rows = (data as any[]) ?? [];
+      if (rows.length === 0) break;
+      await cancelEvents(admin, rows);
+      const ids = rows.map((r) => r.id).filter(Boolean);
+      await admin.from('class_sessions').update({ calendar_event_id: null }).in('id', ids);
+      invites += ids.length;
+      if (rows.length < 200) break;
+    }
+  } catch {
+    /* best-effort */
+  }
+
+  return { sessions, demos, invites };
 }
 
 /**
@@ -291,7 +320,7 @@ export async function cancelScheduleForTeachers(teacherIds: string[]): Promise<v
     await cancelEvents(admin, sessions as any[]);
     await admin
       .from('class_sessions')
-      .update({ status: 'cancelled', deleted_at: now })
+      .update({ status: 'cancelled', deleted_at: now, calendar_event_id: null })
       .in('teacher_id', ids)
       .is('deleted_at', null);
 
