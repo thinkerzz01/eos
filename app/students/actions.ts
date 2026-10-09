@@ -10,7 +10,7 @@ import { revalidatePath } from 'next/cache';
 import { provisionLogin } from '@/lib/auth/provision';
 import { findEmailAccountOwner, emailTakenMessage } from '@/lib/auth/emailUniqueness';
 import { friendlyDbError } from '@/lib/friendlyError';
-import { cancelScheduleForStudents, cancelDemoCalendarForLeads } from '@/lib/scheduling/cascade';
+import { cancelScheduleForStudents, cancelDemoCalendarForLeads, cancelFinanceForStudents, cancelFutureClassesForStudents, cancelFutureVouchersForStudents, pktDayStartISO } from '@/lib/scheduling/cascade';
 import { ensureEnrollmentSnapshot } from '@/lib/syllabus/snapshot';
 
 const ENROLLABLE_PROGRAMS = ['O Level (O1)', 'O Level (O2)', 'AS', 'A2', 'IGCSE', 'Edexcel IGCSE', 'Edexcel AS', 'Edexcel A2', 'Matric (9)', 'Matric (10)', 'Inter (11)', 'Inter (12)'];
@@ -433,14 +433,20 @@ export async function markStudentPassout(id: string): Promise<ActionResult> {
   } = await supabase.auth.getSession();
   if (!session?.user) return { ok: false, error: 'You are not signed in.' };
 
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+  // Alumni = stopped today: set the billing end (so fees + teacher salary stop),
+  // then cancel future classes/invites and drop not-yet-due unpaid vouchers so
+  // nothing keeps emailing/billing/paying for a student who has left.
   const { error } = await supabase
     .from('students')
-    .update({ status: 'stopped' })
+    .update({ status: 'stopped', billing_end_date: today })
     .eq('id', id);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
-  revalidatePath('/students');
-  revalidatePath('/');
+  await cancelFutureClassesForStudents([id], new Date().toISOString());
+  await cancelFutureVouchersForStudents([id], today);
+
+  for (const p of ['/students', '/', '/vouchers', '/payments', '/teacher-payouts', '/schedule', '/reports']) revalidatePath(p);
   return { ok: true };
 }
 
@@ -468,9 +474,14 @@ export async function endStudentBilling(input: { id: string; endDate: string }):
   const { error } = await supabase.from('students').update(patch).eq('id', input.id);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
-  revalidatePath('/students');
-  revalidatePath('/teacher-payouts');
-  revalidatePath('/');
+  // Cancel classes (and their calendar invites) scheduled on/after the end date,
+  // and drop not-yet-due unpaid vouchers for periods after the end, so fees,
+  // teacher salary, class emails and invites all stop together at that date.
+  const cutoffISO = input.endDate <= today ? new Date().toISOString() : pktDayStartISO(input.endDate);
+  await cancelFutureClassesForStudents([input.id], cutoffISO);
+  await cancelFutureVouchersForStudents([input.id], input.endDate);
+
+  for (const p of ['/students', '/teacher-payouts', '/', '/vouchers', '/payments', '/schedule', '/reports']) revalidatePath(p);
   return { ok: true };
 }
 
@@ -502,21 +513,12 @@ async function cascadeDeleteForStudents(
       await supabase.from('demos').update({ deleted_at: now }).in('lead_id', leadIds);
       await supabase.from('leads').update({ deleted_at: now }).in('id', leadIds);
     }
-    // 3) Soft-delete this student's fee vouchers AND the payments against them, so a
-    //    removed student's money drops out of the voucher list, Outstanding and the
-    //    dashboard in one action (every finance read filters deleted_at IS NULL).
-    //    RLS-scoped + best-effort: if the caller is a Manager (denied on finance)
-    //    this no-ops, and getVouchers' student-deleted read filter still hides them.
-    const { data: vrows } = await supabase
-      .from('vouchers')
-      .select('id')
-      .in('student_id', studentIds)
-      .is('deleted_at', null);
-    const voucherIds = ((vrows as any[]) ?? []).map((v) => v.id).filter(Boolean);
-    if (voucherIds.length > 0) {
-      await supabase.from('payments').update({ deleted_at: now }).in('voucher_id', voucherIds);
-      await supabase.from('vouchers').update({ deleted_at: now }).in('id', voucherIds);
-    }
+    // 3) Soft-delete this student's fee vouchers, the payments against them, AND
+    //    their subject enrollments (student_subjects) so a removed student's money
+    //    drops out of the voucher list / Outstanding / dashboard and stops counting
+    //    toward teacher load/salary. Uses the service-role client so it runs even
+    //    when a Manager (denied on finance) triggered the delete.
+    await cancelFinanceForStudents(studentIds);
   } catch {
     /* cascade is best-effort - the student is already removed */
   }
@@ -591,11 +593,24 @@ export async function bulkSetStatus(ids: string[], status: string): Promise<Acti
   } = await supabase.auth.getUser();
   if (!user) return { ok: false, error: 'You are not signed in.' };
 
-  const { error } = await supabase.from('students').update({ status: db }).in('id', clean);
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Karachi' });
+  // Alumni/Stopped = stopped today: also set the billing end so fees + salary stop.
+  // Re-activating clears the billing end so the student resumes billing normally.
+  const patch: Record<string, any> = { status: db };
+  if (db === 'stopped') patch.billing_end_date = today;
+  else if (db === 'active') patch.billing_end_date = null;
+  const { error } = await supabase.from('students').update(patch).in('id', clean);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
-  revalidatePath('/students');
-  revalidatePath('/');
+  if (db === 'stopped') {
+    // Cancel future classes/invites and drop not-yet-due unpaid vouchers for each.
+    await cancelFutureClassesForStudents(clean, new Date().toISOString());
+    await cancelFutureVouchersForStudents(clean, today);
+    for (const p of ['/students', '/', '/vouchers', '/payments', '/teacher-payouts', '/schedule', '/reports']) revalidatePath(p);
+  } else {
+    revalidatePath('/students');
+    revalidatePath('/');
+  }
   return { ok: true };
 }
 

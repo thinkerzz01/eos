@@ -356,8 +356,12 @@ export async function markTeacherLeft(input: { id: string; reason: string }): Pr
     .eq('id', input.id);
   if (error) return { ok: false, error: friendlyDbError(error) };
 
-  revalidatePath('/teachers');
-  revalidatePath('/');
+  // A departed teacher cannot keep teaching: cancel their future classes + Google
+  // Calendar invites and return their assigned demos to 'needs_teacher'. Their
+  // salary also stops accruing (the salary engine + forecast skip 'left' teachers).
+  await cancelScheduleForTeachers([input.id]);
+
+  for (const p of ['/teachers', '/', '/schedule', '/teacher-payouts', '/demos', '/reports']) revalidatePath(p);
   return { ok: true };
 }
 

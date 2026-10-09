@@ -96,7 +96,7 @@ export async function getTeachers(): Promise<Teacher[]> {
   // (from student_subjects). Both RLS-scoped. Empty until those links exist.
   const [{ data: tsRows }, { data: ssRows }] = await Promise.all([
     supabase.from('teacher_subjects').select('teacher_id,subjects(name,program)').is('deleted_at', null),
-    supabase.from('student_subjects').select('teacher_id').is('deleted_at', null),
+    supabase.from('student_subjects').select('teacher_id,students(status,deleted_at)').is('deleted_at', null),
   ]);
   const subjBy = new Map<string, Set<string>>();
   const progBy = new Map<string, Set<string>>();
@@ -109,10 +109,14 @@ export async function getTeachers(): Promise<Teacher[]> {
     if (subj.name) subjBy.get(tid)!.add(subj.name);
     if (subj.program) progBy.get(tid)!.add(subj.program);
   }
+  // Load counts only ACTIVE, non-deleted students: a deleted or alumni (stopped)
+  // student no longer occupies the teacher's capacity.
   const loadBy = new Map<string, number>();
   for (const row of (ssRows as any[]) ?? []) {
     const tid = (row as any).teacher_id as string;
-    if (tid) loadBy.set(tid, (loadBy.get(tid) ?? 0) + 1);
+    const stu = Array.isArray((row as any).students) ? (row as any).students[0] : (row as any).students;
+    if (!tid || !stu || stu.deleted_at || stu.status !== 'active') continue;
+    loadBy.set(tid, (loadBy.get(tid) ?? 0) + 1);
   }
 
   // Rolling 90-day demo conversion per teacher (Master Plan §6.3): count only

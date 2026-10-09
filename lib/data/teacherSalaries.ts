@@ -196,7 +196,7 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
 
   // Enrollments (non-deleted), with student + teacher. Skip deleted students and
   // removed teachers so nothing dangles.
-  const STU = 'students(name,program,monthly_fee,status,enrolled_at,deleted_at,billing_end_date),subjects(name),teachers(name,phone,deleted_at)';
+  const STU = 'students(name,program,monthly_fee,status,enrolled_at,deleted_at,billing_end_date),subjects(name),teachers(name,phone,deleted_at,status,left_at)';
   const COMM = `id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,class_start_date,class_end_date,apply_commission,created_at,${STU}`;
   const FULL = `id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,class_start_date,class_end_date,created_at,${STU}`;
   const SALARY = `id,teacher_id,student_id,subject_id,monthly_salary,salary_start_month,created_at,${STU}`;
@@ -250,7 +250,10 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     const start = classStartDate
       ?? (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month) ? `${e.salary_start_month}-01` : null)
       ?? (enrolledDate || null);
-    const end = earlierEnd(classEndDate, student.billing_end_date ? String(student.billing_end_date).slice(0, 10) : null); // exclusive stop; null = ongoing
+    // A departed teacher stops accruing at their leaving date (keeps what was
+    // already earned/owed, no new cycles after they left).
+    const teacherLeft = (teacher?.status === 'left' && teacher?.left_at) ? String(teacher.left_at).slice(0, 10) : null;
+    const end = earlierEnd(earlierEnd(classEndDate, student.billing_end_date ? String(student.billing_end_date).slice(0, 10) : null), teacherLeft); // exclusive stop; null = ongoing
 
     // Period accrual = cumulative(close) - cumulative(open).
     const payClose = payFor(monthlySalary, applyCommission, cyclesStarted(start, end, asOfClose));
@@ -331,7 +334,8 @@ export async function getSalarySheet(periodYYYYMM?: string): Promise<SalarySheet
     const start = classStartDate
       ?? (e.salary_start_month && /^\d{4}-\d{2}$/.test(e.salary_start_month) ? `${e.salary_start_month}-01` : null)
       ?? (enrolledDate || null);
-    const end = earlierEnd(classEndDate, student.billing_end_date ? String(student.billing_end_date).slice(0, 10) : null);
+    const teacherLeft = (teacher?.status === 'left' && teacher?.left_at) ? String(teacher.left_at).slice(0, 10) : null;
+    const end = earlierEnd(earlierEnd(classEndDate, student.billing_end_date ? String(student.billing_end_date).slice(0, 10) : null), teacherLeft);
 
     const tId = e.teacher_id as string;
     let t = byTeacher.get(tId);

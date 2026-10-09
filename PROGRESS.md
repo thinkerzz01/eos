@@ -147,3 +147,18 @@ for his cycle but he was paid the full salary).
 **Acceptance criteria checked:** soft-delete only (recoverable); all reads filter deleted_at; typecheck 0; build 0.
 **Deferred / needs owner decision:** PASSOUT (markStudentPassout -> Alumni) already stops FUTURE billing but intentionally leaves existing unpaid vouchers as receivables (did not auto-wipe money owed). Owner to confirm whether passout should also cancel not-yet-due (Upcoming) unpaid vouchers. "Student leaving" (endStudentBilling) remains the clean exit that stops fees + teacher pay together.
 **Gaps surfaced:** passout unpaid-voucher policy (above).
+
+## [2026-10-09] Phase 5/6 — Full lifecycle sync (student + teacher) on stop/leave/delete
+
+**Built:** Unified stop-cascade so leaving/passout/delete synchronise fees, salary, classes, calendar invites and reminders. Decision applied: NOT-YET-DUE unpaid vouchers (periods after the end, no payment) are auto-cancelled; real debt (already-due, or any voucher with a payment) is kept.
+- Student DELETE: cascadeDeleteForStudents now uses service-role cancelFinanceForStudents -> soft-deletes vouchers + payments + student_subjects (works for Manager-initiated deletes too; removes them from teacher load/salary).
+- Student PASSOUT (markStudentPassout) + bulk Alumni/Stopped: set billing_end_date=today (stops fees + salary), cancel future classes + Google Calendar invites (cancelFutureClassesForStudents from now), drop not-yet-due unpaid vouchers (cancelFutureVouchersForStudents). Re-activating (bulk Active) clears billing_end_date.
+- Student LEAVING (endStudentBilling): now also cancels classes/invites on/after the end date + drops not-yet-due unpaid vouchers.
+- Teacher load (teachers.ts + adminDashboard.ts): counts only ACTIVE, non-deleted students.
+- Teacher side symmetry: markTeacherLeft now cancels the departed teacher's future classes/invites + unassigns demos (cancelScheduleForTeachers). Salary engine (teacherSalaries.ts) bounds accrual at teacher left_at (keeps owed back-pay, stops new cycles); forecast.ts excludes left/deleted teachers from projected salary.
+**Files touched:** lib/scheduling/cascade.ts (new helpers: cancelFutureClassesForStudents, cancelFutureVouchersForStudents, cancelFinanceForStudents, pktDayStartISO), app/students/actions.ts, app/teachers/actions.ts, lib/data/teachers.ts, lib/data/adminDashboard.ts, lib/data/teacherSalaries.ts, lib/data/forecast.ts
+**Tables / migrations:** supabase/migrations/2026-10-09_sync_stopped_students_left_teachers.sql - OWNER MUST RUN. Backfills billing_end_date for existing stopped students, cancels their + left teachers' future classes, drops their not-yet-due unpaid vouchers. (Google Calendar invites already sent for existing rows are not removed by SQL; new cascades handle invites going forward.)
+**RLS:** cascade helpers use the service-role client (same pattern as cancelScheduleForStudents), so they run for admin + manager. Reads unchanged.
+**Acceptance criteria checked:** soft-delete only; reminder cron already filters students.deleted_at (now classes are cancelled so stopped students drop out too); typecheck 0; build 0.
+**Deferred:** reminder cron still keys off class_sessions/vouchers existence (correct) - no status filter needed now that stops cancel the underlying rows. Re-activating an individual via profile editor does not clear billing_end_date (only bulk Active does); flagged.
+**Gaps surfaced:** none outstanding.

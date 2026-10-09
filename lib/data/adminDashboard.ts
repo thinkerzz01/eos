@@ -157,7 +157,7 @@ export async function getAdminDashboard(): Promise<AdminData> {
     supabase.from('leads').select('id,name,source,program,status,created_at').is('deleted_at', null).order('created_at', { ascending: false }).limit(200),
     supabase.from('teachers').select('id,name,capacity').is('deleted_at', null),
     supabase.from('subjects').select('name').is('deleted_at', null),
-    supabase.from('student_subjects').select('teacher_id').is('deleted_at', null),
+    supabase.from('student_subjects').select('teacher_id,students(status,deleted_at)').is('deleted_at', null),
     supabase.from('demos').select('id', { count: 'exact', head: true }).eq('status', 'needs_teacher').is('deleted_at', null),
     supabase.from('vouchers').select('id,amount,status,due_date,grace_deadline,students(name,deleted_at)').neq('status', 'paid').is('deleted_at', null),
     supabase.from('payments').select('amount').gte('created_at', monthStart).is('deleted_at', null),
@@ -191,9 +191,15 @@ export async function getAdminDashboard(): Promise<AdminData> {
     stage: STAGE[l.status] ?? 'new', createdDaysAgo: Math.max(0, Math.floor((now.getTime() - new Date(l.created_at).getTime()) / 864e5)),
   }));
 
-  // teacher load = enrolled student_subjects rows per teacher
+  // teacher load = enrolled student_subjects rows per teacher, ACTIVE non-deleted
+  // students only (a deleted/alumni student no longer uses the teacher's capacity).
   const loadBy = new Map<string, number>();
-  for (const r of (ssRes.data as any[] ?? [])) { const t = (r as any).teacher_id; if (t) loadBy.set(t, (loadBy.get(t) ?? 0) + 1); }
+  for (const r of (ssRes.data as any[] ?? [])) {
+    const t = (r as any).teacher_id;
+    const stu = one<any>((r as any).students);
+    if (!t || !stu || stu.deleted_at || stu.status !== 'active') continue;
+    loadBy.set(t, (loadBy.get(t) ?? 0) + 1);
+  }
   const teachers: AdminTeacherLoad[] = (teachersRes.data as any[] ?? []).map((t) => ({
     id: t.id, name: t.name, capacity: t.capacity ?? 20, load: loadBy.get(t.id) ?? 0, subjects: [],
   })).sort((a, b) => b.load / (b.capacity || 1) - a.load / (a.capacity || 1));

@@ -48,7 +48,7 @@ export async function getForecast(
       .is('deleted_at', null),
     supabase
       .from('student_subjects')
-      .select('monthly_salary,salary_start_month,class_start_date,class_end_date,apply_commission,students(status,enrolled_at,deleted_at)')
+      .select('monthly_salary,salary_start_month,class_start_date,class_end_date,apply_commission,students(status,enrolled_at,deleted_at),teachers(status,deleted_at)')
       .is('deleted_at', null),
   ]);
 
@@ -76,6 +76,9 @@ export async function getForecast(
     for (const e of (enrollments as any[]) ?? []) {
       const stu = Array.isArray(e.students) ? e.students[0] : e.students;
       if (!stu || stu.status !== 'active' || stu.deleted_at) continue;
+      // Skip enrollments whose teacher has left or been removed - no projected pay.
+      const tch = Array.isArray(e.teachers) ? e.teachers[0] : e.teachers;
+      if (!tch || tch.deleted_at || tch.status === 'left') continue;
       const monthlySalary = Number(e.monthly_salary ?? 0);
       if (!(monthlySalary > 0)) continue;
 
